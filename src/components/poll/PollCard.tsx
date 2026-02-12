@@ -1,6 +1,5 @@
-import { useState, useRef, TouchEvent, MouseEvent, useCallback } from 'react';
-import { Clock, Radio, Loader2, Users, MapPin, Calendar } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useRef, TouchEvent, MouseEvent, useCallback, useEffect } from 'react';
+import { Clock, Radio, Loader2 } from 'lucide-react';
 
 interface Poll {
   id: string;
@@ -19,28 +18,27 @@ interface Poll {
   creator_username?: string | null;
 }
 
-interface Demographics {
-  gender: Record<string, { a: number; b: number }>;
-  age: Record<string, { a: number; b: number }>;
-  country: Record<string, { a: number; b: number }>;
+interface VoteResult {
+  choice: 'A' | 'B';
+  percentA: number;
+  percentB: number;
+  totalVotes: number;
 }
 
 interface PollCardProps {
   poll: Poll;
   onSwipe: (direction: 'left' | 'right') => void;
   isAnimating: 'left' | 'right' | null;
-  liveVotes?: { a: number; b: number; demographics?: Demographics };
-  hasVoted?: boolean;
-  showDemographics?: boolean;
-  showCreator?: boolean;
+  result?: VoteResult | null;
+  onResultDone?: () => void;
 }
 
-const SWIPE_THRESHOLD = 80; // px needed for deliberate swipe
-const VELOCITY_THRESHOLD = 0.4; // px/ms for fast flick
-const MAX_ROTATION = 12; // degrees at full drag
+const SWIPE_THRESHOLD = 80;
+const VELOCITY_THRESHOLD = 0.4;
+const MAX_ROTATION = 12;
+const RESULT_DISPLAY_MS = 1200;
 
-export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVoted, showDemographics = false }: PollCardProps) {
-  const { user } = useAuth();
+export default function PollCard({ poll, onSwipe, isAnimating, result, onResultDone }: PollCardProps) {
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [imageALoaded, setImageALoaded] = useState(false);
@@ -56,21 +54,29 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
     setImageBLoaded(false);
   }
 
+  // Auto-advance after result is shown for 1.2s
+  useEffect(() => {
+    if (!result || !onResultDone) return;
+    const timer = setTimeout(onResultDone, RESULT_DISPLAY_MS);
+    return () => clearTimeout(timer);
+  }, [result, onResultDone]);
+
+  const hasResult = !!result;
+
   const handleStart = useCallback((clientX: number) => {
-    if (hasVoted) return;
+    if (hasResult) return;
     setIsDragging(true);
     startX.current = clientX;
     startTime.current = Date.now();
-  }, [hasVoted]);
+  }, [hasResult]);
 
   const handleMove = useCallback((clientX: number) => {
-    if (!isDragging || hasVoted) return;
-    const diff = clientX - startX.current;
-    setDragOffset(diff);
-  }, [isDragging, hasVoted]);
+    if (!isDragging || hasResult) return;
+    setDragOffset(clientX - startX.current);
+  }, [isDragging, hasResult]);
 
   const handleEnd = useCallback(() => {
-    if (!isDragging || hasVoted) return;
+    if (!isDragging || hasResult) return;
     setIsDragging(false);
 
     const elapsed = Date.now() - startTime.current;
@@ -82,28 +88,20 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
     } else if (dragOffset < -SWIPE_THRESHOLD || (isFastFlick && dragOffset < 0)) {
       onSwipe('left');
     }
-
-    // Snap back
     setDragOffset(0);
-  }, [isDragging, hasVoted, dragOffset, onSwipe]);
+  }, [isDragging, hasResult, dragOffset, onSwipe]);
 
   const handleTouchStart = (e: TouchEvent) => handleStart(e.touches[0].clientX);
   const handleTouchMove = (e: TouchEvent) => {
     handleMove(e.touches[0].clientX);
-    // Prevent page scroll during horizontal drag
-    if (Math.abs(dragOffset) > 10) {
-      e.preventDefault();
-    }
+    if (Math.abs(dragOffset) > 10) e.preventDefault();
   };
   const handleMouseDown = (e: MouseEvent) => { e.preventDefault(); handleStart(e.clientX); };
   const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX);
 
-  // Smooth rotation capped at MAX_ROTATION
   const normalizedOffset = Math.min(Math.abs(dragOffset), 200) / 200;
   const rotation = Math.sign(dragOffset) * normalizedOffset * MAX_ROTATION;
   const opacity = 1 - normalizedOffset * 0.3;
-
-  // Highlight intensity based on drag distance
   const highlightIntensity = Math.min(Math.abs(dragOffset) / SWIPE_THRESHOLD, 1);
 
   const getAnimationClass = () => {
@@ -115,27 +113,28 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
   const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
   const isLive = !isExpired && poll.is_daily_poll;
 
-  const totalLiveVotes = (liveVotes?.a || 0) + (liveVotes?.b || 0);
-  const livePercentA = totalLiveVotes > 0 ? Math.round((liveVotes?.a || 0) / totalLiveVotes * 100) : 50;
-  const livePercentB = totalLiveVotes > 0 ? Math.round((liveVotes?.b || 0) / totalLiveVotes * 100) : 50;
+  // Result calculations
+  const userPercent = result ? (result.choice === 'A' ? result.percentA : result.percentB) : 0;
+  const isWinnerA = result ? result.percentA >= result.percentB : true;
+  const userPickedWinner = result ? (result.choice === 'A' && isWinnerA) || (result.choice === 'B' && !isWinnerA) : false;
 
   return (
     <div
       ref={cardRef}
-      className={`w-full max-w-md mx-auto select-none ${hasVoted ? '' : 'cursor-grab active:cursor-grabbing'} ${getAnimationClass()}`}
+      className={`w-full max-w-md mx-auto select-none ${hasResult ? '' : 'cursor-grab active:cursor-grabbing'} ${getAnimationClass()}`}
       style={{
-        transform: isAnimating ? undefined : `translateX(${dragOffset}px) rotate(${rotation}deg)`,
-        opacity: isAnimating ? undefined : opacity,
+        transform: isAnimating ? undefined : hasResult ? 'none' : `translateX(${dragOffset}px) rotate(${rotation}deg)`,
+        opacity: isAnimating ? undefined : hasResult ? 1 : opacity,
         transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.35s ease-out',
         willChange: isDragging ? 'transform' : 'auto',
       }}
-      onTouchStart={hasVoted ? undefined : handleTouchStart}
-      onTouchMove={hasVoted ? undefined : handleTouchMove}
-      onTouchEnd={hasVoted ? undefined : handleEnd}
-      onMouseDown={hasVoted ? undefined : handleMouseDown}
-      onMouseMove={hasVoted ? undefined : handleMouseMove}
-      onMouseUp={hasVoted ? undefined : handleEnd}
-      onMouseLeave={hasVoted ? undefined : () => isDragging && handleEnd()}
+      onTouchStart={hasResult ? undefined : handleTouchStart}
+      onTouchMove={hasResult ? undefined : handleTouchMove}
+      onTouchEnd={hasResult ? undefined : handleEnd}
+      onMouseDown={hasResult ? undefined : handleMouseDown}
+      onMouseMove={hasResult ? undefined : handleMouseMove}
+      onMouseUp={hasResult ? undefined : handleEnd}
+      onMouseLeave={hasResult ? undefined : () => isDragging && handleEnd()}
     >
       <div className="bg-poll-card rounded-2xl p-3 shadow-card overflow-hidden">
         {/* Question */}
@@ -149,10 +148,12 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
           <div
             className="relative rounded-2xl overflow-hidden transition-all duration-150"
             style={{
-              transform: dragOffset < -30 ? `scale(${1 + highlightIntensity * 0.05})` : 'scale(1)',
-              boxShadow: dragOffset < -30
-                ? `0 0 ${highlightIntensity * 20}px rgba(var(--accent-rgb, 0,200,150), ${highlightIntensity * 0.4})`
-                : 'none',
+              transform: !hasResult && dragOffset < -30 ? `scale(${1 + highlightIntensity * 0.05})` : 'scale(1)',
+              boxShadow: !hasResult && dragOffset < -30
+                ? `0 0 ${highlightIntensity * 20}px hsl(var(--accent) / ${highlightIntensity * 0.4})`
+                : hasResult && result?.choice === 'A'
+                  ? '0 0 15px hsl(var(--accent) / 0.4)'
+                  : 'none',
             }}
           >
             <div className="aspect-[4/5] bg-background/10 rounded-2xl overflow-hidden relative">
@@ -174,21 +175,35 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
                   />
                 </>
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center p-4">
-                  <span className="text-white text-center font-bold text-base leading-tight">{poll.option_a}</span>
+                <div className="w-full h-full bg-gradient-to-br from-option-a to-option-a/80 flex items-center justify-center p-4">
+                  <span className="text-option-a-foreground text-center font-bold text-base leading-tight">{poll.option_a}</span>
+                </div>
+              )}
+
+              {/* Result overlay on image */}
+              {hasResult && (
+                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center animate-fade-in">
+                  <span className="text-3xl font-bold text-white">{result!.percentA}%</span>
+                  {result?.choice === 'A' && (
+                    <span className="text-xs font-semibold text-accent mt-1">Your vote</span>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Selection indicator */}
-            {dragOffset < -30 && (
+            {/* Selection indicator during drag */}
+            {!hasResult && dragOffset < -30 && (
               <div
                 className="absolute inset-0 rounded-2xl border-4 border-accent pointer-events-none"
                 style={{ opacity: highlightIntensity }}
               />
             )}
+            {/* Highlight chosen option after vote */}
+            {hasResult && result?.choice === 'A' && (
+              <div className="absolute inset-0 rounded-2xl border-3 border-accent pointer-events-none" />
+            )}
 
-            {poll.image_a_url && (
+            {poll.image_a_url && !hasResult && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 pt-8">
                 <p className="text-white text-sm font-bold truncate drop-shadow-lg">{poll.option_a}</p>
               </div>
@@ -199,10 +214,12 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
           <div
             className="relative rounded-2xl overflow-hidden transition-all duration-150"
             style={{
-              transform: dragOffset > 30 ? `scale(${1 + highlightIntensity * 0.05})` : 'scale(1)',
-              boxShadow: dragOffset > 30
-                ? `0 0 ${highlightIntensity * 20}px rgba(234,179,8, ${highlightIntensity * 0.4})`
-                : 'none',
+              transform: !hasResult && dragOffset > 30 ? `scale(${1 + highlightIntensity * 0.05})` : 'scale(1)',
+              boxShadow: !hasResult && dragOffset > 30
+                ? `0 0 ${highlightIntensity * 20}px hsl(var(--warning) / ${highlightIntensity * 0.4})`
+                : hasResult && result?.choice === 'B'
+                  ? '0 0 15px hsl(var(--warning) / 0.4)'
+                  : 'none',
             }}
           >
             <div className="aspect-[4/5] bg-background/10 rounded-2xl overflow-hidden relative">
@@ -224,20 +241,33 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
                   />
                 </>
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center p-4">
-                  <span className="text-white text-center font-bold text-base leading-tight">{poll.option_b}</span>
+                <div className="w-full h-full bg-gradient-to-br from-option-b to-option-b/80 flex items-center justify-center p-4">
+                  <span className="text-option-b-foreground text-center font-bold text-base leading-tight">{poll.option_b}</span>
+                </div>
+              )}
+
+              {/* Result overlay on image */}
+              {hasResult && (
+                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center animate-fade-in">
+                  <span className="text-3xl font-bold text-white">{result!.percentB}%</span>
+                  {result?.choice === 'B' && (
+                    <span className="text-xs font-semibold text-warning mt-1">Your vote</span>
+                  )}
                 </div>
               )}
             </div>
 
-            {dragOffset > 30 && (
+            {!hasResult && dragOffset > 30 && (
               <div
-                className="absolute inset-0 rounded-2xl border-4 border-yellow-400 pointer-events-none"
+                className="absolute inset-0 rounded-2xl border-4 border-warning pointer-events-none"
                 style={{ opacity: highlightIntensity }}
               />
             )}
+            {hasResult && result?.choice === 'B' && (
+              <div className="absolute inset-0 rounded-2xl border-3 border-warning pointer-events-none" />
+            )}
 
-            {poll.image_b_url && (
+            {poll.image_b_url && !hasResult && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 pt-8">
                 <p className="text-white text-sm font-bold truncate drop-shadow-lg">{poll.option_b}</p>
               </div>
@@ -245,16 +275,51 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
           </div>
         </div>
 
-        {/* Swipe hints */}
-        {!hasVoted && !isExpired && (
+        {/* Swipe hints - only before voting */}
+        {!hasResult && !isExpired && (
           <div className="flex justify-center gap-6 text-xs text-poll-card-foreground/50">
             <span>← {poll.option_a.length > 12 ? poll.option_a.slice(0, 12) + '…' : poll.option_a}</span>
             <span>{poll.option_b.length > 12 ? poll.option_b.slice(0, 12) + '…' : poll.option_b} →</span>
           </div>
         )}
 
+        {/* Inline result footer */}
+        {hasResult && (
+          <div className="animate-fade-in space-y-2 mt-1">
+            {/* Animated percentage bar */}
+            <div className="h-2 bg-muted rounded-full overflow-hidden flex">
+              <div
+                className="h-full bg-option-a rounded-l-full"
+                style={{ width: `${result!.percentA}%`, transition: 'width 0.7s ease-out' }}
+              />
+              <div
+                className="h-full bg-option-b rounded-r-full"
+                style={{ width: `${result!.percentB}%`, transition: 'width 0.7s ease-out' }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{result!.totalVotes.toLocaleString()} votes</span>
+              <span className={`font-semibold px-2 py-0.5 rounded-full text-[10px] ${
+                userPickedWinner ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+              }`}>
+                {userPickedWinner ? 'Majority' : 'Minority'}
+              </span>
+            </div>
+            <p className="text-xs text-center text-poll-card-foreground/80 font-medium">
+              You voted with {userPercent}% of users
+            </p>
+            {/* Progress bar for auto-advance */}
+            <div className="h-0.5 bg-border rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full"
+                style={{ animation: `progress-fill ${RESULT_DISPLAY_MS}ms linear forwards` }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Category + Live badge */}
-        {(poll.category || isLive) && !hasVoted && (
+        {(poll.category || isLive) && !hasResult && (
           <div className="flex items-center justify-center gap-2 mt-2">
             {isLive && (
               <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive/20 text-destructive">
@@ -270,93 +335,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
           </div>
         )}
 
-        {/* Results Bar (admin view) */}
-        {hasVoted && totalLiveVotes > 0 && (
-          <div className="space-y-2 mt-2">
-            <div className="flex justify-between text-xs font-bold text-poll-card-foreground">
-              <span>{livePercentA}%</span>
-              <span>{livePercentB}%</span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden flex">
-              <div className="h-full bg-option-a transition-all duration-500 ease-out" style={{ width: `${livePercentA}%` }} />
-              <div className="h-full bg-option-b transition-all duration-500 ease-out" style={{ width: `${livePercentB}%` }} />
-            </div>
-            <div className="text-[10px] text-center text-poll-card-foreground/60">
-              {totalLiveVotes} votes {isLive && <span className="text-destructive">• Live</span>}
-            </div>
-
-            {showDemographics && liveVotes?.demographics && (
-              <div className="space-y-2 pt-3 border-t border-border/30">
-                <h3 className="text-sm font-semibold text-poll-card-foreground">Analytics</h3>
-                {Object.keys(liveVotes.demographics.gender).length > 0 && (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs text-poll-card-foreground/70">
-                      <Users className="h-3 w-3" /><span>By Gender</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(liveVotes.demographics.gender).map(([gender, votes]) => {
-                        const total = votes.a + votes.b;
-                        const percentA = total > 0 ? Math.round((votes.a / total) * 100) : 0;
-                        return (
-                          <div key={gender} className="flex items-center gap-1.5 text-xs bg-background/20 px-2 py-1 rounded-full">
-                            <span className="capitalize text-foreground">{gender}:</span>
-                            <span className="font-medium text-option-a">{percentA}%</span>
-                            <span className="text-foreground/50">vs</span>
-                            <span className="font-medium text-option-b">{100 - percentA}%</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                {Object.keys(liveVotes.demographics.age).length > 0 && (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs text-poll-card-foreground/70">
-                      <Calendar className="h-3 w-3" /><span>By Age</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(liveVotes.demographics.age).map(([age, votes]) => {
-                        const total = votes.a + votes.b;
-                        const percentA = total > 0 ? Math.round((votes.a / total) * 100) : 0;
-                        return (
-                          <div key={age} className="flex items-center gap-1.5 text-xs bg-background/20 px-2 py-1 rounded-full">
-                            <span className="text-foreground">{age}:</span>
-                            <span className="font-medium text-option-a">{percentA}%</span>
-                            <span className="text-foreground/50">vs</span>
-                            <span className="font-medium text-option-b">{100 - percentA}%</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                {Object.keys(liveVotes.demographics.country).length > 0 && (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs text-poll-card-foreground/70">
-                      <MapPin className="h-3 w-3" /><span>By Country</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(liveVotes.demographics.country).slice(0, 5).map(([country, votes]) => {
-                        const total = votes.a + votes.b;
-                        const percentA = total > 0 ? Math.round((votes.a / total) * 100) : 0;
-                        return (
-                          <div key={country} className="flex items-center gap-1.5 text-xs bg-background/20 px-2 py-1 rounded-full">
-                            <span className="text-foreground">{country}:</span>
-                            <span className="font-medium text-option-a">{percentA}%</span>
-                            <span className="text-foreground/50">vs</span>
-                            <span className="font-medium text-option-b">{100 - percentA}%</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {isExpired && !hasVoted && (
+        {isExpired && !hasResult && (
           <div className="flex items-center justify-center gap-2 py-2 mt-2 rounded-xl bg-muted/50 text-poll-card-foreground/60">
             <Clock className="h-3 w-3" />
             <span className="text-xs font-medium">Expired</span>
