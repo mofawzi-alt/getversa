@@ -246,6 +246,11 @@
   to { opacity: 1; }
 }
 
+@keyframes progress-fill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
 /* Mobile-first touch optimizations */
 @media (hover: none) {
   .touch-manipulation {

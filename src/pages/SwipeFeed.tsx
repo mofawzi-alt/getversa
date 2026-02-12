@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import PollCard from '@/components/poll/PollCard';
 import ResultsOverlay from '@/components/poll/ResultsOverlay';
-import { Loader2, RefreshCw, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { Loader2, RefreshCw, Sparkles } from 'lucide-react';
 import ShareButton from '@/components/poll/ShareButton';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import { toast } from 'sonner';
@@ -90,7 +90,7 @@ export default function SwipeFeed() {
   const [votedPollIds, setVotedPollIds] = useState<Set<string>>(new Set());
   const [newPollsCount, setNewPollsCount] = useState(0);
   const [showSignupModal, setShowSignupModal] = useState(false);
-  const [autoAdvanceTimer, setAutoAdvanceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  
   
   const containerRef = useRef<HTMLDivElement>(null);
   const [slideOffset, setSlideOffset] = useState(0);
@@ -419,7 +419,6 @@ export default function SwipeFeed() {
   const handleSwipe = useCallback((direction: 'left' | 'right') => {
     if (!polls || currentIndex >= polls.length) return;
     
-    // Check guest limit before animating
     if (!user && getGuestVoteCount() >= GUEST_VOTE_LIMIT) {
       setShowSignupModal(true);
       return;
@@ -427,14 +426,12 @@ export default function SwipeFeed() {
     
     const poll = polls[currentIndex];
     
-    // Block voting on expired polls
     if (poll.ends_at && new Date(poll.ends_at) < new Date()) {
       toast.error('This poll has expired');
       handleNextPoll();
       return;
     }
     
-    // Block double voting
     if (votedPollIds.has(poll.id)) {
       handleNextPoll();
       return;
@@ -447,11 +444,27 @@ export default function SwipeFeed() {
     }, 300);
   }, [polls, currentIndex, voteMutation, user, votedPollIds]);
 
-  const handleNextPoll = () => {
+  const handleNextPoll = useCallback(() => {
     setResult(null);
     setAnimatingCard(null);
     setCurrentIndex(prev => prev + 1);
-  };
+  }, []);
+
+  // Keyboard support: ← for Option A, → for Option B
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (result) return; // Don't allow during results overlay
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handleSwipe('left');
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleSwipe('right');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSwipe, result]);
 
   const currentPoll = polls?.[currentIndex];
   const hasMorePolls = polls && currentIndex < polls.length;
