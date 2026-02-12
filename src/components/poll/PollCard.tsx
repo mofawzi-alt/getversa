@@ -302,15 +302,15 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               />
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{result!.totalVotes.toLocaleString()} votes</span>
+              <span className="text-muted-foreground">{result!.totalVotes.toLocaleString()} perspectives</span>
               <span className={`font-semibold px-2 py-0.5 rounded-full text-[10px] ${
                 userPickedWinner ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
               }`}>
                 {userPickedWinner ? 'Majority' : 'Minority'}
               </span>
             </div>
-            <p className="text-xs text-center text-poll-card-foreground/80 font-medium">
-              You voted with {userPercent}% of users
+            <p className="text-xs text-center text-poll-card-foreground/60 italic">
+              That says something about you.
             </p>
             {/* Progress bar for auto-advance */}
             <div className="h-0.5 bg-border rounded-full overflow-hidden">
@@ -322,20 +322,13 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           </div>
         )}
 
-        {/* Category + Live badge */}
-        {(poll.category || isLive) && !hasResult && (
+        {/* Live badge only - category hidden from user view */}
+        {isLive && !hasResult && (
           <div className="flex items-center justify-center gap-2 mt-2">
-            {isLive && (
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive/20 text-destructive">
-                <Radio className="h-2.5 w-2.5" />
-                <span className="text-[10px] font-bold uppercase">Live</span>
-              </div>
-            )}
-            {poll.category && (
-              <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-medium">
-                {poll.category}
-              </span>
-            )}
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive/20 text-destructive">
+              <Radio className="h-2.5 w-2.5" />
+              <span className="text-[10px] font-bold uppercase">Live</span>
+            </div>
           </div>
         )}
 

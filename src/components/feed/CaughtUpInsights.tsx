@@ -114,9 +114,9 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
     <div className="space-y-6 mt-6 animate-slide-up">
       {/* Caught up header */}
       <div className="text-center space-y-2">
-        <div className="text-5xl">✅</div>
-        <h2 className="text-2xl font-display font-bold">You're caught up!</h2>
-        <p className="text-sm text-muted-foreground">Here's what's happening on VERSA</p>
+        <div className="text-5xl">🪞</div>
+        <h2 className="text-2xl font-display font-bold">You've expressed your current dimensions.</h2>
+        <p className="text-sm text-muted-foreground">New perspectives coming soon.</p>
       </div>
 
       {/* Trending Today */}
@@ -164,7 +164,7 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            Your Voting Breakdown
+            Your Dimensions
           </h3>
 
           <div className="grid grid-cols-2 gap-3">
@@ -174,7 +174,7 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
             </div>
             <div className="glass rounded-2xl p-4 text-center">
               <div className="text-2xl font-bold">{data.userStats.totalVotes}</div>
-              <div className="text-[11px] text-muted-foreground mt-1">Total Votes</div>
+              <div className="text-[11px] text-muted-foreground mt-1">Perspectives Shared</div>
             </div>
             <div className="glass rounded-2xl p-4 text-center">
               <div className="text-2xl font-bold flex items-center justify-center gap-1">
@@ -191,11 +191,18 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
         </div>
       )}
 
+      {/* Progress indicator */}
+      {data?.userStats && (
+        <div className="text-center text-sm text-muted-foreground italic">
+          You've shared {data.userStats.totalVotes} perspective{data.userStats.totalVotes !== 1 ? 's' : ''}.
+        </div>
+      )}
+
       {/* Message */}
       <div className="glass rounded-2xl p-4 text-center">
         <Target className="h-5 w-5 text-primary mx-auto mb-2" />
         <p className="text-sm text-muted-foreground">
-          You are contributing to something bigger. Every vote shapes real insights.
+          Every choice reveals a dimension of who you are.
         </p>
       </div>
 
@@ -205,7 +212,7 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
         className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold"
       >
         <RefreshCw className="h-4 w-4" />
-        Check for new polls
+        Explore More Perspectives
       </button>
     </div>
   );
