@@ -59,6 +59,15 @@ interface VoteResult {
   percentA: number;
   percentB: number;
   totalVotes: number;
+  insights?: {
+    countryAlignment?: number;
+    countryName?: string;
+    ageGroupPreference?: string;
+    ageGroupPercent?: number;
+    activityPercentile?: number;
+    currentStreak?: number;
+    earnedBadges?: { name: string; description: string }[];
+  };
 }
 
 export default function SwipeFeed() {
@@ -313,9 +322,10 @@ export default function SwipeFeed() {
       
       if (voteError) throw voteError;
       
+      // Fetch all votes for this poll with voter demographics
       const { data: votes } = await supabase
         .from('votes')
-        .select('choice')
+        .select('choice, user_id')
         .eq('poll_id', pollId);
       
       const totalVotes = votes?.length || 0;
@@ -323,7 +333,69 @@ export default function SwipeFeed() {
       const percentA = totalVotes > 0 ? Math.round((aVotes / totalVotes) * 100) : 0;
       const percentB = totalVotes > 0 ? 100 - percentA : 0;
       
-      return { pollId, choice, percentA, percentB, totalVotes };
+      // Fetch demographic insights in parallel
+      const voterIds = votes?.map(v => v.user_id) || [];
+      const [votersRes, userRes, allUsersRes, badgesRes] = await Promise.all([
+        supabase.from('users').select('id, country, age_range').in('id', voterIds),
+        supabase.from('users').select('country, age_range, current_streak, total_days_active').eq('id', user.id).single(),
+        supabase.from('users').select('total_days_active').gt('total_days_active', 0),
+        supabase.from('user_badges')
+          .select('badge_id, badges(name, description)')
+          .eq('user_id', user.id)
+          .order('earned_at', { ascending: false })
+          .limit(5),
+      ]);
+      
+      const insights: VoteResult['insights'] = {};
+      const currentUser = userRes.data;
+      
+      // Country alignment: "You voted with X% of Egypt"
+      if (currentUser?.country && votersRes.data) {
+        const countryVoters = votersRes.data.filter(v => v.country === currentUser.country);
+        const countryVotesForChoice = countryVoters.filter(v => {
+          const vote = votes?.find(vt => vt.user_id === v.id);
+          return vote?.choice === choice;
+        });
+        if (countryVoters.length > 0) {
+          insights.countryAlignment = Math.round((countryVotesForChoice.length / countryVoters.length) * 100);
+          insights.countryName = currentUser.country;
+        }
+      }
+      
+      // Age group preference: "Your age group prefers Y"
+      if (currentUser?.age_range && votersRes.data) {
+        const ageVoters = votersRes.data.filter(v => v.age_range === currentUser.age_range);
+        if (ageVoters.length > 1) {
+          const ageAVotes = ageVoters.filter(v => {
+            const vote = votes?.find(vt => vt.user_id === v.id);
+            return vote?.choice === 'A';
+          }).length;
+          const ageBVotes = ageVoters.length - ageAVotes;
+          const poll = polls?.find(p => p.id === pollId);
+          insights.ageGroupPreference = ageAVotes >= ageBVotes ? (poll?.option_a || 'A') : (poll?.option_b || 'B');
+          insights.ageGroupPercent = Math.round((Math.max(ageAVotes, ageBVotes) / ageVoters.length) * 100);
+        }
+      }
+      
+      // Activity percentile
+      if (currentUser?.total_days_active && allUsersRes.data) {
+        const lessActive = allUsersRes.data.filter(u => (u.total_days_active || 0) < (currentUser.total_days_active || 0)).length;
+        insights.activityPercentile = allUsersRes.data.length > 0 
+          ? Math.round(((lessActive) / allUsersRes.data.length) * 100) 
+          : 50;
+      }
+      
+      // Streak
+      insights.currentStreak = currentUser?.current_streak || 0;
+      
+      // Recently earned badges
+      if (badgesRes.data && badgesRes.data.length > 0) {
+        insights.earnedBadges = badgesRes.data
+          .filter((b: any) => b.badges)
+          .map((b: any) => ({ name: b.badges.name, description: b.badges.description }));
+      }
+      
+      return { pollId, choice, percentA, percentB, totalVotes, insights };
     },
     onSuccess: (data) => {
       setResult(data);
