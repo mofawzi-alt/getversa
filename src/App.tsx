@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import SwipeFeed from "./pages/SwipeFeed";
 import PollHistory from "./pages/PollHistory";
+import PastPerspectives from "./pages/PastPerspectives";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import ProfileNotifications from "./pages/ProfileNotifications";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><Onboarding /></ProtectedRoute>} />
             <Route path="/" element={<SwipeFeed />} />
             <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
+            <Route path="/archive" element={<PastPerspectives />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
             <Route path="/profile/notifications" element={<ProtectedRoute><ProfileNotifications /></ProtectedRoute>} />

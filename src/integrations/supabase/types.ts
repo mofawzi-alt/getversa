@@ -503,6 +503,7 @@ export type Database = {
           is_daily_poll: boolean | null
           option_a: string
           option_b: string
+          poll_type: string
           question: string
           starts_at: string | null
           target_age_range: string | null
@@ -526,6 +527,7 @@ export type Database = {
           is_daily_poll?: boolean | null
           option_a: string
           option_b: string
+          poll_type?: string
           question: string
           starts_at?: string | null
           target_age_range?: string | null
@@ -549,6 +551,7 @@ export type Database = {
           is_daily_poll?: boolean | null
           option_a?: string
           option_b?: string
+          poll_type?: string
           question?: string
           starts_at?: string | null
           target_age_range?: string | null
