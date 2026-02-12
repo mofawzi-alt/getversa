@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Flame, RefreshCw, Users } from 'lucide-react';
+import { Flame, RefreshCw, Users, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
 interface TrendingInsight {
@@ -16,6 +17,7 @@ interface TrendingInsight {
 
 export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const { data: insights, isLoading } = useQuery({
     queryKey: ['trending-insights', user?.id],
@@ -137,6 +139,15 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
           );
         })}
       </div>
+
+      {/* Archive link */}
+      <button
+        onClick={() => navigate('/archive')}
+        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 transition-colors"
+      >
+        <Clock className="h-4 w-4" />
+        Past Perspectives
+      </button>
 
       {/* Refresh CTA */}
       <button

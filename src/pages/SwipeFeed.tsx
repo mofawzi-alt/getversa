@@ -178,9 +178,9 @@ export default function SwipeFeed() {
 
       let allPolls = fetchedPolls || [];
 
-      // Filter expired (safety check)
+      // Filter expired seasonal/campaign polls; core_index never expire
       allPolls = allPolls.filter(p => {
-        if (p.ends_at && new Date(p.ends_at) < new Date()) return false;
+        if ((p as any).poll_type !== 'core_index' && p.ends_at && new Date(p.ends_at) < new Date()) return false;
         return true;
       });
 
@@ -294,7 +294,7 @@ export default function SwipeFeed() {
 
     const poll = polls[currentIndex];
 
-    if (poll.ends_at && new Date(poll.ends_at) < new Date()) {
+    if (poll.ends_at && new Date(poll.ends_at) < new Date() && (poll as any).poll_type !== 'core_index') {
       toast.error('This poll has expired');
       handleNextPoll();
       return;
