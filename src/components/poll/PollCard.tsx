@@ -1,5 +1,6 @@
 import { useState, useRef, TouchEvent, MouseEvent, useCallback, useEffect } from 'react';
 import { Clock, Radio, Loader2 } from 'lucide-react';
+import { playSwipeSound, playResultSound } from '@/lib/sounds';
 
 interface Poll {
   id: string;
@@ -54,9 +55,10 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
     setImageBLoaded(false);
   }
 
-  // Auto-advance after result is shown for 1.2s
+  // Play result sound and auto-advance after 1.2s
   useEffect(() => {
     if (!result || !onResultDone) return;
+    playResultSound();
     const timer = setTimeout(onResultDone, RESULT_DISPLAY_MS);
     return () => clearTimeout(timer);
   }, [result, onResultDone]);
@@ -84,8 +86,10 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
     const isFastFlick = velocity > VELOCITY_THRESHOLD && Math.abs(dragOffset) > 40;
 
     if (dragOffset > SWIPE_THRESHOLD || (isFastFlick && dragOffset > 0)) {
+      playSwipeSound();
       onSwipe('right');
     } else if (dragOffset < -SWIPE_THRESHOLD || (isFastFlick && dragOffset < 0)) {
+      playSwipeSound();
       onSwipe('left');
     }
     setDragOffset(0);
