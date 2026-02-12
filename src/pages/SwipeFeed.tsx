@@ -2,10 +2,8 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import AppLayout from '@/components/layout/AppLayout';
 import PollCard from '@/components/poll/PollCard';
-import { Loader2, RefreshCw, Sparkles, SkipForward } from 'lucide-react';
-import ShareButton from '@/components/poll/ShareButton';
+import { Loader2, SkipForward, Home } from 'lucide-react';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -61,11 +59,8 @@ interface VoteResult {
   totalVotes: number;
 }
 
-// Rotate polls so no two consecutive polls share the same index_category
 function rotatePollsByCategory(polls: Poll[]): Poll[] {
   if (polls.length <= 1) return polls;
-
-  // Group by index_category
   const categories = ['identity', 'social', 'consumption', 'tech', 'cultural'];
   const buckets = new Map<string, Poll[]>();
   const uncategorized: Poll[] = [];
@@ -80,39 +75,28 @@ function rotatePollsByCategory(polls: Poll[]): Poll[] {
     }
   });
 
-  // If no categorized polls, return as-is
   if (buckets.size === 0) return polls;
 
-  // Round-robin interleave from each bucket
   const result: Poll[] = [];
   let lastCategory = '';
   const activeBuckets = [...buckets.keys()];
 
   while (activeBuckets.length > 0 || uncategorized.length > 0) {
     let placed = false;
-
-    // Try to pick from a different category than last
     for (let i = 0; i < activeBuckets.length; i++) {
       const cat = activeBuckets[i];
       if (cat === lastCategory && activeBuckets.length > 1) continue;
-
       const bucket = buckets.get(cat)!;
       result.push(bucket.shift()!);
       lastCategory = cat;
       placed = true;
-
-      if (bucket.length === 0) {
-        activeBuckets.splice(i, 1);
-      }
+      if (bucket.length === 0) activeBuckets.splice(i, 1);
       break;
     }
-
-    // If nothing placed (only one category left or empty), use uncategorized as spacer
     if (!placed && uncategorized.length > 0) {
       result.push(uncategorized.shift()!);
       lastCategory = '';
     } else if (!placed && activeBuckets.length > 0) {
-      // Only one category left, just drain it
       const cat = activeBuckets[0];
       const bucket = buckets.get(cat)!;
       result.push(bucket.shift()!);
@@ -122,8 +106,6 @@ function rotatePollsByCategory(polls: Poll[]): Poll[] {
       break;
     }
   }
-
-  // Append remaining uncategorized
   result.push(...uncategorized);
   return result;
 }
@@ -134,30 +116,22 @@ export default function SwipeFeed() {
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Check for a specific poll to load first (from Home tap)
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
   const [result, setResult] = useState<VoteResult | null>(null);
   const [animatingCard, setAnimatingCard] = useState<'left' | 'right' | null>(null);
   const [votedPollIds, setVotedPollIds] = useState<Set<string>>(new Set());
-  const [newPollsCount, setNewPollsCount] = useState(0);
   const [showSignupModal, setShowSignupModal] = useState(false);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Fetch polls - DB-level filtering, category rotation, 40-60 active polls
   const { data: polls, isLoading, refetch } = useQuery({
     queryKey: ['feed-polls', user?.id],
     queryFn: async () => {
-      const now = new Date().toISOString();
-
       let votedIds: string[] = [];
       if (user) {
         const { data: userVotes } = await supabase
           .from('votes')
           .select('poll_id')
           .eq('user_id', user.id);
-
         votedIds = userVotes?.map(v => v.poll_id) || [];
         setVotedPollIds(new Set(votedIds));
       }
@@ -167,14 +141,12 @@ export default function SwipeFeed() {
         .select('*')
         .eq('is_active', true)
         .neq('is_archived', true)
-        
         .order('is_daily_poll', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (votedIds.length > 0) {
         query = query.not('id', 'in', `(${votedIds.join(',')})`);
       }
-
       query = query.limit(60);
 
       const { data: fetchedPolls, error: pollsError } = await query;
@@ -182,7 +154,6 @@ export default function SwipeFeed() {
 
       let allPolls = fetchedPolls || [];
 
-      // Demographic targeting
       if (profile) {
         allPolls = allPolls.filter(p => {
           if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) return false;
@@ -192,10 +163,8 @@ export default function SwipeFeed() {
         });
       }
 
-      // Category rotation: reorder to avoid consecutive same index_category
       let rotated = rotatePollsByCategory(allPolls);
 
-      // If a specific poll was requested, move it to the front
       if (targetPollId) {
         const targetIdx = rotated.findIndex(p => p.id === targetPollId);
         if (targetIdx > 0) {
@@ -208,57 +177,39 @@ export default function SwipeFeed() {
     },
   });
 
-  // New polls realtime
+  // Realtime new polls
   useEffect(() => {
-    const pollsChannel = supabase
+    const ch = supabase
       .channel('polls-realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'polls' },
-        () => {
-          setNewPollsCount(prev => prev + 1);
-          queryClient.invalidateQueries({ queryKey: ['feed-polls'] });
-        }
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'polls' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['feed-polls'] });
+      })
       .subscribe();
-    return () => { supabase.removeChannel(pollsChannel); };
+    return () => { supabase.removeChannel(ch); };
   }, [queryClient]);
 
-  const handleViewNewPolls = useCallback(() => {
-    setNewPollsCount(0);
-    setCurrentIndex(0);
-    refetch();
-  }, [refetch]);
-
-  // Lean vote mutation - only fetches percentages and total count
   const voteMutation = useMutation({
     mutationFn: async ({ pollId, choice }: { pollId: string; choice: 'A' | 'B' }) => {
-      // Guest mode
       if (!user) {
         const count = incrementGuestVotes();
         if (count > GUEST_VOTE_LIMIT) {
           setShowSignupModal(true);
           throw new Error('GUEST_LIMIT');
         }
-        // Fake result for guest
-        const total = 1;
         const percentA = choice === 'A' ? 100 : 0;
-        const percentB = 100 - percentA;
         if (count >= GUEST_VOTE_LIMIT) {
           setTimeout(() => setShowSignupModal(true), 2000);
         }
-        return { pollId, choice, percentA, percentB, totalVotes: total };
+        return { pollId, choice, percentA, percentB: 100 - percentA, totalVotes: 1 };
       }
 
-      if (votedPollIds.has(pollId)) {
-        throw new Error('ALREADY_VOTED');
-      }
+      if (votedPollIds.has(pollId)) throw new Error('ALREADY_VOTED');
 
       const { error: voteError } = await supabase
         .from('votes')
         .insert({ poll_id: pollId, user_id: user.id, choice });
-
       if (voteError) throw voteError;
 
-      // Lean fetch: only vote counts
       const { data: votes } = await supabase
         .from('votes')
         .select('choice')
@@ -267,52 +218,35 @@ export default function SwipeFeed() {
       const totalVotes = votes?.length || 0;
       const aVotes = votes?.filter(v => v.choice === 'A').length || 0;
       const percentA = totalVotes > 0 ? Math.round((aVotes / totalVotes) * 100) : 0;
-      const percentB = totalVotes > 0 ? 100 - percentA : 0;
-
-      return { pollId, choice, percentA, percentB, totalVotes };
+      return { pollId, choice, percentA, percentB: totalVotes > 0 ? 100 - percentA : 0, totalVotes };
     },
     onSuccess: (data) => {
       setResult(data);
-      setAnimatingCard(null); // Stop card exit animation, freeze in place
+      setAnimatingCard(null);
       setVotedPollIds(prev => new Set([...prev, data.pollId]));
     },
     onError: (error: any) => {
       setAnimatingCard(null);
       if (error.message === 'GUEST_LIMIT') return;
-      if (error.message === 'ALREADY_VOTED') {
+      if (error.message === 'ALREADY_VOTED' || error.message?.includes('duplicate')) {
         toast.error('You already voted on this poll');
         handleNextPoll();
         return;
       }
-      if (error.message?.includes('duplicate')) {
-        toast.error('You already voted on this poll');
-        handleNextPoll();
-      } else {
-        toast.error('Failed to vote');
-      }
+      toast.error('Failed to vote');
     },
   });
 
   const handleSwipe = useCallback((direction: 'left' | 'right') => {
     if (!polls || currentIndex >= polls.length || result) return;
-
     if (!user && getGuestVoteCount() >= GUEST_VOTE_LIMIT) {
       setShowSignupModal(true);
       return;
     }
-
     const poll = polls[currentIndex];
-
-    
-
-    if (votedPollIds.has(poll.id)) {
-      handleNextPoll();
-      return;
-    }
-
+    if (votedPollIds.has(poll.id)) { handleNextPoll(); return; }
     const choice = direction === 'right' ? 'B' : 'A';
     setAnimatingCard(direction);
-    // Fire vote immediately, card will freeze when result arrives
     voteMutation.mutate({ pollId: poll.id, choice });
   }, [polls, currentIndex, voteMutation, user, votedPollIds, result]);
 
@@ -329,17 +263,11 @@ export default function SwipeFeed() {
     setCurrentIndex(prev => prev + 1);
   }, []);
 
-  // Keyboard support: ← for Option A, → for Option B
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (result) return;
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        handleSwipe('left');
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        handleSwipe('right');
-      }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); handleSwipe('left'); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); handleSwipe('right'); }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -347,85 +275,76 @@ export default function SwipeFeed() {
 
   const currentPoll = polls?.[currentIndex];
   const hasMorePolls = polls && currentIndex < polls.length;
+  const totalPolls = polls?.length || 0;
+  const progress = totalPolls > 0 ? ((currentIndex) / totalPolls) * 100 : 0;
 
+  // Full-screen immersive loading
   if (isLoading) {
     return (
-      <AppLayout>
-        <div className="min-h-screen flex items-center justify-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading perspectives…</p>
         </div>
-      </AppLayout>
+      </div>
     );
   }
 
+  // Full-screen immersive layout — no AppLayout wrapper
   return (
-    <AppLayout>
-      <div className="min-h-screen flex flex-col p-4 pb-24">
-        {/* New Polls Banner */}
-        {newPollsCount > 0 && (
+    <div className="fixed inset-0 z-40 flex flex-col bg-background">
+      {/* Minimal top bar */}
+      {hasMorePolls && (
+        <div className="safe-area-top px-4 pt-3 pb-2 flex items-center justify-between">
+          <span className="text-xs text-muted-foreground font-medium">
+            {currentIndex + 1} / {totalPolls}
+          </span>
+          {/* Thin progress bar */}
+          <div className="flex-1 mx-3 h-1 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
           <button
-            onClick={handleViewNewPolls}
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary/90 transition-all"
+            onClick={handleSkip}
+            className="flex items-center gap-1 text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors"
           >
-            <Sparkles className="h-4 w-4" />
-            {newPollsCount === 1 ? '1 new poll!' : `${newPollsCount} new polls!`}
+            <SkipForward className="h-3.5 w-3.5" />
+            Skip
           </button>
-        )}
-
-        {/* Header */}
-        <header className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-display font-bold text-gradient">VERSA</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            {currentPoll && !result && (
-              <ShareButton
-                pollId={currentPoll.id}
-                pollQuestion={currentPoll.question}
-                optionA={currentPoll.option_a}
-                optionB={currentPoll.option_b}
-                variant="icon"
-              />
-            )}
-            <button
-              onClick={() => { setNewPollsCount(0); setCurrentIndex(0); setResult(null); refetch(); }}
-              className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors relative"
-            >
-              <RefreshCw className="h-5 w-5 text-foreground/80" />
-            </button>
-          </div>
-        </header>
-
-        {/* Poll Cards */}
-        <div
-          ref={containerRef}
-          className="relative flex items-start justify-center overflow-visible pt-2"
-        >
-          {hasMorePolls && currentPoll ? (
-            <div className="w-full flex flex-col items-center">
-              <PollCard
-                key={currentPoll.id}
-                poll={currentPoll}
-                onSwipe={handleSwipe}
-                isAnimating={result ? null : animatingCard}
-                result={result && result.pollId === currentPoll.id ? result : null}
-                onResultDone={handleNextPoll}
-              />
-              {/* Skip button - only visible before voting */}
-              {!result && (
-                <button
-                  onClick={handleSkip}
-                  className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors py-2 px-4"
-                >
-                  <SkipForward className="h-3.5 w-3.5" />
-                  Skip
-                </button>
-              )}
-            </div>
-          ) : (
-            <CaughtUpInsights onRefresh={() => { setCurrentIndex(0); setResult(null); refetch(); }} />
-          )}
         </div>
+      )}
+
+      {/* Main content area */}
+      <div className="flex-1 flex items-center justify-center px-4 pb-6 overflow-hidden">
+        {hasMorePolls && currentPoll ? (
+          <div className="w-full max-w-md">
+            <PollCard
+              key={currentPoll.id}
+              poll={currentPoll}
+              onSwipe={handleSwipe}
+              isAnimating={result ? null : animatingCard}
+              result={result && result.pollId === currentPoll.id ? result : null}
+              onResultDone={handleNextPoll}
+            />
+          </div>
+        ) : (
+          /* Caught up state */
+          <div className="w-full max-w-md overflow-y-auto max-h-full pb-8 scrollbar-hide">
+            <CaughtUpInsights onRefresh={() => { setCurrentIndex(0); setResult(null); refetch(); }} />
+            <div className="mt-4 px-2">
+              <Button
+                onClick={() => navigate('/')}
+                variant="outline"
+                className="w-full gap-2 h-12 rounded-xl border-border"
+              >
+                <Home className="h-4 w-4" />
+                Back to Home
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Guest Signup Modal */}
@@ -454,6 +373,6 @@ export default function SwipeFeed() {
           </div>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </div>
   );
 }
