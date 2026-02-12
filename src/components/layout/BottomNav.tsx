@@ -1,12 +1,17 @@
 import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Bell, User } from 'lucide-react';
+import { Home, Bell, User, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-const navItems = [
+const authNavItems = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/notifications', icon: Bell, label: 'Alerts' },
   { path: '/profile', icon: User, label: 'Profile' },
+];
+
+const guestNavItems = [
+  { path: '/', icon: Home, label: 'Home' },
+  { path: '/auth', icon: LogIn, label: 'Sign In' },
 ];
 
 const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
@@ -14,8 +19,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Show minimal nav for guests (only Home)
-  const visibleItems = user ? navItems : navItems.filter(item => item.path === '/');
+  const visibleItems = user ? authNavItems : guestNavItems;
 
   return (
     <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-nav border-t border-border/40 safe-area-bottom z-50">
