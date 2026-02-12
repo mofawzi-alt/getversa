@@ -1,50 +1,86 @@
 import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Bell, User, LogIn } from 'lucide-react';
+import { Home, User, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-
-const authNavItems = [
-  { path: '/', icon: Home, label: 'Home' },
-  { path: '/notifications', icon: Bell, label: 'Alerts' },
-  { path: '/profile', icon: User, label: 'Profile' },
-];
-
-const guestNavItems = [
-  { path: '/', icon: Home, label: 'Home' },
-  { path: '/auth', icon: LogIn, label: 'Sign In' },
-];
 
 const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const visibleItems = user ? authNavItems : guestNavItems;
+  if (!user) {
+    return (
+      <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-nav border-t border-border/40 safe-area-bottom z-50">
+        <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
+          <NavButton path="/" icon={Home} label="Home" active={location.pathname === '/'} onClick={() => navigate('/')} />
+          <NavButton path="/auth" icon={LogIn} label="Sign In" active={location.pathname === '/auth'} onClick={() => navigate('/auth')} />
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-nav border-t border-border/40 safe-area-bottom z-50">
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
-        {visibleItems.map(({ path, icon: Icon, label }) => {
-          const isActive = location.pathname === path;
-          
-          return (
-            <button
-              key={path}
-              onClick={() => navigate(path)}
-              className={`flex flex-col items-center gap-1 px-3 py-2 transition-all ${
-                isActive
-                  ? 'text-primary'
-                  : 'text-card-foreground/70 hover:text-card-foreground'
-              }`}
-            >
-              <Icon className={`h-5 w-5 ${isActive ? 'scale-110' : ''} transition-transform`} />
-              <span className="text-[10px] font-medium">{label}</span>
-            </button>
-          );
-        })}
+        {/* Home */}
+        <NavButton
+          path="/"
+          icon={Home}
+          label="Home"
+          active={location.pathname === '/'}
+          onClick={() => navigate('/')}
+        />
+
+        {/* Vote - center, highlighted */}
+        <button
+          onClick={() => navigate('/vote')}
+          className="flex flex-col items-center gap-0.5 -mt-5"
+        >
+          <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all ${
+            location.pathname === '/vote'
+              ? 'bg-primary shadow-primary/30'
+              : 'bg-primary/90 hover:bg-primary shadow-primary/20'
+          }`}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary-foreground">
+              <path d="M3 12h4l3 9 4-18 3 9h4" />
+            </svg>
+          </div>
+          <span className={`text-[10px] font-semibold ${
+            location.pathname === '/vote' ? 'text-primary' : 'text-card-foreground/70'
+          }`}>Vote</span>
+        </button>
+
+        {/* Profile */}
+        <NavButton
+          path="/profile"
+          icon={User}
+          label="Profile"
+          active={location.pathname === '/profile' || location.pathname.startsWith('/profile/')}
+          onClick={() => navigate('/profile')}
+        />
       </div>
     </nav>
   );
 });
+
+function NavButton({ icon: Icon, label, active, onClick }: {
+  path: string;
+  icon: any;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1 px-3 py-2 transition-all ${
+        active ? 'text-primary' : 'text-card-foreground/70 hover:text-card-foreground'
+      }`}
+    >
+      <Icon className={`h-5 w-5 ${active ? 'scale-110' : ''} transition-transform`} />
+      <span className="text-[10px] font-medium">{label}</span>
+    </button>
+  );
+}
 
 export default BottomNav;

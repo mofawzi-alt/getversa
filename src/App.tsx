@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import Home from "./pages/Home";
 import SwipeFeed from "./pages/SwipeFeed";
 import PollHistory from "./pages/PollHistory";
 import PastPerspectives from "./pages/PastPerspectives";
@@ -31,7 +32,8 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><Onboarding /></ProtectedRoute>} />
-            <Route path="/" element={<SwipeFeed />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/vote" element={<SwipeFeed />} />
             <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
             <Route path="/archive" element={<PastPerspectives />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
