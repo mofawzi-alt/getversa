@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Flame, RefreshCw, Users } from 'lucide-react';
+import { Flame, RefreshCw, Users, TrendingUp } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -145,67 +145,63 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
             return (
               <div
                 key={insight.id}
-                className="rounded-2xl bg-card border border-border overflow-hidden animate-fade-in"
-                style={{ animationDelay: `${i * 80}ms` }}
+                className="rounded-2xl overflow-hidden bg-card border border-border/30 animate-fade-in"
+                style={{ animationDelay: `${i * 60}ms` }}
               >
-                {/* Images row */}
-                {(insight.image_a_url || insight.image_b_url) && (
-                  <div className="flex h-32">
-                    <div className="w-1/2 h-full relative overflow-hidden">
-                      {insight.image_a_url ? (
-                        <img src={insight.image_a_url} alt={insight.option_a} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-muted flex items-center justify-center">
-                          <span className="text-xs text-muted-foreground">{insight.option_a}</span>
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <span className="absolute bottom-1.5 left-2 text-[11px] font-bold text-white drop-shadow-lg">{insight.option_a}</span>
-                    </div>
-                    <div className="w-px bg-border shrink-0" />
-                    <div className="w-1/2 h-full relative overflow-hidden">
-                      {insight.image_b_url ? (
-                        <img src={insight.image_b_url} alt={insight.option_b} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-muted flex items-center justify-center">
-                          <span className="text-xs text-muted-foreground">{insight.option_b}</span>
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <span className="absolute bottom-1.5 right-2 text-[11px] font-bold text-white drop-shadow-lg text-right">{insight.option_b}</span>
+                {/* Split images with percentage overlays */}
+                <div className="flex h-40 relative">
+                  <div className="w-1/2 h-full relative overflow-hidden">
+                    {insight.image_a_url ? (
+                      <img src={insight.image_a_url} alt={insight.option_a} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-muted to-muted/60 flex items-center justify-center">
+                        <span className="text-xs text-muted-foreground font-medium">{insight.option_a}</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    {winnerIsA && insight.totalVotes > 0 && (
+                      <div className="absolute top-2 left-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-bold">
+                        <TrendingUp className="h-2.5 w-2.5" /> Winner
+                      </div>
+                    )}
+                    <div className="absolute bottom-2 left-2 right-1">
+                      <p className="text-white text-xs font-bold drop-shadow-lg truncate">{insight.option_a}</p>
+                      <span className="text-base font-bold text-primary drop-shadow-lg">{insight.percentA}%</span>
                     </div>
                   </div>
-                )}
-
-                {/* Results */}
-                <div className="p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-bold leading-snug text-foreground flex-1">
-                      {insight.question}
-                    </p>
-                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap shrink-0 pt-0.5">
-                      <Users className="h-3 w-3" />
-                      {insight.totalVotes.toLocaleString()}
-                    </span>
+                  <div className="absolute inset-y-0 left-1/2 w-px bg-background/15 z-10" />
+                  <div className="w-1/2 h-full relative overflow-hidden">
+                    {insight.image_b_url ? (
+                      <img src={insight.image_b_url} alt={insight.option_b} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-muted to-muted/60 flex items-center justify-center">
+                        <span className="text-xs text-muted-foreground font-medium">{insight.option_b}</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    {!winnerIsA && insight.totalVotes > 0 && (
+                      <div className="absolute top-2 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-accent/90 text-accent-foreground text-[9px] font-bold">
+                        <TrendingUp className="h-2.5 w-2.5" /> Winner
+                      </div>
+                    )}
+                    <div className="absolute bottom-2 left-1 right-2 text-right">
+                      <p className="text-white text-xs font-bold drop-shadow-lg truncate">{insight.option_b}</p>
+                      <span className="text-base font-bold text-accent drop-shadow-lg">{insight.percentB}%</span>
+                    </div>
                   </div>
+                </div>
 
-                  <div className="flex h-2 rounded-full overflow-hidden bg-muted/50">
-                    <div
-                      className="bg-option-a rounded-l-full"
-                      style={{ width: `${insight.percentA}%` }}
-                    />
-                    <div
-                      className="bg-option-b rounded-r-full"
-                      style={{ width: `${insight.percentB}%` }}
-                    />
-                  </div>
-
-                  <div className="flex justify-between text-xs">
-                    <span className={winnerIsA ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
-                      {insight.option_a} ({insight.percentA}%)
-                    </span>
-                    <span className={!winnerIsA ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
-                      {insight.option_b} ({insight.percentB}%)
+                {/* Card footer */}
+                <div className="px-3 py-2.5 flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-foreground truncate flex-1">{insight.question}</h3>
+                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                    {insight.category && (
+                      <span className="px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-primary/10 text-primary">
+                        {insight.category}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                      <Users className="h-2.5 w-2.5" /> {insight.totalVotes}
                     </span>
                   </div>
                 </div>
