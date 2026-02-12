@@ -105,20 +105,15 @@ export default function Home() {
         const r = resultsMap.get(p.id);
         return { ...p, totalVotes: (r?.total_votes as number) || 0 };
       });
-      const trending = [...enriched].filter(p => p.totalVotes > 0).sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 4).map(p => ({ ...p, tag: 'trending' as const }));
+      // Tag polls: top voted = trending, newest = fresh, rest with votes = popular
+      const sorted = [...enriched].sort((a, b) => b.totalVotes - a.totalVotes);
+      const trending = sorted.filter(p => p.totalVotes > 0).slice(0, 5).map(p => ({ ...p, tag: 'trending' as const }));
       const trendingIds = new Set(trending.map(p => p.id));
-      const fresh = enriched.filter(p => !trendingIds.has(p.id)).slice(0, 3).map(p => ({ ...p, tag: 'fresh' as const }));
+      const fresh = enriched.filter(p => !trendingIds.has(p.id)).slice(0, 4).map(p => ({ ...p, tag: 'fresh' as const }));
       const usedIds = new Set([...trendingIds, ...fresh.map(p => p.id)]);
-      const popular = [...enriched].filter(p => p.totalVotes > 0 && !usedIds.has(p.id)).sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 3).map(p => ({ ...p, tag: 'popular' as const }));
-      const mixed: PollCard[] = [];
-      const sources = [trending, fresh, popular];
-      const maxLen = Math.max(...sources.map(s => s.length));
-      for (let i = 0; i < maxLen; i++) {
-        for (const src of sources) {
-          if (src[i]) mixed.push(src[i]);
-        }
-      }
-      return mixed.slice(0, 10);
+      const popular = sorted.filter(p => p.totalVotes > 0 && !usedIds.has(p.id)).slice(0, 4).map(p => ({ ...p, tag: 'popular' as const }));
+      // Show grouped: trending first, then fresh, then popular
+      return [...trending, ...fresh, ...popular].slice(0, 12);
     },
     staleTime: 1000 * 60 * 5,
   });
