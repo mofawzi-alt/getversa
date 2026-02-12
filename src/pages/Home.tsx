@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowRight, Flame, Sparkles, TrendingUp, Users, Zap, Clock, TrendingUp as TrendUp } from 'lucide-react';
@@ -69,6 +69,19 @@ const tagConfig = {
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Realtime: instantly show new polls
+  useEffect(() => {
+    const ch = supabase
+      .channel('home-polls-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'polls' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+        queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [queryClient]);
 
   const { data: votedPollIds } = useQuery({
     queryKey: ['user-voted-ids', user?.id],
@@ -134,7 +147,7 @@ export default function Home() {
         if (popular[i]) result.push(popular[i]);
         if (fresh[i]) result.push(fresh[i]);
       }
-      return result.slice(0, 12);
+      return result.slice(0, 20);
     },
     staleTime: 1000 * 60 * 5,
   });
