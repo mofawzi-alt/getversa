@@ -16,6 +16,22 @@ const COUNTRIES = [
   'Jordan', 'Lebanon', 'Syria', 'Iraq', 'Palestine', 'Yemen', 'Egypt'
 ];
 
+const CITIES: Record<string, string[]> = {
+  'Saudi Arabia': ['Riyadh', 'Jeddah', 'Mecca', 'Medina', 'Dammam', 'Khobar', 'Dhahran', 'Tabuk', 'Abha', 'Taif', 'Jubail', 'Yanbu', 'Buraidah', 'Najran', 'Hail', 'Jazan'],
+  'United Arab Emirates': ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain', 'Al Ain'],
+  'Qatar': ['Doha', 'Al Wakrah', 'Al Khor', 'Lusail', 'Al Rayyan', 'Umm Salal'],
+  'Kuwait': ['Kuwait City', 'Hawalli', 'Salmiya', 'Farwaniya', 'Jahra', 'Ahmadi', 'Mangaf'],
+  'Bahrain': ['Manama', 'Muharraq', 'Riffa', 'Hamad Town', 'Isa Town', 'Sitra'],
+  'Oman': ['Muscat', 'Salalah', 'Sohar', 'Nizwa', 'Sur', 'Ibri', 'Barka', 'Rustaq'],
+  'Jordan': ['Amman', 'Zarqa', 'Irbid', 'Aqaba', 'Madaba', 'Salt', 'Jerash', 'Mafraq'],
+  'Lebanon': ['Beirut', 'Tripoli', 'Sidon', 'Tyre', 'Jounieh', 'Byblos', 'Zahle', 'Baalbek'],
+  'Syria': ['Damascus', 'Aleppo', 'Homs', 'Latakia', 'Hama', 'Tartus', 'Deir ez-Zor', 'Raqqa'],
+  'Iraq': ['Baghdad', 'Basra', 'Erbil', 'Mosul', 'Sulaymaniyah', 'Najaf', 'Karbala', 'Kirkuk', 'Duhok'],
+  'Palestine': ['Ramallah', 'Gaza', 'Nablus', 'Hebron', 'Bethlehem', 'Jenin', 'Tulkarm', 'Jericho'],
+  'Yemen': ['Sanaa', 'Aden', 'Taiz', 'Hodeidah', 'Mukalla', 'Ibb', 'Dhamar'],
+  'Egypt': ['Cairo', 'Alexandria', 'Giza', 'Sharm El Sheikh', 'Hurghada', 'Luxor', 'Aswan', 'Mansoura', 'Tanta', 'Port Said', 'Suez', 'Ismailia'],
+};
+
 const INTRO_SLIDES = [
   { title: 'Your opinion. Structured.', subtitle: 'VERSA captures what people really think — one vote at a time.' },
   { title: 'Vote in 3 seconds.', subtitle: 'Swipe or tap. No overthinking. Just pick your side.' },
@@ -33,7 +49,7 @@ export default function Onboarding() {
   const { user, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
-  const totalSteps = 7; // 3 intro + 4 profile (username, age, gender, country)
+  const totalSteps = 8; // 3 intro + 5 profile (username, age, gender, country, city)
 
   const handleComplete = async () => {
     if (!user) return;
@@ -41,6 +57,7 @@ export default function Onboarding() {
     if (!ageRange) { toast.error('Please select your age range'); return; }
     if (!gender) { toast.error('Please select your gender'); return; }
     if (!country) { toast.error('Please select your country'); return; }
+    if (!city) { toast.error('Please select your city'); return; }
 
     setLoading(true);
     try {
@@ -54,7 +71,7 @@ export default function Onboarding() {
           age_range: ageRange,
           gender,
           country,
-          city: city.trim() || null,
+          city,
         }, { onConflict: 'id' });
 
       if (profileError) {
@@ -82,6 +99,9 @@ export default function Onboarding() {
     if (step === 3 && !username.trim()) { toast.error('Please enter a username'); return; }
     if (step === 4 && !ageRange) { toast.error('Please select your age range'); return; }
     if (step === 5 && !gender) { toast.error('Please select your gender'); return; }
+    if (step === 6 && !country) { toast.error('Please select your country'); return; }
+    // Reset city when moving past country step if country changed
+    if (step === 6) { setCity(''); }
     setStep(step + 1);
   };
 
@@ -206,7 +226,7 @@ export default function Onboarding() {
               <h1 className="text-3xl font-display font-bold text-foreground mb-2">Where are you from?</h1>
               <p className="text-foreground/60">Required — see polls from your region</p>
             </div>
-            <Select value={country} onValueChange={setCountry}>
+            <Select value={country} onValueChange={(v) => { setCountry(v); setCity(''); }}>
               <SelectTrigger className="h-14 text-lg">
                 <SelectValue placeholder="Select your country" />
               </SelectTrigger>
@@ -216,17 +236,26 @@ export default function Onboarding() {
                 ))}
               </SelectContent>
             </Select>
-            <div className="space-y-2">
-              <Label htmlFor="city">City (optional)</Label>
-              <Input
-                id="city"
-                placeholder="Enter your city"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="text-lg h-14"
-                maxLength={50}
-              />
+          </div>
+        )}
+
+        {/* Step 7: City (REQUIRED) */}
+        {step === 7 && (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-display font-bold text-foreground mb-2">What city are you in?</h1>
+              <p className="text-foreground/60">Required — helps with local polls</p>
             </div>
+            <Select value={city} onValueChange={setCity}>
+              <SelectTrigger className="h-14 text-lg">
+                <SelectValue placeholder="Select your city" />
+              </SelectTrigger>
+              <SelectContent className="max-h-80">
+                {(CITIES[country] || []).map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
       </div>
@@ -239,7 +268,7 @@ export default function Onboarding() {
           </Button>
         )}
         
-        {step < 6 ? (
+        {step < 7 ? (
           <Button onClick={nextStep} className="flex-1 h-14 bg-gradient-primary hover:opacity-90">
             {isIntroSlide ? 'Next' : 'Continue'}
             <ArrowRight className="ml-2 h-5 w-5" />

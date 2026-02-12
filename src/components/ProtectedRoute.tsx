@@ -28,7 +28,7 @@ export default function ProtectedRoute({
   }
 
   // Require onboarding if missing required fields: username, age_range, gender, country
-  if (requireOnboarding && profile && (!profile.username || !profile.age_range || !profile.gender || !profile.country)) {
+  if (requireOnboarding && profile && (!profile.username || !profile.age_range || !profile.gender || !profile.country || !profile.city)) {
     return <Navigate to="/onboarding" replace />;
   }
 
