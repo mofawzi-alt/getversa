@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import HomeResultsModal from '@/components/home/HomeResultsModal';
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -138,6 +139,8 @@ export default function Home() {
     staleTime: 1000 * 60 * 5,
   });
 
+  const [modalPoll, setModalPoll] = useState<PollCard | null>(null);
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -153,7 +156,7 @@ export default function Home() {
   const handlePollTap = (poll: PollCard) => {
     const hasVoted = votedPollIds?.has(poll.id);
     if (hasVoted) {
-      navigate(`/history?pollId=${poll.id}`);
+      setModalPoll(poll);
     } else {
       navigate(`/vote?pollId=${poll.id}`);
     }
@@ -288,6 +291,13 @@ export default function Home() {
             {hasUnseen ? 'Start Voting' : 'Explore Perspectives'}
           </motion.button>
         </div>
+        <HomeResultsModal
+          open={!!modalPoll}
+          onOpenChange={(open) => !open && setModalPoll(null)}
+          poll={modalPoll}
+          imageA={modalPoll ? getFallbackImage(modalPoll.id, 0) : ''}
+          imageB={modalPoll ? getFallbackImage(modalPoll.id, 1) : ''}
+        />
       </div>
     </AppLayout>
   );
