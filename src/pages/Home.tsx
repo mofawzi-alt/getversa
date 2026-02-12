@@ -159,9 +159,13 @@ export default function Home() {
     }
   };
 
-  // Separate first unvoted poll as featured
-  const featuredPoll = polls?.find(p => !votedPollIds?.has(p.id));
-  const restPolls = polls?.filter(p => p !== featuredPoll) || [];
+  // New/unvoted polls first, then voted — newest first within each group
+  const allPolls = [...(polls || [])].sort((a, b) => {
+    const aVoted = votedPollIds?.has(a.id) ? 1 : 0;
+    const bVoted = votedPollIds?.has(b.id) ? 1 : 0;
+    if (aVoted !== bVoted) return aVoted - bVoted;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   return (
     <AppLayout>
@@ -172,83 +176,23 @@ export default function Home() {
           <p className="text-[10px] text-muted-foreground tracking-widest uppercase">Where perspectives collide</p>
         </header>
 
-        {/* Featured Active Poll — large hero card */}
-        {featuredPoll && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            onClick={() => handlePollTap(featuredPoll)}
-            className="mx-3 mt-2 mb-4 rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform relative"
-          >
-            {/* Large split images */}
-            <div className="flex h-56 relative">
-              <div className="w-1/2 h-full relative overflow-hidden">
-                <img
-                  src={featuredPoll.image_a_url || getFallbackImage(featuredPoll.id, 0)}
-                  alt={featuredPoll.option_a}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                <div className="absolute bottom-3 left-3 right-1">
-                  <p className="text-white text-sm font-bold drop-shadow-lg">{featuredPoll.option_a}</p>
-                  <span className="text-lg font-bold text-primary drop-shadow-lg">{featuredPoll.percentA}%</span>
-                </div>
-              </div>
-              <div className="absolute inset-y-0 left-1/2 w-px bg-background/20 z-10" />
-              <div className="w-1/2 h-full relative overflow-hidden">
-                <img
-                  src={featuredPoll.image_b_url || getFallbackImage(featuredPoll.id, 1)}
-                  alt={featuredPoll.option_b}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                <div className="absolute bottom-3 left-1 right-3 text-right">
-                  <p className="text-white text-sm font-bold drop-shadow-lg">{featuredPoll.option_b}</p>
-                  <span className="text-lg font-bold text-accent drop-shadow-lg">{featuredPoll.percentB}%</span>
-                </div>
-              </div>
-            </div>
-            {/* Info overlay */}
-            <div className="bg-card p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-display font-bold text-foreground">{featuredPoll.question}</h3>
-                <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
-                  <Users className="h-3 w-3" /> {featuredPoll.totalVotes}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-accent/15 text-accent">NEW</span>
-                {featuredPoll.category && (
-                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-primary/15 text-primary">{featuredPoll.category}</span>
-                )}
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => { e.stopPropagation(); navigate('/vote'); }}
-                  className="ml-auto inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold"
-                >
-                  <Zap className="h-3 w-3" /> Vote Now
-                </motion.button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
         {/* Section label */}
-        <div className="px-4 flex items-center gap-2 mb-2">
+        <div className="px-4 flex items-center gap-2 mt-2 mb-2">
           <Flame className="h-4 w-4 text-destructive" />
           <span className="text-xs font-display font-bold text-foreground uppercase tracking-wider">Trending</span>
         </div>
 
-        {/* Visual Poll Feed — image cards */}
+        {/* Visual Poll Feed — uniform cards, new polls on top */}
         <div className="px-3 space-y-3">
-          {restPolls.length > 0 ? (
-            restPolls.map((poll, i) => {
+          {allPolls.length > 0 ? (
+            allPolls.map((poll, i) => {
               const hasVoted = votedPollIds?.has(poll.id);
               const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
               const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
               const winnerIsA = poll.percentA >= poll.percentB;
               const Tag = tagConfig[poll.tag];
               const TagIcon = Tag.icon;
+              const isNew = !hasVoted;
 
               return (
                 <motion.div
@@ -296,6 +240,9 @@ export default function Home() {
                       <h3 className="text-xs font-bold text-foreground truncate">{poll.question}</h3>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                      {isNew && (
+                        <span className="px-1.5 py-0.5 rounded-full text-[8px] font-extrabold tracking-wider bg-accent/15 text-accent">NEW</span>
+                      )}
                       <motion.span
                         animate={Tag.pulse ? { scale: [1, 1.05, 1] } : {}}
                         transition={Tag.pulse ? { duration: 2, repeat: Infinity } : {}}
