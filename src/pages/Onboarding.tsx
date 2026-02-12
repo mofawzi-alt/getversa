@@ -44,19 +44,21 @@ export default function Onboarding() {
 
     setLoading(true);
     try {
+      // Upsert user profile (handles both new and existing users)
       const { error: profileError } = await supabase
         .from('users')
-        .update({
+        .upsert({
+          id: user.id,
+          email: user.email || '',
           username: username.trim(),
           age_range: ageRange,
           gender,
           country,
           city: city.trim() || null,
-        })
-        .eq('id', user.id);
+        }, { onConflict: 'id' });
 
       if (profileError) {
-        if (profileError.message.includes('duplicate')) {
+        if (profileError.message.includes('duplicate') && profileError.message.includes('username')) {
           toast.error('This username is already taken');
           setLoading(false);
           return;
@@ -64,7 +66,8 @@ export default function Onboarding() {
         throw profileError;
       }
 
-      await supabase.from('automation_settings').insert({ user_id: user.id });
+      // Upsert automation settings (ignore if exists)
+      await supabase.from('automation_settings').upsert({ user_id: user.id }, { onConflict: 'user_id' });
       await refreshProfile();
       toast.success('Welcome to VERSA!');
       navigate('/');
