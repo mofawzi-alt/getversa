@@ -105,7 +105,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
   return (
     <div
       ref={cardRef}
-      className={`w-full max-w-sm mx-auto ${hasVoted ? '' : 'cursor-grab active:cursor-grabbing'} ${getAnimationClass()}`}
+      className={`w-full max-w-md mx-auto ${hasVoted ? '' : 'cursor-grab active:cursor-grabbing'} ${getAnimationClass()}`}
       style={{
         transform: isAnimating ? undefined : `translateX(${dragOffset}px) rotate(${rotation}deg)`,
         opacity: isAnimating ? undefined : opacity,
