@@ -1,0 +1,1311 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
+  }
+  public: {
+    Tables: {
+      automation_settings: {
+        Row: {
+          created_at: string | null
+          daily_poll_reminder: boolean | null
+          id: string
+          reminder_time: string | null
+          sponsored_opt_in: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          daily_poll_reminder?: boolean | null
+          id?: string
+          reminder_time?: string | null
+          sponsored_opt_in?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          daily_poll_reminder?: boolean | null
+          id?: string
+          reminder_time?: string | null
+          sponsored_opt_in?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      badges: {
+        Row: {
+          badge_type: string
+          created_at: string | null
+          description: string
+          icon_url: string | null
+          id: string
+          name: string
+          points_reward: number | null
+          requirement_value: number | null
+        }
+        Insert: {
+          badge_type: string
+          created_at?: string | null
+          description: string
+          icon_url?: string | null
+          id?: string
+          name: string
+          points_reward?: number | null
+          requirement_value?: number | null
+        }
+        Update: {
+          badge_type?: string
+          created_at?: string | null
+          description?: string
+          icon_url?: string | null
+          id?: string
+          name?: string
+          points_reward?: number | null
+          requirement_value?: number | null
+        }
+        Relationships: []
+      }
+      campaign_polls: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          entity_name: string
+          id: string
+          poll_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          entity_name: string
+          id?: string
+          poll_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          entity_name?: string
+          id?: string
+          poll_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_polls_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "poll_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_polls_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_preset: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_preset?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_preset?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
+      challenges: {
+        Row: {
+          created_at: string | null
+          description: string
+          ends_at: string
+          goal_type: string
+          goal_value: number
+          id: string
+          is_active: boolean | null
+          reward_points: number | null
+          starts_at: string
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          ends_at: string
+          goal_type: string
+          goal_value: number
+          id?: string
+          is_active?: boolean | null
+          reward_points?: number | null
+          starts_at: string
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          ends_at?: string
+          goal_type?: string
+          goal_value?: number
+          id?: string
+          is_active?: boolean | null
+          reward_points?: number | null
+          starts_at?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      collaboration_requests: {
+        Row: {
+          brand_name: string
+          contact_email: string
+          created_at: string | null
+          id: string
+          message: string
+          requester_id: string
+          status: string | null
+        }
+        Insert: {
+          brand_name: string
+          contact_email: string
+          created_at?: string | null
+          id?: string
+          message: string
+          requester_id: string
+          status?: string | null
+        }
+        Update: {
+          brand_name?: string
+          contact_email?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          requester_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaboration_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorite_polls: {
+        Row: {
+          created_at: string | null
+          id: string
+          poll_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          poll_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          poll_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorite_polls_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      follows: {
+        Row: {
+          created_at: string | null
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          id: string
+          recipient_id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recipient_id: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string | null
+          data: Json | null
+          id: string
+          is_read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      poll_boosts: {
+        Row: {
+          boost_type: string
+          boost_value: number | null
+          created_at: string | null
+          ends_at: string
+          id: string
+          poll_id: string
+          sponsor_name: string
+          starts_at: string
+        }
+        Insert: {
+          boost_type: string
+          boost_value?: number | null
+          created_at?: string | null
+          ends_at: string
+          id?: string
+          poll_id: string
+          sponsor_name: string
+          starts_at: string
+        }
+        Update: {
+          boost_type?: string
+          boost_value?: number | null
+          created_at?: string | null
+          ends_at?: string
+          id?: string
+          poll_id?: string
+          sponsor_name?: string
+          starts_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_boosts_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      poll_campaigns: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      polls: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          ends_at: string | null
+          id: string
+          image_a_url: string | null
+          image_b_url: string | null
+          intent_tag: string | null
+          is_active: boolean | null
+          is_daily_poll: boolean | null
+          option_a: string
+          option_b: string
+          question: string
+          starts_at: string | null
+          target_age_range: string | null
+          target_country: string | null
+          target_gender: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          image_a_url?: string | null
+          image_b_url?: string | null
+          intent_tag?: string | null
+          is_active?: boolean | null
+          is_daily_poll?: boolean | null
+          option_a: string
+          option_b: string
+          question: string
+          starts_at?: string | null
+          target_age_range?: string | null
+          target_country?: string | null
+          target_gender?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          image_a_url?: string | null
+          image_b_url?: string | null
+          intent_tag?: string | null
+          is_active?: boolean | null
+          is_daily_poll?: boolean | null
+          option_a?: string
+          option_b?: string
+          question?: string
+          starts_at?: string | null
+          target_age_range?: string | null
+          target_country?: string | null
+          target_gender?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "polls_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_customizations: {
+        Row: {
+          badge_icon_url: string | null
+          created_at: string | null
+          id: string
+          name: string
+          theme_primary: string
+          theme_secondary: string
+        }
+        Insert: {
+          badge_icon_url?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          theme_primary: string
+          theme_secondary: string
+        }
+        Update: {
+          badge_icon_url?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          theme_primary?: string
+          theme_secondary?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          cost_points: number
+          created_at: string | null
+          description: string
+          external_url: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          partner_logo_url: string | null
+          partner_name: string | null
+          redemption_type: string | null
+          terms_conditions: string | null
+          title: string
+        }
+        Insert: {
+          cost_points: number
+          created_at?: string | null
+          description: string
+          external_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          partner_logo_url?: string | null
+          partner_name?: string | null
+          redemption_type?: string | null
+          terms_conditions?: string | null
+          title: string
+        }
+        Update: {
+          cost_points?: number
+          created_at?: string | null
+          description?: string
+          external_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          partner_logo_url?: string | null
+          partner_name?: string | null
+          redemption_type?: string | null
+          terms_conditions?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      sponsored_polls: {
+        Row: {
+          budget: number | null
+          campaign_end: string
+          campaign_start: string
+          created_at: string | null
+          id: string
+          poll_id: string
+          sponsor_logo_url: string | null
+          sponsor_name: string
+          target_age_range: string | null
+          target_country: string | null
+          target_gender: string | null
+        }
+        Insert: {
+          budget?: number | null
+          campaign_end: string
+          campaign_start: string
+          created_at?: string | null
+          id?: string
+          poll_id: string
+          sponsor_logo_url?: string | null
+          sponsor_name: string
+          target_age_range?: string | null
+          target_country?: string | null
+          target_gender?: string | null
+        }
+        Update: {
+          budget?: number | null
+          campaign_end?: string
+          campaign_start?: string
+          created_at?: string | null
+          id?: string
+          poll_id?: string
+          sponsor_logo_url?: string | null
+          sponsor_name?: string
+          target_age_range?: string | null
+          target_country?: string | null
+          target_gender?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsored_polls_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_plans: {
+        Row: {
+          analytics_access: boolean | null
+          created_at: string | null
+          demographic_targeting: boolean | null
+          description: string | null
+          export_data: boolean | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          max_polls_per_month: number | null
+          name: string
+          price_monthly: number
+        }
+        Insert: {
+          analytics_access?: boolean | null
+          created_at?: string | null
+          demographic_targeting?: boolean | null
+          description?: string | null
+          export_data?: boolean | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_polls_per_month?: number | null
+          name: string
+          price_monthly: number
+        }
+        Update: {
+          analytics_access?: boolean | null
+          created_at?: string | null
+          demographic_targeting?: boolean | null
+          description?: string | null
+          export_data?: boolean | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_polls_per_month?: number | null
+          name?: string
+          price_monthly?: number
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_id: string | null
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_challenges: {
+        Row: {
+          challenge_id: string
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          progress: number | null
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          progress?: number | null
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          progress?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenges_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_challenges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_customizations: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          profile_customization_id: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          profile_customization_id: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          profile_customization_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_customizations_profile_customization_id_fkey"
+            columns: ["profile_customization_id"]
+            isOneToOne: false
+            referencedRelation: "profile_customizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_customizations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_rewards: {
+        Row: {
+          created_at: string | null
+          id: string
+          partner_confirmation: string | null
+          redeemed_at: string | null
+          redemption_code: string | null
+          reward_id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          partner_confirmation?: string | null
+          redeemed_at?: string | null
+          redemption_code?: string | null
+          reward_id: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          partner_confirmation?: string | null
+          redeemed_at?: string | null
+          redemption_code?: string | null
+          reward_id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_rewards_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_rewards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_id: string | null
+          status: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_id?: string | null
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_id?: string | null
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          age_range: string | null
+          category_interests: string[] | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          current_streak: number | null
+          education_level: string | null
+          email: string
+          employment_status: string | null
+          gender: string | null
+          id: string
+          income_range: string | null
+          industry: string | null
+          last_vote_date: string | null
+          longest_streak: number | null
+          points: number | null
+          username: string | null
+        }
+        Insert: {
+          age_range?: string | null
+          category_interests?: string[] | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          current_streak?: number | null
+          education_level?: string | null
+          email: string
+          employment_status?: string | null
+          gender?: string | null
+          id: string
+          income_range?: string | null
+          industry?: string | null
+          last_vote_date?: string | null
+          longest_streak?: number | null
+          points?: number | null
+          username?: string | null
+        }
+        Update: {
+          age_range?: string | null
+          category_interests?: string[] | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          current_streak?: number | null
+          education_level?: string | null
+          email?: string
+          employment_status?: string | null
+          gender?: string | null
+          id?: string
+          income_range?: string | null
+          industry?: string | null
+          last_vote_date?: string | null
+          longest_streak?: number | null
+          points?: number | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      votes: {
+        Row: {
+          choice: string
+          created_at: string | null
+          id: string
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          choice: string
+          created_at?: string | null
+          id?: string
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          choice?: string
+          created_at?: string | null
+          id?: string
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      generate_redemption_code: { Args: never; Returns: string }
+      get_all_polls_for_history: {
+        Args: never
+        Returns: {
+          category: string
+          created_at: string
+          created_by: string
+          ends_at: string
+          id: string
+          image_a_url: string
+          image_b_url: string
+          is_active: boolean
+          is_daily_poll: boolean
+          option_a: string
+          option_b: string
+          question: string
+          starts_at: string
+        }[]
+      }
+      get_compatibility_score: {
+        Args: { user_a: string; user_b: string }
+        Returns: number
+      }
+      get_compatibility_trend: {
+        Args: { user_a: string; user_b: string }
+        Returns: {
+          older_score: number
+          overall_score: number
+          recent_score: number
+          trend: string
+          trend_change: number
+        }[]
+      }
+      get_friend_votes: {
+        Args: { p_poll_id: string; p_user_id: string }
+        Returns: {
+          choice: string
+          compatibility_score: number
+          friend_id: string
+          friend_username: string
+        }[]
+      }
+      get_friends_with_scores: {
+        Args: { p_user_id: string }
+        Returns: {
+          compatibility_score: number
+          friend_id: string
+          friend_points: number
+          friend_username: string
+          friendship_created_at: string
+        }[]
+      }
+      get_friends_with_trends: {
+        Args: { p_user_id: string }
+        Returns: {
+          compatibility_score: number
+          friend_id: string
+          friend_points: number
+          friend_username: string
+          friendship_created_at: string
+          recent_score: number
+          trend: string
+          trend_change: number
+        }[]
+      }
+      get_leaderboard: {
+        Args: { limit_count?: number; order_by?: string }
+        Returns: {
+          current_streak: number
+          id: string
+          longest_streak: number
+          points: number
+          username: string
+        }[]
+      }
+      get_poll_results: {
+        Args: { poll_ids: string[] }
+        Returns: {
+          percent_a: number
+          percent_b: number
+          poll_id: string
+          total_votes: number
+          votes_a: number
+          votes_b: number
+        }[]
+      }
+      get_public_profiles: {
+        Args: { user_ids?: string[] }
+        Returns: {
+          created_at: string
+          current_streak: number
+          id: string
+          longest_streak: number
+          points: number
+          username: string
+        }[]
+      }
+      get_shared_vote_history: {
+        Args: { user_a: string; user_b: string }
+        Returns: {
+          is_match: boolean
+          option_a: string
+          option_b: string
+          poll_id: string
+          question: string
+          user_a_choice: string
+          user_b_choice: string
+          voted_at: string
+        }[]
+      }
+      get_similar_voters: {
+        Args: { p_limit?: number; p_user_id: string }
+        Returns: {
+          matching_votes: number
+          points: number
+          shared_polls: number
+          similarity_score: number
+          user_id: string
+          username: string
+        }[]
+      }
+      get_user_badge_count: {
+        Args: { target_user_id: string }
+        Returns: {
+          badge_description: string
+          badge_id: string
+          badge_name: string
+          earned_at: string
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      redeem_reward: {
+        Args: {
+          p_cost_points: number
+          p_redemption_code: string
+          p_reward_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      search_users_by_username: {
+        Args: { current_user_id: string; search_term: string }
+        Returns: {
+          friendship_status: string
+          id: string
+          points: number
+          username: string
+        }[]
+      }
+    }
+    Enums: {
+      app_role: "admin" | "user" | "creator"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["admin", "user", "creator"],
+    },
+  },
+} as const

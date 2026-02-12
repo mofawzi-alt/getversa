@@ -1,0 +1,263 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* VERSA Brand Colors - Brighter Navy with Green Accents */
+    --background: 220 35% 28%;
+    --foreground: 210 40% 98%;
+
+    /* Navy cards */
+    --card: 220 33% 33%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 33% 35%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Bright Blue Primary */
+    --primary: 210 100% 60%;
+    --primary-foreground: 220 40% 15%;
+
+    --secondary: 220 30% 38%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 28% 40%;
+    --muted-foreground: 210 25% 75%;
+
+    /* Vibrant Lime Green Accent - for clickables */
+    --accent: 75 100% 55%;
+    --accent-foreground: 220 40% 15%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 30% 42%;
+    --input: 220 30% 35%;
+    --ring: 75 100% 55%;
+
+    --radius: 1rem;
+
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 45 95% 55%;
+    --warning-foreground: 220 40% 15%;
+
+    /* Poll Option Colors - Blue vs Lime */
+    --option-a: 210 100% 60%;
+    --option-a-foreground: 0 0% 100%;
+    --option-b: 75 100% 55%;
+    --option-b-foreground: 220 40% 15%;
+
+    /* Poll cards */
+    --poll-card: 220 33% 35%;
+    --poll-card-foreground: 210 40% 98%;
+
+    /* Nav */
+    --nav-bg: 220 35% 26%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 60%) 0%, hsl(200 90% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(75 100% 55%) 0%, hsl(85 95% 50%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(220 33% 35%) 0%, hsl(220 33% 31%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(210 100% 60% / 0.10) 0%, transparent 70%);
+
+    --shadow-glow: 0 0 50px hsl(75 100% 55% / 0.20);
+    --shadow-accent: 0 0 40px hsl(75 100% 55% / 0.30);
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.20);
+
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  .dark {
+    /* Dark mode - brighter navy with green accents on clickables */
+    --background: 220 35% 24%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 33% 30%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 33% 32%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 100% 62%;
+    --primary-foreground: 220 40% 15%;
+
+    --secondary: 220 30% 34%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 28% 36%;
+    --muted-foreground: 210 25% 70%;
+
+    --accent: 75 100% 58%;
+    --accent-foreground: 220 40% 15%;
+
+    --border: 220 30% 38%;
+    --input: 220 30% 32%;
+
+    --poll-card: 220 33% 32%;
+    --poll-card-foreground: 210 40% 98%;
+
+    --nav-bg: 220 35% 22%;
+
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.30);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: var(--font-body);
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-image: var(--gradient-glow);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .bg-poll-card {
+    background: hsl(var(--poll-card));
+    color: hsl(var(--poll-card-foreground));
+  }
+
+  .bg-nav {
+    background: hsl(var(--nav-bg));
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .glass {
+    @apply bg-card/90 backdrop-blur-xl border border-border/50 text-card-foreground;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.3s ease-out;
+  }
+
+  .animate-bounce-in {
+    animation: bounce-in 0.4s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  .swipe-card {
+    @apply transition-all duration-300 ease-out;
+    touch-action: pan-y;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px hsl(210 100% 56% / 0.3); }
+  50% { box-shadow: 0 0 40px hsl(210 100% 56% / 0.5); }
+}
+
+@keyframes slide-up {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from { 
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-in {
+  0% { 
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mobile-first touch optimizations */
+@media (hover: none) {
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+}
+
+/* Safe area for mobile devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}

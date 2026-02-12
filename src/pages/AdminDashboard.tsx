@@ -1,0 +1,1224 @@
+import { useState, useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  ArrowLeft, Plus, Loader2, BarChart3, Gift, 
+  Users, Bell, Sparkles, X, Check, Upload, Image, Trash2, Target,
+  Clock, RefreshCcw, Download, TrendingUp, Flame
+} from 'lucide-react';
+import { toast } from 'sonner';
+import PollAnalytics from '@/components/admin/PollAnalytics';
+import AdminRetentionAnalytics from '@/components/admin/AdminRetentionAnalytics';
+import AdminResponseTimeAnalytics from '@/components/admin/AdminResponseTimeAnalytics';
+import AdminAnalyticsExport from '@/components/admin/AdminAnalyticsExport';
+import InsightHighlights from '@/components/admin/InsightHighlights';
+import CampaignAnalytics from '@/components/admin/CampaignAnalytics';
+import CategoryAnalytics from '@/components/admin/CategoryAnalytics';
+
+export default function AdminDashboard() {
+  const { isAdmin, user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  
+  const [showPollForm, setShowPollForm] = useState(false);
+  const [showRewardForm, setShowRewardForm] = useState(false);
+  const [activeTab, setActiveTab] = useState('polls');
+  const [selectedPollId, setSelectedPollId] = useState<string | null>(null);
+
+  const handleInsightClick = (pollId: string) => {
+    setSelectedPollId(pollId);
+    setActiveTab('analytics');
+  };
+
+  if (!isAdmin) {
+    navigate('/');
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen p-4 pb-8 safe-area-top animate-slide-up">
+      {/* Header */}
+      <header className="flex items-center gap-4 mb-6">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <div>
+          <h1 className="text-2xl font-display font-bold">Admin Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Manage your app content</p>
+        </div>
+      </header>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1">
+          <TabsTrigger value="polls" className="text-xs px-4 py-2">Polls</TabsTrigger>
+          <TabsTrigger value="analytics" className="text-xs px-4 py-2">Analytics</TabsTrigger>
+          <TabsTrigger value="rewards" className="text-xs px-4 py-2">Rewards</TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs px-4 py-2">Notify</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="polls" className="space-y-4">
+          <PollsTab 
+            showForm={showPollForm} 
+            setShowForm={setShowPollForm} 
+            userId={user?.id}
+            onInsightClick={handleInsightClick}
+          />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-4">
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-secondary/50">
+              <TabsTrigger value="overview" className="text-xs px-3 py-1.5">Overview</TabsTrigger>
+              <TabsTrigger value="industry" className="text-xs px-3 py-1.5">Industry</TabsTrigger>
+              <TabsTrigger value="campaigns" className="text-xs px-3 py-1.5">Campaigns</TabsTrigger>
+              <TabsTrigger value="timing" className="text-xs px-3 py-1.5">Response Time</TabsTrigger>
+              <TabsTrigger value="retention" className="text-xs px-3 py-1.5">Retention</TabsTrigger>
+              <TabsTrigger value="export" className="text-xs px-3 py-1.5">Export</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview">
+              <PollAnalytics initialPollId={selectedPollId} />
+            </TabsContent>
+            
+            <TabsContent value="industry">
+              <CategoryAnalytics />
+            </TabsContent>
+            
+            <TabsContent value="campaigns">
+              <CampaignAnalytics />
+            </TabsContent>
+            <TabsContent value="timing">
+              <AdminResponseTimeAnalytics />
+            </TabsContent>
+            
+            <TabsContent value="retention">
+              <AdminRetentionAnalytics />
+            </TabsContent>
+            
+            <TabsContent value="export">
+              <AdminAnalyticsExport />
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+
+        <TabsContent value="rewards" className="space-y-4">
+          <RewardsTab 
+            showForm={showRewardForm} 
+            setShowForm={setShowRewardForm}
+          />
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-4">
+          <NotificationsTab />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+// Polls Tab
+function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm: boolean; setShowForm: (v: boolean) => void; userId?: string; onInsightClick?: (pollId: string) => void }) {
+  const queryClient = useQueryClient();
+  const [question, setQuestion] = useState('');
+  const [optionA, setOptionA] = useState('');
+  const [optionB, setOptionB] = useState('');
+  const [imageAUrl, setImageAUrl] = useState('');
+  const [imageBUrl, setImageBUrl] = useState('');
+  const [imageAFile, setImageAFile] = useState<File | null>(null);
+  const [imageBFile, setImageBFile] = useState<File | null>(null);
+  const [imageAPreview, setImageAPreview] = useState('');
+  const [imageBPreview, setImageBPreview] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [category, setCategory] = useState('');
+  const [isDailyPoll, setIsDailyPoll] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiCategory, setAiCategory] = useState('');
+  const [aiPollCount, setAiPollCount] = useState(1);
+  const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
+  const [targetGender, setTargetGender] = useState('');
+  const [targetAgeRange, setTargetAgeRange] = useState('');
+  const [targetCountry, setTargetCountry] = useState('');
+  const [intentTag, setIntentTag] = useState('');
+  const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
+  const [isLoadingTrends, setIsLoadingTrends] = useState(false);
+  const [showTrending, setShowTrending] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const imageAInputRef = useRef<HTMLInputElement>(null);
+  const imageBInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch categories from database
+  const { data: categories, refetch: refetchCategories } = useQuery({
+    queryKey: ['poll-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('is_preset', { ascending: false })
+        .order('name');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Add new category mutation
+  const addCategoryMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const { error } = await supabase
+        .from('categories')
+        .insert({ name, is_preset: false, created_by: userId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Category added!');
+      refetchCategories();
+      setCategory(newCategoryName);
+      setNewCategoryName('');
+      setShowNewCategoryInput(false);
+    },
+    onError: (error: any) => {
+      if (error.message?.includes('duplicate')) {
+        toast.error('Category already exists');
+      } else {
+        toast.error('Failed to add category');
+      }
+    },
+  });
+
+  const handleImageSelect = (file: File, option: 'A' | 'B') => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (option === 'A') {
+        setImageAFile(file);
+        setImageAPreview(e.target?.result as string);
+        setImageAUrl('');
+      } else {
+        setImageBFile(file);
+        setImageBPreview(e.target?.result as string);
+        setImageBUrl('');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Image upload validation constants
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    // Validate file type
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      toast.error('Only image files are allowed (JPEG, PNG, GIF, WebP)');
+      return null;
+    }
+
+    // Validate file size
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast.error('File size must be less than 5MB');
+      return null;
+    }
+
+    // Validate file extension
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    if (!fileExt || !ALLOWED_EXTENSIONS.includes(fileExt)) {
+      toast.error('Invalid file extension');
+      return null;
+    }
+
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
+    const filePath = `polls/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('poll-images')
+      .upload(filePath, file, {
+        contentType: file.type,
+      });
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from('poll-images')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  };
+
+  const { data: polls, isLoading } = useQuery({
+    queryKey: ['admin-polls'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('polls')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const createPollMutation = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error('Not authenticated');
+      
+      setIsUploading(true);
+      
+      // Upload images if files are selected
+      let finalImageAUrl = imageAUrl;
+      let finalImageBUrl = imageBUrl;
+      
+      if (imageAFile) {
+        const uploadedUrl = await uploadImage(imageAFile);
+        if (uploadedUrl) finalImageAUrl = uploadedUrl;
+      }
+      
+      if (imageBFile) {
+        const uploadedUrl = await uploadImage(imageBFile);
+        if (uploadedUrl) finalImageBUrl = uploadedUrl;
+      }
+      
+      // Set 24-hour window for daily polls
+      const startsAt = new Date();
+      const endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      
+      const { error } = await supabase
+        .from('polls')
+        .insert({
+          question,
+          option_a: optionA,
+          option_b: optionB,
+          image_a_url: finalImageAUrl || null,
+          image_b_url: finalImageBUrl || null,
+          category: category || null,
+          created_by: userId,
+          is_daily_poll: isDailyPoll,
+          starts_at: startsAt.toISOString(),
+          ends_at: endsAt.toISOString(),
+          target_gender: targetGender || null,
+          target_age_range: targetAgeRange || null,
+          target_country: targetCountry || null,
+          intent_tag: intentTag || null,
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-polls'] });
+      toast.success('Poll created with 24-hour window!');
+      setShowForm(false);
+      setQuestion('');
+      setOptionA('');
+      setOptionB('');
+      setImageAUrl('');
+      setImageBUrl('');
+      setImageAFile(null);
+      setImageBFile(null);
+      setImageAPreview('');
+      setImageBPreview('');
+      setCategory('');
+      setIsDailyPoll(true);
+      setIsUploading(false);
+      setTargetGender('');
+      setTargetAgeRange('');
+      setTargetCountry('');
+      setIntentTag('');
+    },
+    onError: () => {
+      toast.error('Failed to create poll');
+      setIsUploading(false);
+    },
+  });
+
+  const generateAIPoll = async () => {
+    if (!userId) {
+      toast.error('Not authenticated');
+      return;
+    }
+    
+    const count = Math.min(Math.max(aiPollCount, 1), 10); // Clamp between 1-10
+    setIsGenerating(true);
+    setGenerationProgress({ current: 0, total: count });
+    
+    const results: { success: number; failed: number; polls: string[] } = { 
+      success: 0, 
+      failed: 0,
+      polls: []
+    };
+    
+    for (let i = 0; i < count; i++) {
+      setGenerationProgress({ current: i + 1, total: count });
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-poll', {
+          body: { 
+            category: aiCategory || null, 
+            userId,
+            targetAgeRange: targetAgeRange || null,
+            targetGender: targetGender || null,
+            targetCountry: targetCountry || null,
+          }
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        if (data?.poll) {
+          results.success++;
+          results.polls.push(data.poll.question);
+        }
+        
+        // Small delay between polls to avoid rate limits (except for last one)
+        if (i < count - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+      } catch (error: any) {
+        console.error(`AI generation error (poll ${i + 1}):`, error);
+        results.failed++;
+        
+        // If rate limited, stop early
+        if (error.message?.includes('Rate limit') || error.message?.includes('429')) {
+          toast.error('Rate limit reached. Try again later.');
+          break;
+        }
+      }
+    }
+    
+    queryClient.invalidateQueries({ queryKey: ['admin-polls'] });
+    
+    if (results.success > 0) {
+      toast.success(`Generated ${results.success} poll${results.success > 1 ? 's' : ''}!`, {
+        description: results.failed > 0 ? `${results.failed} failed` : undefined
+      });
+    } else {
+      toast.error('Failed to generate polls');
+    }
+    
+    setAiCategory('');
+    setAiPollCount(1);
+    setTargetAgeRange('');
+    setTargetGender('');
+    setTargetCountry('');
+    setIsGenerating(false);
+    setGenerationProgress({ current: 0, total: 0 });
+  };
+
+  const deletePollMutation = useMutation({
+    mutationFn: async (pollId: string) => {
+      // First delete related votes
+      await supabase.from('votes').delete().eq('poll_id', pollId);
+      // Delete related favorites
+      await supabase.from('favorite_polls').delete().eq('poll_id', pollId);
+      // Delete related boosts
+      await supabase.from('poll_boosts').delete().eq('poll_id', pollId);
+      // Delete related sponsored polls
+      await supabase.from('sponsored_polls').delete().eq('poll_id', pollId);
+      // Finally delete the poll
+      const { error } = await supabase.from('polls').delete().eq('id', pollId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-polls'] });
+      toast.success('Poll deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete poll');
+    },
+  });
+
+  return (
+    <>
+      {/* Insight Highlights - The Weapon */}
+      <InsightHighlights onPollSelect={onInsightClick} />
+
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Polls ({polls?.length || 0})</h2>
+        <Button size="sm" onClick={() => setShowForm(true)}>
+          <Plus className="h-4 w-4 mr-1" /> New Poll
+        </Button>
+      </div>
+
+      {/* AI Poll Generator */}
+      <div className="glass rounded-xl p-4 space-y-3 border-2 border-primary/20">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <h3 className="font-semibold">AI Poll Generator</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Let AI create engaging polls based on trending topics
+        </p>
+        
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Input 
+              value={aiCategory}
+              onChange={(e) => setAiCategory(e.target.value)}
+              placeholder="Category (optional)"
+              className="bg-secondary pr-10"
+              disabled={isGenerating}
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                if (trendingTopics.length > 0) {
+                  setShowTrending(!showTrending);
+                  return;
+                }
+                setIsLoadingTrends(true);
+                try {
+                  const { data, error } = await supabase.functions.invoke('get-trending-topics');
+                  if (error) throw error;
+                  if (data?.topics) {
+                    setTrendingTopics(data.topics);
+                    setShowTrending(true);
+                  }
+                } catch (err) {
+                  console.error('Failed to fetch trends:', err);
+                  toast.error('Failed to fetch trending topics');
+                } finally {
+                  setIsLoadingTrends(false);
+                }
+              }}
+              disabled={isGenerating || isLoadingTrends}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 transition-colors"
+              title="Get trending topics"
+            >
+              {isLoadingTrends ? (
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              ) : (
+                <TrendingUp className="h-4 w-4 text-primary" />
+              )}
+            </button>
+          </div>
+          <select
+            value={aiPollCount}
+            onChange={(e) => setAiPollCount(Number(e.target.value))}
+            className="bg-secondary border border-border rounded-md px-3 py-2 text-sm min-w-[70px]"
+            disabled={isGenerating}
+          >
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+              <option key={n} value={n}>{n}x</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Trending Topics Suggestions */}
+        {showTrending && trendingTopics.length > 0 && (
+          <div className="space-y-2 p-3 bg-secondary/50 rounded-lg border border-border/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Flame className="h-4 w-4 text-orange-500" />
+                <span>Trending Now</span>
+              </div>
+              <button
+                onClick={() => {
+                  setTrendingTopics([]);
+                  setIsLoadingTrends(true);
+                  supabase.functions.invoke('get-trending-topics').then(({ data }) => {
+                    if (data?.topics) setTrendingTopics(data.topics);
+                    setIsLoadingTrends(false);
+                  }).catch(() => setIsLoadingTrends(false));
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+              >
+                <RefreshCcw className="h-3 w-3" />
+                Refresh
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {trendingTopics.map((topic, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setAiCategory(topic.category);
+                    setShowTrending(false);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background rounded-full text-xs hover:bg-primary/10 transition-colors border border-border/50"
+                >
+                  <span className="font-medium">{topic.category}</span>
+                  {topic.heat_score >= 80 && (
+                    <span className="text-orange-500">🔥</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {trendingTopics[0]?.trending_reason && (
+              <p className="text-xs text-muted-foreground mt-1">
+                💡 {trendingTopics.find(t => t.category === aiCategory)?.trending_reason || trendingTopics[0].trending_reason}
+              </p>
+            )}
+          </div>
+        )}
+        
+        {/* Audience Targeting */}
+        <div className="space-y-2 pt-2 border-t border-border/50">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Target className="h-4 w-4" />
+            <span>Audience Targeting (optional)</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <select
+              value={targetAgeRange}
+              onChange={(e) => setTargetAgeRange(e.target.value)}
+              className="bg-secondary border border-border rounded-md px-2 py-1.5 text-xs"
+              disabled={isGenerating}
+            >
+              <option value="">All Ages</option>
+              <option value="13-17">13-17</option>
+              <option value="18-24">18-24</option>
+              <option value="25-34">25-34</option>
+              <option value="35-44">35-44</option>
+              <option value="45+">45+</option>
+            </select>
+            <select
+              value={targetGender}
+              onChange={(e) => setTargetGender(e.target.value)}
+              className="bg-secondary border border-border rounded-md px-2 py-1.5 text-xs"
+              disabled={isGenerating}
+            >
+              <option value="">All Genders</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+            <select
+              value={targetCountry}
+              onChange={(e) => setTargetCountry(e.target.value)}
+              className="bg-secondary border border-border rounded-md px-2 py-1.5 text-xs"
+              disabled={isGenerating}
+            >
+              <option value="">All Countries</option>
+              <option value="SA">Saudi Arabia</option>
+              <option value="AE">UAE</option>
+              <option value="QA">Qatar</option>
+              <option value="KW">Kuwait</option>
+              <option value="BH">Bahrain</option>
+              <option value="OM">Oman</option>
+              <option value="JO">Jordan</option>
+              <option value="LB">Lebanon</option>
+              <option value="IQ">Iraq</option>
+              <option value="PS">Palestine</option>
+              <option value="SY">Syria</option>
+              <option value="YE">Yemen</option>
+              <option value="EG">Egypt</option>
+            </select>
+          </div>
+        </div>
+        
+        <Button 
+          onClick={generateAIPoll}
+          disabled={isGenerating}
+          className="w-full bg-gradient-primary"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Generating {generationProgress.current}/{generationProgress.total}...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate {aiPollCount > 1 ? `${aiPollCount} Polls` : 'Poll'}
+            </>
+          )}
+        </Button>
+        
+        {isGenerating && generationProgress.total > 1 && (
+          <div className="space-y-1">
+            <div className="h-2 bg-secondary rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${(generationProgress.current / generationProgress.total) * 100}%` }}
+              />
+            </div>
+            <p className="text-xs text-center text-muted-foreground">
+              Creating poll {generationProgress.current} of {generationProgress.total}...
+            </p>
+          </div>
+        )}
+      </div>
+
+      {showForm && (
+        <div className="glass rounded-xl p-4 space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-semibold">Create Poll</h3>
+            <button onClick={() => setShowForm(false)}>
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </div>
+          
+          <div className="space-y-3">
+            <div>
+              <Label>Question</Label>
+              <Input 
+                value={question} 
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="What do you prefer?"
+                className="bg-secondary"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Option A</Label>
+                <Input 
+                  value={optionA} 
+                  onChange={(e) => setOptionA(e.target.value)}
+                  placeholder="First option"
+                  className="bg-secondary"
+                />
+              </div>
+              <div>
+                <Label>Option B</Label>
+                <Input 
+                  value={optionB} 
+                  onChange={(e) => setOptionB(e.target.value)}
+                  placeholder="Second option"
+                  className="bg-secondary"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Image A</Label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  ref={imageAInputRef}
+                  onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'A')}
+                  className="hidden"
+                />
+                {imageAPreview ? (
+                  <div className="relative mt-2">
+                    <img src={imageAPreview} alt="Option A" className="w-full h-24 object-cover rounded-lg" />
+                    <button 
+                      onClick={() => { setImageAFile(null); setImageAPreview(''); }}
+                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full mt-2"
+                    onClick={() => imageAInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload
+                  </Button>
+                )}
+                {!imageAPreview && (
+                  <Input 
+                    value={imageAUrl} 
+                    onChange={(e) => setImageAUrl(e.target.value)}
+                    placeholder="Or paste URL..."
+                    className="bg-secondary mt-2 text-xs"
+                  />
+                )}
+              </div>
+              <div>
+                <Label>Image B</Label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  ref={imageBInputRef}
+                  onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'B')}
+                  className="hidden"
+                />
+                {imageBPreview ? (
+                  <div className="relative mt-2">
+                    <img src={imageBPreview} alt="Option B" className="w-full h-24 object-cover rounded-lg" />
+                    <button 
+                      onClick={() => { setImageBFile(null); setImageBPreview(''); }}
+                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full mt-2"
+                    onClick={() => imageBInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload
+                  </Button>
+                )}
+                {!imageBPreview && (
+                  <Input 
+                    value={imageBUrl} 
+                    onChange={(e) => setImageBUrl(e.target.value)}
+                    placeholder="Or paste URL..."
+                    className="bg-secondary mt-2 text-xs"
+                  />
+                )}
+              </div>
+            </div>
+            <div>
+              <Label>Category</Label>
+              {showNewCategoryInput ? (
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Enter new category name..."
+                    className="bg-secondary flex-1"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      if (newCategoryName.trim()) {
+                        addCategoryMutation.mutate(newCategoryName.trim());
+                      }
+                    }}
+                    disabled={!newCategoryName.trim() || addCategoryMutation.isPending}
+                  >
+                    {addCategoryMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setShowNewCategoryInput(false);
+                      setNewCategoryName('');
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="flex-1 h-10 px-3 rounded-md bg-secondary border border-border text-sm"
+                  >
+                    <option value="">Select a category...</option>
+                    {categories?.map((cat) => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name} {!cat.is_preset && '(custom)'}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowNewCategoryInput(true)}
+                    title="Add new category"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <input 
+                type="checkbox" 
+                id="isDailyPoll"
+                checked={isDailyPoll} 
+                onChange={(e) => setIsDailyPoll(e.target.checked)}
+                className="h-4 w-4 rounded border-border"
+              />
+              <Label htmlFor="isDailyPoll" className="text-sm">
+                Daily Poll (24-hour visibility)
+              </Label>
+            </div>
+            
+            {/* Demographic Targeting */}
+            <div className="border-t border-border pt-4 mt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Target className="h-4 w-4 text-primary" />
+                <Label className="font-semibold">Demographic Targeting (Optional)</Label>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs">Gender</Label>
+                  <select
+                    value={targetGender}
+                    onChange={(e) => setTargetGender(e.target.value)}
+                    className="w-full h-9 px-3 rounded-md border border-input bg-secondary text-sm"
+                  >
+                    <option value="">All</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs">Age Range</Label>
+                  <select
+                    value={targetAgeRange}
+                    onChange={(e) => setTargetAgeRange(e.target.value)}
+                    className="w-full h-9 px-3 rounded-md border border-input bg-secondary text-sm"
+                  >
+                    <option value="">All</option>
+                    <option value="13-17">13-17</option>
+                    <option value="18-24">18-24</option>
+                    <option value="25-34">25-34</option>
+                    <option value="35-44">35-44</option>
+                    <option value="45-54">45-54</option>
+                    <option value="55+">55+</option>
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs">Country</Label>
+                  <select
+                    value={targetCountry}
+                    onChange={(e) => setTargetCountry(e.target.value)}
+                    className="w-full h-9 px-3 rounded-md border border-input bg-secondary text-sm"
+                  >
+                    <option value="">All</option>
+                    <option value="Saudi Arabia">Saudi Arabia</option>
+                    <option value="United Arab Emirates">UAE</option>
+                    <option value="Qatar">Qatar</option>
+                    <option value="Kuwait">Kuwait</option>
+                    <option value="Bahrain">Bahrain</option>
+                    <option value="Oman">Oman</option>
+                    <option value="Jordan">Jordan</option>
+                    <option value="Lebanon">Lebanon</option>
+                    <option value="Iraq">Iraq</option>
+                    <option value="Palestine">Palestine</option>
+                    <option value="Syria">Syria</option>
+                    <option value="Yemen">Yemen</option>
+                    <option value="Egypt">Egypt</option>
+                  </select>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Leave as "All" to show poll to everyone
+              </p>
+            </div>
+            
+            {/* Poll Intent Tag (Internal Only) */}
+            <div className="border-t border-border pt-4 mt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="h-4 w-4 text-primary">🏷️</span>
+                <Label className="font-semibold">Poll Intent (Internal Only)</Label>
+              </div>
+              <select
+                value={intentTag}
+                onChange={(e) => setIntentTag(e.target.value)}
+                className="w-full h-9 px-3 rounded-md border border-input bg-secondary text-sm"
+              >
+                <option value="">No tag</option>
+                <option value="brand_test">Brand Test</option>
+                <option value="concept_test">Concept Test</option>
+                <option value="cultural_signal">Cultural Signal</option>
+                <option value="fun_engagement">Fun/Engagement</option>
+              </select>
+              <p className="text-xs text-muted-foreground mt-2">
+                Users don't see this — buyers/admins do
+              </p>
+            </div>
+            
+            <Button
+              onClick={() => createPollMutation.mutate()}
+              disabled={!question || !optionA || !optionB || createPollMutation.isPending || isUploading}
+              className="w-full bg-gradient-primary"
+            >
+              {(createPollMutation.isPending || isUploading) ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  {isUploading ? 'Uploading...' : 'Creating...'}
+                </>
+              ) : 'Create Poll'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {polls?.map((poll) => {
+            const isExpired = poll.ends_at && new Date(poll.ends_at) < new Date();
+            const isLive = poll.starts_at && poll.ends_at && 
+              new Date(poll.starts_at) <= new Date() && 
+              new Date(poll.ends_at) >= new Date();
+            
+            return (
+              <div key={poll.id} className="glass rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {poll.category && (
+                      <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs">
+                        {poll.category}
+                      </span>
+                    )}
+                    {poll.is_daily_poll && (
+                      <span className="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-xs">
+                        Daily
+                      </span>
+                    )}
+                    {poll.intent_tag && (
+                      <span className="px-2 py-0.5 rounded-full bg-secondary text-foreground text-xs border border-border">
+                        {poll.intent_tag === 'brand_test' ? '🏢 Brand' :
+                         poll.intent_tag === 'concept_test' ? '💡 Concept' :
+                         poll.intent_tag === 'cultural_signal' ? '🌍 Cultural' :
+                         poll.intent_tag === 'fun_engagement' ? '🎮 Fun' : poll.intent_tag}
+                      </span>
+                    )}
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${
+                      isExpired ? 'bg-muted text-muted-foreground' :
+                      isLive ? 'bg-success/20 text-success' :
+                      'bg-warning/20 text-warning'
+                    }`}>
+                      {isExpired ? 'Expired' : isLive ? 'Live' : 'Scheduled'}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm('Are you sure you want to delete this poll? This will also delete all votes.')) {
+                        deletePollMutation.mutate(poll.id);
+                      }
+                    }}
+                    disabled={deletePollMutation.isPending}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    {deletePollMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <h3 className="font-medium">{poll.question}</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  A: {poll.option_a} • B: {poll.option_b}
+                </p>
+                {poll.ends_at && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {isExpired ? 'Expired' : 'Expires'}: {new Date(poll.ends_at).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
+// Rewards Tab
+function RewardsTab({ showForm, setShowForm }: { showForm: boolean; setShowForm: (v: boolean) => void }) {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [costPoints, setCostPoints] = useState('500');
+
+  const { data: rewards, isLoading } = useQuery({
+    queryKey: ['admin-rewards'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('rewards')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const createRewardMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('rewards')
+        .insert({
+          title,
+          description,
+          cost_points: parseInt(costPoints),
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-rewards'] });
+      toast.success('Reward created!');
+      setShowForm(false);
+      setTitle('');
+      setDescription('');
+    },
+    onError: () => toast.error('Failed to create reward'),
+  });
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Rewards ({rewards?.length || 0})</h2>
+        <Button size="sm" onClick={() => setShowForm(true)}>
+          <Plus className="h-4 w-4 mr-1" /> New Reward
+        </Button>
+      </div>
+
+      {showForm && (
+        <div className="glass rounded-xl p-4 space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-semibold">Create Reward</h3>
+            <button onClick={() => setShowForm(false)}>
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </div>
+          
+          <div className="space-y-3">
+            <div>
+              <Label>Title</Label>
+              <Input 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Premium Badge"
+                className="bg-secondary"
+              />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Unlock a special profile badge"
+                className="bg-secondary"
+              />
+            </div>
+            <div>
+              <Label>Cost (points)</Label>
+              <Input 
+                type="number"
+                value={costPoints} 
+                onChange={(e) => setCostPoints(e.target.value)}
+                className="bg-secondary"
+              />
+            </div>
+            
+            <Button 
+              onClick={() => createRewardMutation.mutate()}
+              disabled={!title || !description || createRewardMutation.isPending}
+              className="w-full bg-gradient-primary"
+            >
+              {createRewardMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Reward'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {rewards?.map((reward) => (
+            <div key={reward.id} className="glass rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium">{reward.title}</h3>
+                <span className="text-primary text-sm font-bold">{reward.cost_points} pts</span>
+              </div>
+              <p className="text-sm text-muted-foreground">{reward.description}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+// Notifications Tab
+function NotificationsTab() {
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const sendNotificationMutation = useMutation({
+    mutationFn: async () => {
+      setSending(true);
+      
+      // Get all users
+      const { data: users, error: usersError } = await supabase
+        .from('users')
+        .select('id');
+      
+      if (usersError) throw usersError;
+      
+      // Create notification for each user
+      const notifications = users.map(user => ({
+        user_id: user.id,
+        title,
+        body,
+        type: 'system',
+      }));
+      
+      const { error } = await supabase
+        .from('notifications')
+        .insert(notifications);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Notifications sent!');
+      setTitle('');
+      setBody('');
+      setSending(false);
+    },
+    onError: () => {
+      toast.error('Failed to send notifications');
+      setSending(false);
+    },
+  });
+
+  return (
+    <div className="glass rounded-xl p-4 space-y-4">
+      <h2 className="text-lg font-semibold flex items-center gap-2">
+        <Bell className="h-5 w-5 text-primary" />
+        Broadcast Notification
+      </h2>
+      
+      <div className="space-y-3">
+        <div>
+          <Label>Title</Label>
+          <Input 
+            value={title} 
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="New Feature!"
+            className="bg-secondary"
+          />
+        </div>
+        <div>
+          <Label>Message</Label>
+          <Textarea 
+            value={body} 
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Check out our latest update..."
+            className="bg-secondary"
+          />
+        </div>
+        
+        <Button 
+          onClick={() => sendNotificationMutation.mutate()}
+          disabled={!title || !body || sending}
+          className="w-full bg-gradient-primary"
+        >
+          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send to All Users'}
+        </Button>
+      </div>
+    </div>
+  );
+}
