@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { LogOut, ChevronRight, User, Bell, Shield, Flame, History } from 'lucide-react';
+import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import ProfileCompletionCard from '@/components/profile/ProfileCompletionCard';
 
@@ -39,6 +39,7 @@ export default function Profile() {
 
   const menuItems = [
     { icon: History, label: 'My Votes', path: '/history', color: 'text-primary' },
+    { icon: Eye, label: 'Your Dimensions', path: '/insights', color: 'text-primary' },
     { icon: User, label: 'Edit Profile', path: '/profile/edit', color: 'text-muted-foreground' },
     { icon: Bell, label: 'Notification Settings', path: '/profile/notifications', color: 'text-muted-foreground' },
     ...(isAdmin ? [{ icon: Shield, label: 'Admin Dashboard', path: '/admin', color: 'text-destructive' }] : []),
