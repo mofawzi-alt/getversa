@@ -163,7 +163,7 @@ export default function SwipeFeed() {
         .select('*')
         .eq('is_active', true)
         .neq('is_archived', true)
-        .or(`and(starts_at.lte.${now},ends_at.gte.${now}),and(starts_at.is.null,ends_at.is.null)`)
+        
         .order('is_daily_poll', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -177,12 +177,6 @@ export default function SwipeFeed() {
       if (pollsError) throw pollsError;
 
       let allPolls = fetchedPolls || [];
-
-      // Filter expired seasonal/campaign polls; core_index never expire
-      allPolls = allPolls.filter(p => {
-        if ((p as any).poll_type !== 'core_index' && p.ends_at && new Date(p.ends_at) < new Date()) return false;
-        return true;
-      });
 
       // Demographic targeting
       if (profile) {
@@ -294,11 +288,7 @@ export default function SwipeFeed() {
 
     const poll = polls[currentIndex];
 
-    if (poll.ends_at && new Date(poll.ends_at) < new Date() && (poll as any).poll_type !== 'core_index') {
-      toast.error('This poll has expired');
-      handleNextPoll();
-      return;
-    }
+    
 
     if (votedPollIds.has(poll.id)) {
       handleNextPoll();
