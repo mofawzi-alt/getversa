@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Flame, RefreshCw, TrendingUp, Zap, Users } from 'lucide-react';
+import { Flame, RefreshCw, Users } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
 interface TrendingInsight {
@@ -13,19 +12,10 @@ interface TrendingInsight {
   totalVotes: number;
   percentA: number;
   percentB: number;
-  badge: 'hottest' | 'controversial' | 'rising' | null;
-}
-
-function getBadge(insight: TrendingInsight) {
-  if (insight.badge === 'hottest') return { icon: Flame, label: 'Hottest', class: 'bg-destructive/15 text-destructive' };
-  if (insight.badge === 'controversial') return { icon: Zap, label: 'Split Decision', class: 'bg-warning/15 text-warning' };
-  if (insight.badge === 'rising') return { icon: TrendingUp, label: 'Rising', class: 'bg-accent/15 text-accent' };
-  return null;
 }
 
 export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void }) {
   const { user } = useAuth();
-  const [activeIndex, setActiveIndex] = useState(0);
 
   const { data: insights, isLoading } = useQuery({
     queryKey: ['trending-insights', user?.id],
@@ -46,68 +36,25 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
         results?.map((r: any) => [r.poll_id, r]) || []
       );
 
-      const pollsWithResults = polls.map(p => {
-        const r = resultsMap.get(p.id);
-        return {
-          ...p,
-          totalVotes: (r?.total_votes as number) || 0,
-          percentA: (r?.percent_a as number) || 0,
-          percentB: (r?.percent_b as number) || 0,
-        };
-      }).filter(p => p.totalVotes > 0);
-
-      // Sort by votes to find hottest
-      const byVotes = [...pollsWithResults].sort((a, b) => b.totalVotes - a.totalVotes);
-      // Find most controversial (closest to 50/50)
-      const byControversy = [...pollsWithResults]
-        .filter(p => p.totalVotes >= 3)
-        .sort((a, b) => Math.abs(a.percentA - 50) - Math.abs(b.percentA - 50));
-      // Find rising (newest with decent engagement)
-      const rising = [...pollsWithResults]
-        .filter(p => p.totalVotes >= 2)
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      const selected = new Map<string, TrendingInsight>();
-
-      // Pick hottest
-      if (byVotes[0]) {
-        selected.set(byVotes[0].id, { ...byVotes[0], badge: 'hottest' });
-      }
-      // Pick controversial
-      for (const p of byControversy) {
-        if (!selected.has(p.id)) {
-          selected.set(p.id, { ...p, badge: 'controversial' });
-          break;
-        }
-      }
-      // Fill remaining with rising/popular
-      for (const p of rising) {
-        if (selected.size >= 5) break;
-        if (!selected.has(p.id)) {
-          selected.set(p.id, { ...p, badge: selected.size < 3 ? 'rising' : null });
-        }
-      }
-      // Fill more from byVotes if needed
-      for (const p of byVotes) {
-        if (selected.size >= 5) break;
-        if (!selected.has(p.id)) {
-          selected.set(p.id, { ...p, badge: null });
-        }
-      }
-
-      return [...selected.values()];
+      return polls
+        .map(p => {
+          const r = resultsMap.get(p.id);
+          return {
+            id: p.id,
+            question: p.question,
+            option_a: p.option_a,
+            option_b: p.option_b,
+            totalVotes: (r?.total_votes as number) || 0,
+            percentA: (r?.percent_a as number) || 0,
+            percentB: (r?.percent_b as number) || 0,
+          };
+        })
+        .filter(p => p.totalVotes > 0)
+        .sort((a, b) => b.totalVotes - a.totalVotes)
+        .slice(0, 5);
     },
-    staleTime: 1000 * 60 * 60, // Cache for 1 hour (daily refresh feel)
+    staleTime: 1000 * 60 * 60,
   });
-
-  // Auto-rotate active card every 4s
-  useEffect(() => {
-    if (!insights || insights.length <= 1) return;
-    const interval = setInterval(() => {
-      setActiveIndex(prev => (prev + 1) % insights.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [insights]);
 
   if (isLoading) {
     return (
@@ -136,136 +83,60 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
     );
   }
 
-  const featured = insights[activeIndex];
-  const featuredBadge = getBadge(featured);
-  const winnerIsA = featured.percentA >= featured.percentB;
-
   return (
-    <div className="space-y-5 mt-4 w-full animate-fade-in">
+    <div className="space-y-4 mt-4 w-full animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-display font-bold flex items-center gap-2">
-          <Flame className="h-5 w-5 text-destructive" />
-          Trending Insights
-        </h2>
-        <button
-          onClick={onRefresh}
-          className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
-          aria-label="Refresh feed"
-        >
-          <RefreshCw className="h-4 w-4 text-foreground/70" />
-        </button>
+      <div className="flex items-center gap-2">
+        <Flame className="h-5 w-5 text-destructive" />
+        <h2 className="text-lg font-display font-bold">Trending Insights</h2>
       </div>
 
-      {/* Featured insight card — hero style */}
-      <div
-        key={featured.id}
-        className="relative rounded-2xl overflow-hidden bg-card border border-border shadow-card animate-scale-in"
-      >
-        {/* Gradient accent bar */}
-        <div className="h-1 bg-gradient-to-r from-primary via-accent to-warning" />
+      {/* Read-only insight cards */}
+      <div className="space-y-3">
+        {insights.map((insight, i) => {
+          const winnerIsA = insight.percentA >= insight.percentB;
+          return (
+            <div
+              key={insight.id}
+              className="rounded-2xl bg-card border border-border p-4 space-y-3 animate-fade-in"
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              {/* Question + vote count */}
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-sm font-bold leading-snug text-foreground flex-1">
+                  {insight.question}
+                </p>
+                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap shrink-0 pt-0.5">
+                  <Users className="h-3 w-3" />
+                  {insight.totalVotes.toLocaleString()}
+                </span>
+              </div>
 
-        <div className="p-5 space-y-4">
-          {/* Badge + vote count */}
-          <div className="flex items-center justify-between">
-            {featuredBadge ? (
-              <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${featuredBadge.class}`}>
-                <featuredBadge.icon className="h-3.5 w-3.5" />
-                {featuredBadge.label}
-              </span>
-            ) : (
-              <span className="text-xs text-muted-foreground">Insight</span>
-            )}
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-              <Users className="h-3 w-3" />
-              {featured.totalVotes.toLocaleString()}
-            </span>
-          </div>
+              {/* Result bar */}
+              <div className="flex h-2 rounded-full overflow-hidden bg-muted/50">
+                <div
+                  className="bg-option-a rounded-l-full"
+                  style={{ width: `${insight.percentA}%` }}
+                />
+                <div
+                  className="bg-option-b rounded-r-full"
+                  style={{ width: `${insight.percentB}%` }}
+                />
+              </div>
 
-          {/* Question */}
-          <p className="text-base font-bold leading-snug text-foreground">
-            {featured.question}
-          </p>
-
-          {/* Result bar */}
-          <div className="space-y-2">
-            <div className="flex h-3 rounded-full overflow-hidden bg-muted/50">
-              <div
-                className="bg-option-a rounded-l-full transition-all duration-700 ease-out"
-                style={{ width: `${featured.percentA}%` }}
-              />
-              <div
-                className="bg-option-b rounded-r-full transition-all duration-700 ease-out"
-                style={{ width: `${featured.percentB}%` }}
-              />
+              {/* Labels */}
+              <div className="flex justify-between text-xs">
+                <span className={winnerIsA ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
+                  {insight.option_a} ({insight.percentA}%)
+                </span>
+                <span className={!winnerIsA ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
+                  {insight.option_b} ({insight.percentB}%)
+                </span>
+              </div>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className={`font-semibold ${winnerIsA ? 'text-foreground' : 'text-muted-foreground'}`}>
-                {featured.option_a} <span className="text-xs font-normal">({featured.percentA}%)</span>
-              </span>
-              <span className={`font-semibold ${!winnerIsA ? 'text-foreground' : 'text-muted-foreground'}`}>
-                {featured.option_b} <span className="text-xs font-normal">({featured.percentB}%)</span>
-              </span>
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
-
-      {/* Dot indicators */}
-      {insights.length > 1 && (
-        <div className="flex justify-center gap-1.5">
-          {insights.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveIndex(i)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === activeIndex
-                  ? 'w-6 bg-primary'
-                  : 'w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'
-              }`}
-              aria-label={`View insight ${i + 1}`}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Mini cards grid — remaining insights */}
-      {insights.length > 1 && (
-        <div className="grid grid-cols-2 gap-2">
-          {insights
-            .filter((_, i) => i !== activeIndex)
-            .slice(0, 4)
-            .map((insight) => {
-              const badge = getBadge(insight);
-              const isA = insight.percentA >= insight.percentB;
-              return (
-                <button
-                  key={insight.id}
-                  onClick={() => setActiveIndex(insights.indexOf(insight))}
-                  className="glass rounded-xl p-3 text-left hover:ring-1 hover:ring-primary/30 transition-all group"
-                >
-                  {badge && (
-                    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full mb-1.5 ${badge.class}`}>
-                      <badge.icon className="h-2.5 w-2.5" />
-                      {badge.label}
-                    </span>
-                  )}
-                  <p className="text-xs font-semibold text-foreground leading-tight line-clamp-2 mb-2">
-                    {insight.question}
-                  </p>
-                  <div className="flex h-1.5 rounded-full overflow-hidden bg-muted/50 mb-1">
-                    <div className="bg-option-a" style={{ width: `${insight.percentA}%` }} />
-                    <div className="bg-option-b" style={{ width: `${insight.percentB}%` }} />
-                  </div>
-                  <div className="flex justify-between text-[10px] text-muted-foreground">
-                    <span>{insight.percentA}% – {insight.percentB}%</span>
-                    <span>{insight.totalVotes.toLocaleString()}</span>
-                  </div>
-                </button>
-              );
-            })}
-        </div>
-      )}
 
       {/* Refresh CTA */}
       <button
