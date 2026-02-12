@@ -206,12 +206,7 @@ export default function Home() {
           {polls && polls.length > 0 ? (
             polls.map((poll, i) => {
               const hasVoted = votedPollIds?.has(poll.id);
-              const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
-              const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
               const winnerIsA = poll.percentA >= poll.percentB;
-              const margin = Math.abs(poll.percentA - poll.percentB);
-              const dateStr = poll.created_at ? format(new Date(poll.created_at), 'MMM d, yyyy') : '';
-              const isActive = true; // all shown polls are active
 
               return (
                 <motion.div
@@ -220,87 +215,37 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.06, type: 'spring', stiffness: 240, damping: 22 }}
                   onClick={() => handlePollTap(poll)}
-                  className="relative rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform bg-card border border-border/40 p-4 space-y-3"
+                  className="rounded-2xl bg-card border border-border p-4 space-y-3 cursor-pointer active:scale-[0.98] transition-transform"
                 >
-                  {/* Title + Date */}
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-display font-bold text-foreground leading-snug">{poll.question}</h3>
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0 mt-0.5">
-                      <Clock className="h-3 w-3" />
-                      {dateStr}
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm font-bold leading-snug text-foreground flex-1">
+                      {poll.question}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap shrink-0 pt-0.5">
+                      <Users className="h-3 w-3" />
+                      {poll.totalVotes.toLocaleString()}
                     </span>
                   </div>
 
-                  {/* Category + Status badges */}
-                  <div className="flex items-center gap-2">
-                    {poll.category && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/15 text-primary">
-                        {poll.category}
-                      </span>
-                    )}
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-accent/15 text-accent">
-                      Active
+                  <div className="flex h-2 rounded-full overflow-hidden bg-muted/50">
+                    <div
+                      className="bg-option-a rounded-l-full transition-all duration-700"
+                      style={{ width: `${poll.percentA}%` }}
+                    />
+                    <div
+                      className="bg-option-b rounded-r-full transition-all duration-700"
+                      style={{ width: `${poll.percentB}%` }}
+                    />
+                  </div>
+
+                  <div className="flex justify-between text-xs">
+                    <span className={winnerIsA ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
+                      {poll.option_a} ({poll.percentA}%)
+                    </span>
+                    <span className={!winnerIsA ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
+                      {poll.option_b} ({poll.percentB}%)
                     </span>
                   </div>
-
-                  {/* Side-by-side images with results */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Option A */}
-                    <div className={`relative rounded-xl overflow-hidden aspect-square ${winnerIsA ? 'ring-2 ring-primary/50' : ''}`}>
-                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                      {winnerIsA && poll.totalVotes > 0 && (
-                        <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[10px] font-bold">
-                          <TrendUp className="h-3 w-3" /> Winner
-                        </div>
-                      )}
-                      <div className="absolute bottom-2 left-2 right-2">
-                        <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_a}</p>
-                        <div className="flex items-baseline gap-1 mt-0.5">
-                          <span className="text-lg font-bold text-primary drop-shadow-lg">{poll.percentA}%</span>
-                          <span className="text-[10px] text-white/70">({poll.votesA} votes)</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Option B */}
-                    <div className={`relative rounded-xl overflow-hidden aspect-square ${!winnerIsA ? 'ring-2 ring-accent/50' : ''}`}>
-                      <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                      {!winnerIsA && poll.totalVotes > 0 && (
-                        <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/90 text-accent-foreground text-[10px] font-bold">
-                          <TrendUp className="h-3 w-3" /> Winner
-                        </div>
-                      )}
-                      <div className="absolute bottom-2 left-2 right-2">
-                        <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_b}</p>
-                        <div className="flex items-baseline gap-1 mt-0.5">
-                          <span className="text-lg font-bold text-accent drop-shadow-lg">{poll.percentB}%</span>
-                          <span className="text-[10px] text-white/70">({poll.votesB} votes)</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stats row */}
-                  <div className="grid grid-cols-3 text-center pt-1">
-                    <div>
-                      <p className="text-lg font-bold text-primary">{poll.totalVotes}</p>
-                      <p className="text-[10px] text-muted-foreground font-medium">Total Votes</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-foreground">{margin}%</p>
-                      <p className="text-[10px] text-muted-foreground font-medium">Margin</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-primary">1</p>
-                      <p className="text-[10px] text-muted-foreground font-medium">Countries</p>
-                    </div>
-                  </div>
-
-                  {hasVoted && (
-                    <span className="absolute top-3 right-3 text-[9px] px-2 py-0.5 rounded-full bg-accent/20 text-accent font-bold z-10">✓ Voted</span>
-                  )}
                 </motion.div>
               );
             })
