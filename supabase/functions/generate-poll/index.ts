@@ -17,23 +17,25 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
+        model: 'google/gemini-3-pro-image-preview',
         messages: [
           {
             role: 'user',
-            content: `Generate a photorealistic, high-quality photograph of: "${prompt}". 
+            content: `Generate a stunning, ultra high resolution photorealistic photograph of: "${prompt}". 
             
 Style requirements:
-- Must look like a real photograph taken with a professional camera
-- Natural lighting and realistic shadows
-- High resolution, sharp focus, detailed textures
-- Lifestyle/editorial photography style like you'd see in magazines
+- Must look like a real photograph taken with a high-end DSLR or mirrorless camera
+- Ultra sharp focus, fine detail, rich textures throughout
+- Natural cinematic lighting with realistic shadows and highlights
+- Lifestyle or editorial photography style, magazine-quality
 - Real world setting, authentic environment
-- NO illustrations, NO cartoons, NO digital art, NO graphics
-- NO text, NO watermarks, NO logos
-- Vibrant but natural colors
+- 4:5 portrait aspect ratio
+- NO illustrations, NO cartoons, NO digital art, NO graphics, NO AI artifacts
+- NO text, NO watermarks, NO logos, NO borders
+- Vibrant but natural color grading
+- Shallow depth of field for subject emphasis
 
-The image should look like it was taken by a professional photographer for a lifestyle brand or magazine editorial.`
+The image should look like it was shot by a top-tier professional photographer for a luxury lifestyle brand or Vogue editorial. Ultra high resolution.`
           }
         ],
         modalities: ['image', 'text']
