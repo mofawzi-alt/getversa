@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, BarChart3, Users, Globe, Calendar, TrendingUp, Eye, Clock, Image as ImageIcon, Download } from 'lucide-react';
@@ -49,10 +49,12 @@ interface PollAnalyticsProps {
 export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
   const [selectedPollId, setSelectedPollId] = useState<string | null>(initialPollId || null);
 
-  // Update selected poll when initialPollId changes
-  if (initialPollId && initialPollId !== selectedPollId) {
-    setSelectedPollId(initialPollId);
-  }
+  // Sync with parent when initialPollId changes
+  useEffect(() => {
+    if (initialPollId) {
+      setSelectedPollId(initialPollId);
+    }
+  }, [initialPollId]);
 
   // Fetch all polls for dropdown
   const { data: polls, isLoading: pollsLoading } = useQuery({
