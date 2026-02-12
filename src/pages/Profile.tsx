@@ -4,9 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Eye } from 'lucide-react';
+import { LogOut, ChevronRight, User, Bell, Shield, Flame, History } from 'lucide-react';
 import { toast } from 'sonner';
-import ProfileCompletionCard from '@/components/profile/ProfileCompletionCard';
+import ProfileDimensionsSection from '@/components/profile/ProfileDimensionsSection';
 
 export default function Profile() {
   const { profile, isAdmin, signOut } = useAuth();
@@ -39,7 +39,6 @@ export default function Profile() {
 
   const menuItems = [
     { icon: History, label: 'My Votes', path: '/history', color: 'text-primary' },
-    { icon: Eye, label: 'Your Dimensions', path: '/insights', color: 'text-primary' },
     { icon: User, label: 'Edit Profile', path: '/profile/edit', color: 'text-muted-foreground' },
     { icon: Bell, label: 'Notification Settings', path: '/profile/notifications', color: 'text-muted-foreground' },
     ...(isAdmin ? [{ icon: Shield, label: 'Admin Dashboard', path: '/admin', color: 'text-destructive' }] : []),
@@ -64,7 +63,6 @@ export default function Profile() {
             {profile?.country || 'Unknown location'}
           </p>
 
-          {/* Streak */}
           {stats?.currentStreak !== undefined && stats.currentStreak > 0 && (
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-warning/20 mt-4">
               <Flame className="h-4 w-4 text-warning" />
@@ -73,8 +71,8 @@ export default function Profile() {
           )}
         </div>
 
-        {/* Profile Completion Card */}
-        <ProfileCompletionCard />
+        {/* Your Dimensions (with quiz inside) */}
+        <ProfileDimensionsSection />
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
