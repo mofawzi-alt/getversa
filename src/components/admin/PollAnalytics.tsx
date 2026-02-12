@@ -412,7 +412,7 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
       {/* Poll Selector with Preview */}
       <div className="glass rounded-xl p-4">
         <label className="text-sm font-medium mb-2 block">Select a poll to analyze</label>
-        <Select value={selectedPollId || ''} onValueChange={setSelectedPollId}>
+        <Select value={selectedPollId || undefined} onValueChange={(val) => setSelectedPollId(val)}>
           <SelectTrigger className="w-full bg-secondary">
             <SelectValue placeholder="Choose a poll..." />
           </SelectTrigger>
