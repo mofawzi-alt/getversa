@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowRight, Flame, Sparkles, TrendingUp, Users, Zap, X } from 'lucide-react';
+import { ArrowRight, Flame, Sparkles, TrendingUp, Users, Zap, X, Radio } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -30,7 +30,6 @@ type PollCard = {
   tag: 'trending' | 'fresh' | 'popular';
 };
 
-// Compact ring indicator
 function MiniRing({ percent, color }: { percent: number; color: string }) {
   const r = 14;
   const circ = 2 * Math.PI * r;
@@ -64,8 +63,8 @@ export default function Home() {
   const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState('all');
   const [resultsPoll, setResultsPoll] = useState<PollCard | null>(null);
+  const [showOverlay, setShowOverlay] = useState(false);
 
-  // User's voted poll IDs
   const { data: votedPollIds } = useQuery({
     queryKey: ['user-voted-ids', user?.id],
     queryFn: async () => {
@@ -79,7 +78,6 @@ export default function Home() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Unseen poll count
   const { data: unseenCount, isLoading: loadingUnseen } = useQuery({
     queryKey: ['unseen-poll-count', user?.id],
     queryFn: async () => {
@@ -98,7 +96,6 @@ export default function Home() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Mixed poll feed
   const { data: mixedPolls, isLoading: loadingPolls } = useQuery({
     queryKey: ['mixed-polls-home'],
     queryFn: async () => {
@@ -116,11 +113,11 @@ export default function Home() {
         const r = resultsMap.get(p.id);
         return { ...p, totalVotes: (r?.total_votes as number) || 0, percentA: (r?.percent_a as number) || 0, percentB: (r?.percent_b as number) || 0 };
       });
-      const trending = [...enriched].filter(p => p.totalVotes > 0).sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 2).map(p => ({ ...p, tag: 'trending' as const }));
+      const trending = [...enriched].filter(p => p.totalVotes > 0).sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 3).map(p => ({ ...p, tag: 'trending' as const }));
       const trendingIds = new Set(trending.map(p => p.id));
       const fresh = enriched.filter(p => !trendingIds.has(p.id)).slice(0, 2).map(p => ({ ...p, tag: 'fresh' as const }));
       const usedIds = new Set([...trendingIds, ...fresh.map(p => p.id)]);
-      const popular = [...enriched].filter(p => p.totalVotes > 0 && !usedIds.has(p.id)).sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 1).map(p => ({ ...p, tag: 'popular' as const }));
+      const popular = [...enriched].filter(p => p.totalVotes > 0 && !usedIds.has(p.id)).sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 2).map(p => ({ ...p, tag: 'popular' as const }));
       const mixed: PollCard[] = [];
       const sources = [trending, fresh, popular];
       const maxLen = Math.max(...sources.map(s => s.length));
@@ -129,22 +126,22 @@ export default function Home() {
           if (src[i]) mixed.push(src[i]);
         }
       }
-      return mixed.slice(0, 5);
+      return mixed.slice(0, 7);
     },
     staleTime: 1000 * 60 * 5,
   });
 
-  // User stats
-  const { data: userStats } = useQuery({
-    queryKey: ['user-home-stats', user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      const { data } = await supabase.from('users').select('points, current_streak, total_days_active').eq('id', user.id).single();
-      return data;
-    },
-    enabled: !!user,
-    staleTime: 1000 * 60 * 5,
-  });
+  // Show overlay once per session when unseen polls exist
+  useEffect(() => {
+    if (unseenCount && unseenCount > 0 && !sessionStorage.getItem('home-overlay-dismissed')) {
+      setShowOverlay(true);
+    }
+  }, [unseenCount]);
+
+  const dismissOverlay = () => {
+    setShowOverlay(false);
+    sessionStorage.setItem('home-overlay-dismissed', 'true');
+  };
 
   const isLoading = loadingUnseen || loadingPolls;
   if (isLoading) {
@@ -160,6 +157,10 @@ export default function Home() {
   const hasUnseen = (unseenCount || 0) > 0;
   const filtered = activeCategory === 'all' ? mixedPolls : mixedPolls?.filter(p => p.category?.toLowerCase() === activeCategory);
 
+  // Separate trending for LIVE NOW section
+  const liveNowPolls = mixedPolls?.filter(p => p.tag === 'trending') || [];
+  const discoverPolls = filtered?.filter(p => p.tag !== 'trending') || [];
+
   const handlePollTap = (poll: PollCard) => {
     const hasVoted = votedPollIds?.has(poll.id);
     if (hasVoted) {
@@ -169,53 +170,105 @@ export default function Home() {
     }
   };
 
-  const ctaText = (unseenCount || 0) >= 3
-    ? `${unseenCount} hot debates waiting 🔥`
-    : unseenCount === 1
-      ? `1 fresh perspective just dropped`
-      : `${unseenCount} new perspectives to explore`;
-
   return (
     <AppLayout>
-      <div className="min-h-screen flex flex-col p-4 pb-24 gap-6">
+      <div className="min-h-screen flex flex-col p-4 pb-24 gap-5">
         {/* Header */}
         <header className="pt-1">
           <h1 className="text-3xl font-display font-bold text-gradient tracking-tight">VERSA</h1>
           <p className="text-xs text-muted-foreground mt-1 tracking-wide">Where perspectives collide</p>
         </header>
 
-        {/* Hot debates CTA */}
-        {hasUnseen && (
-          <motion.button
+        {/* === HERO SECTION === */}
+        {hasUnseen ? (
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-            onClick={() => navigate('/vote')}
-            className="relative w-full rounded-2xl bg-gradient-primary p-5 text-left overflow-hidden group active:scale-[0.97] transition-transform"
+            className="relative rounded-2xl bg-gradient-primary p-6 overflow-hidden"
           >
-            <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-accent/10 blur-2xl" />
-            <div className="absolute bottom-0 left-0 w-20 h-20 rounded-full bg-primary-foreground/5 blur-xl" />
-            <div className="relative flex items-center justify-between">
+            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-accent/10 blur-2xl" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-primary-foreground/5 blur-xl" />
+            <div className="relative space-y-4">
               <div className="space-y-1">
-                <p className="text-base font-display font-bold text-primary-foreground leading-tight">
-                  {ctaText}
+                <p className="text-2xl font-display font-bold text-primary-foreground leading-tight">
+                  🔥 {unseenCount} new {unseenCount === 1 ? 'debate' : 'debates'} waiting
                 </p>
-                <p className="text-[11px] text-primary-foreground/60 font-medium">
-                  Tap to jump in
+                <p className="text-sm text-primary-foreground/60 font-medium">
+                  Your perspective matters — jump in now.
                 </p>
               </div>
-              <motion.div
-                animate={{ x: [0, 4, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                className="h-11 w-11 rounded-full bg-primary-foreground/15 flex items-center justify-center"
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                onClick={() => navigate('/vote')}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary-foreground/15 backdrop-blur-sm text-primary-foreground font-display font-bold text-sm tracking-wide border border-primary-foreground/20 hover:bg-primary-foreground/25 transition-colors"
               >
-                <ArrowRight className="h-5 w-5 text-primary-foreground" />
-              </motion.div>
+                <Zap className="h-4 w-4" />
+                Jump In
+                <ArrowRight className="h-4 w-4" />
+              </motion.button>
             </div>
-          </motion.button>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="rounded-2xl bg-card border border-border/50 p-5 text-center space-y-2"
+          >
+            <p className="text-lg font-display font-bold text-foreground">✨ You're all caught up</p>
+            <p className="text-xs text-muted-foreground">New debates drop regularly — check back soon.</p>
+          </motion.div>
         )}
 
-        {/* Discover Section */}
+        {/* === LIVE NOW SECTION === */}
+        {liveNowPolls.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center gap-2">
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <Radio className="h-4 w-4 text-destructive" />
+              </motion.div>
+              <h2 className="text-sm font-display font-extrabold text-foreground tracking-widest uppercase">Live Now</h2>
+              <span className="text-[10px] text-muted-foreground">Most active</span>
+            </div>
+
+            <div className="space-y-2">
+              {liveNowPolls.map((poll, i) => {
+                const hasVoted = votedPollIds?.has(poll.id);
+                return (
+                  <motion.div
+                    key={poll.id}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08, type: 'spring', stiffness: 260, damping: 22 }}
+                    onClick={() => handlePollTap(poll)}
+                    className="flex items-center gap-3 rounded-xl bg-card border border-border/50 p-3.5 cursor-pointer active:scale-[0.98] transition-transform"
+                  >
+                    <div className="shrink-0 h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                      <Flame className="h-4 w-4 text-destructive" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-display font-bold text-foreground truncate">{poll.question}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <Users className="h-2.5 w-2.5" /> {poll.totalVotes.toLocaleString()}
+                        </span>
+                        {hasVoted && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent font-semibold">✓ Voted</span>
+                        )}
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </motion.div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* === DISCOVER SECTION === */}
         <section className="space-y-4">
           <div className="flex items-baseline gap-2">
             <h2 className="text-lg font-display font-bold text-foreground tracking-tight">Discover</h2>
@@ -239,14 +292,13 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Poll Cards — varied layout */}
+          {/* Poll Cards */}
           <div className="space-y-3">
-            {filtered && filtered.length > 0 ? (
-              filtered.map((poll, i) => {
+            {discoverPolls.length > 0 ? (
+              discoverPolls.map((poll, i) => {
                 const Tag = tagConfig[poll.tag];
                 const TagIcon = Tag.icon;
                 const hasVoted = votedPollIds?.has(poll.id);
-                const isFeature = i === 0; // first card gets extra presence
 
                 return (
                   <motion.div
@@ -255,11 +307,9 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.06, type: 'spring', stiffness: 260, damping: 20 }}
                     onClick={() => handlePollTap(poll)}
-                    className={`rounded-2xl bg-card border border-border/60 cursor-pointer active:scale-[0.98] transition-transform ${
-                      isFeature ? 'p-5 shadow-card' : 'p-4'
-                    }`}
+                    className="rounded-2xl bg-card border border-border/60 p-4 cursor-pointer active:scale-[0.98] transition-transform"
                   >
-                    {/* Tag badge */}
+                    {/* Tag + meta row */}
                     <div className="flex items-center justify-between mb-3">
                       <motion.span
                         initial={{ scale: 0.8 }}
@@ -272,27 +322,19 @@ export default function Home() {
                       </motion.span>
                       <div className="flex items-center gap-1.5">
                         {hasVoted && (
-                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-semibold">
-                            ✓ Voted
-                          </span>
+                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-semibold">✓ Voted</span>
                         )}
                         <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {poll.totalVotes.toLocaleString()}
+                          <Users className="h-3 w-3" /> {poll.totalVotes.toLocaleString()}
                         </span>
                       </div>
                     </div>
 
                     {/* Question */}
-                    <p className={`font-display font-bold leading-snug text-foreground mb-4 ${
-                      isFeature ? 'text-base' : 'text-sm'
-                    }`}>
-                      {poll.question}
-                    </p>
+                    <p className="text-sm font-display font-bold leading-snug text-foreground mb-3">{poll.question}</p>
 
-                    {/* Options with ring indicators */}
+                    {/* Compact result rings */}
                     <div className="flex items-center gap-3">
-                      {/* Option A */}
                       <div className="flex-1 flex items-center gap-2.5 min-w-0">
                         <MiniRing percent={poll.percentA} color="hsl(var(--option-a))" />
                         <div className="min-w-0">
@@ -300,11 +342,7 @@ export default function Home() {
                           <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">{poll.option_a}</p>
                         </div>
                       </div>
-
-                      {/* Divider */}
                       <div className="w-px h-9 bg-border/50 shrink-0" />
-
-                      {/* Option B */}
                       <div className="flex-1 flex items-center gap-2.5 min-w-0 justify-end text-right">
                         <div className="min-w-0">
                           <span className="text-lg font-display font-bold text-foreground">{poll.percentB}%</span>
@@ -314,7 +352,6 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Tap hint */}
                     <p className="text-[9px] text-muted-foreground/50 text-right mt-3 font-medium tracking-wide">
                       {hasVoted ? 'Tap for results' : 'Tap to vote →'}
                     </p>
@@ -340,30 +377,9 @@ export default function Home() {
           <Zap className="h-4 w-4" />
           {hasUnseen ? 'Jump Into Voting' : 'Explore Perspectives'}
         </motion.button>
-
-        {/* Compressed Stats — minimal */}
-        {userStats && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex items-center justify-around rounded-2xl bg-card/40 border border-border/30 px-3 py-3"
-          >
-            {[
-              { label: 'PTS', value: userStats.points || 0 },
-              { label: 'STREAK', value: `${userStats.current_streak || 0}🔥` },
-              { label: 'DAYS', value: userStats.total_days_active || 0 },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-sm font-display font-bold text-foreground">{stat.value}</p>
-                <p className="text-[8px] text-muted-foreground/60 font-bold tracking-[0.15em] mt-0.5">{stat.label}</p>
-              </div>
-            ))}
-          </motion.div>
-        )}
       </div>
 
-      {/* Results Modal */}
+      {/* === RESULTS MODAL === */}
       <AnimatePresence>
         {resultsPoll && (
           <motion.div
@@ -384,23 +400,15 @@ export default function Home() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1 flex-1 pr-4">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-bold">Results</p>
-                  <p className="text-base font-display font-bold leading-snug text-foreground">
-                    {resultsPoll.question}
-                  </p>
+                  <p className="text-base font-display font-bold leading-snug text-foreground">{resultsPoll.question}</p>
                 </div>
-                <button
-                  onClick={() => setResultsPoll(null)}
-                  className="p-1.5 rounded-full bg-secondary hover:bg-secondary/80 transition-colors shrink-0"
-                >
+                <button onClick={() => setResultsPoll(null)} className="p-1.5 rounded-full bg-secondary hover:bg-secondary/80 transition-colors shrink-0">
                   <X className="h-4 w-4 text-foreground" />
                 </button>
               </div>
-
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Users className="h-3.5 w-3.5" />
-                {resultsPoll.totalVotes.toLocaleString()} votes
+                <Users className="h-3.5 w-3.5" /> {resultsPoll.totalVotes.toLocaleString()} votes
               </div>
-
               <div className="space-y-4">
                 {[
                   { label: resultsPoll.option_a, percent: resultsPoll.percentA, ringColor: 'hsl(var(--option-a))' },
@@ -415,11 +423,63 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-
               <div className="text-center pt-1">
-                <span className="text-[10px] text-muted-foreground/60 italic">
-                  You already shared your perspective.
-                </span>
+                <span className="text-[10px] text-muted-foreground/60 italic">You already shared your perspective.</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* === UNSEEN POLLS OVERLAY === */}
+      <AnimatePresence>
+        {showOverlay && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-background/70 backdrop-blur-md flex items-end sm:items-center justify-center p-4"
+            onClick={dismissOverlay}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 60 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-2xl bg-card border border-border p-6 space-y-5 shadow-card mb-4 sm:mb-0"
+            >
+              <div className="text-center space-y-2">
+                <motion.p
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.15, type: 'spring', stiffness: 400 }}
+                  className="text-3xl"
+                >
+                  ✨
+                </motion.p>
+                <p className="text-lg font-display font-bold text-foreground">
+                  {unseenCount} new {(unseenCount || 0) === 1 ? 'perspective' : 'perspectives'} just dropped
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Share your take and see how others think.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => { dismissOverlay(); navigate('/vote'); }}
+                  className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-primary text-primary-foreground font-display font-bold text-sm tracking-wide"
+                >
+                  <Zap className="h-4 w-4" />
+                  Start Voting
+                </motion.button>
+                <button
+                  onClick={dismissOverlay}
+                  className="w-full px-5 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                >
+                  Maybe Later
+                </button>
               </div>
             </motion.div>
           </motion.div>
