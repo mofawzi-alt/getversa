@@ -50,6 +50,8 @@ type PollCard = {
   image_b_url: string | null;
   category: string | null;
   totalVotes: number;
+  percentA: number;
+  percentB: number;
   tag: 'trending' | 'fresh' | 'popular';
 };
 
@@ -102,8 +104,11 @@ export default function Home() {
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
       const enriched = rawPolls.map(p => {
-        const r = resultsMap.get(p.id);
-        return { ...p, totalVotes: (r?.total_votes as number) || 0 };
+        const r = resultsMap.get(p.id) as any;
+        const total = (r?.total_votes as number) || 0;
+        const votesA = (r?.votes_a as number) || 0;
+        const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
+        return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA };
       });
       // Distribute tags evenly by thirds: top third = trending, middle = popular, newest = fresh
       const byVotes = [...enriched].sort((a, b) => b.totalVotes - a.totalVotes);
@@ -209,55 +214,71 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.06, type: 'spring', stiffness: 240, damping: 22 }}
                   onClick={() => handlePollTap(poll)}
-                  className={`relative rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform ${isWide ? 'aspect-[16/10]' : 'aspect-[4/3]'}`}
+                  className="relative rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform bg-card border border-border/40"
                 >
                   {/* Side-by-side images */}
-                  <div className="absolute inset-0 flex">
+                  <div className="flex h-40">
                     <div className="w-1/2 h-full relative overflow-hidden">
                       <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                      <span className="absolute bottom-3 left-3 right-1 text-[11px] font-bold text-white/90 leading-tight drop-shadow-lg">
+                      <span className="absolute bottom-2 left-2 right-1 text-[11px] font-bold text-white/90 leading-tight drop-shadow-lg">
                         {poll.option_a}
                       </span>
                     </div>
-                    <div className="w-px bg-background/30 shrink-0 z-10" />
+                    <div className="w-px bg-background/30 shrink-0" />
                     <div className="w-1/2 h-full relative overflow-hidden">
                       <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                      <span className="absolute bottom-3 left-1 right-3 text-[11px] font-bold text-white/90 leading-tight text-right drop-shadow-lg">
+                      <span className="absolute bottom-2 left-1 right-2 text-[11px] font-bold text-white/90 leading-tight text-right drop-shadow-lg">
                         {poll.option_b}
                       </span>
                     </div>
                   </div>
 
-                  {/* Top overlay: badge + votes */}
-                  <div className="absolute top-0 left-0 right-0 p-3 flex items-start justify-between z-10">
+                  {/* Results section below images */}
+                  <div className="p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-display font-bold text-foreground leading-snug">{poll.question}</p>
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0 ml-2">
+                        <Users className="h-3 w-3" /> {poll.totalVotes}
+                      </span>
+                    </div>
+
+                    {/* Percentage bar */}
+                    <div className="h-2.5 bg-muted rounded-full overflow-hidden flex">
+                      <div
+                        className="h-full bg-option-a rounded-l-full transition-all duration-700"
+                        style={{ width: `${poll.percentA}%` }}
+                      />
+                      <div
+                        className="h-full bg-option-b rounded-r-full transition-all duration-700"
+                        style={{ width: `${poll.percentB}%` }}
+                      />
+                    </div>
+
+                    {/* Labels */}
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-foreground font-semibold">{poll.option_a} ({poll.percentA}%)</span>
+                      <span className="text-foreground font-semibold">{poll.option_b} ({poll.percentB}%)</span>
+                    </div>
+                  </div>
+
+                  {/* Badge */}
+                  <div className="absolute top-2 left-2 z-10">
                     <motion.span
                       animate={Tag.pulse ? { scale: [1, 1.05, 1] } : {}}
                       transition={Tag.pulse ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-extrabold tracking-[0.1em] backdrop-blur-md bg-black/40 ${Tag.color}`}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-[0.1em] backdrop-blur-md bg-black/40 ${Tag.color}`}
                     >
                       <TagIcon className="h-3 w-3" />
                       {Tag.label}
                     </motion.span>
-                    <div className="flex items-center gap-1.5">
-                      {hasVoted && (
-                        <span className="text-[9px] px-2 py-0.5 rounded-full backdrop-blur-md bg-black/40 text-accent font-bold">✓</span>
-                      )}
-                      <span className="text-[10px] text-white/80 flex items-center gap-1 backdrop-blur-md bg-black/40 px-2 py-0.5 rounded-full font-semibold">
-                        <Users className="h-2.5 w-2.5" /> {poll.totalVotes.toLocaleString()}
-                      </span>
-                    </div>
                   </div>
 
-                  {/* Question overlay at bottom center */}
-                  <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-4 pt-8 bg-gradient-to-t from-black/70 to-transparent">
-                    <p className="text-sm font-display font-bold text-white text-center leading-snug drop-shadow-lg">
-                      {poll.question}
-                    </p>
-                  </div>
+                  {hasVoted && (
+                    <span className="absolute top-2 right-2 text-[9px] px-2 py-0.5 rounded-full backdrop-blur-md bg-black/40 text-accent font-bold z-10">✓</span>
+                  )}
 
-                  {/* Subtle glow for trending */}
                   {poll.tag === 'trending' && (
                     <motion.div
                       animate={{ opacity: [0.3, 0.6, 0.3] }}
