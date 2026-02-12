@@ -222,6 +222,27 @@ export type Database = {
           },
         ]
       }
+      dimensions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       favorite_polls: {
         Row: {
           created_at: string | null
@@ -422,6 +443,48 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      poll_dimensions: {
+        Row: {
+          created_at: string
+          dimension_id: string
+          id: string
+          poll_id: string
+          weight_a: number
+          weight_b: number
+        }
+        Insert: {
+          created_at?: string
+          dimension_id: string
+          id?: string
+          poll_id: string
+          weight_a?: number
+          weight_b?: number
+        }
+        Update: {
+          created_at?: string
+          dimension_id?: string
+          id?: string
+          poll_id?: string
+          weight_a?: number
+          weight_b?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_dimensions_dimension_id_fkey"
+            columns: ["dimension_id"]
+            isOneToOne: false
+            referencedRelation: "dimensions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_dimensions_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       polls: {
         Row: {
@@ -803,6 +866,41 @@ export type Database = {
           },
         ]
       }
+      user_dimension_scores: {
+        Row: {
+          dimension_id: string
+          id: string
+          score: number
+          updated_at: string
+          user_id: string
+          vote_count: number
+        }
+        Insert: {
+          dimension_id: string
+          id?: string
+          score?: number
+          updated_at?: string
+          user_id: string
+          vote_count?: number
+        }
+        Update: {
+          dimension_id?: string
+          id?: string
+          score?: number
+          updated_at?: string
+          user_id?: string
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_dimension_scores_dimension_id_fkey"
+            columns: ["dimension_id"]
+            isOneToOne: false
+            referencedRelation: "dimensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_rewards: {
         Row: {
           created_at: string | null
@@ -1089,6 +1187,13 @@ export type Database = {
           recent_score: number
           trend: string
           trend_change: number
+        }[]
+      }
+      get_insight_profile: {
+        Args: { p_user_id: string }
+        Returns: {
+          dimension_name: string
+          tendency: string
         }[]
       }
       get_leaderboard: {
