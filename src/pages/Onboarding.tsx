@@ -17,9 +17,9 @@ const COUNTRIES = [
 ];
 
 const INTRO_SLIDES = [
-  { title: 'Your opinion. Structured.', subtitle: 'VERSA captures what your generation really thinks — one vote at a time.' },
+  { title: 'Your opinion. Structured.', subtitle: 'VERSA captures what people really think — one vote at a time.' },
   { title: 'Vote in 3 seconds.', subtitle: 'Swipe or tap. No overthinking. Just pick your side.' },
-  { title: 'See how your generation thinks.', subtitle: 'Instant results. Real data. Your voice matters.' },
+  { title: 'See how people like you think.', subtitle: 'Instant results. Real data. Your voice matters.' },
 ];
 
 export default function Onboarding() {
@@ -86,16 +86,26 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen flex flex-col p-6 safe-area-top safe-area-bottom">
-      {/* Progress */}
-      <div className="flex gap-2 mb-8">
-        {Array.from({ length: totalSteps }).map((_, s) => (
-          <div
-            key={s}
-            className={`h-1 flex-1 rounded-full transition-all ${
-              s <= step ? 'bg-gradient-primary' : 'bg-secondary'
-            }`}
-          />
-        ))}
+      {/* Top bar: Progress + Skip */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="flex gap-2 flex-1">
+          {Array.from({ length: totalSteps }).map((_, s) => (
+            <div
+              key={s}
+              className={`h-1 flex-1 rounded-full transition-all ${
+                s <= step ? 'bg-gradient-primary' : 'bg-secondary'
+              }`}
+            />
+          ))}
+        </div>
+        {isIntroSlide && (
+          <button
+            onClick={() => setStep(3)}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Skip
+          </button>
+        )}
       </div>
 
       <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full animate-slide-up">

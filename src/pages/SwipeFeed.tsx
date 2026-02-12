@@ -485,9 +485,6 @@ export default function SwipeFeed() {
         <header className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-display font-bold text-gradient">VERSA</h1>
-            <p className="text-sm text-foreground/60">
-              {polls && polls.length > 0 ? `Poll ${Math.min(currentIndex + 1, polls.length)} of ${polls.length}` : "No polls available"}
-            </p>
           </div>
           <div className="flex items-center gap-2">
             {currentPoll && (

@@ -143,7 +143,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
         {/* Total votes */}
         <div className="text-center mb-4">
           <p className="text-sm text-card-foreground/70">
-            {result.totalVotes.toLocaleString()} total votes
+            Based on {result.totalVotes.toLocaleString()} votes{insights?.countryName ? ` in ${insights.countryName}` : ''}
           </p>
           <p className="text-sm font-medium text-primary">
             You voted with {userPercent}% of users
