@@ -61,6 +61,73 @@ interface VoteResult {
   totalVotes: number;
 }
 
+// Rotate polls so no two consecutive polls share the same index_category
+function rotatePollsByCategory(polls: Poll[]): Poll[] {
+  if (polls.length <= 1) return polls;
+
+  // Group by index_category
+  const categories = ['identity', 'social', 'consumption', 'tech', 'cultural'];
+  const buckets = new Map<string, Poll[]>();
+  const uncategorized: Poll[] = [];
+
+  polls.forEach(p => {
+    const cat = (p as any).index_category;
+    if (cat && categories.includes(cat)) {
+      if (!buckets.has(cat)) buckets.set(cat, []);
+      buckets.get(cat)!.push(p);
+    } else {
+      uncategorized.push(p);
+    }
+  });
+
+  // If no categorized polls, return as-is
+  if (buckets.size === 0) return polls;
+
+  // Round-robin interleave from each bucket
+  const result: Poll[] = [];
+  let lastCategory = '';
+  const activeBuckets = [...buckets.keys()];
+
+  while (activeBuckets.length > 0 || uncategorized.length > 0) {
+    let placed = false;
+
+    // Try to pick from a different category than last
+    for (let i = 0; i < activeBuckets.length; i++) {
+      const cat = activeBuckets[i];
+      if (cat === lastCategory && activeBuckets.length > 1) continue;
+
+      const bucket = buckets.get(cat)!;
+      result.push(bucket.shift()!);
+      lastCategory = cat;
+      placed = true;
+
+      if (bucket.length === 0) {
+        activeBuckets.splice(i, 1);
+      }
+      break;
+    }
+
+    // If nothing placed (only one category left or empty), use uncategorized as spacer
+    if (!placed && uncategorized.length > 0) {
+      result.push(uncategorized.shift()!);
+      lastCategory = '';
+    } else if (!placed && activeBuckets.length > 0) {
+      // Only one category left, just drain it
+      const cat = activeBuckets[0];
+      const bucket = buckets.get(cat)!;
+      result.push(bucket.shift()!);
+      lastCategory = cat;
+      if (bucket.length === 0) activeBuckets.splice(0, 1);
+    } else if (!placed) {
+      break;
+    }
+  }
+
+  // Append remaining uncategorized
+  result.push(...uncategorized);
+  return result;
+}
+
 export default function SwipeFeed() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -74,7 +141,7 @@ export default function SwipeFeed() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Fetch polls - DB-level filtering, ordered by created_at DESC, limit 20
+  // Fetch polls - DB-level filtering, category rotation, 40-60 active polls
   const { data: polls, isLoading, refetch } = useQuery({
     queryKey: ['feed-polls', user?.id],
     queryFn: async () => {
@@ -95,6 +162,7 @@ export default function SwipeFeed() {
         .from('polls')
         .select('*')
         .eq('is_active', true)
+        .neq('is_archived', true)
         .or(`and(starts_at.lte.${now},ends_at.gte.${now}),and(starts_at.is.null,ends_at.is.null)`)
         .order('is_daily_poll', { ascending: false })
         .order('created_at', { ascending: false });
@@ -103,18 +171,20 @@ export default function SwipeFeed() {
         query = query.not('id', 'in', `(${votedIds.join(',')})`);
       }
 
-      query = query.limit(20);
+      query = query.limit(60);
 
       const { data: fetchedPolls, error: pollsError } = await query;
       if (pollsError) throw pollsError;
 
       let allPolls = fetchedPolls || [];
 
+      // Filter expired (safety check)
       allPolls = allPolls.filter(p => {
         if (p.ends_at && new Date(p.ends_at) < new Date()) return false;
         return true;
       });
 
+      // Demographic targeting
       if (profile) {
         allPolls = allPolls.filter(p => {
           if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) return false;
@@ -124,7 +194,8 @@ export default function SwipeFeed() {
         });
       }
 
-      return allPolls;
+      // Category rotation: reorder to avoid consecutive same index_category
+      return rotatePollsByCategory(allPolls);
     },
   });
 

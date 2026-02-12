@@ -495,8 +495,11 @@ export type Database = {
           id: string
           image_a_url: string | null
           image_b_url: string | null
+          index_category: string | null
           intent_tag: string | null
+          internal_dimension_tag: string | null
           is_active: boolean | null
+          is_archived: boolean | null
           is_daily_poll: boolean | null
           option_a: string
           option_b: string
@@ -505,6 +508,7 @@ export type Database = {
           target_age_range: string | null
           target_country: string | null
           target_gender: string | null
+          weight_score: number | null
         }
         Insert: {
           category?: string | null
@@ -514,8 +518,11 @@ export type Database = {
           id?: string
           image_a_url?: string | null
           image_b_url?: string | null
+          index_category?: string | null
           intent_tag?: string | null
+          internal_dimension_tag?: string | null
           is_active?: boolean | null
+          is_archived?: boolean | null
           is_daily_poll?: boolean | null
           option_a: string
           option_b: string
@@ -524,6 +531,7 @@ export type Database = {
           target_age_range?: string | null
           target_country?: string | null
           target_gender?: string | null
+          weight_score?: number | null
         }
         Update: {
           category?: string | null
@@ -533,8 +541,11 @@ export type Database = {
           id?: string
           image_a_url?: string | null
           image_b_url?: string | null
+          index_category?: string | null
           intent_tag?: string | null
+          internal_dimension_tag?: string | null
           is_active?: boolean | null
+          is_archived?: boolean | null
           is_daily_poll?: boolean | null
           option_a?: string
           option_b?: string
@@ -543,6 +554,7 @@ export type Database = {
           target_age_range?: string | null
           target_country?: string | null
           target_gender?: string | null
+          weight_score?: number | null
         }
         Relationships: [
           {
