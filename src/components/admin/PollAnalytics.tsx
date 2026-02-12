@@ -424,12 +424,7 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
             ) : (
               polls?.map((poll) => (
                 <SelectItem key={poll.id} value={poll.id} className="py-2">
-                  <div className="flex items-center gap-2">
-                    {(poll.image_a_url || poll.image_b_url) && (
-                      <ImageIcon className="h-3 w-3 text-muted-foreground" />
-                    )}
-                    <span className="line-clamp-1">{poll.question}</span>
-                  </div>
+                  {poll.option_a} vs {poll.option_b}
                 </SelectItem>
               ))
             )}
