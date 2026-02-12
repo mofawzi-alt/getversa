@@ -2,8 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
-import { Bell, Check, Loader2 } from 'lucide-react';
+import { Bell, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { NotificationToggle } from '@/components/NotificationToggle';
 
 export default function Notifications() {
   const { user } = useAuth();
@@ -43,16 +44,10 @@ export default function Notifications() {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'vote_result':
-        return '🗳️';
-      case 'reward':
-        return '🎁';
-      case 'challenge':
-        return '🏆';
-      case 'sponsored':
-        return '✨';
-      default:
-        return '🔔';
+      case 'vote_result': return '🗳️';
+      case 'friend_voted': return '👥';
+      case 'challenge': return '🏆';
+      default: return '🔔';
     }
   };
 
@@ -60,8 +55,8 @@ export default function Notifications() {
     <AppLayout>
       <div className="p-4 space-y-4 animate-slide-up">
         <header>
-          <h1 className="text-2xl font-display font-bold">Notifications</h1>
-          <p className="text-foreground/60 text-sm">Stay updated on your activity</p>
+          <h1 className="text-2xl font-display font-bold">Alerts</h1>
+          <p className="text-foreground/60 text-sm">Stay in the loop</p>
         </header>
 
         {isLoading ? (
@@ -74,8 +69,8 @@ export default function Notifications() {
               <button
                 key={notification.id}
                 onClick={() => !notification.is_read && markReadMutation.mutate(notification.id)}
-                className={`w-full text-left glass rounded-xl p-4 transition-all ${
-                  notification.is_read ? 'opacity-60' : 'shadow-glow'
+                className={`w-full text-left rounded-xl p-4 bg-card border border-border transition-all ${
+                  notification.is_read ? 'opacity-60' : 'shadow-card'
                 }`}
               >
                 <div className="flex gap-3">
@@ -99,12 +94,17 @@ export default function Notifications() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <Bell className="h-12 w-12 text-foreground/40 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold">No notifications yet</h3>
-            <p className="text-foreground/60 text-sm">
-              Start voting to see your activity here
-            </p>
+          <div className="text-center py-12 space-y-5">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <Bell className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-foreground">New polls drop daily</h3>
+              <p className="text-foreground/60 text-sm max-w-xs mx-auto">
+                Enable notifications to know when fresh polls are live and see how your votes compare.
+              </p>
+            </div>
+            <NotificationToggle />
           </div>
         )}
       </div>

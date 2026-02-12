@@ -131,7 +131,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
           <div 
             className={`relative rounded-2xl overflow-hidden transition-all duration-200 ${
               dragOffset < -50 
-                ? 'ring-4 ring-accent scale-[1.03]' 
+                ? 'ring-4 ring-accent scale-[1.05] shadow-[0_0_20px_rgba(var(--accent),0.3)]' 
                 : ''
             }`}
           >
@@ -181,7 +181,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, liveVotes, hasVot
           <div 
             className={`relative rounded-2xl overflow-hidden transition-all duration-200 ${
               dragOffset > 50 
-                ? 'ring-4 ring-yellow-400 scale-[1.03]' 
+                ? 'ring-4 ring-yellow-400 scale-[1.05] shadow-[0_0_20px_rgba(234,179,8,0.3)]' 
                 : ''
             }`}
           >
