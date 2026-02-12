@@ -103,6 +103,13 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
 
   return (
     <div className="space-y-4 mt-4 w-full animate-fade-in">
+      {/* Caught-up message */}
+      <div className="text-center space-y-1">
+        <div className="text-3xl">✨</div>
+        <h2 className="text-lg font-display font-bold">You've explored your current dimensions.</h2>
+        <p className="text-sm text-muted-foreground">Discover more perspectives below.</p>
+      </div>
+
       {/* Header */}
       <div className="flex items-center gap-2">
         <Flame className="h-5 w-5 text-destructive" />
