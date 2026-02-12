@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import PollCard from '@/components/poll/PollCard';
-import { Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import { Loader2, RefreshCw, Sparkles, SkipForward } from 'lucide-react';
 import ShareButton from '@/components/poll/ShareButton';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import { toast } from 'sonner';
@@ -311,6 +311,13 @@ export default function SwipeFeed() {
     voteMutation.mutate({ pollId: poll.id, choice });
   }, [polls, currentIndex, voteMutation, user, votedPollIds, result]);
 
+  const handleSkip = useCallback(() => {
+    if (!polls || currentIndex >= polls.length || result) return;
+    setResult(null);
+    setAnimatingCard(null);
+    setCurrentIndex(prev => prev + 1);
+  }, [polls, currentIndex, result]);
+
   const handleNextPoll = useCallback(() => {
     setResult(null);
     setAnimatingCard(null);
@@ -390,7 +397,7 @@ export default function SwipeFeed() {
           className="relative flex items-start justify-center overflow-visible pt-2"
         >
           {hasMorePolls && currentPoll ? (
-            <div className="w-full flex items-start justify-center">
+            <div className="w-full flex flex-col items-center">
               <PollCard
                 key={currentPoll.id}
                 poll={currentPoll}
@@ -399,6 +406,16 @@ export default function SwipeFeed() {
                 result={result && result.pollId === currentPoll.id ? result : null}
                 onResultDone={handleNextPoll}
               />
+              {/* Skip button - only visible before voting */}
+              {!result && (
+                <button
+                  onClick={handleSkip}
+                  className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors py-2 px-4"
+                >
+                  <SkipForward className="h-3.5 w-3.5" />
+                  Skip
+                </button>
+              )}
             </div>
           ) : (
             <CaughtUpInsights onRefresh={() => { setCurrentIndex(0); setResult(null); refetch(); }} />
