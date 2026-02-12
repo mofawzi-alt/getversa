@@ -80,6 +80,7 @@ export default function SwipeFeed() {
   const [votedPollIds, setVotedPollIds] = useState<Set<string>>(new Set());
   const [newPollsCount, setNewPollsCount] = useState(0);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [autoAdvanceTimer, setAutoAdvanceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const [slideOffset, setSlideOffset] = useState(0);
@@ -89,7 +90,7 @@ export default function SwipeFeed() {
   const touchStartY = useRef<number | null>(null);
   const touchStartTime = useRef<number>(0);
 
-  // Fetch polls - works for both guests and authenticated users
+  // Fetch polls - filter out expired, sort daily first, exclude already voted
   const { data: polls, isLoading, refetch } = useQuery({
     queryKey: ['feed-polls', user?.id],
     queryFn: async () => {
@@ -104,6 +105,12 @@ export default function SwipeFeed() {
       if (pollsError) throw pollsError;
       
       let allPolls = regularPolls || [];
+      
+      // Filter out expired polls strictly
+      allPolls = allPolls.filter(p => {
+        if (p.ends_at && new Date(p.ends_at) < new Date()) return false;
+        return true;
+      });
       
       // Apply demographic filtering for authenticated users
       if (profile) {
@@ -125,21 +132,15 @@ export default function SwipeFeed() {
         const userVotedIds = new Set(userVotes?.map(v => v.poll_id) || []);
         setVotedPollIds(userVotedIds);
         
-        // Separate unvoted and voted daily polls
+        // Only show unvoted polls - users cannot see results before voting
         const unvotedPolls = allPolls.filter(p => !userVotedIds.has(p.id));
-        const votedLivePolls = allPolls.filter(p => p.is_daily_poll && userVotedIds.has(p.id));
         
-        const sortedUnvoted = unvotedPolls.sort((a, b) => {
+        // Sort: daily poll first, then by newest
+        return unvotedPolls.sort((a, b) => {
           if (a.is_daily_poll && !b.is_daily_poll) return -1;
           if (!a.is_daily_poll && b.is_daily_poll) return 1;
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
         });
-        
-        const sortedVotedLive = votedLivePolls.sort((a, b) =>
-          new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-        );
-        
-        return [...sortedUnvoted, ...sortedVotedLive];
       }
       
       // Guest: sort by newest, daily polls first
@@ -170,7 +171,6 @@ export default function SwipeFeed() {
       return;
     }
     
-    // Only fetch demographics for admin
     if (isAdmin) {
       const userIds = [...new Set(votes.map(v => v.user_id))];
       const { data: users } = await supabase
@@ -257,7 +257,7 @@ export default function SwipeFeed() {
     refetch();
   }, [refetch]);
 
-  // Touch swipe navigation
+  // Touch swipe navigation (only for navigating between polls when voted)
   const getContainerWidth = useCallback(() => containerRef.current?.offsetWidth || window.innerWidth, []);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -269,72 +269,13 @@ export default function SwipeFeed() {
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (touchStartX.current === null || touchStartY.current === null || isAnimating) return;
-    const deltaX = e.touches[0].clientX - touchStartX.current;
-    const deltaY = e.touches[0].clientY - touchStartY.current;
-    const activePoll = polls?.[currentIndex];
-    const currentPollVoted = activePoll && votedPollIds.has(activePoll.id);
-    if (currentPollVoted && Math.abs(deltaX) > Math.abs(deltaY)) {
-      e.preventDefault();
-      setIsDragging(true);
-      const containerWidth = getContainerWidth();
-      if ((deltaX > 0 && currentIndex === 0) || (deltaX < 0 && polls && currentIndex >= polls.length - 1)) {
-        setSlideOffset(deltaX * 0.3);
-      } else {
-        setSlideOffset(deltaX);
-      }
-    }
-  }, [polls, votedPollIds, currentIndex, isAnimating, getContainerWidth]);
+    // No swiping between polls - each poll must be voted on
+  }, [isAnimating]);
 
   const handleTouchEnd = useCallback(() => {
-    if (touchStartX.current === null || !isDragging) {
-      touchStartX.current = null;
-      touchStartY.current = null;
-      return;
-    }
-    const containerWidth = getContainerWidth();
-    const velocity = slideOffset / (Date.now() - touchStartTime.current);
-    const threshold = containerWidth * 0.25;
-    const activePoll = polls?.[currentIndex];
-    const currentPollVoted = activePoll && votedPollIds.has(activePoll.id);
-    if (!currentPollVoted) {
-      setSlideOffset(0);
-      setIsDragging(false);
-      touchStartX.current = null;
-      touchStartY.current = null;
-      return;
-    }
-    setIsAnimating(true);
-    const shouldGoNext = (slideOffset < -threshold || velocity < -0.5) && polls && currentIndex < polls.length - 1;
-    const shouldGoPrev = (slideOffset > threshold || velocity > 0.5) && currentIndex > 0;
-    if (shouldGoNext) {
-      setSlideOffset(-containerWidth);
-      setTimeout(() => { setCurrentIndex(prev => prev + 1); setSlideOffset(0); setIsAnimating(false); }, 300);
-    } else if (shouldGoPrev) {
-      setSlideOffset(containerWidth);
-      setTimeout(() => { setCurrentIndex(prev => prev - 1); setSlideOffset(0); setIsAnimating(false); }, 300);
-    } else {
-      setSlideOffset(0);
-      setTimeout(() => setIsAnimating(false), 300);
-    }
-    setIsDragging(false);
     touchStartX.current = null;
     touchStartY.current = null;
-  }, [polls, votedPollIds, currentIndex, slideOffset, isDragging, getContainerWidth]);
-
-  const navigateWithSlide = useCallback((direction: 'left' | 'right') => {
-    if (isAnimating) return;
-    const containerWidth = getContainerWidth();
-    setIsAnimating(true);
-    if (direction === 'left' && polls && currentIndex < polls.length - 1) {
-      setSlideOffset(-containerWidth);
-      setTimeout(() => { setCurrentIndex(prev => prev + 1); setSlideOffset(0); setIsAnimating(false); }, 300);
-    } else if (direction === 'right' && currentIndex > 0) {
-      setSlideOffset(containerWidth);
-      setTimeout(() => { setCurrentIndex(prev => prev - 1); setSlideOffset(0); setIsAnimating(false); }, 300);
-    } else {
-      setIsAnimating(false);
-    }
-  }, [polls, currentIndex, isAnimating, getContainerWidth]);
+  }, []);
 
   const voteMutation = useMutation({
     mutationFn: async ({ pollId, choice }: { pollId: string; choice: 'A' | 'B' }) => {
@@ -345,7 +286,6 @@ export default function SwipeFeed() {
           setShowSignupModal(true);
           throw new Error('GUEST_LIMIT');
         }
-        // Guest can't actually vote - show simulated results
         const existing = liveVoteCounts[pollId];
         const totalA = (existing?.a || 0);
         const totalB = (existing?.b || 0);
@@ -355,12 +295,16 @@ export default function SwipeFeed() {
         const percentA = Math.round((newA / total) * 100);
         const percentB = 100 - percentA;
         
-        // After showing result, check if limit reached
         if (count >= GUEST_VOTE_LIMIT) {
           setTimeout(() => setShowSignupModal(true), 2000);
         }
         
         return { pollId, choice, percentA, percentB, totalVotes: total };
+      }
+      
+      // Prevent double voting
+      if (votedPollIds.has(pollId)) {
+        throw new Error('ALREADY_VOTED');
       }
       
       const { error: voteError } = await supabase
@@ -387,6 +331,11 @@ export default function SwipeFeed() {
     },
     onError: (error: any) => {
       if (error.message === 'GUEST_LIMIT') return;
+      if (error.message === 'ALREADY_VOTED') {
+        toast.error('You already voted on this poll');
+        handleNextPoll();
+        return;
+      }
       if (error.message?.includes('duplicate')) {
         toast.error('You already voted on this poll');
         handleNextPoll();
@@ -406,12 +355,26 @@ export default function SwipeFeed() {
     }
     
     const poll = polls[currentIndex];
+    
+    // Block voting on expired polls
+    if (poll.ends_at && new Date(poll.ends_at) < new Date()) {
+      toast.error('This poll has expired');
+      handleNextPoll();
+      return;
+    }
+    
+    // Block double voting
+    if (votedPollIds.has(poll.id)) {
+      handleNextPoll();
+      return;
+    }
+    
     const choice = direction === 'right' ? 'B' : 'A';
     setAnimatingCard(direction);
     setTimeout(() => {
       voteMutation.mutate({ pollId: poll.id, choice });
     }, 300);
-  }, [polls, currentIndex, voteMutation, user]);
+  }, [polls, currentIndex, voteMutation, user, votedPollIds]);
 
   const handleNextPoll = () => {
     setResult(null);
@@ -451,7 +414,7 @@ export default function SwipeFeed() {
           <div>
             <h1 className="text-2xl font-display font-bold text-gradient">VERSA</h1>
             <p className="text-sm text-foreground/60">
-              {polls && polls.length > 1 ? `Poll ${currentIndex + 1} of ${polls.length}` : "Today's Poll"}
+              {polls && polls.length > 0 ? `Poll ${Math.min(currentIndex + 1, polls.length)} of ${polls.length}` : "No polls available"}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -461,9 +424,6 @@ export default function SwipeFeed() {
                 pollQuestion={currentPoll.question}
                 optionA={currentPoll.option_a}
                 optionB={currentPoll.option_b}
-                percentA={liveVoteCounts[currentPoll.id] ? Math.round((liveVoteCounts[currentPoll.id].a / (liveVoteCounts[currentPoll.id].a + liveVoteCounts[currentPoll.id].b || 1)) * 100) : undefined}
-                percentB={liveVoteCounts[currentPoll.id] ? Math.round((liveVoteCounts[currentPoll.id].b / (liveVoteCounts[currentPoll.id].a + liveVoteCounts[currentPoll.id].b || 1)) * 100) : undefined}
-                showResults={votedPollIds.has(currentPoll.id)}
                 variant="icon"
               />
             )}
@@ -494,27 +454,21 @@ export default function SwipeFeed() {
           onTouchEnd={handleTouchEnd}
         >
           {hasMorePolls && currentPoll ? (
-            <div 
-              className="w-full flex items-start justify-center"
-              style={{
-                transform: `translateX(${slideOffset}px)`,
-                transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-              }}
-            >
+            <div className="w-full flex items-start justify-center">
               <PollCard
                 key={currentPoll.id}
                 poll={currentPoll}
                 onSwipe={handleSwipe}
                 isAnimating={animatingCard}
                 liveVotes={liveVoteCounts[currentPoll.id]}
-                hasVoted={votedPollIds.has(currentPoll.id)}
+                hasVoted={false}
                 showDemographics={isAdmin}
               />
             </div>
           ) : (
-            <div className="text-center space-y-4">
-              <div className="text-6xl">🎉</div>
-              <h2 className="text-2xl font-display font-bold">You're all caught up!</h2>
+            <div className="text-center space-y-4 mt-12">
+              <div className="text-6xl">✅</div>
+              <h2 className="text-2xl font-display font-bold text-foreground">You're caught up!</h2>
               <p className="text-foreground/60">Check back later for more polls</p>
               <button
                 onClick={() => { setCurrentIndex(0); refetch(); }}
@@ -527,8 +481,8 @@ export default function SwipeFeed() {
           )}
         </div>
 
-        {/* Swipe Hints */}
-        {hasMorePolls && currentPoll && !votedPollIds.has(currentPoll.id) && (
+        {/* Swipe Hints - only for unvoted polls */}
+        {hasMorePolls && currentPoll && (
           <div className="flex justify-center gap-8 mt-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <span className="text-lg">👈</span>
@@ -540,42 +494,9 @@ export default function SwipeFeed() {
             </div>
           </div>
         )}
-        
-        {/* Navigation dots */}
-        {hasMorePolls && currentPoll && polls && polls.length > 1 && (
-          <div className="flex justify-center items-center gap-4 mt-4">
-            <button
-              onClick={() => navigateWithSlide('right')}
-              disabled={currentIndex === 0}
-              className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors disabled:opacity-30"
-            >
-              <ChevronLeft className="h-5 w-5 text-foreground/80" />
-            </button>
-            <div className="flex gap-1.5">
-              {polls.slice(0, 10).map((poll, idx) => (
-                <div
-                  key={poll.id}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    idx === currentIndex ? 'bg-primary w-4' : votedPollIds.has(poll.id) ? 'bg-primary/40' : 'bg-muted-foreground/30'
-                  }`}
-                />
-              ))}
-              {polls.length > 10 && (
-                <span className="text-xs text-muted-foreground">+{polls.length - 10}</span>
-              )}
-            </div>
-            <button
-              onClick={() => navigateWithSlide('left')}
-              disabled={currentIndex >= polls.length - 1}
-              className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors disabled:opacity-30"
-            >
-              <ChevronRight className="h-5 w-5 text-foreground/80" />
-            </button>
-          </div>
-        )}
       </div>
 
-      {/* Results Overlay */}
+      {/* Results Overlay - auto-advances to next poll */}
       {result && currentPoll && (
         <ResultsOverlay
           poll={currentPoll}

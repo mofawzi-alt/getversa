@@ -927,6 +927,7 @@ export type Database = {
           education_level: string | null
           email: string
           employment_status: string | null
+          first_vote_date: string | null
           gender: string | null
           id: string
           income_range: string | null
@@ -934,6 +935,7 @@ export type Database = {
           last_vote_date: string | null
           longest_streak: number | null
           points: number | null
+          total_days_active: number | null
           username: string | null
         }
         Insert: {
@@ -946,6 +948,7 @@ export type Database = {
           education_level?: string | null
           email: string
           employment_status?: string | null
+          first_vote_date?: string | null
           gender?: string | null
           id: string
           income_range?: string | null
@@ -953,6 +956,7 @@ export type Database = {
           last_vote_date?: string | null
           longest_streak?: number | null
           points?: number | null
+          total_days_active?: number | null
           username?: string | null
         }
         Update: {
@@ -965,6 +969,7 @@ export type Database = {
           education_level?: string | null
           email?: string
           employment_status?: string | null
+          first_vote_date?: string | null
           gender?: string | null
           id?: string
           income_range?: string | null
@@ -972,6 +977,7 @@ export type Database = {
           last_vote_date?: string | null
           longest_streak?: number | null
           points?: number | null
+          total_days_active?: number | null
           username?: string | null
         }
         Relationships: []
