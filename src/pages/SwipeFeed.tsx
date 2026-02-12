@@ -295,7 +295,7 @@ export default function SwipeFeed() {
     <div className="fixed inset-0 z-40 flex flex-col bg-background">
       {/* Minimal top bar — compact */}
       {hasMorePolls && (
-        <div className="safe-area-top px-4 pt-1.5 pb-1 flex items-center justify-between">
+        <div className="px-3 pt-0.5 pb-0.5 flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-medium">
             {currentIndex + 1} / {totalPolls}
           </span>
