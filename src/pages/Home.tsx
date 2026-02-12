@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowRight, Flame, Sparkles, TrendingUp, Clock, Users, Zap } from 'lucide-react';
+import { ArrowRight, Flame, Sparkles, TrendingUp, Users, Zap, X } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CATEGORIES = [
   { key: 'all', label: 'All' },
@@ -34,6 +34,21 @@ export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState('all');
+  const [resultsPoll, setResultsPoll] = useState<PollCard | null>(null);
+
+  // User's voted poll IDs
+  const { data: votedPollIds } = useQuery({
+    queryKey: ['user-voted-ids', user?.id],
+    queryFn: async () => {
+      if (!user) return new Set<string>();
+      const { data: votes } = await supabase
+        .from('votes')
+        .select('poll_id')
+        .eq('user_id', user.id);
+      return new Set(votes?.map(v => v.poll_id) || []);
+    },
+    staleTime: 1000 * 60 * 2,
+  });
 
   // Unseen poll count
   const { data: unseenCount, isLoading: loadingUnseen } = useQuery({
@@ -51,13 +66,13 @@ export default function Home() {
         .select('poll_id')
         .eq('user_id', user.id);
 
-      const votedIds = new Set(votes?.map(v => v.poll_id) || []);
-      return polls.filter(p => !votedIds.has(p.id)).length;
+      const voted = new Set(votes?.map(v => v.poll_id) || []);
+      return polls.filter(p => !voted.has(p.id)).length;
     },
     staleTime: 1000 * 60 * 2,
   });
 
-  // Mixed poll feed: trending + fresh + popular
+  // Mixed poll feed
   const { data: mixedPolls, isLoading: loadingPolls } = useQuery({
     queryKey: ['mixed-polls-home'],
     queryFn: async () => {
@@ -87,7 +102,6 @@ export default function Home() {
         };
       });
 
-      // Trending: most votes
       const trending = [...enriched]
         .filter(p => p.totalVotes > 0)
         .sort((a, b) => b.totalVotes - a.totalVotes)
@@ -96,7 +110,6 @@ export default function Home() {
 
       const trendingIds = new Set(trending.map(p => p.id));
 
-      // Fresh: newest with some votes
       const fresh = enriched
         .filter(p => !trendingIds.has(p.id))
         .slice(0, 2)
@@ -104,14 +117,12 @@ export default function Home() {
 
       const usedIds = new Set([...trendingIds, ...fresh.map(p => p.id)]);
 
-      // Popular: high votes not already used
       const popular = [...enriched]
         .filter(p => p.totalVotes > 0 && !usedIds.has(p.id))
         .sort((a, b) => b.totalVotes - a.totalVotes)
         .slice(0, 1)
         .map(p => ({ ...p, tag: 'popular' as const }));
 
-      // Interleave: trending, fresh, popular
       const mixed: PollCard[] = [];
       const sources = [trending, fresh, popular];
       const maxLen = Math.max(...sources.map(s => s.length));
@@ -163,6 +174,17 @@ export default function Home() {
     trending: { icon: Flame, label: 'Trending', color: 'text-destructive' },
     fresh: { icon: Sparkles, label: 'New', color: 'text-accent' },
     popular: { icon: TrendingUp, label: 'Popular', color: 'text-primary' },
+  };
+
+  const handlePollTap = (poll: PollCard) => {
+    const hasVoted = votedPollIds?.has(poll.id);
+    if (hasVoted) {
+      // Show read-only results modal
+      setResultsPoll(poll);
+    } else {
+      // Navigate to Vote tab with this specific poll
+      navigate(`/vote?pollId=${poll.id}`);
+    }
   };
 
   return (
@@ -233,21 +255,29 @@ export default function Home() {
                 const winnerIsA = poll.percentA >= poll.percentB;
                 const Tag = tagConfig[poll.tag];
                 const TagIcon = Tag.icon;
+                const hasVoted = votedPollIds?.has(poll.id);
                 return (
                   <motion.div
                     key={poll.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    onClick={() => navigate('/vote')}
+                    onClick={() => handlePollTap(poll)}
                     className="rounded-2xl bg-card border border-border p-4 space-y-2.5 cursor-pointer active:scale-[0.98] transition-transform"
                   >
-                    {/* Tag + votes */}
+                    {/* Tag + status + votes */}
                     <div className="flex items-center justify-between">
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider ${Tag.color}`}>
-                        <TagIcon className="h-3 w-3" />
-                        {Tag.label}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider ${Tag.color}`}>
+                          <TagIcon className="h-3 w-3" />
+                          {Tag.label}
+                        </span>
+                        {hasVoted && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                            Voted
+                          </span>
+                        )}
+                      </div>
                       <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
                         <Users className="h-3 w-3" />
                         {poll.totalVotes.toLocaleString()}
@@ -277,6 +307,11 @@ export default function Home() {
                         {poll.option_b} ({poll.percentB}%)
                       </span>
                     </div>
+
+                    {/* Tap hint */}
+                    <p className="text-[10px] text-muted-foreground/60 text-right">
+                      {hasVoted ? 'Tap to see results' : 'Tap to vote →'}
+                    </p>
                   </motion.div>
                 );
               })
@@ -300,7 +335,7 @@ export default function Home() {
           {hasUnseen ? 'Start Voting' : 'Explore Perspectives'}
         </motion.button>
 
-        {/* Compressed Stats — pushed lower */}
+        {/* Compressed Stats */}
         {userStats && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -312,7 +347,7 @@ export default function Home() {
               { label: 'Points', value: userStats.points || 0 },
               { label: 'Streak', value: `${userStats.current_streak || 0}🔥` },
               { label: 'Active', value: `${userStats.total_days_active || 0}d` },
-            ].map((stat, i) => (
+            ].map((stat) => (
               <div key={stat.label} className="text-center flex-1">
                 <p className="text-sm font-bold text-foreground">{stat.value}</p>
                 <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
@@ -321,6 +356,79 @@ export default function Home() {
           </motion.div>
         )}
       </div>
+
+      {/* Results Modal (read-only) */}
+      <AnimatePresence>
+        {resultsPoll && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setResultsPoll(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-2xl bg-card border border-border p-6 space-y-5 shadow-card"
+            >
+              {/* Close */}
+              <div className="flex items-start justify-between">
+                <div className="space-y-1 flex-1 pr-4">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Results</p>
+                  <p className="text-base font-bold leading-snug text-foreground">
+                    {resultsPoll.question}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setResultsPoll(null)}
+                  className="p-1.5 rounded-full bg-secondary hover:bg-secondary/80 transition-colors shrink-0"
+                >
+                  <X className="h-4 w-4 text-foreground" />
+                </button>
+              </div>
+
+              {/* Vote count */}
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Users className="h-3.5 w-3.5" />
+                {resultsPoll.totalVotes.toLocaleString()} votes
+              </div>
+
+              {/* Results bars */}
+              <div className="space-y-3">
+                {[
+                  { label: resultsPoll.option_a, percent: resultsPoll.percentA, color: 'bg-option-a' },
+                  { label: resultsPoll.option_b, percent: resultsPoll.percentB, color: 'bg-option-b' },
+                ].map((opt) => (
+                  <div key={opt.label} className="space-y-1.5">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium text-foreground">{opt.label}</span>
+                      <span className="font-bold text-foreground">{opt.percent}%</span>
+                    </div>
+                    <div className="h-3 rounded-full overflow-hidden bg-muted/50">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${opt.percent}%` }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                        className={`h-full rounded-full ${opt.color}`}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Badge */}
+              <div className="text-center pt-1">
+                <span className="text-[10px] text-muted-foreground/70 italic">
+                  You already shared your perspective on this one.
+                </span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AppLayout>
   );
 }
