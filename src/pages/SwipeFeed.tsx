@@ -133,6 +133,10 @@ export default function SwipeFeed() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Check for a specific poll to load first (from Home tap)
+  const searchParams = new URLSearchParams(window.location.search);
+  const targetPollId = searchParams.get('pollId');
   const [result, setResult] = useState<VoteResult | null>(null);
   const [animatingCard, setAnimatingCard] = useState<'left' | 'right' | null>(null);
   const [votedPollIds, setVotedPollIds] = useState<Set<string>>(new Set());
@@ -189,7 +193,18 @@ export default function SwipeFeed() {
       }
 
       // Category rotation: reorder to avoid consecutive same index_category
-      return rotatePollsByCategory(allPolls);
+      let rotated = rotatePollsByCategory(allPolls);
+
+      // If a specific poll was requested, move it to the front
+      if (targetPollId) {
+        const targetIdx = rotated.findIndex(p => p.id === targetPollId);
+        if (targetIdx > 0) {
+          const [target] = rotated.splice(targetIdx, 1);
+          rotated.unshift(target);
+        }
+      }
+
+      return rotated;
     },
   });
 
