@@ -137,23 +137,23 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
       onMouseLeave={hasResult ? undefined : () => isDragging && handleEnd()}
     >
       {/* Question */}
-      <div className="px-3 py-1 shrink-0">
+      <div className="px-3 py-0.5 shrink-0">
         <p className="text-sm font-bold text-foreground leading-snug text-center">{poll.question}</p>
       </div>
 
-      {/* Immersive images — edge-to-edge, fill remaining height */}
-      <div className="flex-1 grid grid-cols-2 gap-[3px] min-h-0">
+      {/* Immersive images — edge-to-edge, no gap, fill remaining height */}
+      <div className="flex-1 grid grid-cols-2 gap-0 min-h-0">
         {/* Option A */}
         <div
-          className="relative rounded-lg overflow-hidden transition-all duration-150"
+          className="relative overflow-hidden transition-transform duration-200"
           style={{
-            transform: !hasResult && dragOffset < -30 ? `scale(${1 + highlightIntensity * 0.05})` : 'scale(1)',
+            transform: !hasResult && dragOffset < -30 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
             boxShadow: !hasResult && dragOffset < -30
-              ? `0 0 ${highlightIntensity * 20}px hsl(var(--accent) / ${highlightIntensity * 0.4})`
-              : hasResult && result?.choice === 'A' ? '0 0 15px hsl(var(--accent) / 0.4)' : 'none',
+              ? `inset 0 0 ${highlightIntensity * 30}px hsl(var(--accent) / ${highlightIntensity * 0.3})`
+              : hasResult && result?.choice === 'A' ? 'inset 0 0 20px hsl(var(--accent) / 0.3)' : 'none',
           }}
         >
-          <div className="h-full bg-background/10 overflow-hidden relative">
+          <div className="h-full overflow-hidden relative">
             {poll.image_a_url ? (
               <>
                 {!imageALoaded && (
@@ -165,7 +165,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
                   key={`${poll.id}-a`}
                   src={poll.image_a_url}
                   alt={poll.option_a}
-                  className={`w-full h-full object-cover transition-opacity duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`}
+                  className={`w-full h-full object-cover transition-all duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`}
                   draggable={false}
                   onLoad={() => setImageALoaded(true)}
                   loading="eager"
@@ -184,15 +184,16 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               </div>
             )}
 
-            {/* Dark gradient for readability */}
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+            {/* Soft inner shadow as separator */}
+            <div className="absolute inset-y-0 right-0 w-3 bg-gradient-to-l from-black/20 to-transparent pointer-events-none" />
           </div>
 
           {!hasResult && dragOffset < -30 && (
-            <div className="absolute inset-0 rounded-lg border-4 border-accent pointer-events-none" style={{ opacity: highlightIntensity }} />
+            <div className="absolute inset-0 border-2 border-accent/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
           )}
           {hasResult && result?.choice === 'A' && (
-            <div className="absolute inset-0 rounded-lg border-3 border-accent pointer-events-none" />
+            <div className="absolute inset-0 border-2 border-accent pointer-events-none" />
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">
@@ -202,15 +203,15 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
 
         {/* Option B */}
         <div
-          className="relative rounded-lg overflow-hidden transition-all duration-150"
+          className="relative overflow-hidden transition-transform duration-200"
           style={{
-            transform: !hasResult && dragOffset > 30 ? `scale(${1 + highlightIntensity * 0.05})` : 'scale(1)',
+            transform: !hasResult && dragOffset > 30 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
             boxShadow: !hasResult && dragOffset > 30
-              ? `0 0 ${highlightIntensity * 20}px hsl(var(--warning) / ${highlightIntensity * 0.4})`
-              : hasResult && result?.choice === 'B' ? '0 0 15px hsl(var(--warning) / 0.4)' : 'none',
+              ? `inset 0 0 ${highlightIntensity * 30}px hsl(var(--warning) / ${highlightIntensity * 0.3})`
+              : hasResult && result?.choice === 'B' ? 'inset 0 0 20px hsl(var(--warning) / 0.3)' : 'none',
           }}
         >
-          <div className="h-full bg-background/10 overflow-hidden relative">
+          <div className="h-full overflow-hidden relative">
             {poll.image_b_url ? (
               <>
                 {!imageBLoaded && (
@@ -222,7 +223,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
                   key={`${poll.id}-b`}
                   src={poll.image_b_url}
                   alt={poll.option_b}
-                  className={`w-full h-full object-cover transition-opacity duration-300 ${imageBLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  className={`w-full h-full object-cover transition-all duration-300 ${imageBLoaded ? 'opacity-100' : 'opacity-0'}`}
                   draggable={false}
                   onLoad={() => setImageBLoaded(true)}
                   loading="eager"
@@ -241,14 +242,16 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               </div>
             )}
 
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+            {/* Soft inner shadow as separator */}
+            <div className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/20 to-transparent pointer-events-none" />
           </div>
 
           {!hasResult && dragOffset > 30 && (
-            <div className="absolute inset-0 rounded-lg border-4 border-warning pointer-events-none" style={{ opacity: highlightIntensity }} />
+            <div className="absolute inset-0 border-2 border-warning/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
           )}
           {hasResult && result?.choice === 'B' && (
-            <div className="absolute inset-0 rounded-lg border-3 border-warning pointer-events-none" />
+            <div className="absolute inset-0 border-2 border-warning pointer-events-none" />
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">
