@@ -21,22 +21,10 @@ interface VoteResult {
   totalVotes: number;
 }
 
-interface DemographicData {
-  label: string;
-  optionA: number;
-  optionB: number;
-  total: number;
-}
-
 interface InsightViewProps {
   poll: Poll;
   result: VoteResult;
   onClose: () => void;
-  demographics?: {
-    byAge?: DemographicData[];
-    byGender?: DemographicData[];
-    byCountry?: DemographicData[];
-  };
 }
 
 // Generate poll ID from actual ID
@@ -130,69 +118,14 @@ const MetricLabel = ({ label, value }: { label: string; value: string }) => {
   );
 };
 
-// Demographic bar component
-const DemographicBar = ({ data, optionA, optionB }: { 
-  data: DemographicData; 
-  optionA: string; 
-  optionB: string;
-}) => {
-  const percentA = data.total > 0 ? Math.round((data.optionA / data.total) * 100) : 0;
-  const percentB = 100 - percentA;
-  const winner = percentA > percentB ? optionA : optionB;
-  const winnerPercent = Math.max(percentA, percentB);
-  
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <span className="text-sm font-medium text-foreground">{data.label}</span>
-        <span className="text-sm text-muted-foreground">
-          {winner} <span className="font-semibold text-foreground">{winnerPercent}%</span>
-        </span>
-      </div>
-      <div className="flex h-2 rounded-full overflow-hidden bg-muted/50">
-        <div 
-          className="bg-option-a transition-all"
-          style={{ width: `${percentA}%` }}
-        />
-        <div 
-          className="bg-option-b transition-all"
-          style={{ width: `${percentB}%` }}
-        />
-      </div>
-    </div>
-  );
-};
-
-export default function InsightView({ poll, result, onClose, demographics }: InsightViewProps) {
+export default function InsightView({ poll, result, onClose }: InsightViewProps) {
   const signalStrength = calculateSignalStrength(result.totalVotes, result.percentA, result.percentB);
   const signalMetrics = getSignalMetrics(result.totalVotes, result.percentA, result.percentB);
   const insight = generateInsightText(poll, result.percentA, result.percentB, result.totalVotes, poll.category);
   
   const winnerIsA = result.percentA > result.percentB;
   
-  // Filter demographics to show only high-signal segments (>10 votes)
-  const minVotesThreshold = 10;
-  const filteredDemographics: DemographicData[] = [];
   
-  if (demographics?.byGender) {
-    demographics.byGender
-      .filter(d => d.total >= minVotesThreshold)
-      .slice(0, 1)
-      .forEach(d => filteredDemographics.push(d));
-  }
-  if (demographics?.byAge) {
-    demographics.byAge
-      .filter(d => d.total >= minVotesThreshold)
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 1)
-      .forEach(d => filteredDemographics.push(d));
-  }
-  if (demographics?.byCountry) {
-    demographics.byCountry
-      .filter(d => d.total >= minVotesThreshold)
-      .slice(0, 1)
-      .forEach(d => filteredDemographics.push(d));
-  }
 
   return (
     <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
@@ -329,22 +262,7 @@ export default function InsightView({ poll, result, onClose, demographics }: Ins
             <p className="text-sm text-muted-foreground mt-2">{insight.secondary}</p>
           </section>
 
-          {/* Audience Snapshot */}
-          {filteredDemographics.length > 0 && (
-            <section className="space-y-3">
-              <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Audience Snapshot</h2>
-              <div className="space-y-4 bg-muted/20 rounded-xl p-4 border border-border/50">
-                {filteredDemographics.map((demo, idx) => (
-                  <DemographicBar 
-                    key={idx} 
-                    data={demo} 
-                    optionA={poll.option_a}
-                    optionB={poll.option_b}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+          
 
           {/* Signal Quality Panel */}
           <section className="space-y-3">
