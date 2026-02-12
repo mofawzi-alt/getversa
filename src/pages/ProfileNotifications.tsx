@@ -7,12 +7,14 @@ import { ArrowLeft } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 
 export default function ProfileNotifications() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   
+  const [soundEffects, setSoundEffects] = useState(isSoundEnabled());
   const [settings, setSettings] = useState({
     daily_poll_reminder: true,
     sponsored_opt_in: true,
@@ -87,6 +89,23 @@ export default function ProfileNotifications() {
 
         {/* Settings */}
         <div className="glass rounded-2xl divide-y divide-border">
+          <div className="p-4 flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-base font-medium">Sound Effects</Label>
+              <p className="text-sm text-muted-foreground">
+                Play subtle sounds on swipe and results
+              </p>
+            </div>
+            <Switch
+              checked={soundEffects}
+              onCheckedChange={(checked) => {
+                setSoundEffects(checked);
+                setSoundEnabled(checked);
+                toast.success(checked ? 'Sound effects enabled' : 'Sound effects disabled');
+              }}
+            />
+          </div>
+
           <div className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-base font-medium">Daily Poll Reminders</Label>
