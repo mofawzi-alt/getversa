@@ -137,15 +137,15 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
       onMouseLeave={hasResult ? undefined : () => isDragging && handleEnd()}
     >
       {/* Question */}
-      <div className="px-4 py-2 shrink-0">
-        <p className="text-base font-bold text-foreground leading-snug text-center">{poll.question}</p>
+      <div className="px-3 py-1 shrink-0">
+        <p className="text-sm font-bold text-foreground leading-snug text-center">{poll.question}</p>
       </div>
 
-      {/* Immersive images — fill remaining height */}
-      <div className="flex-1 grid grid-cols-2 gap-1.5 px-1 min-h-0">
+      {/* Immersive images — edge-to-edge, fill remaining height */}
+      <div className="flex-1 grid grid-cols-2 gap-[3px] min-h-0">
         {/* Option A */}
         <div
-          className="relative rounded-xl overflow-hidden transition-all duration-150"
+          className="relative rounded-lg overflow-hidden transition-all duration-150"
           style={{
             transform: !hasResult && dragOffset < -30 ? `scale(${1 + highlightIntensity * 0.05})` : 'scale(1)',
             boxShadow: !hasResult && dragOffset < -30
@@ -153,7 +153,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               : hasResult && result?.choice === 'A' ? '0 0 15px hsl(var(--accent) / 0.4)' : 'none',
           }}
         >
-          <div className="h-full bg-background/10 rounded-xl overflow-hidden relative">
+          <div className="h-full bg-background/10 overflow-hidden relative">
             {poll.image_a_url ? (
               <>
                 {!imageALoaded && (
@@ -189,10 +189,10 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           </div>
 
           {!hasResult && dragOffset < -30 && (
-            <div className="absolute inset-0 rounded-xl border-4 border-accent pointer-events-none" style={{ opacity: highlightIntensity }} />
+            <div className="absolute inset-0 rounded-lg border-4 border-accent pointer-events-none" style={{ opacity: highlightIntensity }} />
           )}
           {hasResult && result?.choice === 'A' && (
-            <div className="absolute inset-0 rounded-xl border-3 border-accent pointer-events-none" />
+            <div className="absolute inset-0 rounded-lg border-3 border-accent pointer-events-none" />
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">
@@ -202,7 +202,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
 
         {/* Option B */}
         <div
-          className="relative rounded-xl overflow-hidden transition-all duration-150"
+          className="relative rounded-lg overflow-hidden transition-all duration-150"
           style={{
             transform: !hasResult && dragOffset > 30 ? `scale(${1 + highlightIntensity * 0.05})` : 'scale(1)',
             boxShadow: !hasResult && dragOffset > 30
@@ -210,7 +210,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               : hasResult && result?.choice === 'B' ? '0 0 15px hsl(var(--warning) / 0.4)' : 'none',
           }}
         >
-          <div className="h-full bg-background/10 rounded-xl overflow-hidden relative">
+          <div className="h-full bg-background/10 overflow-hidden relative">
             {poll.image_b_url ? (
               <>
                 {!imageBLoaded && (
@@ -245,10 +245,10 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           </div>
 
           {!hasResult && dragOffset > 30 && (
-            <div className="absolute inset-0 rounded-xl border-4 border-warning pointer-events-none" style={{ opacity: highlightIntensity }} />
+            <div className="absolute inset-0 rounded-lg border-4 border-warning pointer-events-none" style={{ opacity: highlightIntensity }} />
           )}
           {hasResult && result?.choice === 'B' && (
-            <div className="absolute inset-0 rounded-xl border-3 border-warning pointer-events-none" />
+            <div className="absolute inset-0 rounded-lg border-3 border-warning pointer-events-none" />
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">

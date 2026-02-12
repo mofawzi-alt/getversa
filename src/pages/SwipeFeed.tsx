@@ -331,7 +331,7 @@ export default function SwipeFeed() {
           </div>
         ) : (
           /* Caught up state */
-          <div className="w-full max-w-md overflow-y-auto max-h-full pb-8 scrollbar-hide">
+          <div className="w-full max-w-md mx-auto overflow-y-auto max-h-full pb-8 px-4 scrollbar-hide flex flex-col items-center justify-center">
             <CaughtUpInsights onRefresh={() => { setCurrentIndex(0); setResult(null); refetch(); }} />
             <div className="mt-4 px-2">
               <Button
