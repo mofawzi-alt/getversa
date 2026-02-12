@@ -293,9 +293,9 @@ export default function SwipeFeed() {
   // Full-screen immersive layout — no AppLayout wrapper
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-background">
-      {/* Minimal top bar */}
+      {/* Minimal top bar — compact */}
       {hasMorePolls && (
-        <div className="safe-area-top px-4 pt-3 pb-2 flex items-center justify-between">
+        <div className="safe-area-top px-4 pt-1.5 pb-1 flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-medium">
             {currentIndex + 1} / {totalPolls}
           </span>
@@ -316,10 +316,10 @@ export default function SwipeFeed() {
         </div>
       )}
 
-      {/* Main content area */}
-      <div className="flex-1 flex items-center justify-center px-4 pb-6 overflow-hidden">
+      {/* Main content area — full height, no padding */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {hasMorePolls && currentPoll ? (
-          <div className="w-full max-w-md">
+          <div className="flex-1 flex flex-col min-h-0">
             <PollCard
               key={currentPoll.id}
               poll={currentPoll}
