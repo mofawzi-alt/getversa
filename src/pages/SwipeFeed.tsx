@@ -5,8 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import PollCard from '@/components/poll/PollCard';
 import ResultsOverlay from '@/components/poll/ResultsOverlay';
-import { Loader2, RefreshCw, History, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { Loader2, RefreshCw, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import ShareButton from '@/components/poll/ShareButton';
+import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -496,15 +497,6 @@ export default function SwipeFeed() {
                 variant="icon"
               />
             )}
-            {user && (
-              <button
-                onClick={() => navigate('/history')}
-                className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
-                title="Poll History"
-              >
-                <History className="h-5 w-5 text-foreground/80" />
-              </button>
-            )}
             <button
               onClick={() => { setNewPollsCount(0); setCurrentIndex(0); refetch(); }}
               className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors relative"
@@ -535,18 +527,7 @@ export default function SwipeFeed() {
               />
             </div>
           ) : (
-            <div className="text-center space-y-4 mt-12">
-              <div className="text-6xl">✅</div>
-              <h2 className="text-2xl font-display font-bold text-foreground">You're caught up!</h2>
-              <p className="text-foreground/60">Check back later for more polls</p>
-              <button
-                onClick={() => { setCurrentIndex(0); refetch(); }}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Refresh
-              </button>
-            </div>
+            <CaughtUpInsights onRefresh={() => { setCurrentIndex(0); refetch(); }} />
           )}
         </div>
       </div>
