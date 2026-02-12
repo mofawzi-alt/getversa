@@ -105,15 +105,25 @@ export default function Home() {
         const r = resultsMap.get(p.id);
         return { ...p, totalVotes: (r?.total_votes as number) || 0 };
       });
-      // Tag polls: top voted = trending, newest = fresh, rest with votes = popular
-      const sorted = [...enriched].sort((a, b) => b.totalVotes - a.totalVotes);
-      const trending = sorted.filter(p => p.totalVotes > 0).slice(0, 5).map(p => ({ ...p, tag: 'trending' as const }));
-      const trendingIds = new Set(trending.map(p => p.id));
-      const fresh = enriched.filter(p => !trendingIds.has(p.id)).slice(0, 4).map(p => ({ ...p, tag: 'fresh' as const }));
-      const usedIds = new Set([...trendingIds, ...fresh.map(p => p.id)]);
-      const popular = sorted.filter(p => p.totalVotes > 0 && !usedIds.has(p.id)).slice(0, 4).map(p => ({ ...p, tag: 'popular' as const }));
-      // Show grouped: trending first, then fresh, then popular
-      return [...trending, ...fresh, ...popular].slice(0, 12);
+      // Distribute tags evenly by thirds: top third = trending, middle = popular, newest = fresh
+      const byVotes = [...enriched].sort((a, b) => b.totalVotes - a.totalVotes);
+      const third = Math.max(1, Math.ceil(byVotes.length / 3));
+      const tagged: PollCard[] = byVotes.map((p, i) => ({
+        ...p,
+        tag: i < third ? 'trending' as const : i < third * 2 ? 'popular' as const : 'fresh' as const,
+      }));
+      // Interleave for visual variety
+      const trending = tagged.filter(p => p.tag === 'trending');
+      const popular = tagged.filter(p => p.tag === 'popular');
+      const fresh = tagged.filter(p => p.tag === 'fresh');
+      const result: PollCard[] = [];
+      const maxLen = Math.max(trending.length, popular.length, fresh.length);
+      for (let i = 0; i < maxLen; i++) {
+        if (trending[i]) result.push(trending[i]);
+        if (popular[i]) result.push(popular[i]);
+        if (fresh[i]) result.push(fresh[i]);
+      }
+      return result.slice(0, 12);
     },
     staleTime: 1000 * 60 * 5,
   });
