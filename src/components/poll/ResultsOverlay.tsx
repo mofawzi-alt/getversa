@@ -1,6 +1,4 @@
-import { forwardRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, X } from 'lucide-react';
+import { forwardRef, useEffect } from 'react';
 import ShareButton from './ShareButton';
 
 interface Poll {
@@ -30,41 +28,33 @@ interface ResultsOverlayProps {
   onContinue: () => void;
 }
 
+const AUTO_ADVANCE_MS = 1400;
+
 const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, result, onContinue }, ref) => {
   const userPercent = result.choice === 'A' ? result.percentA : result.percentB;
   const isWinnerA = result.percentA >= result.percentB;
   const userPickedWinner = (result.choice === 'A' && isWinnerA) || (result.choice === 'B' && !isWinnerA);
 
+  // Auto-advance after 1.4 seconds
+  useEffect(() => {
+    const timer = setTimeout(onContinue, AUTO_ADVANCE_MS);
+    return () => clearTimeout(timer);
+  }, [onContinue]);
+
   return (
-    <div ref={ref} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/95 backdrop-blur-lg animate-fade-in">
-      <div className="w-full max-w-sm bg-card text-card-foreground rounded-3xl p-6 shadow-card animate-bounce-in border border-border">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-semibold text-muted-foreground tracking-wide uppercase">Results</span>
-          <div className="flex items-center gap-2">
-            <ShareButton
-              pollId={poll.id}
-              pollQuestion={poll.question}
-              optionA={poll.option_a}
-              optionB={poll.option_b}
-              percentA={result.percentA}
-              percentB={result.percentB}
-              showResults={true}
-              variant="icon"
-            />
-            <button onClick={onContinue} className="p-1 hover:bg-secondary rounded-full transition-colors">
-              <X className="h-5 w-5 text-muted-foreground" />
-            </button>
-          </div>
-        </div>
-
+    <div
+      ref={ref}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/90 backdrop-blur-md animate-fade-in"
+      onClick={onContinue}
+    >
+      <div className="w-full max-w-sm bg-card text-card-foreground rounded-2xl p-5 shadow-card border border-border animate-scale-in">
         {/* Question */}
-        <h2 className="text-lg font-display font-bold text-foreground mb-6 leading-snug">
+        <p className="text-sm font-medium text-muted-foreground mb-4 leading-snug text-center">
           {poll.question}
-        </h2>
+        </p>
 
-        {/* Option A */}
-        <div className="space-y-4 mb-6">
+        {/* Options with results */}
+        <div className="space-y-3 mb-4">
           <OptionRow
             label={poll.option_a}
             imageUrl={poll.image_a_url}
@@ -83,9 +73,9 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
           />
         </div>
 
-        {/* Footer stats */}
-        <div className="text-center space-y-1.5 mb-6">
-          <p className="text-sm text-muted-foreground">
+        {/* Footer */}
+        <div className="text-center space-y-1.5">
+          <p className="text-xs text-muted-foreground">
             {result.totalVotes.toLocaleString()} votes
           </p>
           <p className="text-sm font-medium text-foreground">
@@ -100,14 +90,15 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
           </span>
         </div>
 
-        {/* Continue */}
-        <Button
-          onClick={onContinue}
-          className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl"
-        >
-          Next Poll
-          <ArrowRight className="ml-2 h-5 w-5" />
-        </Button>
+        {/* Progress bar for auto-advance */}
+        <div className="mt-4 h-0.5 bg-border rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary rounded-full"
+            style={{
+              animation: `progress-fill ${AUTO_ADVANCE_MS}ms linear forwards`,
+            }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -116,7 +107,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
 ResultsOverlay.displayName = 'ResultsOverlay';
 export default ResultsOverlay;
 
-/* ── Small sub-component ── */
+/* ── Option row ── */
 function OptionRow({ label, imageUrl, percent, isWinner, isUserChoice, side }: {
   label: string;
   imageUrl?: string | null;
@@ -129,8 +120,8 @@ function OptionRow({ label, imageUrl, percent, isWinner, isUserChoice, side }: {
   const textColor = side === 'A' ? 'text-option-a' : 'text-option-b';
 
   return (
-    <div className="flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 ${
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 ${
         isUserChoice ? `ring-2 ring-${side === 'A' ? 'option-a' : 'option-b'}` : ''
       }`}>
         {imageUrl ? (
@@ -152,8 +143,11 @@ function OptionRow({ label, imageUrl, percent, isWinner, isUserChoice, side }: {
         </div>
         <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-700 ease-out ${barColor}`}
-            style={{ width: `${percent}%` }}
+            className={`h-full rounded-full ${barColor}`}
+            style={{
+              width: `${percent}%`,
+              transition: 'width 0.7s ease-out',
+            }}
           />
         </div>
         {isUserChoice && (
