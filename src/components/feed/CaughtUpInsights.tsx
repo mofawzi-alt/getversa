@@ -1,9 +1,19 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Flame, RefreshCw, Users, Clock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Flame, RefreshCw, Users } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
+
+const CATEGORIES = [
+  { key: 'all', label: 'All' },
+  { key: 'lifestyle', label: 'Lifestyle' },
+  { key: 'food', label: 'Food' },
+  { key: 'culture', label: 'Culture' },
+  { key: 'fashion', label: 'Fashion' },
+  { key: 'tech', label: 'Tech' },
+  { key: 'travel', label: 'Travel' },
+];
 
 interface TrendingInsight {
   id: string;
@@ -13,18 +23,19 @@ interface TrendingInsight {
   totalVotes: number;
   percentA: number;
   percentB: number;
+  category: string | null;
 }
 
 export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void }) {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const [activeCategory, setActiveCategory] = useState('all');
 
   const { data: insights, isLoading } = useQuery({
     queryKey: ['trending-insights', user?.id],
     queryFn: async () => {
       const { data: polls } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, created_at')
+        .select('id, question, option_a, option_b, category, created_at')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -46,6 +57,7 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
             question: p.question,
             option_a: p.option_a,
             option_b: p.option_b,
+            category: p.category,
             totalVotes: (r?.total_votes as number) || 0,
             percentA: (r?.percent_a as number) || 0,
             percentB: (r?.percent_b as number) || 0,
@@ -53,10 +65,14 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
         })
         .filter(p => p.totalVotes > 0)
         .sort((a, b) => b.totalVotes - a.totalVotes)
-        .slice(0, 5);
+        .slice(0, 15);
     },
     staleTime: 1000 * 60 * 60,
   });
+
+  const filtered = insights?.filter(i =>
+    activeCategory === 'all' || (i.category?.toLowerCase() === activeCategory)
+  );
 
   if (isLoading) {
     return (
@@ -76,10 +92,10 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
         </div>
         <button
           onClick={onRefresh}
-          className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold"
+          className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
         >
           <RefreshCw className="h-4 w-4" />
-          Refresh
+          Explore More Perspectives
         </button>
       </div>
     );
@@ -93,63 +109,74 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
         <h2 className="text-lg font-display font-bold">Trending Insights</h2>
       </div>
 
-      {/* Read-only insight cards */}
-      <div className="space-y-3">
-        {insights.map((insight, i) => {
-          const winnerIsA = insight.percentA >= insight.percentB;
-          return (
-            <div
-              key={insight.id}
-              className="rounded-2xl bg-card border border-border p-4 space-y-3 animate-fade-in"
-              style={{ animationDelay: `${i * 80}ms` }}
-            >
-              {/* Question + vote count */}
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-sm font-bold leading-snug text-foreground flex-1">
-                  {insight.question}
-                </p>
-                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap shrink-0 pt-0.5">
-                  <Users className="h-3 w-3" />
-                  {insight.totalVotes.toLocaleString()}
-                </span>
-              </div>
-
-              {/* Result bar */}
-              <div className="flex h-2 rounded-full overflow-hidden bg-muted/50">
-                <div
-                  className="bg-option-a rounded-l-full"
-                  style={{ width: `${insight.percentA}%` }}
-                />
-                <div
-                  className="bg-option-b rounded-r-full"
-                  style={{ width: `${insight.percentB}%` }}
-                />
-              </div>
-
-              {/* Labels */}
-              <div className="flex justify-between text-xs">
-                <span className={winnerIsA ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
-                  {insight.option_a} ({insight.percentA}%)
-                </span>
-                <span className={!winnerIsA ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
-                  {insight.option_b} ({insight.percentB}%)
-                </span>
-              </div>
-            </div>
-          );
-        })}
+      {/* Category Chips */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat.key}
+            onClick={() => setActiveCategory(cat.key)}
+            className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              activeCategory === cat.key
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
       </div>
 
-      {/* Archive link */}
-      <button
-        onClick={() => navigate('/archive')}
-        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 transition-colors"
-      >
-        <Clock className="h-4 w-4" />
-        Past Perspectives
-      </button>
+      {/* Insight cards */}
+      <div className="space-y-3">
+        {filtered && filtered.length > 0 ? (
+          filtered.map((insight, i) => {
+            const winnerIsA = insight.percentA >= insight.percentB;
+            return (
+              <div
+                key={insight.id}
+                className="rounded-2xl bg-card border border-border p-4 space-y-3 animate-fade-in"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-bold leading-snug text-foreground flex-1">
+                    {insight.question}
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap shrink-0 pt-0.5">
+                    <Users className="h-3 w-3" />
+                    {insight.totalVotes.toLocaleString()}
+                  </span>
+                </div>
 
-      {/* Refresh CTA */}
+                <div className="flex h-2 rounded-full overflow-hidden bg-muted/50">
+                  <div
+                    className="bg-option-a rounded-l-full"
+                    style={{ width: `${insight.percentA}%` }}
+                  />
+                  <div
+                    className="bg-option-b rounded-r-full"
+                    style={{ width: `${insight.percentB}%` }}
+                  />
+                </div>
+
+                <div className="flex justify-between text-xs">
+                  <span className={winnerIsA ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
+                    {insight.option_a} ({insight.percentA}%)
+                  </span>
+                  <span className={!winnerIsA ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
+                    {insight.option_b} ({insight.percentB}%)
+                  </span>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="text-center py-6 text-sm text-muted-foreground">
+            No insights in this category yet.
+          </div>
+        )}
+      </div>
+
+      {/* Primary CTA */}
       <button
         onClick={onRefresh}
         className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
