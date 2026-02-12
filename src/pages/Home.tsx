@@ -153,7 +153,7 @@ export default function Home() {
   const handlePollTap = (poll: PollCard) => {
     const hasVoted = votedPollIds?.has(poll.id);
     if (hasVoted) {
-      navigate(`/vote?pollId=${poll.id}`);
+      navigate(`/history?pollId=${poll.id}`);
     } else {
       navigate(`/vote?pollId=${poll.id}`);
     }
