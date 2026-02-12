@@ -100,29 +100,53 @@ export default function SwipeFeed() {
   const touchStartY = useRef<number | null>(null);
   const touchStartTime = useRef<number>(0);
 
-  // Fetch polls - filter out expired, sort daily first, exclude already voted
+  // Fetch polls - DB-level filtering, ordered by created_at DESC, limit 20
   const { data: polls, isLoading, refetch } = useQuery({
     queryKey: ['feed-polls', user?.id],
     queryFn: async () => {
       const now = new Date().toISOString();
-      
-      const { data: regularPolls, error: pollsError } = await supabase
+
+      // Step 1: Get voted poll IDs at DB level (authenticated users only)
+      let votedIds: string[] = [];
+      if (user) {
+        const { data: userVotes } = await supabase
+          .from('votes')
+          .select('poll_id')
+          .eq('user_id', user.id);
+
+        votedIds = userVotes?.map(v => v.poll_id) || [];
+        setVotedPollIds(new Set(votedIds));
+      }
+
+      // Step 2: Build query with DB-level exclusion and ordering
+      let query = supabase
         .from('polls')
         .select('*')
         .eq('is_active', true)
-        .or(`and(starts_at.lte.${now},ends_at.gte.${now}),and(starts_at.is.null,ends_at.is.null)`);
-      
+        .or(`and(starts_at.lte.${now},ends_at.gte.${now}),and(starts_at.is.null,ends_at.is.null)`)
+        .order('is_daily_poll', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      // Exclude already voted polls at DB level
+      if (votedIds.length > 0) {
+        query = query.not('id', 'in', `(${votedIds.join(',')})`);
+      }
+
+      // Limit initial load to 20
+      query = query.limit(20);
+
+      const { data: fetchedPolls, error: pollsError } = await query;
       if (pollsError) throw pollsError;
-      
-      let allPolls = regularPolls || [];
-      
-      // Filter out expired polls strictly
+
+      let allPolls = fetchedPolls || [];
+
+      // Filter out expired polls (strict client check)
       allPolls = allPolls.filter(p => {
         if (p.ends_at && new Date(p.ends_at) < new Date()) return false;
         return true;
       });
-      
-      // Apply demographic filtering for authenticated users
+
+      // Apply demographic segmentation filters
       if (profile) {
         allPolls = allPolls.filter(p => {
           if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) return false;
@@ -131,34 +155,8 @@ export default function SwipeFeed() {
           return true;
         });
       }
-      
-      // Get user's votes if authenticated
-      if (user) {
-        const { data: userVotes } = await supabase
-          .from('votes')
-          .select('poll_id')
-          .eq('user_id', user.id);
-        
-        const userVotedIds = new Set(userVotes?.map(v => v.poll_id) || []);
-        setVotedPollIds(userVotedIds);
-        
-        // Only show unvoted polls - users cannot see results before voting
-        const unvotedPolls = allPolls.filter(p => !userVotedIds.has(p.id));
-        
-        // Sort: daily poll first, then by newest
-        return unvotedPolls.sort((a, b) => {
-          if (a.is_daily_poll && !b.is_daily_poll) return -1;
-          if (!a.is_daily_poll && b.is_daily_poll) return 1;
-          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-        });
-      }
-      
-      // Guest: sort by newest, daily polls first
-      return allPolls.sort((a, b) => {
-        if (a.is_daily_poll && !b.is_daily_poll) return -1;
-        if (!a.is_daily_poll && b.is_daily_poll) return 1;
-        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-      });
+
+      return allPolls;
     },
   });
 
