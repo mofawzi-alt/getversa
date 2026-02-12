@@ -36,10 +36,10 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           onClick={() => navigate('/vote')}
           className="flex flex-col items-center gap-0.5 -mt-5"
         >
-          <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all ${
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] ${
             location.pathname === '/vote'
-              ? 'bg-primary shadow-primary/30'
-              : 'bg-primary/90 hover:bg-primary shadow-primary/20'
+              ? 'bg-primary shadow-[0_0_18px_hsl(var(--primary)/0.35)]'
+              : 'bg-primary/90 hover:bg-primary shadow-[0_0_14px_hsl(var(--primary)/0.25)]'
           }`}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary-foreground">
               <path d="M3 12h4l3 9 4-18 3 9h4" />
