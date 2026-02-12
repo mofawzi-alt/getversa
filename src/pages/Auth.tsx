@@ -69,54 +69,29 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-area-top safe-area-bottom bg-background relative overflow-hidden">
-      {/* Decorative Background Rings */}
+      {/* Minimal background */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        {/* Outer ring */}
-        <div className="absolute w-[600px] h-[600px] rounded-full border-[3px] border-primary/10 animate-pulse" />
-        {/* Middle ring */}
-        <div className="absolute w-[450px] h-[450px] rounded-full border-[4px] border-primary/15" 
-          style={{ animation: 'pulse 3s ease-in-out infinite 0.5s' }} />
-        {/* Inner ring */}
-        <div className="absolute w-[300px] h-[300px] rounded-full border-[5px] border-accent/20"
-          style={{ animation: 'pulse 3s ease-in-out infinite 1s' }} />
-        {/* Core glow */}
-        <div className="absolute w-[180px] h-[180px] rounded-full bg-gradient-to-br from-primary/10 to-accent/10 blur-2xl" />
+        <div className="absolute w-[400px] h-[400px] rounded-full border border-primary/10 opacity-40" />
+        <div className="absolute w-[250px] h-[250px] rounded-full border border-accent/10 opacity-30" />
       </div>
 
-      {/* Floating accent orbs */}
-      <div className="absolute top-20 left-10 w-3 h-3 rounded-full bg-accent/60 animate-float" />
-      <div className="absolute top-40 right-16 w-2 h-2 rounded-full bg-primary/50" 
-        style={{ animation: 'float 4s ease-in-out infinite 1s' }} />
-      <div className="absolute bottom-32 left-20 w-4 h-4 rounded-full bg-primary/40 animate-float" />
-      <div className="absolute bottom-48 right-12 w-2 h-2 rounded-full bg-accent/50"
-        style={{ animation: 'float 3.5s ease-in-out infinite 0.5s' }} />
-
       <div className="w-full max-w-sm space-y-8 animate-slide-up relative z-10">
-        {/* Logo with glow effect */}
+        {/* Logo */}
         <div className="flex justify-center">
-          <div className="relative">
-            <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full scale-110" />
-            <img 
-              src={versaLogo} 
-              alt="Versa Logo" 
-              className="w-28 h-28 rounded-2xl animate-float relative z-10"
-            />
-          </div>
+          <img 
+            src={versaLogo} 
+            alt="Versa Logo" 
+            className="w-24 h-24 rounded-2xl"
+          />
         </div>
 
-        {/* Logo Text */}
         <div className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <h1 className="text-5xl font-display font-bold text-primary tracking-tight">versa</h1>
-          </div>
-          <p className="text-muted-foreground">Decision Infrastructure</p>
+          <h1 className="text-4xl font-display font-bold text-primary tracking-tight">versa</h1>
+          <p className="text-muted-foreground mt-1">Your opinion. Structured.</p>
         </div>
 
         {/* Auth Form */}
-        <div className="bg-card/80 backdrop-blur-lg rounded-2xl p-6 shadow-card border border-border/50 relative">
-          {/* Subtle accent line at top */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-primary via-accent to-primary rounded-full -translate-y-1/2" />
-          
+        <div className="bg-card/80 backdrop-blur-lg rounded-2xl p-6 shadow-card border border-border/50">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-card-foreground">Email</Label>
@@ -155,7 +130,7 @@ export default function Auth() {
 
             <Button
               type="submit"
-              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-12 rounded-full shadow-accent transition-all hover:scale-[1.02] hover:shadow-lg"
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-12 rounded-full shadow-accent transition-all hover:scale-[1.02]"
               disabled={loading}
             >
               {loading ? (
@@ -182,25 +157,19 @@ export default function Auth() {
           </div>
         </div>
 
-        {/* Features Preview with ring-inspired design */}
+        {/* Simple tagline */}
         <div className="grid grid-cols-3 gap-4 text-center text-sm">
-          <div className="space-y-2 group">
-            <div className="w-12 h-12 mx-auto rounded-full border-2 border-primary/30 flex items-center justify-center group-hover:border-primary/60 transition-colors">
-              <span className="text-xl">🗳️</span>
-            </div>
-            <p className="text-muted-foreground group-hover:text-foreground transition-colors">Vote</p>
+          <div className="space-y-1">
+            <span className="text-xl">🗳️</span>
+            <p className="text-muted-foreground text-xs">Vote</p>
           </div>
-          <div className="space-y-2 group">
-            <div className="w-12 h-12 mx-auto rounded-full border-2 border-accent/30 flex items-center justify-center group-hover:border-accent/60 transition-colors">
-              <span className="text-xl">🏆</span>
-            </div>
-            <p className="text-muted-foreground group-hover:text-foreground transition-colors">Compete</p>
+          <div className="space-y-1">
+            <span className="text-xl">📊</span>
+            <p className="text-muted-foreground text-xs">See Results</p>
           </div>
-          <div className="space-y-2 group">
-            <div className="w-12 h-12 mx-auto rounded-full border-2 border-primary/30 flex items-center justify-center group-hover:border-primary/60 transition-colors">
-              <span className="text-xl">🎁</span>
-            </div>
-            <p className="text-muted-foreground group-hover:text-foreground transition-colors">Earn</p>
+          <div className="space-y-1">
+            <span className="text-xl">🔥</span>
+            <p className="text-muted-foreground text-xs">Trending</p>
           </div>
         </div>
       </div>

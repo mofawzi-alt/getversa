@@ -1,9 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { ArrowRight, TrendingUp, X, BarChart3 } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowRight, TrendingUp, X } from 'lucide-react';
 import ShareButton from './ShareButton';
-import FriendVotesSection from './FriendVotesSection';
-import InsightView from './InsightView';
 
 interface Poll {
   id: string;
@@ -32,22 +29,7 @@ interface ResultsOverlayProps {
 }
 
 export default function ResultsOverlay({ poll, result, onContinue }: ResultsOverlayProps) {
-  const [showInsightView, setShowInsightView] = useState(false);
-  
-  const userWonMajority = 
-    (result.choice === 'A' && result.percentA > result.percentB) ||
-    (result.choice === 'B' && result.percentB > result.percentA);
-
-  // Show InsightView if toggled
-  if (showInsightView) {
-    return (
-      <InsightView
-        poll={poll}
-        result={result}
-        onClose={() => setShowInsightView(false)}
-      />
-    );
-  }
+  const userPercent = result.choice === 'A' ? result.percentA : result.percentB;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/95 backdrop-blur-lg animate-fade-in">
@@ -59,13 +41,6 @@ export default function ResultsOverlay({ poll, result, onContinue }: ResultsOver
             <span className="font-semibold">Results</span>
           </div>
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setShowInsightView(true)} 
-              className="p-1.5 hover:bg-secondary rounded-full transition-colors"
-              title="View Insight Report"
-            >
-              <BarChart3 className="h-5 w-5 text-muted-foreground hover:text-primary" />
-            </button>
             <ShareButton
               pollId={poll.id}
               pollQuestion={poll.question}
@@ -87,18 +62,18 @@ export default function ResultsOverlay({ poll, result, onContinue }: ResultsOver
           {poll.question}
         </h2>
 
-        {/* Results with Images */}
+        {/* Results */}
         <div className="space-y-4 mb-6">
           {/* Option A */}
           <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${
+            <div className={`w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 ${
               result.choice === 'A' ? 'ring-2 ring-option-a' : ''
             }`}>
               {poll.image_a_url ? (
                 <img src={poll.image_a_url} alt={poll.option_a} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-option-a flex items-center justify-center">
-                  <span className="text-option-a-foreground font-bold text-lg">A</span>
+                  <span className="text-option-a-foreground font-bold">A</span>
                 </div>
               )}
             </div>
@@ -111,7 +86,7 @@ export default function ResultsOverlay({ poll, result, onContinue }: ResultsOver
               </div>
               <div className="h-2 rounded-full bg-secondary overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-1000 ease-out bg-option-a"
+                  className="h-full rounded-full transition-all duration-700 ease-out bg-option-a"
                   style={{ width: `${result.percentA}%` }}
                 />
               </div>
@@ -123,14 +98,14 @@ export default function ResultsOverlay({ poll, result, onContinue }: ResultsOver
 
           {/* Option B */}
           <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${
+            <div className={`w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 ${
               result.choice === 'B' ? 'ring-2 ring-option-b' : ''
             }`}>
               {poll.image_b_url ? (
                 <img src={poll.image_b_url} alt={poll.option_b} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-option-b flex items-center justify-center">
-                  <span className="text-option-b-foreground font-bold text-lg">B</span>
+                  <span className="text-option-b-foreground font-bold">B</span>
                 </div>
               )}
             </div>
@@ -143,7 +118,7 @@ export default function ResultsOverlay({ poll, result, onContinue }: ResultsOver
               </div>
               <div className="h-2 rounded-full bg-secondary overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-1000 ease-out bg-option-b"
+                  className="h-full rounded-full transition-all duration-700 ease-out bg-option-b"
                   style={{ width: `${result.percentB}%` }}
                 />
               </div>
@@ -154,25 +129,22 @@ export default function ResultsOverlay({ poll, result, onContinue }: ResultsOver
           </div>
         </div>
 
-        {/* Total votes */}
-        <p className="text-center text-sm text-card-foreground/70 mb-4">
-          {result.totalVotes.toLocaleString()} total votes
-        </p>
+        {/* Total votes + alignment */}
+        <div className="text-center space-y-1 mb-4">
+          <p className="text-sm text-card-foreground/70">
+            {result.totalVotes.toLocaleString()} total votes
+          </p>
+          <p className="text-sm font-medium text-primary">
+            You voted with {userPercent}% of users
+          </p>
+        </div>
 
-        {/* Friend Votes Section */}
-        <FriendVotesSection
-          pollId={poll.id}
-          userChoice={result.choice}
-          optionA={poll.option_a}
-          optionB={poll.option_b}
-        />
-
-        {/* Action Button */}
+        {/* Continue */}
         <Button
           onClick={onContinue}
-          className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl mt-4"
+          className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl"
         >
-          Continue Voting
+          Next Poll
           <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
       </div>
