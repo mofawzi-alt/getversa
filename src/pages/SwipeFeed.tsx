@@ -318,14 +318,19 @@ export default function SwipeFeed() {
     onSuccess: (data) => {
       playResultSound();
       setVotedResults(prev => new Map(prev).set(data.pollId, data));
-      // Auto-scroll to next poll after showing results
+      // Auto-scroll to next unvoted poll after showing results
       setTimeout(() => {
         if (!polls) return;
         const idx = polls.findIndex(p => p.id === data.pollId);
-        if (idx >= 0 && idx < polls.length - 1) {
-          const nextPollId = polls[idx + 1].id;
-          const nextEl = cardRefs.current.get(nextPollId);
+        const updatedVoted = new Map(votedResults).set(data.pollId, data);
+        // Find the next unvoted poll
+        const nextUnvoted = polls.find((p, i) => i > idx && !updatedVoted.has(p.id));
+        if (nextUnvoted) {
+          const nextEl = cardRefs.current.get(nextUnvoted.id);
           nextEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          // All polls voted — scroll to bottom to show caught-up state
+          scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
         }
       }, RESULT_DISPLAY_MS);
     },
@@ -380,6 +385,18 @@ export default function SwipeFeed() {
           ))
         ) : (
           <div className="flex flex-col items-center justify-center pt-20">
+            <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
+            <div className="mt-4 px-2 w-full max-w-sm">
+              <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
+                <Home className="h-4 w-4" /> Back to Home
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Show caught-up when all polls have been voted on */}
+        {hasPolls && polls.every(p => votedResults.has(p.id)) && (
+          <div className="flex flex-col items-center justify-center pt-8 pb-4">
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
             <div className="mt-4 px-2 w-full max-w-sm">
               <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
