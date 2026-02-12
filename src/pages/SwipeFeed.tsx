@@ -1,13 +1,14 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import PollCard from '@/components/poll/PollCard';
-import { Loader2, SkipForward, Home } from 'lucide-react';
+import { Loader2, Home, Users, TrendingUp as TrendUp } from 'lucide-react';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,39 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+
+import beachImg from '@/assets/polls/beach.jpg';
+import cityImg from '@/assets/polls/city.jpg';
+import mountainsImg from '@/assets/polls/mountains.jpg';
+import natureImg from '@/assets/polls/nature.jpg';
+import sunsetImg from '@/assets/polls/sunset.jpg';
+import sunriseImg from '@/assets/polls/sunrise.jpg';
+import coffeeImg from '@/assets/polls/coffee.jpg';
+import teaImg from '@/assets/polls/tea.jpg';
+import pizzaImg from '@/assets/polls/pizza.jpg';
+import sushiImg from '@/assets/polls/sushi.jpg';
+import catsImg from '@/assets/polls/cats.jpg';
+import dogsImg from '@/assets/polls/dogs.jpg';
+import summerImg from '@/assets/polls/summer.jpg';
+import winterImg from '@/assets/polls/winter.jpg';
+import sneakersImg from '@/assets/polls/sneakers.jpg';
+import bootsImg from '@/assets/polls/boots.jpg';
+import booksImg from '@/assets/polls/books.jpg';
+import moviesImg from '@/assets/polls/movies.jpg';
+import daySkyImg from '@/assets/polls/day-sky.jpg';
+import nightSkyImg from '@/assets/polls/night-sky.jpg';
+
+const FALLBACK_IMAGES = [
+  beachImg, cityImg, mountainsImg, natureImg, sunsetImg, sunriseImg,
+  coffeeImg, teaImg, pizzaImg, sushiImg, catsImg, dogsImg,
+  summerImg, winterImg, sneakersImg, bootsImg, booksImg, moviesImg,
+  daySkyImg, nightSkyImg,
+];
+
+function getFallbackImage(seed: string, index: number): string {
+  const hash = seed.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return FALLBACK_IMAGES[(hash + index) % FALLBACK_IMAGES.length];
+}
 
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
@@ -59,69 +93,15 @@ interface VoteResult {
   totalVotes: number;
 }
 
-function rotatePollsByCategory(polls: Poll[]): Poll[] {
-  if (polls.length <= 1) return polls;
-  const categories = ['identity', 'social', 'consumption', 'tech', 'cultural'];
-  const buckets = new Map<string, Poll[]>();
-  const uncategorized: Poll[] = [];
-
-  polls.forEach(p => {
-    const cat = (p as any).index_category;
-    if (cat && categories.includes(cat)) {
-      if (!buckets.has(cat)) buckets.set(cat, []);
-      buckets.get(cat)!.push(p);
-    } else {
-      uncategorized.push(p);
-    }
-  });
-
-  if (buckets.size === 0) return polls;
-
-  const result: Poll[] = [];
-  let lastCategory = '';
-  const activeBuckets = [...buckets.keys()];
-
-  while (activeBuckets.length > 0 || uncategorized.length > 0) {
-    let placed = false;
-    for (let i = 0; i < activeBuckets.length; i++) {
-      const cat = activeBuckets[i];
-      if (cat === lastCategory && activeBuckets.length > 1) continue;
-      const bucket = buckets.get(cat)!;
-      result.push(bucket.shift()!);
-      lastCategory = cat;
-      placed = true;
-      if (bucket.length === 0) activeBuckets.splice(i, 1);
-      break;
-    }
-    if (!placed && uncategorized.length > 0) {
-      result.push(uncategorized.shift()!);
-      lastCategory = '';
-    } else if (!placed && activeBuckets.length > 0) {
-      const cat = activeBuckets[0];
-      const bucket = buckets.get(cat)!;
-      result.push(bucket.shift()!);
-      lastCategory = cat;
-      if (bucket.length === 0) activeBuckets.splice(0, 1);
-    } else if (!placed) {
-      break;
-    }
-  }
-  result.push(...uncategorized);
-  return result;
-}
-
 export default function SwipeFeed() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [votedResults, setVotedResults] = useState<Map<string, VoteResult>>(new Map());
+  const [showSignupModal, setShowSignupModal] = useState(false);
 
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
-  const [result, setResult] = useState<VoteResult | null>(null);
-  const [animatingCard, setAnimatingCard] = useState<'left' | 'right' | null>(null);
-  const [votedPollIds, setVotedPollIds] = useState<Set<string>>(new Set());
-  const [showSignupModal, setShowSignupModal] = useState(false);
 
   const { data: polls, isLoading, refetch } = useQuery({
     queryKey: ['feed-polls', user?.id],
@@ -133,7 +113,6 @@ export default function SwipeFeed() {
           .select('poll_id')
           .eq('user_id', user.id);
         votedIds = userVotes?.map(v => v.poll_id) || [];
-        setVotedPollIds(new Set(votedIds));
       }
 
       let query = supabase
@@ -163,17 +142,15 @@ export default function SwipeFeed() {
         });
       }
 
-      let rotated = rotatePollsByCategory(allPolls);
-
       if (targetPollId) {
-        const targetIdx = rotated.findIndex(p => p.id === targetPollId);
+        const targetIdx = allPolls.findIndex(p => p.id === targetPollId);
         if (targetIdx > 0) {
-          const [target] = rotated.splice(targetIdx, 1);
-          rotated.unshift(target);
+          const [target] = allPolls.splice(targetIdx, 1);
+          allPolls.unshift(target);
         }
       }
 
-      return rotated;
+      return allPolls;
     },
   });
 
@@ -203,8 +180,6 @@ export default function SwipeFeed() {
         return { pollId, choice, percentA, percentB: 100 - percentA, totalVotes: 1 };
       }
 
-      if (votedPollIds.has(pollId)) throw new Error('ALREADY_VOTED');
-
       const { error: voteError } = await supabase
         .from('votes')
         .insert({ poll_id: pollId, user_id: user.id, choice });
@@ -221,64 +196,29 @@ export default function SwipeFeed() {
       return { pollId, choice, percentA, percentB: totalVotes > 0 ? 100 - percentA : 0, totalVotes };
     },
     onSuccess: (data) => {
-      setResult(data);
-      setAnimatingCard(null);
-      setVotedPollIds(prev => new Set([...prev, data.pollId]));
+      playResultSound();
+      setVotedResults(prev => new Map(prev).set(data.pollId, data));
     },
     onError: (error: any) => {
-      setAnimatingCard(null);
       if (error.message === 'GUEST_LIMIT') return;
       if (error.message === 'ALREADY_VOTED' || error.message?.includes('duplicate')) {
         toast.error('You already voted on this poll');
-        handleNextPoll();
         return;
       }
       toast.error('Failed to vote');
     },
   });
 
-  const handleSwipe = useCallback((direction: 'left' | 'right') => {
-    if (!polls || currentIndex >= polls.length || result) return;
+  const handleVote = useCallback((pollId: string, choice: 'A' | 'B') => {
+    if (votedResults.has(pollId)) return;
     if (!user && getGuestVoteCount() >= GUEST_VOTE_LIMIT) {
       setShowSignupModal(true);
       return;
     }
-    const poll = polls[currentIndex];
-    if (votedPollIds.has(poll.id)) { handleNextPoll(); return; }
-    const choice = direction === 'right' ? 'B' : 'A';
-    setAnimatingCard(direction);
-    voteMutation.mutate({ pollId: poll.id, choice });
-  }, [polls, currentIndex, voteMutation, user, votedPollIds, result]);
+    playSwipeSound();
+    voteMutation.mutate({ pollId, choice });
+  }, [voteMutation, user, votedResults]);
 
-  const handleSkip = useCallback(() => {
-    if (!polls || currentIndex >= polls.length || result) return;
-    setResult(null);
-    setAnimatingCard(null);
-    setCurrentIndex(prev => prev + 1);
-  }, [polls, currentIndex, result]);
-
-  const handleNextPoll = useCallback(() => {
-    setResult(null);
-    setAnimatingCard(null);
-    setCurrentIndex(prev => prev + 1);
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (result) return;
-      if (e.key === 'ArrowLeft') { e.preventDefault(); handleSwipe('left'); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); handleSwipe('right'); }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleSwipe, result]);
-
-  const currentPoll = polls?.[currentIndex];
-  const hasMorePolls = polls && currentIndex < polls.length;
-  const totalPolls = polls?.length || 0;
-  const progress = totalPolls > 0 ? ((currentIndex) / totalPolls) * 100 : 0;
-
-  // Full-screen immersive loading
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
@@ -290,50 +230,125 @@ export default function SwipeFeed() {
     );
   }
 
-  // Full-screen immersive layout — no AppLayout wrapper
+  const hasPolls = polls && polls.length > 0;
+
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-background">
-      {/* Minimal top bar — compact */}
-      {hasMorePolls && (
-        <div className="px-3 pt-0.5 pb-0.5 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground font-medium">
-            {currentIndex + 1} / {totalPolls}
-          </span>
-          {/* Thin progress bar */}
-          <div className="flex-1 mx-3 h-1 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <button
-            onClick={handleSkip}
-            className="flex items-center gap-1 text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors"
-          >
-            <SkipForward className="h-3.5 w-3.5" />
-            Skip
-          </button>
-        </div>
-      )}
+      {/* Header */}
+      <div className="px-4 pt-3 pb-1 shrink-0">
+        <h1 className="text-lg font-display font-bold text-foreground tracking-tight">Vote</h1>
+        <p className="text-[10px] text-muted-foreground">{polls?.length || 0} polls to explore</p>
+      </div>
 
-      {/* Main content area — full height, no padding */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        {hasMorePolls && currentPoll ? (
-          <div className="flex-1 flex flex-col min-h-0">
-            <PollCard
-              key={currentPoll.id}
-              poll={currentPoll}
-              onSwipe={handleSwipe}
-              isAnimating={result ? null : animatingCard}
-              result={result && result.pollId === currentPoll.id ? result : null}
-              onResultDone={handleNextPoll}
-            />
-          </div>
+      {/* Scrollable poll feed */}
+      <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-3 scrollbar-hide">
+        {hasPolls ? (
+          polls.map((poll, i) => {
+            const result = votedResults.get(poll.id);
+            const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
+            const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+            const hasVoted = !!result;
+            const winnerIsA = result ? result.percentA >= result.percentB : true;
+
+            return (
+              <motion.div
+                key={poll.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04, type: 'spring', stiffness: 260, damping: 24 }}
+                className="rounded-2xl overflow-hidden bg-card border border-border/30"
+              >
+                {/* Question */}
+                <div className="px-3 py-2">
+                  <p className="text-xs font-bold text-foreground">{poll.question}</p>
+                </div>
+
+                {/* Split images — same h-40 as Home */}
+                <div className="flex h-40 relative">
+                  {/* Option A */}
+                  <div
+                    className={`w-1/2 h-full relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:scale-[0.98] transition-transform' : ''}`}
+                    onClick={() => !hasVoted && handleVote(poll.id, 'A')}
+                  >
+                    <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    {hasVoted && winnerIsA && (
+                      <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-bold">
+                        <TrendUp className="h-2.5 w-2.5" /> Winner
+                      </div>
+                    )}
+                    {hasVoted && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <span className="text-2xl font-bold text-white">{result!.percentA}%</span>
+                      </div>
+                    )}
+                    {hasVoted && result?.choice === 'A' && (
+                      <div className="absolute inset-0 border-2 border-accent pointer-events-none" />
+                    )}
+                    <div className="absolute bottom-2 left-2 right-1">
+                      <p className="text-white text-xs font-bold drop-shadow-lg truncate">{poll.option_a}</p>
+                    </div>
+                    {!hasVoted && (
+                      <div className="absolute inset-0 hover:bg-white/5 transition-colors" />
+                    )}
+                  </div>
+
+                  <div className="absolute inset-y-0 left-1/2 w-px bg-background/15 z-10" />
+
+                  {/* Option B */}
+                  <div
+                    className={`w-1/2 h-full relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:scale-[0.98] transition-transform' : ''}`}
+                    onClick={() => !hasVoted && handleVote(poll.id, 'B')}
+                  >
+                    <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    {hasVoted && !winnerIsA && (
+                      <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/90 text-accent-foreground text-[9px] font-bold">
+                        <TrendUp className="h-2.5 w-2.5" /> Winner
+                      </div>
+                    )}
+                    {hasVoted && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <span className="text-2xl font-bold text-white">{result!.percentB}%</span>
+                      </div>
+                    )}
+                    {hasVoted && result?.choice === 'B' && (
+                      <div className="absolute inset-0 border-2 border-warning pointer-events-none" />
+                    )}
+                    <div className="absolute bottom-2 left-1 right-2 text-right">
+                      <p className="text-white text-xs font-bold drop-shadow-lg truncate">{poll.option_b}</p>
+                    </div>
+                    {!hasVoted && (
+                      <div className="absolute inset-0 hover:bg-white/5 transition-colors" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer */}
+                {hasVoted && (
+                  <div className="px-3 py-2 flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Users className="h-2.5 w-2.5" /> {result!.totalVotes} perspectives
+                    </span>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                      result!.choice === 'A' ? 'bg-accent/15 text-accent' : 'bg-warning/15 text-warning'
+                    }`}>
+                      You picked {result!.choice === 'A' ? poll.option_a : poll.option_b}
+                    </span>
+                  </div>
+                )}
+                {!hasVoted && (
+                  <div className="px-3 py-2 flex items-center justify-center">
+                    <span className="text-[10px] text-muted-foreground">Tap an image to vote</span>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })
         ) : (
-          /* Caught up state */
-          <div className="w-full max-w-md mx-auto overflow-y-auto max-h-full pb-8 px-4 scrollbar-hide flex flex-col items-center justify-center">
-            <CaughtUpInsights onRefresh={() => { setCurrentIndex(0); setResult(null); refetch(); }} />
-            <div className="mt-4 px-2">
+          <div className="flex flex-col items-center justify-center pt-20">
+            <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
+            <div className="mt-4 px-2 w-full max-w-sm">
               <Button
                 onClick={() => navigate('/')}
                 variant="outline"
