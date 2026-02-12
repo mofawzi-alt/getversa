@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Trophy, Award, Crown, Shield } from 'lucide-react';
+import { Menu, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Sheet,
@@ -11,12 +11,6 @@ import {
 } from '@/components/ui/sheet';
 import versaLogo from '@/assets/versa-logo-icon.png';
 
-const menuItems = [
-  { path: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
-  { path: '/badges', icon: Award, label: 'Badges' },
-  { path: '/creator', icon: Crown, label: 'Creator Dashboard' },
-];
-
 export default function AppHeader() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,8 +20,8 @@ export default function AppHeader() {
   if (!user) return null;
 
   const allMenuItems = isAdmin 
-    ? [...menuItems, { path: '/admin', icon: Shield, label: 'Admin Panel' }]
-    : menuItems;
+    ? [{ path: '/admin', icon: Shield, label: 'Admin Panel' }]
+    : [];
 
   const handleNavigate = (path: string) => {
     navigate(path);

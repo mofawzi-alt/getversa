@@ -1,12 +1,10 @@
 import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Gift, Bell, User, Users } from 'lucide-react';
+import { Home, Bell, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home' },
-  { path: '/friends', icon: Users, label: 'Friends' },
-  { path: '/rewards', icon: Gift, label: 'Perks' },
   { path: '/notifications', icon: Bell, label: 'Alerts' },
   { path: '/profile', icon: User, label: 'Profile' },
 ];
@@ -16,12 +14,13 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  if (!user) return null;
+  // Show minimal nav for guests (only Home)
+  const visibleItems = user ? navItems : navItems.filter(item => item.path === '/');
 
   return (
     <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-nav border-t border-border/40 safe-area-bottom z-50">
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
-        {navItems.map(({ path, icon: Icon, label }) => {
+        {visibleItems.map(({ path, icon: Icon, label }) => {
           const isActive = location.pathname === path;
           
           return (

@@ -1,6 +1,5 @@
 import { useState, useRef, TouchEvent, MouseEvent, useEffect } from 'react';
-import { Sparkles, Clock, Radio, Users, MapPin, Calendar, Loader2, User } from 'lucide-react';
-import FollowButton from './FollowButton';
+import { Clock, Radio, Loader2, Users, MapPin, Calendar } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Poll {
