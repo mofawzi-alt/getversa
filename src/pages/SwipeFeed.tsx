@@ -448,7 +448,7 @@ export default function SwipeFeed() {
         {/* Poll Cards */}
         <div 
           ref={containerRef}
-          className="relative flex-1 flex items-start justify-center overflow-visible pt-2"
+          className="relative flex items-start justify-center overflow-visible pt-2"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -480,20 +480,6 @@ export default function SwipeFeed() {
             </div>
           )}
         </div>
-
-        {/* Swipe Hints - only for unvoted polls */}
-        {hasMorePolls && currentPoll && (
-          <div className="flex justify-center gap-8 mt-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">👈</span>
-              <span>Option A</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>Option B</span>
-              <span className="text-lg">👉</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Results Overlay - auto-advances to next poll */}
