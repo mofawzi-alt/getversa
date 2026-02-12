@@ -121,7 +121,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
   return (
     <div
       ref={cardRef}
-      className={`w-full h-full select-none flex flex-col ${hasResult ? '' : 'cursor-grab active:cursor-grabbing'} ${getAnimationClass()}`}
+      className={`w-full h-full select-none flex flex-col items-center justify-center ${hasResult ? '' : 'cursor-grab active:cursor-grabbing'} ${getAnimationClass()}`}
       style={{
         transform: isAnimating ? undefined : hasResult ? 'none' : `translateX(${dragOffset}px) rotate(${rotation}deg)`,
         opacity: isAnimating ? undefined : hasResult ? 1 : opacity,
@@ -141,8 +141,8 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
         <p className="text-sm font-bold text-foreground leading-snug text-center">{poll.question}</p>
       </div>
 
-      {/* Immersive images — edge-to-edge, no gap, fill remaining height */}
-      <div className="flex-1 grid grid-cols-2 gap-0 min-h-0">
+      {/* Images — fixed height matching home screen cards */}
+      <div className="grid grid-cols-2 gap-0 h-[70vh] max-h-[600px] rounded-2xl overflow-hidden mx-2">
         {/* Option A */}
         <div
           className="relative overflow-hidden transition-transform duration-200"
