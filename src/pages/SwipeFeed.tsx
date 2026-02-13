@@ -185,7 +185,7 @@ function ImmersivePollCard({
 
         {/* The card itself */}
         <div
-          className={`absolute inset-x-6 top-14 bottom-4 rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
+          className={`absolute inset-x-6 top-4 bottom-4 rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
           style={{
             transform: hasResult ? 'none' : `translateX(${translateX}px) rotate(${rotation}deg)`,
             transition: isDragging ? 'none' : flyDirection ? 'transform 0.4s ease-in' : 'transform 0.3s ease-out',
@@ -393,10 +393,12 @@ export default function SwipeFeed() {
 
   const hasPolls = polls && polls.length > 0;
 
+  const HEADER_HEIGHT = 72; // px, matches pt-4 pb-3 + button height + gap
+
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-secondary/50">
+    <div className="fixed inset-0 z-40 flex flex-col gap-2 bg-secondary/50">
       {/* Top bar with home + info */}
-      <div className="shrink-0 flex items-center justify-between px-4 pt-4 pb-2">
+      <div className="shrink-0 flex items-center justify-between px-4 pt-4 pb-3" style={{ minHeight: HEADER_HEIGHT }}>
         <button
           onClick={() => navigate('/')}
           className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
@@ -411,7 +413,7 @@ export default function SwipeFeed() {
       {/* Full-screen snap-scroll feed */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide basis-0"
+        className="flex-1 min-h-0 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
       >
         {hasPolls ? (
           polls.map((poll) => (
@@ -419,7 +421,7 @@ export default function SwipeFeed() {
               key={poll.id}
               ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
               className="w-full snap-start snap-always"
-              style={{ height: '100%', minHeight: '100%' }}
+              style={{ height: `calc(100dvh - ${HEADER_HEIGHT}px)`, minHeight: `calc(100dvh - ${HEADER_HEIGHT}px)` }}
             >
               <ImmersivePollCard
                 poll={poll}
@@ -430,7 +432,7 @@ export default function SwipeFeed() {
             </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center px-4" style={{ height: '100%', minHeight: '100%' }}>
+          <div className="flex flex-col items-center justify-center px-4" style={{ height: `calc(100dvh - ${HEADER_HEIGHT}px)`, minHeight: `calc(100dvh - ${HEADER_HEIGHT}px)` }}>
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
             <div className="mt-4 w-full max-w-sm">
               <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
@@ -442,7 +444,7 @@ export default function SwipeFeed() {
 
         {/* Caught-up screen as final snap item */}
         {hasPolls && polls.every(p => votedResults.has(p.id)) && (
-          <div className="snap-start snap-always flex flex-col items-center justify-center px-4 bg-background" style={{ height: '100%', minHeight: '100%' }}>
+          <div className="snap-start snap-always flex flex-col items-center justify-center px-4 bg-background" style={{ height: `calc(100dvh - ${HEADER_HEIGHT}px)`, minHeight: `calc(100dvh - ${HEADER_HEIGHT}px)` }}>
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
             <div className="mt-4 w-full max-w-sm">
               <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
