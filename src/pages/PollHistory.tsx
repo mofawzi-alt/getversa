@@ -222,7 +222,7 @@ export default function PollHistory() {
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-secondary/50">
       {/* Top bar */}
-      <div className="px-3 pt-2 pb-1 flex items-center gap-3 shrink-0">
+      <div className="px-3 pt-4 pb-2 flex items-center gap-3 shrink-0 border-b border-border/20">
         <button onClick={() => navigate(-1)} className="p-1.5 rounded-full hover:bg-secondary">
           <ArrowLeft className="h-5 w-5" />
         </button>
