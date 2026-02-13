@@ -6,6 +6,7 @@ import { Loader2, ArrowLeft, Users, ChevronDown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp as TrendUp } from 'lucide-react';
+import LiveIndicator from '@/components/poll/LiveIndicator';
 
 import beachImg from '@/assets/polls/beach.jpg';
 import cityImg from '@/assets/polls/city.jpg';
@@ -54,6 +55,7 @@ interface VoteHistoryItem {
   totalVotes: number;
   votedAt: string;
   inMajority: boolean;
+  isLive: boolean;
 }
 
 function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; index: number; total: number }) {
@@ -65,8 +67,9 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
   return (
     <div className="w-full flex flex-col">
       {/* Question */}
-      <div className="px-4 pt-3 pb-2 shrink-0">
+      <div className="px-4 pt-3 pb-2 shrink-0 flex items-start justify-between gap-2">
         <p className="text-sm font-bold text-foreground leading-snug">{vote.question}</p>
+        {vote.isLive && <LiveIndicator variant="badge" className="shrink-0 mt-0.5" />}
       </div>
 
       {/* Split images — proportional aspect ratio */}
@@ -188,11 +191,12 @@ export default function PollHistory() {
         const percentB = result?.percent_b || 0;
         const userChoice = v.choice as 'A' | 'B';
         const userPercent = userChoice === 'A' ? percentA : percentB;
+        const isLive = poll.is_active && (!poll.ends_at || new Date(poll.ends_at) > new Date());
         return {
           pollId: v.poll_id, question: poll.question, optionA: poll.option_a, optionB: poll.option_b,
           imageAUrl: poll.image_a_url, imageBUrl: poll.image_b_url, category: poll.category,
           userChoice, percentA, percentB, totalVotes: result?.total_votes || 0,
-          votedAt: v.created_at, inMajority: userPercent >= 50,
+          votedAt: v.created_at, inMajority: userPercent >= 50, isLive: !!isLive,
         } as VoteHistoryItem;
       }).filter(Boolean) as VoteHistoryItem[];
     },
