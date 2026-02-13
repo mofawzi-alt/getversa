@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Home, Users, TrendingUp as TrendUp } from 'lucide-react';
+import { Loader2, Home, Users, TrendingUp as TrendUp, Zap } from 'lucide-react';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -364,9 +364,24 @@ export default function SwipeFeed() {
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-black">
-      {/* Minimal header overlay */}
-      <div className="absolute top-0 inset-x-0 z-30 pointer-events-none px-4 pt-3 pb-1">
-        <p className="text-white/50 text-[10px] text-center tracking-wider">{polls?.length || 0} polls · swipe to vote</p>
+      {/* Info header overlay */}
+      <div className="absolute top-0 inset-x-0 z-30 px-4 pt-3 pb-2 bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Zap className="h-3.5 w-3.5 text-accent" />
+            <span className="text-white text-[11px] font-display font-bold tracking-wide">{polls?.length || 0} Active Polls</span>
+          </div>
+          {polls && polls.length > 0 && !votedResults.has(polls[0].id) && (
+            <motion.span
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-accent/90 text-accent-foreground"
+            >
+              NEW ON TOP
+            </motion.span>
+          )}
+        </div>
+        <p className="text-white/40 text-[10px] mt-0.5">Swipe left or right to vote</p>
       </div>
 
       {/* Full-screen snap-scroll feed */}
