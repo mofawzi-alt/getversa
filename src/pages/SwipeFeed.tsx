@@ -192,7 +192,7 @@ function ImmersivePollCard({
 
         {/* The card itself */}
         <div
-          className={`absolute inset-x-6 top-4 bottom-4 rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''} ${hasResult ? selectedGlow : ''}`}
+          className={`w-full max-w-sm mx-auto rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''} ${hasResult ? selectedGlow : ''}`}
           style={{
             transform: hasResult ? 'none' : `translateX(${translateX}px) rotate(${rotation}deg)`,
             transition: isDragging ? 'none' : flyDirection ? 'transform 0.4s ease-in' : 'transform 0.3s ease-out',
@@ -207,7 +207,7 @@ function ImmersivePollCard({
           onMouseLeave={() => isDragging && handleEnd()}
         >
           {/* Split images */}
-          <div className="flex h-full w-full">
+          <div className="flex h-[55vh] max-h-[450px] w-full">
             <div className="w-1/2 h-full relative overflow-hidden">
               <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
