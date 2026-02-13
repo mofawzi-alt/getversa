@@ -104,15 +104,16 @@ function ImmersivePollCard({
 }) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [flyDirection, setFlyDirection] = useState<'left' | 'right' | null>(null);
   const startX = useRef(0);
   const hasResult = !!result;
   const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
   const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
   const winnerIsA = result ? result.percentA >= result.percentB : true;
-  const highlightIntensity = Math.min(Math.abs(dragX) / SWIPE_THRESHOLD, 1);
+  const THRESHOLD = 80;
 
   const handleStart = (clientX: number) => {
-    if (hasResult || disabled) return;
+    if (hasResult || disabled || flyDirection) return;
     setIsDragging(true);
     startX.current = clientX;
   };
@@ -123,116 +124,139 @@ function ImmersivePollCard({
   const handleEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    if (dragX < -SWIPE_THRESHOLD) {
-      onVote(poll.id, 'A');
-    } else if (dragX > SWIPE_THRESHOLD) {
-      onVote(poll.id, 'B');
+    if (dragX < -THRESHOLD) {
+      setFlyDirection('left');
+      setTimeout(() => onVote(poll.id, 'A'), 300);
+    } else if (dragX > THRESHOLD) {
+      setFlyDirection('right');
+      setTimeout(() => onVote(poll.id, 'B'), 300);
     }
-    setDragX(0);
+    if (Math.abs(dragX) <= THRESHOLD) setDragX(0);
   };
 
-  const rotation = Math.sign(dragX) * Math.min(Math.abs(dragX), 150) / 150 * 6;
+  // Reset fly after result arrives
+  useEffect(() => {
+    if (hasResult) setFlyDirection(null);
+  }, [hasResult]);
+
+  const rotation = flyDirection
+    ? (flyDirection === 'left' ? -15 : 15)
+    : Math.sign(dragX) * Math.min(Math.abs(dragX), 200) / 200 * 12;
+
+  const translateX = flyDirection
+    ? (flyDirection === 'left' ? -window.innerWidth * 1.5 : window.innerWidth * 1.5)
+    : dragX;
+
+  const choiceOpacity = Math.min(Math.abs(dragX) / THRESHOLD, 1);
+  const showA = dragX < -20;
+  const showB = dragX > 20;
 
   return (
-    <div
-      className={`w-full h-full relative overflow-hidden ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
-      style={{
-        transform: hasResult ? 'none' : `translateX(${dragX}px) rotate(${rotation}deg)`,
-        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-      }}
-      onTouchStart={(e) => handleStart(e.touches[0].clientX)}
-      onTouchMove={(e) => { handleMove(e.touches[0].clientX); if (Math.abs(dragX) > 10) e.preventDefault(); }}
-      onTouchEnd={handleEnd}
-      onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX); }}
-      onMouseMove={(e) => handleMove(e.clientX)}
-      onMouseUp={handleEnd}
-      onMouseLeave={() => isDragging && handleEnd()}
-    >
-      {/* Edge-to-edge split images */}
-      <div className="flex h-full w-full">
-        {/* Option A */}
-        <div
-          className="w-1/2 h-full relative overflow-hidden transition-all duration-200"
-          style={{
-            transform: !hasResult && dragX < -20 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
-            filter: !hasResult && dragX > 20 ? `brightness(${1 - highlightIntensity * 0.3})` : 'brightness(1)',
-          }}
-        >
-          <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" draggable={false} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-          {hasResult && winnerIsA && (
-            <div className="absolute top-4 left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground text-[10px] font-bold backdrop-blur-sm">
-              <TrendUp className="h-3 w-3" /> Winner
+    <div className="w-full h-full relative overflow-hidden flex flex-col">
+      {/* Swipeable card area */}
+      <div className="flex-1 relative">
+        {/* Choice indicators behind the card */}
+        {!hasResult && (
+          <>
+            <div className="absolute inset-0 flex items-center justify-start pl-8 z-0">
+              <motion.div
+                animate={{ opacity: showA ? choiceOpacity : 0, scale: showA ? 1 : 0.8 }}
+                className="flex flex-col items-center gap-1"
+              >
+                <div className="w-16 h-16 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center">
+                  <span className="text-accent font-display font-bold text-2xl">A</span>
+                </div>
+                <span className="text-accent text-[10px] font-bold max-w-20 text-center truncate">{poll.option_a}</span>
+              </motion.div>
             </div>
-          )}
-          {hasResult && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
-              <span className="text-4xl font-bold text-white drop-shadow-2xl">{result!.percentA}%</span>
-            </motion.div>
-          )}
-          {hasResult && result?.choice === 'A' && (
-            <div className="absolute inset-0 border-4 border-accent pointer-events-none" />
-          )}
-          {!hasResult && dragX < -20 && (
-            <div className="absolute inset-0 border-4 border-accent/70 pointer-events-none" style={{ opacity: highlightIntensity }} />
-          )}
-          <div className="absolute bottom-4 left-3 right-1">
-            <p className="text-white text-base font-bold drop-shadow-lg">{poll.option_a}</p>
+            <div className="absolute inset-0 flex items-center justify-end pr-8 z-0">
+              <motion.div
+                animate={{ opacity: showB ? choiceOpacity : 0, scale: showB ? 1 : 0.8 }}
+                className="flex flex-col items-center gap-1"
+              >
+                <div className="w-16 h-16 rounded-full bg-warning/20 border-2 border-warning flex items-center justify-center">
+                  <span className="text-warning font-display font-bold text-2xl">B</span>
+                </div>
+                <span className="text-warning text-[10px] font-bold max-w-20 text-center truncate">{poll.option_b}</span>
+              </motion.div>
+            </div>
+          </>
+        )}
+
+        {/* The card itself */}
+        <div
+          className={`absolute inset-4 rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
+          style={{
+            transform: hasResult ? 'none' : `translateX(${translateX}px) rotate(${rotation}deg)`,
+            transition: isDragging ? 'none' : flyDirection ? 'transform 0.4s ease-in' : 'transform 0.3s ease-out',
+            opacity: flyDirection ? 0 : 1,
+          }}
+          onTouchStart={(e) => handleStart(e.touches[0].clientX)}
+          onTouchMove={(e) => { handleMove(e.touches[0].clientX); if (Math.abs(dragX) > 10) e.preventDefault(); }}
+          onTouchEnd={handleEnd}
+          onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX); }}
+          onMouseMove={(e) => handleMove(e.clientX)}
+          onMouseUp={handleEnd}
+          onMouseLeave={() => isDragging && handleEnd()}
+        >
+          {/* Split images */}
+          <div className="flex h-full w-full">
+            <div className="w-1/2 h-full relative overflow-hidden">
+              <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" draggable={false} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+              {hasResult && (
+                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-4xl font-bold text-white drop-shadow-2xl">{result!.percentA}%</span>
+                </motion.div>
+              )}
+              {hasResult && winnerIsA && (
+                <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground text-[10px] font-bold backdrop-blur-sm">
+                  <TrendUp className="h-3 w-3" /> Winner
+                </div>
+              )}
+              {hasResult && result?.choice === 'A' && (
+                <div className="absolute inset-0 border-4 border-accent rounded-l-2xl pointer-events-none" />
+              )}
+              <div className="absolute bottom-3 left-2 right-1">
+                <p className="text-white text-sm font-bold drop-shadow-lg">{poll.option_a}</p>
+              </div>
+            </div>
+
+            <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/10 z-10" />
+
+            <div className="w-1/2 h-full relative overflow-hidden">
+              <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" draggable={false} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+              {hasResult && (
+                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-4xl font-bold text-white drop-shadow-2xl">{result!.percentB}%</span>
+                </motion.div>
+              )}
+              {hasResult && !winnerIsA && (
+                <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-accent/90 text-accent-foreground text-[10px] font-bold backdrop-blur-sm">
+                  <TrendUp className="h-3 w-3" /> Winner
+                </div>
+              )}
+              {hasResult && result?.choice === 'B' && (
+                <div className="absolute inset-0 border-4 border-warning rounded-r-2xl pointer-events-none" />
+              )}
+              <div className="absolute bottom-3 left-1 right-2 text-right">
+                <p className="text-white text-sm font-bold drop-shadow-lg">{poll.option_b}</p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Thin divider */}
-        <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/10 z-10" />
-
-        {/* Option B */}
-        <div
-          className="w-1/2 h-full relative overflow-hidden transition-all duration-200"
-          style={{
-            transform: !hasResult && dragX > 20 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
-            filter: !hasResult && dragX < -20 ? `brightness(${1 - highlightIntensity * 0.3})` : 'brightness(1)',
-          }}
-        >
-          <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" draggable={false} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-          {hasResult && !winnerIsA && (
-            <div className="absolute top-4 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-accent/90 text-accent-foreground text-[10px] font-bold backdrop-blur-sm">
-              <TrendUp className="h-3 w-3" /> Winner
-            </div>
-          )}
-          {hasResult && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
-              <span className="text-4xl font-bold text-white drop-shadow-2xl">{result!.percentB}%</span>
-            </motion.div>
-          )}
-          {hasResult && result?.choice === 'B' && (
-            <div className="absolute inset-0 border-4 border-warning pointer-events-none" />
-          )}
-          {!hasResult && dragX > 20 && (
-            <div className="absolute inset-0 border-4 border-warning/70 pointer-events-none" style={{ opacity: highlightIntensity }} />
-          )}
-          <div className="absolute bottom-4 left-1 right-3 text-right">
-            <p className="text-white text-base font-bold drop-shadow-lg">{poll.option_b}</p>
+          {/* Question overlay */}
+          <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/70 to-transparent z-20 pointer-events-none">
+            <p className="text-white text-sm font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
           </div>
         </div>
       </div>
 
-      {/* Question overlay at top */}
-      <div className="absolute top-0 inset-x-0 px-4 pt-16 pb-8 bg-gradient-to-b from-black/70 to-transparent z-20 pointer-events-none">
-        <p className="text-white text-sm font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
-      </div>
-
-      {/* Bottom info */}
-      <div className="absolute bottom-0 inset-x-0 z-20 pointer-events-none">
+      {/* Bottom labels — always visible */}
+      <div className="shrink-0 px-6 pb-4 pt-2 flex items-center justify-between z-20">
         {hasResult ? (
-          <div className="px-4 pb-6 flex items-center justify-between">
+          <>
             <span className="text-white/70 text-xs flex items-center gap-1">
               <Users className="h-3 w-3" /> {result!.totalVotes} perspectives
             </span>
@@ -241,12 +265,19 @@ function ImmersivePollCard({
             }`}>
               You picked {result!.choice === 'A' ? poll.option_a : poll.option_b}
             </span>
-          </div>
+          </>
         ) : (
-          <div className="px-4 pb-6 flex justify-between text-xs text-white/50 font-medium">
-            <span>← Swipe for {poll.option_a.length > 12 ? poll.option_a.slice(0, 12) + '…' : poll.option_a}</span>
-            <span>{poll.option_b.length > 12 ? poll.option_b.slice(0, 12) + '…' : poll.option_b} →</span>
-          </div>
+          <>
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-accent font-display font-bold text-lg">A</span>
+              <span className="text-white/50 text-[10px] font-medium max-w-24 text-center truncate">← {poll.option_a}</span>
+            </div>
+            <span className="text-white/30 text-[10px]">swipe to choose</span>
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-warning font-display font-bold text-lg">B</span>
+              <span className="text-white/50 text-[10px] font-medium max-w-24 text-center truncate">{poll.option_b} →</span>
+            </div>
+          </>
         )}
       </div>
     </div>
