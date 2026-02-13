@@ -15,6 +15,7 @@ interface Poll {
   sponsor_name?: string;
   sponsor_logo_url?: string;
   ends_at?: string | null;
+  starts_at?: string | null;
   is_daily_poll?: boolean;
   created_by?: string | null;
   creator_username?: string | null;
@@ -113,7 +114,8 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
   };
 
   const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
-  const isLive = !isExpired;
+  const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
+  const isLive = !isExpired && hasStarted;
 
   const userPercent = result ? (result.choice === 'A' ? result.percentA : result.percentB) : 0;
   const isWinnerA = result ? result.percentA >= result.percentB : true;
