@@ -63,14 +63,14 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
   const userPercent = vote.userChoice === 'A' ? vote.percentA : vote.percentB;
 
   return (
-    <div className="h-full w-full flex flex-col snap-start snap-always">
+    <div className="w-full flex flex-col">
       {/* Question */}
       <div className="px-4 pt-3 pb-2 shrink-0">
         <p className="text-sm font-bold text-foreground leading-snug">{vote.question}</p>
       </div>
 
-      {/* Split images — fills available space, shows full image */}
-      <div className="flex-1 flex relative mx-4 rounded-2xl overflow-hidden min-h-0 shadow-xl">
+      {/* Split images — proportional aspect ratio */}
+      <div className="flex relative mx-4 rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
         {/* Option A */}
         <div className="w-1/2 h-full relative overflow-hidden">
           <img src={imgA} alt={vote.optionA} className="w-full h-full object-cover" />
@@ -240,15 +240,10 @@ export default function PollHistory() {
       ) : (
         <div
           ref={scrollRef}
-          className="flex-1 basis-0 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
-          style={{ scrollSnapType: 'y mandatory' }}
+          className="flex-1 basis-0 overflow-y-auto scrollbar-hide px-0 py-3 space-y-4"
         >
           {voteHistory.map((vote, i) => (
-            <div
-              key={vote.pollId}
-              className="h-full w-full"
-              style={{ scrollSnapAlign: 'start' }}
-            >
+            <div key={vote.pollId} className="w-full">
               <FullScreenHistoryCard vote={vote} index={i} total={voteHistory.length} />
             </div>
           ))}
