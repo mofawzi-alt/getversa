@@ -346,18 +346,42 @@ export default function SwipeFeed() {
   const { data: polls, isLoading, refetch } = useQuery({
     queryKey: ['feed-polls', user?.id],
     queryFn: async () => {
-      let votedIds: string[] = [];
-      if (user) {
-        const { data: userVotes } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
-        votedIds = userVotes?.map(v => v.poll_id) || [];
-      }
+      // Fetch all active polls — voted ones stay visible with results
       let query = supabase.from('polls').select('*').eq('is_active', true).neq('is_archived', true)
-        .order('is_daily_poll', { ascending: false }).order('created_at', { ascending: false });
-      if (votedIds.length > 0) query = query.not('id', 'in', `(${votedIds.join(',')})`);
-      query = query.limit(60);
+        .order('is_daily_poll', { ascending: false }).order('created_at', { ascending: false })
+        .limit(60);
       const { data: fetchedPolls, error } = await query;
       if (error) throw error;
       let allPolls = fetchedPolls || [];
+
+      // Pre-load existing votes as results
+      if (user) {
+        const { data: userVotes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
+        if (userVotes && userVotes.length > 0) {
+          const votedPollIds = userVotes.map(v => v.poll_id);
+          const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: votedPollIds });
+          const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
+          const preloadedResults = new Map<string, VoteResult>();
+          userVotes.forEach(v => {
+            const r = resultsMap.get(v.poll_id);
+            if (r) {
+              preloadedResults.set(v.poll_id, {
+                pollId: v.poll_id,
+                choice: v.choice as 'A' | 'B',
+                percentA: r.percent_a || 0,
+                percentB: r.percent_b || 0,
+                totalVotes: r.total_votes || 0,
+              });
+            }
+          });
+          setVotedResults(prev => {
+            const merged = new Map(preloadedResults);
+            prev.forEach((v, k) => merged.set(k, v)); // local votes take priority
+            return merged;
+          });
+        }
+      }
+
       if (profile) {
         allPolls = allPolls.filter(p => {
           if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) return false;
@@ -366,6 +390,7 @@ export default function SwipeFeed() {
           return true;
         });
       }
+      // Put unvoted polls first
       if (targetPollId) {
         const idx = allPolls.findIndex(p => p.id === targetPollId);
         if (idx > 0) { const [t] = allPolls.splice(idx, 1); allPolls.unshift(t); }
@@ -444,6 +469,7 @@ export default function SwipeFeed() {
   }
 
   const hasPolls = polls && polls.length > 0;
+  const unvotedCount = polls?.filter(p => !votedResults.has(p.id)).length || 0;
 
   return (
     <div className="h-dvh w-full flex flex-col bg-secondary/50 overflow-hidden">
@@ -456,7 +482,7 @@ export default function SwipeFeed() {
           <Home className="h-5 w-5" />
         </button>
         <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm text-foreground shadow-sm flex items-center gap-1">
-          <Zap className="h-3 w-3 text-accent" /> {polls?.length || 0} polls
+          <Zap className="h-3 w-3 text-accent" /> {unvotedCount > 0 ? `${unvotedCount} new` : `${polls?.length || 0} polls`}
         </span>
       </div>
 
@@ -492,15 +518,11 @@ export default function SwipeFeed() {
           </div>
         )}
 
-        {/* Caught-up screen as final snap item */}
+        {/* All caught up message at the bottom */}
         {hasPolls && polls.every(p => votedResults.has(p.id)) && (
-          <div className="py-8 flex flex-col items-center justify-center px-4">
-            <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
-            <div className="mt-4 w-full max-w-sm">
-              <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
-                <Home className="h-4 w-4" /> Back to Home
-              </Button>
-            </div>
+          <div className="py-6 flex flex-col items-center gap-2">
+            <p className="text-sm font-display font-bold text-foreground/70">You're all caught up! 🎉</p>
+            <p className="text-xs text-muted-foreground">New polls drop daily</p>
           </div>
         )}
       </div>
