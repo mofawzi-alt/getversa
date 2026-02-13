@@ -70,10 +70,10 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
       </div>
 
       {/* Split images — fills available space, shows full image */}
-      <div className="flex-1 flex relative mx-3 rounded-2xl overflow-hidden min-h-0">
+      <div className="flex-1 flex relative mx-4 rounded-2xl overflow-hidden min-h-0 shadow-xl">
         {/* Option A */}
-        <div className="w-1/2 h-full relative overflow-hidden bg-black">
-          <img src={imgA} alt={vote.optionA} className="w-full h-full object-contain" />
+        <div className="w-1/2 h-full relative overflow-hidden">
+          <img src={imgA} alt={vote.optionA} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
           {winnerIsA && (
             <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-bold">
@@ -96,8 +96,8 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
         <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/15 z-10" />
 
         {/* Option B */}
-        <div className="w-1/2 h-full relative overflow-hidden bg-black">
-          <img src={imgB} alt={vote.optionB} className="w-full h-full object-contain" />
+        <div className="w-1/2 h-full relative overflow-hidden">
+          <img src={imgB} alt={vote.optionB} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
           {!winnerIsA && (
             <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/90 text-accent-foreground text-[9px] font-bold">
@@ -220,7 +220,7 @@ export default function PollHistory() {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-background">
+    <div className="fixed inset-0 z-40 flex flex-col bg-secondary/50">
       {/* Top bar */}
       <div className="px-3 pt-2 pb-1 flex items-center gap-3 shrink-0">
         <button onClick={() => navigate(-1)} className="p-1.5 rounded-full hover:bg-secondary">
