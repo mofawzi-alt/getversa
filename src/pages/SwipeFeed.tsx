@@ -445,6 +445,12 @@ export default function SwipeFeed() {
           scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
         }
       }, RESULT_DISPLAY_MS);
+
+      // Refresh Home page data so it's up-to-date when user navigates back
+      queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+      queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
+      queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
+      queryClient.invalidateQueries({ queryKey: ['my-votes'] });
     },
     onError: (error: any) => {
       if (error.message === 'GUEST_LIMIT') return;
