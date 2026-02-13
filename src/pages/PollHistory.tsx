@@ -240,7 +240,7 @@ export default function PollHistory() {
       ) : (
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
+          className="flex-1 basis-0 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
           style={{ scrollSnapType: 'y mandatory' }}
         >
           {voteHistory.map((vote, i) => (
