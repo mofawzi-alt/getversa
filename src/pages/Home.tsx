@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight } from 'lucide-react';
+import LivePollSection from '@/components/home/LivePollSection';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -194,6 +195,9 @@ export default function Home() {
             />
           </motion.div>
         )}
+
+        {/* ── Live Poll Results ── */}
+        <LivePollSection votedPollIds={votedPollIds} />
 
         {/* ── Stories / Highlights Row ── */}
         {storyPolls.length > 0 && (
