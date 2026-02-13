@@ -201,8 +201,8 @@ function ImmersivePollCard({
         >
           {/* Split images — use aspect-ratio aware contain */}
           <div className="flex h-full w-full">
-            <div className="w-1/2 h-full relative overflow-hidden">
-              <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" draggable={false} />
+            <div className="w-1/2 h-full relative overflow-hidden bg-secondary/50">
+              <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
               {hasResult && (
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 flex items-center justify-center">
@@ -224,8 +224,8 @@ function ImmersivePollCard({
 
             <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/15 z-10" />
 
-            <div className="w-1/2 h-full relative overflow-hidden">
-              <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" draggable={false} />
+            <div className="w-1/2 h-full relative overflow-hidden bg-secondary/50">
+              <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
               {hasResult && (
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 flex items-center justify-center">
