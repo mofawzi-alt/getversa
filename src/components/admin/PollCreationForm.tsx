@@ -597,7 +597,8 @@ export default function PollCreationForm({
                 size="sm"
                 variant="outline"
                 onClick={() => setShowCustomIntentInput(true)}
-                title="Add custom tag"
+                title="Add custom intent tag"
+                className="shrink-0"
               >
                 <Plus className="h-4 w-4" />
               </Button>
