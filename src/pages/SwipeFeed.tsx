@@ -418,7 +418,7 @@ export default function SwipeFeed() {
             <div
               key={poll.id}
               ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
-              className="w-full h-screen snap-start snap-always"
+              className="w-full h-full snap-start snap-always"
             >
               <ImmersivePollCard
                 poll={poll}
@@ -429,7 +429,7 @@ export default function SwipeFeed() {
             </div>
           ))
         ) : (
-          <div className="h-screen flex flex-col items-center justify-center px-4">
+          <div className="h-full flex flex-col items-center justify-center px-4">
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
             <div className="mt-4 w-full max-w-sm">
               <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
@@ -441,7 +441,7 @@ export default function SwipeFeed() {
 
         {/* Caught-up screen as final snap item */}
         {hasPolls && polls.every(p => votedResults.has(p.id)) && (
-          <div className="h-screen snap-start snap-always flex flex-col items-center justify-center px-4 bg-background">
+          <div className="h-full snap-start snap-always flex flex-col items-center justify-center px-4 bg-background">
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
             <div className="mt-4 w-full max-w-sm">
               <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
