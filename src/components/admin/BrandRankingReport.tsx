@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, TrendingUp, Trophy, Medal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, TrendingUp, Trophy, Medal, Download } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { toast } from 'sonner';
 
 interface OptionStat {
   name: string;
@@ -98,20 +100,44 @@ export default function BrandRankingReport() {
     return <span className="w-5 h-5 flex items-center justify-center text-xs font-bold text-muted-foreground">#{rank + 1}</span>;
   };
 
+  const exportCSV = () => {
+    if (!rankings || rankings.length === 0) return;
+    let csv = "Rank,Name,Total Votes,Wins,Losses,Win Rate %,Matchups\n";
+    rankings.forEach((item, i) => {
+      csv += `${i + 1},"${item.name}",${item.totalVotes},${item.wins},${item.losses},${item.winRate},${item.matchups}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const cat = selectedCategory === 'all' ? 'all-categories' : selectedCategory.toLowerCase().replace(/\s+/g, '-');
+    link.download = `versa-rankings-${cat}-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    toast.success('Rankings exported');
+  };
+
   return (
     <div className="space-y-4">
-      {/* Category selector */}
-      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select category" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Categories</SelectItem>
-          {categories?.map(cat => (
-            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Category selector + export */}
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories?.map(cat => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {rankings && rankings.length > 0 && (
+          <Button variant="outline" size="icon" onClick={exportCSV} title="Export CSV">
+            <Download className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
