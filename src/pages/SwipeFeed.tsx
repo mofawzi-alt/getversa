@@ -90,8 +90,8 @@ interface VoteResult {
   totalVotes: number;
 }
 
-// ── Swipeable Poll Card ──
-function SwipeablePollCard({
+// ── Full-Screen Immersive Poll Card ──
+function ImmersivePollCard({
   poll,
   result,
   onVote,
@@ -131,11 +131,11 @@ function SwipeablePollCard({
     setDragX(0);
   };
 
-  const rotation = Math.sign(dragX) * Math.min(Math.abs(dragX), 150) / 150 * 8;
+  const rotation = Math.sign(dragX) * Math.min(Math.abs(dragX), 150) / 150 * 6;
 
   return (
     <div
-      className={`rounded-2xl overflow-hidden bg-card border border-border/30 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      className={`w-full h-full relative overflow-hidden ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
       style={{
         transform: hasResult ? 'none' : `translateX(${dragX}px) rotate(${rotation}deg)`,
         transition: isDragging ? 'none' : 'transform 0.3s ease-out',
@@ -148,100 +148,107 @@ function SwipeablePollCard({
       onMouseUp={handleEnd}
       onMouseLeave={() => isDragging && handleEnd()}
     >
-      {/* Question */}
-      <div className="px-3 py-2">
-        <p className="text-xs font-bold text-foreground">{poll.question}</p>
-      </div>
-
-      {/* Split images — h-40 matching Home */}
-      <div className="flex h-40 relative">
+      {/* Edge-to-edge split images */}
+      <div className="flex h-full w-full">
         {/* Option A */}
         <div
-          className="w-1/2 h-full relative overflow-hidden transition-transform duration-200"
+          className="w-1/2 h-full relative overflow-hidden transition-all duration-200"
           style={{
-            transform: !hasResult && dragX < -20 ? `scale(${1 + highlightIntensity * 0.03})` : 'scale(1)',
+            transform: !hasResult && dragX < -20 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
+            filter: !hasResult && dragX > 20 ? `brightness(${1 - highlightIntensity * 0.3})` : 'brightness(1)',
           }}
         >
           <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" draggable={false} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
           {hasResult && winnerIsA && (
-            <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-bold">
-              <TrendUp className="h-2.5 w-2.5" /> Winner
+            <div className="absolute top-4 left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground text-[10px] font-bold backdrop-blur-sm">
+              <TrendUp className="h-3 w-3" /> Winner
             </div>
           )}
           {hasResult && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center animate-fade-in">
-              <span className="text-2xl font-bold text-white">{result!.percentA}%</span>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <span className="text-4xl font-bold text-white drop-shadow-2xl">{result!.percentA}%</span>
+            </motion.div>
           )}
           {hasResult && result?.choice === 'A' && (
-            <div className="absolute inset-0 border-2 border-accent pointer-events-none" />
+            <div className="absolute inset-0 border-4 border-accent pointer-events-none" />
           )}
           {!hasResult && dragX < -20 && (
-            <div className="absolute inset-0 border-2 border-accent/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
+            <div className="absolute inset-0 border-4 border-accent/70 pointer-events-none" style={{ opacity: highlightIntensity }} />
           )}
-          <div className="absolute bottom-2 left-2 right-1">
-            <p className="text-white text-xs font-bold drop-shadow-lg truncate">{poll.option_a}</p>
+          <div className="absolute bottom-4 left-3 right-1">
+            <p className="text-white text-base font-bold drop-shadow-lg">{poll.option_a}</p>
           </div>
         </div>
 
-        <div className="absolute inset-y-0 left-1/2 w-px bg-background/15 z-10" />
+        {/* Thin divider */}
+        <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/10 z-10" />
 
         {/* Option B */}
         <div
-          className="w-1/2 h-full relative overflow-hidden transition-transform duration-200"
+          className="w-1/2 h-full relative overflow-hidden transition-all duration-200"
           style={{
-            transform: !hasResult && dragX > 20 ? `scale(${1 + highlightIntensity * 0.03})` : 'scale(1)',
+            transform: !hasResult && dragX > 20 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
+            filter: !hasResult && dragX < -20 ? `brightness(${1 - highlightIntensity * 0.3})` : 'brightness(1)',
           }}
         >
           <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" draggable={false} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
           {hasResult && !winnerIsA && (
-            <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/90 text-accent-foreground text-[9px] font-bold">
-              <TrendUp className="h-2.5 w-2.5" /> Winner
+            <div className="absolute top-4 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-accent/90 text-accent-foreground text-[10px] font-bold backdrop-blur-sm">
+              <TrendUp className="h-3 w-3" /> Winner
             </div>
           )}
           {hasResult && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center animate-fade-in">
-              <span className="text-2xl font-bold text-white">{result!.percentB}%</span>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <span className="text-4xl font-bold text-white drop-shadow-2xl">{result!.percentB}%</span>
+            </motion.div>
           )}
           {hasResult && result?.choice === 'B' && (
-            <div className="absolute inset-0 border-2 border-warning pointer-events-none" />
+            <div className="absolute inset-0 border-4 border-warning pointer-events-none" />
           )}
           {!hasResult && dragX > 20 && (
-            <div className="absolute inset-0 border-2 border-warning/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
+            <div className="absolute inset-0 border-4 border-warning/70 pointer-events-none" style={{ opacity: highlightIntensity }} />
           )}
-          <div className="absolute bottom-2 left-1 right-2 text-right">
-            <p className="text-white text-xs font-bold drop-shadow-lg truncate">{poll.option_b}</p>
+          <div className="absolute bottom-4 left-1 right-3 text-right">
+            <p className="text-white text-base font-bold drop-shadow-lg">{poll.option_b}</p>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      {hasResult ? (
-        <div className="px-3 py-2 space-y-1.5">
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden flex">
-            <div className="h-full bg-accent rounded-l-full" style={{ width: `${result!.percentA}%`, transition: 'width 0.7s ease-out' }} />
-            <div className="h-full bg-warning rounded-r-full" style={{ width: `${result!.percentB}%`, transition: 'width 0.7s ease-out' }} />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-              <Users className="h-2.5 w-2.5" /> {result!.totalVotes} perspectives
+      {/* Question overlay at top */}
+      <div className="absolute top-0 inset-x-0 px-4 pt-14 pb-8 bg-gradient-to-b from-black/70 to-transparent z-20 pointer-events-none">
+        <p className="text-white text-base font-display font-bold drop-shadow-lg text-center">{poll.question}</p>
+      </div>
+
+      {/* Bottom info */}
+      <div className="absolute bottom-0 inset-x-0 z-20 pointer-events-none">
+        {hasResult ? (
+          <div className="px-4 pb-6 flex items-center justify-between">
+            <span className="text-white/70 text-xs flex items-center gap-1">
+              <Users className="h-3 w-3" /> {result!.totalVotes} perspectives
             </span>
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-              result!.choice === 'A' ? 'bg-accent/15 text-accent' : 'bg-warning/15 text-warning'
+            <span className={`text-xs font-bold px-2 py-1 rounded-full backdrop-blur-sm ${
+              result!.choice === 'A' ? 'bg-accent/20 text-accent' : 'bg-warning/20 text-warning'
             }`}>
               You picked {result!.choice === 'A' ? poll.option_a : poll.option_b}
             </span>
           </div>
-        </div>
-      ) : (
-        <div className="px-3 py-2 flex justify-center gap-6 text-[10px] text-muted-foreground">
-          <span>← {poll.option_a.length > 14 ? poll.option_a.slice(0, 14) + '…' : poll.option_a}</span>
-          <span>{poll.option_b.length > 14 ? poll.option_b.slice(0, 14) + '…' : poll.option_b} →</span>
-        </div>
-      )}
+        ) : (
+          <div className="px-4 pb-6 flex justify-between text-xs text-white/50 font-medium">
+            <span>← Swipe for {poll.option_a.length > 12 ? poll.option_a.slice(0, 12) + '…' : poll.option_a}</span>
+            <span>{poll.option_b.length > 12 ? poll.option_b.slice(0, 12) + '…' : poll.option_b} →</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -318,18 +325,15 @@ export default function SwipeFeed() {
     onSuccess: (data) => {
       playResultSound();
       setVotedResults(prev => new Map(prev).set(data.pollId, data));
-      // Auto-scroll to next unvoted poll after showing results
       setTimeout(() => {
         if (!polls) return;
         const idx = polls.findIndex(p => p.id === data.pollId);
         const updatedVoted = new Map(votedResults).set(data.pollId, data);
-        // Find the next unvoted poll
         const nextUnvoted = polls.find((p, i) => i > idx && !updatedVoted.has(p.id));
         if (nextUnvoted) {
           const nextEl = cardRefs.current.get(nextUnvoted.id);
-          nextEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          nextEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
-          // All polls voted — scroll to bottom to show caught-up state
           scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
         }
       }, RESULT_DISPLAY_MS);
@@ -359,34 +363,36 @@ export default function SwipeFeed() {
   const hasPolls = polls && polls.length > 0;
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-background">
-      <div className="px-4 pt-3 pb-1 shrink-0">
-        <h1 className="text-lg font-display font-bold text-foreground tracking-tight">Vote</h1>
-        <p className="text-[10px] text-muted-foreground">{polls?.length || 0} polls · swipe left or right to vote</p>
+    <div className="fixed inset-0 z-40 flex flex-col bg-black">
+      {/* Minimal header overlay */}
+      <div className="absolute top-0 inset-x-0 z-30 pointer-events-none px-4 pt-3 pb-1">
+        <p className="text-white/50 text-[10px] text-center tracking-wider">{polls?.length || 0} polls · swipe to vote</p>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 pb-6 space-y-3 scrollbar-hide">
+      {/* Full-screen snap-scroll feed */}
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
+      >
         {hasPolls ? (
-          polls.map((poll, i) => (
-            <motion.div
+          polls.map((poll) => (
+            <div
               key={poll.id}
               ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: Math.min(i * 0.04, 0.4), type: 'spring', stiffness: 260, damping: 24 }}
+              className="w-full h-screen snap-start snap-always"
             >
-              <SwipeablePollCard
+              <ImmersivePollCard
                 poll={poll}
                 result={votedResults.get(poll.id) || null}
                 onVote={handleVote}
                 disabled={voteMutation.isPending}
               />
-            </motion.div>
+            </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center pt-20">
+          <div className="h-screen flex flex-col items-center justify-center px-4">
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
-            <div className="mt-4 px-2 w-full max-w-sm">
+            <div className="mt-4 w-full max-w-sm">
               <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
                 <Home className="h-4 w-4" /> Back to Home
               </Button>
@@ -394,11 +400,11 @@ export default function SwipeFeed() {
           </div>
         )}
 
-        {/* Show caught-up when all polls have been voted on */}
+        {/* Caught-up screen as final snap item */}
         {hasPolls && polls.every(p => votedResults.has(p.id)) && (
-          <div className="flex flex-col items-center justify-center pt-8 pb-4">
+          <div className="h-screen snap-start snap-always flex flex-col items-center justify-center px-4 bg-background">
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
-            <div className="mt-4 px-2 w-full max-w-sm">
+            <div className="mt-4 w-full max-w-sm">
               <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
                 <Home className="h-4 w-4" /> Back to Home
               </Button>
@@ -411,11 +417,11 @@ export default function SwipeFeed() {
         <DialogContent className="sm:max-w-sm bg-card border-border">
           <DialogHeader>
             <DialogTitle className="text-xl font-display">Create an account</DialogTitle>
-            <DialogDescription>Sign up to keep voting and track your results.</DialogDescription>
+            <DialogDescription>Sign up to keep voting and unlock your personal insights.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 pt-2">
-            <Button onClick={() => navigate('/auth')} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-12 rounded-full">Sign Up Free</Button>
-            <Button variant="ghost" onClick={() => setShowSignupModal(false)} className="w-full text-muted-foreground">Maybe later</Button>
+          <div className="flex flex-col gap-2 mt-2">
+            <Button onClick={() => navigate('/auth')} className="bg-primary text-primary-foreground">Sign Up Free</Button>
+            <Button variant="ghost" onClick={() => setShowSignupModal(false)}>Maybe Later</Button>
           </div>
         </DialogContent>
       </Dialog>
