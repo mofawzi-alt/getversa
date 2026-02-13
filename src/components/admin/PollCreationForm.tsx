@@ -540,17 +540,34 @@ export default function PollCreationForm({
             <span className="h-4 w-4 text-primary">🏷️</span>
             <Label className="font-semibold">Poll Intent (Internal Only)</Label>
           </div>
-          <select
-            value={intentTag}
-            onChange={(e) => setIntentTag(e.target.value)}
-            className="w-full h-9 px-3 rounded-md border border-input bg-secondary text-sm"
-          >
-            <option value="">No tag</option>
-            <option value="brand_test">Brand Test</option>
-            <option value="concept_test">Concept Test</option>
-            <option value="cultural_signal">Cultural Signal</option>
-            <option value="fun_engagement">Fun/Engagement</option>
-          </select>
+          <div className="flex gap-2">
+            <select
+              value={['brand_test', 'concept_test', 'cultural_signal', 'fun_engagement', ''].includes(intentTag) ? intentTag : '__custom__'}
+              onChange={(e) => {
+                if (e.target.value === '__custom__') {
+                  setIntentTag('');
+                } else {
+                  setIntentTag(e.target.value);
+                }
+              }}
+              className="flex-1 h-9 px-3 rounded-md border border-input bg-secondary text-sm"
+            >
+              <option value="">No tag</option>
+              <option value="brand_test">Brand Test</option>
+              <option value="concept_test">Concept Test</option>
+              <option value="cultural_signal">Cultural Signal</option>
+              <option value="fun_engagement">Fun/Engagement</option>
+              <option value="__custom__">✏️ Custom...</option>
+            </select>
+          </div>
+          {!['brand_test', 'concept_test', 'cultural_signal', 'fun_engagement', ''].includes(intentTag) && (
+            <Input
+              value={intentTag}
+              onChange={(e) => setIntentTag(e.target.value)}
+              placeholder="Enter custom intent tag..."
+              className="bg-secondary mt-2 text-sm"
+            />
+          )}
           <p className="text-xs text-muted-foreground mt-2">
             Users don't see this — buyers/admins do
           </p>
