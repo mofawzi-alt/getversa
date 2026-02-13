@@ -52,6 +52,8 @@ type PollCard = {
   image_b_url: string | null;
   category: string | null;
   created_at: string;
+  starts_at: string | null;
+  ends_at: string | null;
   totalVotes: number;
   percentA: number;
   percentB: number;
@@ -91,7 +93,7 @@ export default function Home() {
     queryFn: async () => {
       const { data: rawPolls } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at')
+        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -322,8 +324,8 @@ export default function Home() {
                   <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-5 bg-gradient-to-b from-black/65 to-transparent">
                     <h3 className="text-white text-[11px] font-bold drop-shadow-lg leading-tight truncate">{poll.question}</h3>
                   </div>
-                  <div className="absolute bottom-1.5 right-2 flex items-center gap-1 z-10">
-                    <LiveIndicator variant="overlay" />
+                   <div className="absolute bottom-1.5 right-2 flex items-center gap-1 z-10">
+                    {(!poll.ends_at || new Date(poll.ends_at) >= new Date()) && (!poll.starts_at || new Date(poll.starts_at) <= new Date()) && <LiveIndicator variant="overlay" />}
                     {isNew && (
                       <motion.span
                         animate={{ boxShadow: ['0 0 0px hsl(75 100% 55% / 0)', '0 0 10px hsl(75 100% 55% / 0.4)', '0 0 0px hsl(75 100% 55% / 0)'] }}
@@ -408,7 +410,7 @@ function TrendingCard({ poll, index, hasVoted, onTap }: { poll: PollCard; index:
         </div>
       </div>
       <div className="px-2 py-1.5 bg-card/90 backdrop-blur-sm flex items-center gap-1.5">
-        <LiveIndicator variant="inline" />
+        {(!poll.ends_at || new Date(poll.ends_at) >= new Date()) && (!poll.starts_at || new Date(poll.starts_at) <= new Date()) && <LiveIndicator variant="inline" />}
         <p className="text-[10px] font-bold text-foreground truncate flex-1">{poll.question}</p>
         <span className="text-[9px] text-muted-foreground flex items-center gap-0.5 shrink-0">
           <Users className="h-2 w-2" /> {poll.totalVotes}
@@ -459,7 +461,7 @@ function ContestedCard({ poll, index, hasVoted, onTap }: { poll: PollCard; index
         </div>
       </div>
       <div className="absolute bottom-1.5 right-2 flex items-center gap-1 z-10">
-        <LiveIndicator variant="overlay" />
+        {(!poll.ends_at || new Date(poll.ends_at) >= new Date()) && (!poll.starts_at || new Date(poll.starts_at) <= new Date()) && <LiveIndicator variant="overlay" />}
         <span className="text-[9px] text-white/60 flex items-center gap-0.5 drop-shadow-lg">
           <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
         </span>
