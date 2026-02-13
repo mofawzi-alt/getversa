@@ -79,7 +79,9 @@ export default function Home() {
   const { data: unseenCount } = useQuery({
     queryKey: ['unseen-poll-count', user?.id],
     queryFn: async () => {
-      const { data: polls } = await supabase.from('polls').select('id').eq('is_active', true);
+      const now = new Date().toISOString();
+      const { data: polls } = await supabase.from('polls').select('id').eq('is_active', true)
+        .or(`starts_at.is.null,starts_at.lte.${now}`);
       if (!polls || !user) return polls?.length || 0;
       const { data: votes } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
       const voted = new Set(votes?.map(v => v.poll_id) || []);
@@ -91,10 +93,12 @@ export default function Home() {
   const { data: polls, isLoading } = useQuery({
     queryKey: ['visual-feed-home'],
     queryFn: async () => {
+      const now = new Date().toISOString();
       const { data: rawPolls } = await supabase
         .from('polls')
         .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at')
         .eq('is_active', true)
+        .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('created_at', { ascending: false })
         .limit(50);
       if (!rawPolls || rawPolls.length === 0) return [];
