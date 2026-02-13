@@ -395,16 +395,14 @@ export default function SwipeFeed() {
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-secondary/50">
-      {/* Floating home button */}
-      <button
-        onClick={() => navigate('/')}
-        className="absolute top-4 left-4 z-30 w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
-      >
-        <Home className="h-5 w-5" />
-      </button>
-
-      {/* Compact info badge */}
-      <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
+      {/* Top bar with home + info */}
+      <div className="shrink-0 flex items-center justify-between px-4 pt-4 pb-2">
+        <button
+          onClick={() => navigate('/')}
+          className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
+        >
+          <Home className="h-5 w-5" />
+        </button>
         <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm text-foreground shadow-sm flex items-center gap-1">
           <Zap className="h-3 w-3 text-accent" /> {polls?.length || 0} polls
         </span>
