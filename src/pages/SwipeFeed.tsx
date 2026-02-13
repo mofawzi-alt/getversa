@@ -185,7 +185,7 @@ function ImmersivePollCard({
 
         {/* The card itself */}
         <div
-          className={`absolute inset-x-5 top-2 bottom-2 rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
+          className={`absolute inset-x-6 top-14 bottom-4 rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
           style={{
             transform: hasResult ? 'none' : `translateX(${translateX}px) rotate(${rotation}deg)`,
             transition: isDragging ? 'none' : flyDirection ? 'transform 0.4s ease-in' : 'transform 0.3s ease-out',
@@ -394,18 +394,18 @@ export default function SwipeFeed() {
   const hasPolls = polls && polls.length > 0;
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-black">
+    <div className="fixed inset-0 z-40 flex flex-col bg-secondary/50">
       {/* Floating home button */}
       <button
         onClick={() => navigate('/')}
-        className="absolute top-4 left-4 z-30 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+        className="absolute top-4 left-4 z-30 w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
       >
         <Home className="h-5 w-5" />
       </button>
 
       {/* Compact info badge */}
       <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
-        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white/80 flex items-center gap-1">
+        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm text-foreground shadow-sm flex items-center gap-1">
           <Zap className="h-3 w-3 text-accent" /> {polls?.length || 0} polls
         </span>
       </div>
