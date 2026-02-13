@@ -4,10 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Home, Users, TrendingUp as TrendUp, Zap } from 'lucide-react';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
+import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import {
   Dialog,
@@ -52,8 +53,7 @@ function getFallbackImage(seed: string, index: number): string {
 
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
-const SWIPE_THRESHOLD = 60;
-const RESULT_DISPLAY_MS = 1200;
+const RESULT_DISPLAY_MS = 1800;
 
 function getGuestVoteCount(): number {
   try { return parseInt(localStorage.getItem(GUEST_VOTES_KEY) || '0', 10); } catch { return 0; }
@@ -96,11 +96,13 @@ function ImmersivePollCard({
   result,
   onVote,
   disabled,
+  showFeedback,
 }: {
   poll: Poll;
   result: VoteResult | null;
   onVote: (pollId: string, choice: 'A' | 'B') => void;
   disabled: boolean;
+  showFeedback: boolean;
 }) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -134,7 +136,6 @@ function ImmersivePollCard({
     if (Math.abs(dragX) <= THRESHOLD) setDragX(0);
   };
 
-  // Reset fly after result arrives
   useEffect(() => {
     if (hasResult) setFlyDirection(null);
   }, [hasResult]);
@@ -150,6 +151,12 @@ function ImmersivePollCard({
   const choiceOpacity = Math.min(Math.abs(dragX) / THRESHOLD, 1);
   const showA = dragX < -20;
   const showB = dragX > 20;
+
+  const selectedGlow = result?.choice === 'A'
+    ? 'shadow-[inset_0_0_30px_rgba(120,255,120,0.15)]'
+    : result?.choice === 'B'
+    ? 'shadow-[inset_0_0_30px_rgba(255,200,60,0.15)]'
+    : '';
 
   return (
     <div className="w-full h-full relative overflow-hidden flex flex-col">
@@ -185,7 +192,7 @@ function ImmersivePollCard({
 
         {/* The card itself */}
         <div
-          className={`absolute inset-x-6 top-4 bottom-4 rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
+          className={`absolute inset-x-6 top-4 bottom-4 rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''} ${hasResult ? selectedGlow : ''}`}
           style={{
             transform: hasResult ? 'none' : `translateX(${translateX}px) rotate(${rotation}deg)`,
             transition: isDragging ? 'none' : flyDirection ? 'transform 0.4s ease-in' : 'transform 0.3s ease-out',
@@ -199,23 +206,35 @@ function ImmersivePollCard({
           onMouseUp={handleEnd}
           onMouseLeave={() => isDragging && handleEnd()}
         >
-          {/* Split images — use aspect-ratio aware contain */}
+          {/* Split images */}
           <div className="flex h-full w-full">
             <div className="w-1/2 h-full relative overflow-hidden">
               <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
               {hasResult && (
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl font-bold text-white drop-shadow-2xl">{result!.percentA}%</span>
+                  <span className="text-3xl font-bold text-white drop-shadow-2xl">
+                    <AnimatedPercent target={result!.percentA} />
+                  </span>
                 </motion.div>
               )}
               {hasResult && winnerIsA && (
-                <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-bold backdrop-blur-sm">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-bold backdrop-blur-sm"
+                >
                   <TrendUp className="h-2.5 w-2.5" /> Winner
-                </div>
+                </motion.div>
               )}
               {hasResult && result?.choice === 'A' && (
-                <div className="absolute inset-0 border-3 border-accent rounded-l-2xl pointer-events-none" />
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, boxShadow: ['inset 0 0 20px rgba(120,255,120,0.3)', 'inset 0 0 40px rgba(120,255,120,0.1)', 'inset 0 0 20px rgba(120,255,120,0.3)'] }}
+                  transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
+                  className="absolute inset-0 border-3 border-accent rounded-l-2xl pointer-events-none"
+                />
               )}
               <div className="absolute bottom-2 left-2 right-1">
                 <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_a}</p>
@@ -229,16 +248,28 @@ function ImmersivePollCard({
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
               {hasResult && (
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl font-bold text-white drop-shadow-2xl">{result!.percentB}%</span>
+                  <span className="text-3xl font-bold text-white drop-shadow-2xl">
+                    <AnimatedPercent target={result!.percentB} delay={100} />
+                  </span>
                 </motion.div>
               )}
               {hasResult && !winnerIsA && (
-                <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/90 text-accent-foreground text-[9px] font-bold backdrop-blur-sm">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/90 text-accent-foreground text-[9px] font-bold backdrop-blur-sm"
+                >
                   <TrendUp className="h-2.5 w-2.5" /> Winner
-                </div>
+                </motion.div>
               )}
               {hasResult && result?.choice === 'B' && (
-                <div className="absolute inset-0 border-3 border-warning rounded-r-2xl pointer-events-none" />
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, boxShadow: ['inset 0 0 20px rgba(255,200,60,0.3)', 'inset 0 0 40px rgba(255,200,60,0.1)', 'inset 0 0 20px rgba(255,200,60,0.3)'] }}
+                  transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
+                  className="absolute inset-0 border-3 border-warning rounded-r-2xl pointer-events-none"
+                />
               )}
               <div className="absolute bottom-2 left-1 right-2 text-right">
                 <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_b}</p>
@@ -250,6 +281,16 @@ function ImmersivePollCard({
           <div className="absolute top-0 inset-x-0 px-3 pt-3 pb-6 bg-gradient-to-b from-black/70 to-transparent z-20 pointer-events-none">
             <p className="text-white text-xs font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
           </div>
+
+          {/* Emotional feedback overlay */}
+          {hasResult && (
+            <VoteFeedbackOverlay
+              percentA={result!.percentA}
+              percentB={result!.percentB}
+              choice={result!.choice}
+              visible={showFeedback}
+            />
+          )}
         </div>
       </div>
 
@@ -260,11 +301,15 @@ function ImmersivePollCard({
             <span className="text-white/70 text-xs flex items-center gap-1">
               <Users className="h-3 w-3" /> {result!.totalVotes} perspectives
             </span>
-            <span className={`text-xs font-bold px-2 py-1 rounded-full backdrop-blur-sm ${
-              result!.choice === 'A' ? 'bg-accent/20 text-accent' : 'bg-warning/20 text-warning'
-            }`}>
+            <motion.span
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`text-xs font-bold px-2 py-1 rounded-full backdrop-blur-sm ${
+                result!.choice === 'A' ? 'bg-accent/20 text-accent' : 'bg-warning/20 text-warning'
+              }`}
+            >
               You picked {result!.choice === 'A' ? poll.option_a : poll.option_b}
-            </span>
+            </motion.span>
           </>
         ) : (
           <>
@@ -290,6 +335,7 @@ export default function SwipeFeed() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [votedResults, setVotedResults] = useState<Map<string, VoteResult>>(new Map());
+  const [feedbackPollId, setFeedbackPollId] = useState<string | null>(null);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -356,6 +402,12 @@ export default function SwipeFeed() {
     onSuccess: (data) => {
       playResultSound();
       setVotedResults(prev => new Map(prev).set(data.pollId, data));
+
+      // Show emotional feedback overlay
+      setFeedbackPollId(data.pollId);
+      setTimeout(() => setFeedbackPollId(null), 1800);
+
+      // Smooth auto-scroll to next poll
       setTimeout(() => {
         if (!polls) return;
         const idx = polls.findIndex(p => p.id === data.pollId);
@@ -425,6 +477,7 @@ export default function SwipeFeed() {
                 result={votedResults.get(poll.id) || null}
                 onVote={handleVote}
                 disabled={voteMutation.isPending}
+                showFeedback={feedbackPollId === poll.id}
               />
             </div>
           ))
