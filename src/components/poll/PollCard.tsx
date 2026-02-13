@@ -139,7 +139,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
     >
       {/* Question */}
       <div className="px-3 py-0.5 shrink-0">
-        <p className="text-sm font-bold text-foreground leading-snug text-center">{poll.question}</p>
+        <p className="text-lg font-bold text-foreground leading-snug text-center">{poll.question}</p>
       </div>
 
       {/* Images — fixed height matching home screen cards */}
@@ -198,7 +198,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">
-            <p className="text-white text-sm font-bold truncate drop-shadow-lg">{poll.option_a}</p>
+            <p className="text-white text-base font-bold truncate drop-shadow-lg">{poll.option_a}</p>
           </div>
         </div>
 
@@ -256,7 +256,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">
-            <p className="text-white text-sm font-bold truncate drop-shadow-lg">{poll.option_b}</p>
+            <p className="text-white text-base font-bold truncate drop-shadow-lg">{poll.option_b}</p>
           </div>
         </div>
       </div>
