@@ -159,7 +159,7 @@ function ImmersivePollCard({
     : '';
 
   return (
-    <div className="w-full h-full relative overflow-hidden flex flex-col">
+    <div className="w-full relative flex flex-col">
       {/* Swipeable card area */}
       <div className="flex-1 relative min-h-0 flex items-center justify-center">
         {/* Choice indicators behind the card */}
@@ -207,7 +207,7 @@ function ImmersivePollCard({
           onMouseLeave={() => isDragging && handleEnd()}
         >
           {/* Split images */}
-          <div className="flex h-[55vh] max-h-[450px] w-full">
+          <div className="flex aspect-[4/3] w-full">
             <div className="w-1/2 h-full relative overflow-hidden">
               <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
@@ -448,7 +448,7 @@ export default function SwipeFeed() {
   return (
     <div className="h-dvh w-full flex flex-col bg-secondary/50 overflow-hidden">
       {/* Top bar with home + info */}
-      <div className="shrink-0 flex items-center justify-between px-4 pt-8 pb-6 bg-secondary/80 backdrop-blur-sm">
+      <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
         <button
           onClick={() => navigate('/')}
           className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
@@ -460,17 +460,17 @@ export default function SwipeFeed() {
         </span>
       </div>
 
-      {/* Full-screen snap-scroll feed */}
+      {/* Scrollable feed */}
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-3 pt-4 pb-3 space-y-4"
       >
         {hasPolls ? (
           polls.map((poll) => (
             <div
               key={poll.id}
               ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
-              className="w-full h-full snap-start snap-always"
+              className="w-full"
             >
               <ImmersivePollCard
                 poll={poll}
@@ -494,7 +494,7 @@ export default function SwipeFeed() {
 
         {/* Caught-up screen as final snap item */}
         {hasPolls && polls.every(p => votedResults.has(p.id)) && (
-          <div className="h-full snap-start snap-always flex flex-col items-center justify-center px-4 bg-background">
+          <div className="py-8 flex flex-col items-center justify-center px-4">
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
             <div className="mt-4 w-full max-w-sm">
               <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
