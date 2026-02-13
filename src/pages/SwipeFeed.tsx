@@ -411,14 +411,15 @@ export default function SwipeFeed() {
       {/* Full-screen snap-scroll feed */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
+        className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide basis-0"
       >
         {hasPolls ? (
           polls.map((poll) => (
             <div
               key={poll.id}
               ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
-              className="w-full h-full snap-start snap-always"
+              className="w-full snap-start snap-always"
+              style={{ height: '100%', minHeight: '100%' }}
             >
               <ImmersivePollCard
                 poll={poll}
@@ -429,7 +430,7 @@ export default function SwipeFeed() {
             </div>
           ))
         ) : (
-          <div className="h-full flex flex-col items-center justify-center px-4">
+          <div className="flex flex-col items-center justify-center px-4" style={{ height: '100%', minHeight: '100%' }}>
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
             <div className="mt-4 w-full max-w-sm">
               <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
@@ -441,7 +442,7 @@ export default function SwipeFeed() {
 
         {/* Caught-up screen as final snap item */}
         {hasPolls && polls.every(p => votedResults.has(p.id)) && (
-          <div className="h-full snap-start snap-always flex flex-col items-center justify-center px-4 bg-background">
+          <div className="snap-start snap-always flex flex-col items-center justify-center px-4 bg-background" style={{ height: '100%', minHeight: '100%' }}>
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
             <div className="mt-4 w-full max-w-sm">
               <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
