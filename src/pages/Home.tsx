@@ -5,8 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight } from 'lucide-react';
-import LivePollSection from '@/components/home/LivePollSection';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Radio } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -196,9 +195,6 @@ export default function Home() {
           </motion.div>
         )}
 
-        {/* ── Live Poll Results ── */}
-        <LivePollSection votedPollIds={votedPollIds} />
-
         {/* ── Stories / Highlights Row ── */}
         {storyPolls.length > 0 && (
           <div className="mb-1">
@@ -326,6 +322,13 @@ export default function Home() {
                     <h3 className="text-white text-[11px] font-bold drop-shadow-lg leading-tight truncate">{poll.question}</h3>
                   </div>
                   <div className="absolute bottom-1.5 right-2 flex items-center gap-1 z-10">
+                    {/* Live indicator */}
+                    <span className="flex items-center gap-0.5 text-[8px] font-bold text-white/90 drop-shadow-lg">
+                      <motion.div animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                        <Radio className="h-2.5 w-2.5 text-destructive" />
+                      </motion.div>
+                      LIVE
+                    </span>
                     {isNew && (
                       <motion.span
                         animate={{ boxShadow: ['0 0 0px hsl(75 100% 55% / 0)', '0 0 10px hsl(75 100% 55% / 0.4)', '0 0 0px hsl(75 100% 55% / 0)'] }}
@@ -410,7 +413,12 @@ function TrendingCard({ poll, index, hasVoted, onTap }: { poll: PollCard; index:
         </div>
       </div>
       <div className="px-2 py-1.5 bg-card/90 backdrop-blur-sm flex items-center gap-1.5">
-        <Flame className="h-2.5 w-2.5 text-destructive shrink-0" />
+        <span className="flex items-center gap-0.5 text-[8px] font-bold text-destructive">
+          <motion.div animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+            <Radio className="h-2.5 w-2.5" />
+          </motion.div>
+          LIVE
+        </span>
         <p className="text-[10px] font-bold text-foreground truncate flex-1">{poll.question}</p>
         <span className="text-[9px] text-muted-foreground flex items-center gap-0.5 shrink-0">
           <Users className="h-2 w-2" /> {poll.totalVotes}
@@ -461,6 +469,12 @@ function ContestedCard({ poll, index, hasVoted, onTap }: { poll: PollCard; index
         </div>
       </div>
       <div className="absolute bottom-1.5 right-2 flex items-center gap-1 z-10">
+        <span className="flex items-center gap-0.5 text-[8px] font-bold text-white/90 drop-shadow-lg">
+          <motion.div animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+            <Radio className="h-2.5 w-2.5 text-destructive" />
+          </motion.div>
+          LIVE
+        </span>
         <span className="text-[9px] text-white/60 flex items-center gap-0.5 drop-shadow-lg">
           <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
         </span>
