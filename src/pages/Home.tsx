@@ -196,7 +196,7 @@ export default function Home() {
                 <Eye className="h-3.5 w-3.5 text-primary" />
                 <span className="text-[11px] font-display font-bold text-foreground uppercase tracking-wider">Highlights</span>
               </div>
-              <button onClick={() => navigate('/poll-history')} className="text-[10px] text-primary font-semibold flex items-center gap-0.5">
+              <button onClick={() => navigate('/history')} className="text-[10px] text-primary font-semibold flex items-center gap-0.5">
                 See All <ChevronRight className="h-3 w-3" />
               </button>
             </div>
@@ -217,7 +217,7 @@ export default function Home() {
                     onClick={() => handlePollTap(poll)}
                     className="shrink-0 snap-start cursor-pointer group"
                   >
-                    <div className={`w-16 h-16 rounded-full overflow-hidden relative ${isNew ? 'ring-2 ring-accent ring-offset-2 ring-offset-background' : 'ring-1 ring-border/50'}`}>
+                    <div className={`w-16 h-16 rounded-full overflow-hidden relative ${isNew ? 'ring-[2.5px] ring-accent ring-offset-[3px] ring-offset-background' : 'ring-1 ring-border/50 ring-offset-1 ring-offset-background'}`}>
                       <img src={img} alt={poll.question} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/30" />
                       {hasVoted && (
