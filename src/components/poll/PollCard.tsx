@@ -1,6 +1,7 @@
 import { useState, useRef, TouchEvent, MouseEvent, useCallback, useEffect } from 'react';
-import { Clock, Radio, Loader2 } from 'lucide-react';
+import { Clock, Loader2 } from 'lucide-react';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
+import LiveIndicator from '@/components/poll/LiveIndicator';
 
 interface Poll {
   id: string;
@@ -112,7 +113,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
   };
 
   const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
-  const isLive = !isExpired && poll.is_daily_poll;
+  const isLive = !isExpired;
 
   const userPercent = result ? (result.choice === 'A' ? result.percentA : result.percentB) : 0;
   const isWinnerA = result ? result.percentA >= result.percentB : true;
@@ -290,10 +291,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
 
       {isLive && !hasResult && (
         <div className="flex items-center justify-center py-1 shrink-0">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive/20 text-destructive">
-            <Radio className="h-2.5 w-2.5" />
-            <span className="text-[10px] font-bold uppercase">Live</span>
-          </div>
+          <LiveIndicator variant="badge" />
         </div>
       )}
       {isExpired && !hasResult && (
