@@ -11,10 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, Plus, Loader2, BarChart3, Gift, 
   Users, Bell, Sparkles, X, Check, Upload, Image, Trash2, Target,
-  Clock, RefreshCcw, Download, TrendingUp, Flame
+  Clock, RefreshCcw, Download, TrendingUp, Flame, Pencil
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PollAnalytics from '@/components/admin/PollAnalytics';
+import PollEditDialog from '@/components/admin/PollEditDialog';
 import AdminRetentionAnalytics from '@/components/admin/AdminRetentionAnalytics';
 import AdminResponseTimeAnalytics from '@/components/admin/AdminResponseTimeAnalytics';
 import AdminAnalyticsExport from '@/components/admin/AdminAnalyticsExport';
@@ -154,6 +155,8 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
   const [showTrending, setShowTrending] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const [editingPoll, setEditingPoll] = useState<any>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
 
@@ -1039,23 +1042,36 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
                       {isExpired ? 'Expired' : isLive ? 'Live' : 'Scheduled'}
                     </span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this poll? This will also delete all votes.')) {
-                        deletePollMutation.mutate(poll.id);
-                      }
-                    }}
-                    disabled={deletePollMutation.isPending}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    {deletePollMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingPoll(poll);
+                        setShowEditDialog(true);
+                      }}
+                      className="text-primary hover:text-primary hover:bg-primary/10"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (confirm('Are you sure you want to delete this poll? This will also delete all votes.')) {
+                          deletePollMutation.mutate(poll.id);
+                        }
+                      }}
+                      disabled={deletePollMutation.isPending}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      {deletePollMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
                 <h3 className="font-medium">{poll.question}</h3>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -1071,6 +1087,15 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
           })}
         </div>
       )}
+
+      <PollEditDialog
+        poll={editingPoll}
+        open={showEditDialog}
+        onOpenChange={(open) => {
+          setShowEditDialog(open);
+          if (!open) setEditingPoll(null);
+        }}
+      />
     </>
   );
 }

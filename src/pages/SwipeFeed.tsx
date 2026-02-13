@@ -343,7 +343,10 @@ export default function SwipeFeed() {
     queryKey: ['feed-polls', user?.id],
     queryFn: async () => {
       // Fetch all active polls — voted ones stay visible with results
+      // Only show polls whose starts_at has passed (or is null)
+      const now = new Date().toISOString();
       let query = supabase.from('polls').select('*').eq('is_active', true).neq('is_archived', true)
+        .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('is_daily_poll', { ascending: false }).order('created_at', { ascending: false })
         .limit(60);
       const { data: fetchedPolls, error } = await query;
