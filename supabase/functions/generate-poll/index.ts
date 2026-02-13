@@ -152,36 +152,40 @@ serve(async (req) => {
     const randomSeed = Math.floor(Math.random() * 1000000);
     const timestamp = Date.now();
 
-    const systemPrompt = `You are an expert poll creator for a social voting app called VERSA. 
-Your job is to create simple "X vs Y" or "This or That" style comparison polls.
+    const systemPrompt = `You are an expert poll creator for a social voting app called VERSA, targeting audiences in EGYPT. 
+Your job is to create simple "X vs Y" or "This or That" style comparison polls that resonate with Egyptian culture.
 
 CRITICAL: VARIETY IS ESSENTIAL!
 - NEVER repeat the same poll twice
 - Each poll must be UNIQUE and DIFFERENT from common obvious choices
 - Think creatively and explore diverse options within each category
 - Random seed for this request: ${randomSeed} - use this to inspire variety
+- FOCUS ON EGYPTIAN culture, brands, food, celebrities, and trends
 
 CRITICAL FORMAT RULES:
-- The question MUST be exactly in this format: "Option A vs Option B" (e.g., "BMW vs Mercedes", "Pizza vs Pasta")
+- The question MUST be exactly in this format: "Option A vs Option B" (e.g., "Al Ahly vs Zamalek", "Koshari vs Foul")
 - Each option MUST be 1-2 words MAXIMUM
 - NO sentence-style questions like "Would you rather..." or "Which do you prefer..."
 - NO long descriptions - just simple, punchy comparisons
-- Options should be well-known items, brands, or concepts that people can easily compare
+- Options should be well-known items, brands, or concepts that Egyptians can easily compare
 
 Examples of CORRECT format:
-- "iPhone vs Android"
-- "Coffee vs Tea"
-- "Netflix vs YouTube"
+- "Al Ahly vs Zamalek"
+- "Koshari vs Shawarma"
+- "Cairo vs Alex"
+- "Amr Diab vs Tamer Hosny"
+- "Sobhy vs Gad"
 - "Summer vs Winter"
-- "Nike vs Adidas"
-- "Friends vs Suits"
-- "Beach vs Mountains"
+- "iPhone vs Android"
+- "Netflix vs Shahid"
 
 Guidelines:
 - Create polls that spark debate between two comparable things
+- Prioritize Egyptian and Middle Eastern cultural references
+- Include Egyptian brands, restaurants, celebrities, food, sports
 - Avoid controversial political, religious, or offensive topics
-- Make polls that appeal to a broad audience
-- Consider trending topics, pop culture, brands, food, travel, entertainment
+- Make polls that appeal to Egyptian Gen Z / Millennial audience
+- Consider trending topics in Egypt, Egyptian pop culture, and local debates
 - BE CREATIVE - don't always pick the most obvious comparison!
 ${targetAgeRange || targetGender || targetCountry ? `
 AUDIENCE TARGETING - Create a poll specifically tailored for:
@@ -200,21 +204,21 @@ You MUST respond with a valid JSON object with these exact fields:
 
     // Food category examples for variety
     const foodVariety = [
-      "sushi, ramen, dim sum, pho, pad thai, bibimbap, curry, tacos, burritos, pizza, pasta, risotto, steak, burgers, hot dogs, fried chicken, BBQ ribs, lobster, crab, shrimp, salmon, oysters, caviar, foie gras",
-      "ice cream, gelato, frozen yogurt, sorbet, cheesecake, tiramisu, crème brûlée, macarons, croissants, donuts, waffles, pancakes, french toast, bagels, muffins",
-      "smoothies, milkshakes, boba tea, matcha, espresso, cappuccino, latte, cold brew, kombucha, fresh juice"
+      "koshari, foul, taameya, shawarma, hawawshi, molokhia, fateer, konafa, basbousa, mahshi, kebab, kofta, feteer meshaltet, ful medames, roz bel laban",
+      "sushi, ramen, pizza, pasta, burgers, tacos, dim sum, pad thai, biryani, steak, fried chicken, BBQ",
+      "sahlab, karkade, sugarcane juice, qamar el din, boba tea, Turkish coffee, Nescafe, fresh mango juice, lemon mint"
     ];
 
     const userPrompt = category 
-      ? `Create a simple "X vs Y" comparison poll in the "${category}" category. 
+      ? `Create a simple "X vs Y" comparison poll in the "${category}" category that resonates with Egyptian audiences. 
          
-IMPORTANT: Be creative and unique! Don't pick the most obvious choices.
-${category.toLowerCase() === 'food' ? `Consider items like: ${foodVariety[Math.floor(Math.random() * foodVariety.length)]}` : ''}
+IMPORTANT: Be creative and unique! Use Egyptian cultural references when possible.
+${category.toLowerCase() === 'food' ? `Consider Egyptian food items like: ${foodVariety[Math.floor(Math.random() * foodVariety.length)]}` : ''}
 Timestamp: ${timestamp} | Seed: ${randomSeed}
 Remember: 1-2 words per option only, format as "X vs Y".`
-      : `Create a simple "X vs Y" comparison poll about any trending topic. Pick from categories like: Food, Movies, Music, Sports, Travel, Technology, Fashion, Gaming, Lifestyle, Entertainment. 
+      : `Create a simple "X vs Y" comparison poll about any trending topic in Egypt. Pick from categories like: Egyptian Food, Egyptian TV/Movies, Egyptian Music, Egyptian Football, Cairo Life, Egyptian Fashion, Gaming, Technology, Egyptian Brands, Lifestyle. 
          
-IMPORTANT: Be creative and pick something unexpected!
+IMPORTANT: Be creative and pick something that Egyptians would love to debate!
 Timestamp: ${timestamp} | Seed: ${randomSeed}
 Remember: 1-2 words per option only, format as "X vs Y".`;
 
