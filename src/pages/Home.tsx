@@ -139,6 +139,9 @@ export default function Home() {
 
   const handlePollTap = (poll: PollCard) => {
     const hasVoted = votedPollIds?.has(poll.id);
+    const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
+    const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
+    if (!hasStarted || isExpired) return; // Don't navigate for scheduled/expired polls
     if (hasVoted) {
       setModalPoll(poll);
     } else {
