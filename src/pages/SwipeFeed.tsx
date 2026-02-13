@@ -211,13 +211,6 @@ function ImmersivePollCard({
             <div className="w-1/2 h-full relative overflow-hidden">
               <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
-              {hasResult && (
-                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl font-bold text-white drop-shadow-2xl">
-                    <AnimatedPercent target={result!.percentA} />
-                  </span>
-                </motion.div>
-              )}
               {hasResult && winnerIsA && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -238,6 +231,11 @@ function ImmersivePollCard({
               )}
               <div className="absolute bottom-2 left-2 right-1">
                 <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_a}</p>
+                {hasResult && (
+                  <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-accent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    <AnimatedPercent target={result!.percentA} />
+                  </motion.span>
+                )}
               </div>
             </div>
 
@@ -246,13 +244,6 @@ function ImmersivePollCard({
             <div className="w-1/2 h-full relative overflow-hidden">
               <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
-              {hasResult && (
-                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl font-bold text-white drop-shadow-2xl">
-                    <AnimatedPercent target={result!.percentB} delay={100} />
-                  </span>
-                </motion.div>
-              )}
               {hasResult && !winnerIsA && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -273,6 +264,11 @@ function ImmersivePollCard({
               )}
               <div className="absolute bottom-2 left-1 right-2 text-right">
                 <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_b}</p>
+                {hasResult && (
+                  <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-warning drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    <AnimatedPercent target={result!.percentB} delay={100} />
+                  </motion.span>
+                )}
               </div>
             </div>
           </div>
