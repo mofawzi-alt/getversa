@@ -69,50 +69,51 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
         <p className="text-sm font-bold text-foreground leading-snug">{vote.question}</p>
       </div>
 
-      {/* Split images — fills available space */}
+      {/* Split images — fills available space, shows full image */}
       <div className="flex-1 flex relative mx-3 rounded-2xl overflow-hidden min-h-0">
         {/* Option A */}
-        <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgA} alt={vote.optionA} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="w-1/2 h-full relative overflow-hidden bg-black">
+          <img src={imgA} alt={vote.optionA} className="w-full h-full object-contain" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
           {winnerIsA && (
             <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-bold">
               <TrendUp className="h-2.5 w-2.5" /> Winner
             </div>
           )}
-          <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-white">{vote.percentA}%</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-3xl font-bold text-white drop-shadow-2xl">{vote.percentA}%</span>
             {vote.userChoice === 'A' && <span className="text-xs font-semibold text-accent mt-1">Your vote</span>}
           </div>
           {vote.userChoice === 'A' && (
             <div className="absolute inset-0 border-2 border-accent pointer-events-none" />
           )}
-          <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 pt-5">
             <p className="text-white text-xs font-bold drop-shadow-lg truncate">{vote.optionA}</p>
           </div>
-          <div className="absolute inset-y-0 right-0 w-3 bg-gradient-to-l from-black/20 to-transparent pointer-events-none" />
         </div>
 
+        {/* Divider */}
+        <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/15 z-10" />
+
         {/* Option B */}
-        <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgB} alt={vote.optionB} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="w-1/2 h-full relative overflow-hidden bg-black">
+          <img src={imgB} alt={vote.optionB} className="w-full h-full object-contain" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
           {!winnerIsA && (
             <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/90 text-accent-foreground text-[9px] font-bold">
               <TrendUp className="h-2.5 w-2.5" /> Winner
             </div>
           )}
-          <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-white">{vote.percentB}%</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-3xl font-bold text-white drop-shadow-2xl">{vote.percentB}%</span>
             {vote.userChoice === 'B' && <span className="text-xs font-semibold text-warning mt-1">Your vote</span>}
           </div>
           {vote.userChoice === 'B' && (
             <div className="absolute inset-0 border-2 border-warning pointer-events-none" />
           )}
-          <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 pt-5">
             <p className="text-white text-xs font-bold drop-shadow-lg truncate">{vote.optionB}</p>
           </div>
-          <div className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/20 to-transparent pointer-events-none" />
         </div>
       </div>
 
