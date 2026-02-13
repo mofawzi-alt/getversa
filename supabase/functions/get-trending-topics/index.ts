@@ -29,37 +29,47 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a trend analyst for a social polling app. Your job is to identify current trending topics that would make great "This vs That" style polls.
+            content: `You are a trend analyst for a social polling app targeting audiences in EGYPT. Your job is to identify current trending topics in Egypt that would make great "This vs That" style polls.
 
-Return a JSON array of exactly 8 trending topic categories with suggested poll ideas. Each should be timely and relevant.
+Focus on what's trending in Egypt right now:
+- Egyptian pop culture, celebrities, and influencers
+- Egyptian TV shows, movies, and music (Mahraganat, Arabic pop, etc.)
+- Egyptian food culture and restaurant trends
+- Egyptian sports (Al Ahly vs Zamalek, Egyptian Premier League, Mohamed Salah, etc.)
+- Egyptian social media trends and viral content
+- Egyptian brands, fashion, and lifestyle trends
+- Egyptian cities, travel destinations, and local debates
+- Regional events and news relevant to Egypt
+
+Return a JSON array of exactly 8 trending topic categories with suggested poll ideas. Each should be timely and relevant to Egypt.
 
 Format:
 {
   "topics": [
     {
       "category": "Category Name",
-      "trending_reason": "Brief reason why this is trending",
+      "trending_reason": "Brief reason why this is trending in Egypt",
       "poll_ideas": ["Poll idea 1", "Poll idea 2"],
       "heat_score": 85
     }
   ]
 }
 
-heat_score is 1-100 indicating how hot/trending this topic is.`
+heat_score is 1-100 indicating how hot/trending this topic is in Egypt.`
           },
           {
             role: 'user',
-            content: `Generate 8 trending topic categories for ${today}. Consider:
-- Current pop culture events
-- Seasonal/timely topics
-- Viral social media trends
-- Sports events
-- Entertainment releases
-- Food trends
-- Technology news
-- Lifestyle debates
+            content: `Generate 8 trending topic categories in EGYPT for ${today}. Consider:
+- Egyptian pop culture & celebrities (actors, singers, influencers)
+- Egyptian TV shows, series & movies (Ramadan series, cinema releases)
+- Egyptian food & restaurants (koshari, shawarma, new restaurant openings)
+- Egyptian football & sports (Al Ahly, Zamalek, Premier League, Mohamed Salah)
+- Egyptian social media viral trends
+- Egyptian brands & fashion
+- Egyptian music (Mahraganat, Amr Diab, new releases)
+- Cairo vs Alexandria debates, Egyptian lifestyle
 
-Make them diverse and engaging for a Gen Z / Millennial audience.`
+Make them diverse and engaging for an Egyptian Gen Z / Millennial audience. Use Egyptian cultural references.`
           }
         ],
         temperature: 0.8,
