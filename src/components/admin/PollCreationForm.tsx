@@ -47,6 +47,8 @@ export default function PollCreationForm({
   const [targetAgeRange, setTargetAgeRange] = useState('');
   const [targetCountry, setTargetCountry] = useState('');
   const [intentTag, setIntentTag] = useState('');
+  const [showCustomIntentInput, setShowCustomIntentInput] = useState(false);
+  const [customIntentName, setCustomIntentName] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [entityName, setEntityName] = useState(initialEntityName || '');
@@ -540,25 +542,69 @@ export default function PollCreationForm({
             <span className="h-4 w-4 text-primary">🏷️</span>
             <Label className="font-semibold">Poll Intent (Internal Only)</Label>
           </div>
-          <select
-            value={['brand_test', 'concept_test', 'cultural_signal', 'fun_engagement', ''].includes(intentTag) ? intentTag : ''}
-            onChange={(e) => setIntentTag(e.target.value)}
-            className="w-full h-9 px-3 rounded-md border border-input bg-secondary text-sm"
-          >
-            <option value="">No tag</option>
-            <option value="brand_test">Brand Test</option>
-            <option value="concept_test">Concept Test</option>
-            <option value="cultural_signal">Cultural Signal</option>
-            <option value="fun_engagement">Fun/Engagement</option>
-          </select>
-          <Input
-            value={!['brand_test', 'concept_test', 'cultural_signal', 'fun_engagement', ''].includes(intentTag) ? intentTag : ''}
-            onChange={(e) => setIntentTag(e.target.value)}
-            placeholder="Or type a custom tag..."
-            className="bg-secondary mt-2 text-sm"
-          />
+          {showCustomIntentInput ? (
+            <div className="flex gap-2">
+              <Input
+                value={customIntentName}
+                onChange={(e) => setCustomIntentName(e.target.value)}
+                placeholder="Enter custom intent tag..."
+                className="bg-secondary flex-1"
+              />
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  if (customIntentName.trim()) {
+                    setIntentTag(customIntentName.trim());
+                    setCustomIntentName('');
+                    setShowCustomIntentInput(false);
+                  }
+                }}
+                disabled={!customIntentName.trim()}
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setShowCustomIntentInput(false);
+                  setCustomIntentName('');
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <select
+                value={intentTag}
+                onChange={(e) => setIntentTag(e.target.value)}
+                className="flex-1 h-9 px-3 rounded-md border border-input bg-secondary text-sm"
+              >
+                <option value="">No tag</option>
+                <option value="brand_test">Brand Test</option>
+                <option value="concept_test">Concept Test</option>
+                <option value="cultural_signal">Cultural Signal</option>
+                <option value="fun_engagement">Fun/Engagement</option>
+                {intentTag && !['brand_test', 'concept_test', 'cultural_signal', 'fun_engagement', ''].includes(intentTag) && (
+                  <option value={intentTag}>{intentTag} (custom)</option>
+                )}
+              </select>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setShowCustomIntentInput(true)}
+                title="Add custom tag"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
           <p className="text-xs text-muted-foreground mt-2">
-            Users don't see this — select a preset above or type a custom tag
+            Users don't see this — buyers/admins do
           </p>
         </div>
         
