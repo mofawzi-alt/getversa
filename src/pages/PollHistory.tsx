@@ -191,7 +191,8 @@ export default function PollHistory() {
         const percentB = result?.percent_b || 0;
         const userChoice = v.choice as 'A' | 'B';
         const userPercent = userChoice === 'A' ? percentA : percentB;
-        const isLive = poll.is_active && (!poll.ends_at || new Date(poll.ends_at) > new Date());
+        const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
+        const isLive = poll.is_active && hasStarted && (!poll.ends_at || new Date(poll.ends_at) > new Date());
         return {
           pollId: v.poll_id, question: poll.question, optionA: poll.option_a, optionB: poll.option_b,
           imageAUrl: poll.image_a_url, imageBUrl: poll.image_b_url, category: poll.category,
