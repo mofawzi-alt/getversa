@@ -132,7 +132,16 @@ export default function Home() {
   const allPolls = polls || [];
   const hasUnseen = (unseenCount || 0) > 0;
   const newPolls = allPolls.filter(p => !votedPollIds?.has(p.id));
-  const trendingPolls = [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 6);
+  // Trending categories: count polls per category and sort by vote count
+  const categoryMap = new Map<string, { name: string; pollCount: number; totalVotes: number }>();
+  allPolls.forEach(p => {
+    const cat = p.category || 'Uncategorized';
+    const existing = categoryMap.get(cat) || { name: cat, pollCount: 0, totalVotes: 0 };
+    existing.pollCount++;
+    existing.totalVotes += p.totalVotes;
+    categoryMap.set(cat, existing);
+  });
+  const trendingCategories = [...categoryMap.values()].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 8);
   const popularPolls = [...allPolls].filter(p => p.totalVotes > 0).sort((a, b) => {
     const aSpread = Math.abs(a.percentA - 50);
     const bSpread = Math.abs(b.percentA - 50);
@@ -253,17 +262,28 @@ export default function Home() {
           </div>
         )}
 
-        {/* ── Trending Section ── */}
-        {trendingPolls.length > 0 && (
+        {/* ── Trending Categories ── */}
+        {trendingCategories.length > 0 && (
           <section className="mb-1">
             <div className="px-3 flex items-center gap-1.5 mb-1.5">
               <Flame className="h-3.5 w-3.5 text-destructive" />
-              <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Trending Now</span>
-              <span className="text-[9px] text-muted-foreground ml-auto">{trendingPolls.reduce((s, p) => s + p.totalVotes, 0)} total votes</span>
+              <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Trending Categories</span>
             </div>
             <div className="flex gap-2 overflow-x-auto px-3 scrollbar-hide snap-x">
-              {trendingPolls.map((poll, i) => (
-                <TrendingCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} />
+              {trendingCategories.map((cat, i) => (
+                <motion.div
+                  key={cat.name}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate('/vote')}
+                  className="shrink-0 snap-start cursor-pointer rounded-xl bg-card border border-border px-4 py-3 min-w-[120px] hover:bg-muted/50 transition-colors"
+                >
+                  <p className="text-xs font-bold text-foreground truncate">{cat.name}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{cat.pollCount} polls</p>
+                  <p className="text-[10px] text-primary font-semibold">{cat.totalVotes} votes</p>
+                </motion.div>
               ))}
             </div>
           </section>
@@ -343,80 +363,22 @@ export default function Home() {
           </section>
         )}
 
-        {/* ── All Active Polls ── */}
+        {/* ── Active Polls Count ── */}
         <section className="mt-4 pt-4 border-t border-border">
-          <div className="px-3 flex items-center gap-1.5 mb-1.5">
-            <Zap className="h-3.5 w-3.5 text-accent" />
-            <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">All Active</span>
-            <span className="text-[9px] text-muted-foreground ml-auto">{allPolls.length} polls</span>
-          </div>
-          <div className="px-2 space-y-2">
-            {allPolls.slice(0, 8).map((poll, i) => {
-              const hasVoted = votedPollIds?.has(poll.id);
-              const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
-              const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
-              const isNew = !hasVoted;
-
-              return (
-                <motion.div
-                  key={poll.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handlePollTap(poll)}
-                  className="relative rounded-xl overflow-hidden cursor-pointer group"
-                >
-                  <div className="flex h-36 relative">
-                    <div className="w-1/2 h-full relative overflow-hidden">
-                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-                      <div className="absolute bottom-2 left-2 right-1">
-                        <p className="text-white text-[11px] font-bold drop-shadow-lg leading-tight truncate">{poll.option_a}</p>
-                        {hasVoted && <span className="text-sm font-bold text-primary drop-shadow-lg">{poll.percentA}%</span>}
-                      </div>
-                    </div>
-                    <div className="absolute inset-y-0 left-1/2 w-[2px] bg-background/20 z-10" />
-                    <div className="w-1/2 h-full relative overflow-hidden">
-                      <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-                      <div className="absolute bottom-2 left-1 right-2 text-right">
-                        <p className="text-white text-[11px] font-bold drop-shadow-lg leading-tight truncate">{poll.option_b}</p>
-                        {hasVoted && <span className="text-sm font-bold text-accent drop-shadow-lg">{poll.percentB}%</span>}
-                      </div>
-                    </div>
-                  </div>
-                  {/* Question & meta overlay */}
-                  <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-5 bg-gradient-to-b from-black/65 to-transparent">
-                    <h3 className="text-white text-[11px] font-bold drop-shadow-lg leading-tight truncate">{poll.question}</h3>
-                  </div>
-                   <div className="absolute bottom-1.5 right-2 flex items-center gap-1 z-10">
-                    {(!poll.ends_at || new Date(poll.ends_at) >= new Date()) && (!poll.starts_at || new Date(poll.starts_at) <= new Date()) && <LiveIndicator variant="overlay" />}
-                    {isNew && (
-                      <motion.span
-                        animate={{ boxShadow: ['0 0 0px hsl(75 100% 55% / 0)', '0 0 10px hsl(75 100% 55% / 0.4)', '0 0 0px hsl(75 100% 55% / 0)'] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="px-1.5 py-0.5 rounded-full text-[8px] font-extrabold bg-accent/90 text-accent-foreground"
-                      >
-                        NEW
-                      </motion.span>
-                    )}
-                    <span className="text-[9px] text-white/60 flex items-center gap-0.5 drop-shadow-lg">
-                      <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
-                    </span>
-                    {hasVoted && <span className="text-[8px] px-1 py-0.5 rounded-full bg-white/20 text-white font-bold">✓</span>}
-                  </div>
-                  {isNew && (
-                    <motion.div
-                      animate={{ opacity: [0.2, 0.5, 0.2] }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                      className="absolute inset-0 rounded-xl ring-1 ring-inset ring-accent/25 pointer-events-none"
-                    />
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
+          <motion.div
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/vote')}
+            className="mx-3 rounded-xl bg-card border border-border p-4 cursor-pointer hover:bg-muted/50 transition-colors flex items-center gap-3"
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <Zap className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-foreground">{allPolls.length} Active Polls</p>
+              <p className="text-xs text-muted-foreground">Tap to explore and vote</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </motion.div>
         </section>
 
         {/* Bottom CTA */}
