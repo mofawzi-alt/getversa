@@ -83,10 +83,6 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
               <TrendUp className="h-2.5 w-2.5" /> Winner
             </div>
           )}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-option-a drop-shadow-2xl">{vote.percentA}%</span>
-            {vote.userChoice === 'A' && <span className="text-sm font-bold text-option-a mt-1">Your vote</span>}
-          </div>
           {vote.userChoice === 'A' && (
             <div className="absolute inset-0 border-2 border-option-a pointer-events-none" />
           )}
@@ -107,16 +103,24 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
               <TrendUp className="h-2.5 w-2.5" /> Winner
             </div>
           )}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-option-b drop-shadow-2xl">{vote.percentB}%</span>
-            {vote.userChoice === 'B' && <span className="text-sm font-bold text-option-b mt-1">Your vote</span>}
-          </div>
           {vote.userChoice === 'B' && (
             <div className="absolute inset-0 border-2 border-option-b pointer-events-none" />
           )}
           <div className="absolute bottom-0 left-0 right-0 p-2.5 pt-5">
             <p className="text-white text-xs font-bold drop-shadow-lg truncate">{vote.optionB}</p>
           </div>
+        </div>
+      </div>
+
+      {/* Results below the image */}
+      <div className="mx-4 mt-2 flex justify-between items-center">
+        <div className="flex flex-col items-center flex-1">
+          <span className="text-2xl font-bold text-option-a">{vote.percentA}%</span>
+          {vote.userChoice === 'A' && <span className="text-sm font-bold text-option-a">Your vote</span>}
+        </div>
+        <div className="flex flex-col items-center flex-1">
+          <span className="text-2xl font-bold text-option-b">{vote.percentB}%</span>
+          {vote.userChoice === 'B' && <span className="text-sm font-bold text-option-b">Your vote</span>}
         </div>
       </div>
 
