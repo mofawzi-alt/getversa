@@ -152,8 +152,8 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           style={{
             transform: !hasResult && dragOffset < -30 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
             boxShadow: !hasResult && dragOffset < -30
-              ? `inset 0 0 ${highlightIntensity * 30}px hsl(var(--accent) / ${highlightIntensity * 0.3})`
-              : hasResult && result?.choice === 'A' ? 'inset 0 0 20px hsl(var(--accent) / 0.3)' : 'none',
+              ? `inset 0 0 ${highlightIntensity * 30}px hsl(var(--option-a) / ${highlightIntensity * 0.3})`
+              : hasResult && result?.choice === 'A' ? 'inset 0 0 20px hsl(var(--option-a) / 0.3)' : 'none',
           }}
         >
           <div className="h-full overflow-hidden relative">
@@ -180,23 +180,15 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               </div>
             )}
 
-            {hasResult && (
-              <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center animate-fade-in">
-                <span className="text-3xl font-bold text-white">{result!.percentA}%</span>
-                {result?.choice === 'A' && <span className="text-xs font-semibold text-accent mt-1">Your vote</span>}
-              </div>
-            )}
-
             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
-            {/* Soft inner shadow as separator */}
             <div className="absolute inset-y-0 right-0 w-3 bg-gradient-to-l from-black/20 to-transparent pointer-events-none" />
           </div>
 
           {!hasResult && dragOffset < -30 && (
-            <div className="absolute inset-0 border-2 border-accent/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
+            <div className="absolute inset-0 border-2 border-option-a/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
           )}
           {hasResult && result?.choice === 'A' && (
-            <div className="absolute inset-0 border-2 border-accent pointer-events-none" />
+            <div className="absolute inset-0 border-2 border-option-a pointer-events-none" />
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">
@@ -210,8 +202,8 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           style={{
             transform: !hasResult && dragOffset > 30 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
             boxShadow: !hasResult && dragOffset > 30
-              ? `inset 0 0 ${highlightIntensity * 30}px hsl(var(--warning) / ${highlightIntensity * 0.3})`
-              : hasResult && result?.choice === 'B' ? 'inset 0 0 20px hsl(var(--warning) / 0.3)' : 'none',
+              ? `inset 0 0 ${highlightIntensity * 30}px hsl(var(--option-b) / ${highlightIntensity * 0.3})`
+              : hasResult && result?.choice === 'B' ? 'inset 0 0 20px hsl(var(--option-b) / 0.3)' : 'none',
           }}
         >
           <div className="h-full overflow-hidden relative">
@@ -238,23 +230,15 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               </div>
             )}
 
-            {hasResult && (
-              <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center animate-fade-in">
-                <span className="text-3xl font-bold text-white">{result!.percentB}%</span>
-                {result?.choice === 'B' && <span className="text-xs font-semibold text-warning mt-1">Your vote</span>}
-              </div>
-            )}
-
             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
-            {/* Soft inner shadow as separator */}
             <div className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/20 to-transparent pointer-events-none" />
           </div>
 
           {!hasResult && dragOffset > 30 && (
-            <div className="absolute inset-0 border-2 border-warning/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
+            <div className="absolute inset-0 border-2 border-option-b/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
           )}
           {hasResult && result?.choice === 'B' && (
-            <div className="absolute inset-0 border-2 border-warning pointer-events-none" />
+            <div className="absolute inset-0 border-2 border-option-b pointer-events-none" />
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">
@@ -262,6 +246,20 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           </div>
         </div>
       </div>
+
+      {/* Results below the image */}
+      {hasResult && (
+        <div className="flex justify-between items-center mx-3 mt-2 shrink-0">
+          <div className="flex flex-col items-center flex-1">
+            <span className="text-2xl font-bold text-option-a">{result!.percentA}%</span>
+            {result?.choice === 'A' && <span className="text-sm font-bold text-option-a">Your vote</span>}
+          </div>
+          <div className="flex flex-col items-center flex-1">
+            <span className="text-2xl font-bold text-option-b">{result!.percentB}%</span>
+            {result?.choice === 'B' && <span className="text-sm font-bold text-option-b">Your vote</span>}
+          </div>
+        </div>
+      )}
 
       {/* Swipe hints */}
       {!hasResult && !isExpired && (

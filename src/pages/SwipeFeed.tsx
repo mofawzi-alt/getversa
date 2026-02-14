@@ -170,10 +170,10 @@ function ImmersivePollCard({
                 animate={{ opacity: showA ? choiceOpacity : 0, scale: showA ? 1 : 0.8 }}
                 className="flex flex-col items-center gap-1"
               >
-                <div className="w-14 h-14 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center">
-                  <span className="text-accent font-display font-bold text-xl">A</span>
+                <div className="w-14 h-14 rounded-full bg-option-a/20 border-2 border-option-a flex items-center justify-center">
+                  <span className="text-option-a font-display font-bold text-xl">A</span>
                 </div>
-                <span className="text-accent text-[10px] font-bold max-w-16 text-center truncate">{poll.option_a}</span>
+                <span className="text-option-a text-[10px] font-bold max-w-16 text-center truncate">{poll.option_a}</span>
               </motion.div>
             </div>
             <div className="absolute inset-0 flex items-center justify-end pr-6 z-0">
@@ -181,10 +181,10 @@ function ImmersivePollCard({
                 animate={{ opacity: showB ? choiceOpacity : 0, scale: showB ? 1 : 0.8 }}
                 className="flex flex-col items-center gap-1"
               >
-                <div className="w-14 h-14 rounded-full bg-warning/20 border-2 border-warning flex items-center justify-center">
-                  <span className="text-warning font-display font-bold text-xl">B</span>
+                <div className="w-14 h-14 rounded-full bg-option-b/20 border-2 border-option-b flex items-center justify-center">
+                  <span className="text-option-b font-display font-bold text-xl">B</span>
                 </div>
-                <span className="text-warning text-[10px] font-bold max-w-16 text-center truncate">{poll.option_b}</span>
+                <span className="text-option-b text-[10px] font-bold max-w-16 text-center truncate">{poll.option_b}</span>
               </motion.div>
             </div>
           </>
@@ -216,7 +216,7 @@ function ImmersivePollCard({
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-bold backdrop-blur-sm"
+                  className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-option-a/90 text-option-a-foreground text-[9px] font-bold backdrop-blur-sm"
                 >
                   <TrendUp className="h-2.5 w-2.5" /> Winner
                 </motion.div>
@@ -224,18 +224,13 @@ function ImmersivePollCard({
               {hasResult && result?.choice === 'A' && (
                 <motion.div
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, boxShadow: ['inset 0 0 20px rgba(120,255,120,0.3)', 'inset 0 0 40px rgba(120,255,120,0.1)', 'inset 0 0 20px rgba(120,255,120,0.3)'] }}
+                  animate={{ opacity: 1, boxShadow: ['inset 0 0 20px hsl(var(--option-a) / 0.3)', 'inset 0 0 40px hsl(var(--option-a) / 0.1)', 'inset 0 0 20px hsl(var(--option-a) / 0.3)'] }}
                   transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
-                  className="absolute inset-0 border-3 border-accent rounded-l-2xl pointer-events-none"
+                  className="absolute inset-0 border-3 border-option-a rounded-l-2xl pointer-events-none"
                 />
               )}
               <div className="absolute bottom-2 left-2 right-1">
                 <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_a}</p>
-                {hasResult && (
-                  <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-accent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                    <AnimatedPercent target={result!.percentA} />
-                  </motion.span>
-                )}
               </div>
             </div>
 
@@ -249,7 +244,7 @@ function ImmersivePollCard({
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/90 text-accent-foreground text-[9px] font-bold backdrop-blur-sm"
+                  className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-option-b/90 text-option-b-foreground text-[9px] font-bold backdrop-blur-sm"
                 >
                   <TrendUp className="h-2.5 w-2.5" /> Winner
                 </motion.div>
@@ -257,18 +252,13 @@ function ImmersivePollCard({
               {hasResult && result?.choice === 'B' && (
                 <motion.div
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, boxShadow: ['inset 0 0 20px rgba(255,200,60,0.3)', 'inset 0 0 40px rgba(255,200,60,0.1)', 'inset 0 0 20px rgba(255,200,60,0.3)'] }}
+                  animate={{ opacity: 1, boxShadow: ['inset 0 0 20px hsl(var(--option-b) / 0.3)', 'inset 0 0 40px hsl(var(--option-b) / 0.1)', 'inset 0 0 20px hsl(var(--option-b) / 0.3)'] }}
                   transition={{ boxShadow: { duration: 2, repeat: Infinity } }}
-                  className="absolute inset-0 border-3 border-warning rounded-r-2xl pointer-events-none"
+                  className="absolute inset-0 border-3 border-option-b rounded-r-2xl pointer-events-none"
                 />
               )}
               <div className="absolute bottom-2 left-1 right-2 text-right">
                 <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_b}</p>
-                {hasResult && (
-                  <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-warning drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                    <AnimatedPercent target={result!.percentB} delay={100} />
-                  </motion.span>
-                )}
               </div>
             </div>
           </div>
@@ -290,18 +280,36 @@ function ImmersivePollCard({
         </div>
       </div>
 
+      {/* Results below image */}
+      {hasResult && (
+        <div className="shrink-0 px-6 pt-2 flex justify-between items-center">
+          <div className="flex flex-col items-center flex-1">
+            <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-option-a">
+              <AnimatedPercent target={result!.percentA} />
+            </motion.span>
+            {result?.choice === 'A' && <span className="text-sm font-bold text-option-a">Your vote</span>}
+          </div>
+          <div className="flex flex-col items-center flex-1">
+            <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-option-b">
+              <AnimatedPercent target={result!.percentB} delay={100} />
+            </motion.span>
+            {result?.choice === 'B' && <span className="text-sm font-bold text-option-b">Your vote</span>}
+          </div>
+        </div>
+      )}
+
       {/* Bottom labels — always visible */}
       <div className="shrink-0 px-6 pb-3 pt-1 flex items-center justify-between z-20">
         {hasResult ? (
           <>
-            <span className="text-white/70 text-xs flex items-center gap-1">
+            <span className="text-muted-foreground text-xs flex items-center gap-1">
               <Users className="h-3 w-3" /> {result!.totalVotes} perspectives
             </span>
             <motion.span
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`text-xs font-bold px-2 py-1 rounded-full backdrop-blur-sm ${
-                result!.choice === 'A' ? 'bg-accent/20 text-accent' : 'bg-warning/20 text-warning'
+              className={`text-xs font-bold px-2 py-1 rounded-full ${
+                result!.choice === 'A' ? 'bg-option-a/10 text-option-a' : 'bg-option-b/10 text-option-b'
               }`}
             >
               You picked {result!.choice === 'A' ? poll.option_a : poll.option_b}
@@ -310,13 +318,13 @@ function ImmersivePollCard({
         ) : (
           <>
             <div className="flex flex-col items-center gap-0.5">
-              <span className="text-accent font-display font-bold text-base">A</span>
-              <span className="text-white/50 text-[9px] font-medium max-w-20 text-center truncate">← {poll.option_a}</span>
+              <span className="text-option-a font-display font-bold text-base">A</span>
+              <span className="text-foreground/50 text-[9px] font-medium max-w-20 text-center truncate">← {poll.option_a}</span>
             </div>
-            <span className="text-white/30 text-[9px]">swipe to choose</span>
+            <span className="text-foreground/30 text-[9px]">swipe to choose</span>
             <div className="flex flex-col items-center gap-0.5">
-              <span className="text-warning font-display font-bold text-base">B</span>
-              <span className="text-white/50 text-[9px] font-medium max-w-20 text-center truncate">{poll.option_b} →</span>
+              <span className="text-option-b font-display font-bold text-base">B</span>
+              <span className="text-foreground/50 text-[9px] font-medium max-w-20 text-center truncate">{poll.option_b} →</span>
             </div>
           </>
         )}

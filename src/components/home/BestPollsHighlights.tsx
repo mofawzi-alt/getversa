@@ -245,7 +245,7 @@ export default function BestPollsHighlights() {
                 {/* Options with results */}
                 <div className="grid grid-cols-2 gap-3">
                   {/* Option A */}
-                  <div className="relative overflow-hidden rounded-xl border border-blue-500/30 bg-blue-500/10">
+                  <div className="relative overflow-hidden rounded-xl border border-option-a/30 bg-option-a/10">
                     {activeData.poll.image_a_url ? (
                       <img 
                         src={activeData.poll.image_a_url} 
@@ -253,18 +253,18 @@ export default function BestPollsHighlights() {
                         className="w-full aspect-square object-cover"
                       />
                     ) : (
-                      <div className="w-full aspect-square flex items-center justify-center p-3 bg-blue-500/5">
+                      <div className="w-full aspect-square flex items-center justify-center p-3 bg-option-a/5">
                         <span className="text-sm text-center text-foreground/80">{activeData.poll.option_a}</span>
                       </div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-white">Option A</span>
-                        <span className="text-sm font-bold text-blue-400">{getPercentage(activeData.poll, 'a')}%</span>
+                        <span className="text-sm font-bold text-option-a">{getPercentage(activeData.poll, 'a')}%</span>
                       </div>
                       <div className="mt-1 h-1 bg-white/20 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-blue-500 rounded-full transition-all"
+                          className="h-full bg-option-a rounded-full transition-all"
                           style={{ width: `${getPercentage(activeData.poll, 'a')}%` }}
                         />
                       </div>
@@ -272,7 +272,7 @@ export default function BestPollsHighlights() {
                   </div>
 
                   {/* Option B */}
-                  <div className="relative overflow-hidden rounded-xl border border-lime-500/30 bg-lime-500/10">
+                  <div className="relative overflow-hidden rounded-xl border border-option-b/30 bg-option-b/10">
                     {activeData.poll.image_b_url ? (
                       <img 
                         src={activeData.poll.image_b_url} 
@@ -280,18 +280,18 @@ export default function BestPollsHighlights() {
                         className="w-full aspect-square object-cover"
                       />
                     ) : (
-                      <div className="w-full aspect-square flex items-center justify-center p-3 bg-lime-500/5">
+                      <div className="w-full aspect-square flex items-center justify-center p-3 bg-option-b/5">
                         <span className="text-sm text-center text-foreground/80">{activeData.poll.option_b}</span>
                       </div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-white">Option B</span>
-                        <span className="text-sm font-bold text-lime-400">{getPercentage(activeData.poll, 'b')}%</span>
+                        <span className="text-sm font-bold text-option-b">{getPercentage(activeData.poll, 'b')}%</span>
                       </div>
                       <div className="mt-1 h-1 bg-white/20 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-lime-500 rounded-full transition-all"
+                          className="h-full bg-option-b rounded-full transition-all"
                           style={{ width: `${getPercentage(activeData.poll, 'b')}%` }}
                         />
                       </div>
@@ -302,7 +302,7 @@ export default function BestPollsHighlights() {
                 {/* Winner indicator */}
                 <div className="text-center">
                   <span className="text-xs text-muted-foreground">Winner: </span>
-                  <span className={`text-sm font-semibold ${activeData.poll.votes_a >= activeData.poll.votes_b ? 'text-blue-400' : 'text-lime-400'}`}>
+                  <span className={`text-sm font-semibold ${activeData.poll.votes_a >= activeData.poll.votes_b ? 'text-option-a' : 'text-option-b'}`}>
                     {activeData.poll.votes_a >= activeData.poll.votes_b ? 'Option A' : 'Option B'}
                     {activeData.poll.votes_a === activeData.poll.votes_b && activeData.poll.totalVotes > 0 && ' (Tie!)'}
                   </span>
