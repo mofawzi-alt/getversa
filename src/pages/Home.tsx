@@ -454,9 +454,9 @@ function TrendingCard({ poll, index, hasVoted, onTap }: { poll: PollCard; index:
       transition={{ delay: index * 0.06 }}
       whileTap={{ scale: 0.97 }}
       onClick={() => onTap(poll)}
-      className="shrink-0 w-52 rounded-xl overflow-hidden cursor-pointer snap-start group"
+      className="shrink-0 w-40 rounded-xl overflow-hidden cursor-pointer snap-start group"
     >
-      <div className="flex h-28 relative">
+      <div className="flex h-20 relative">
         <div className="w-1/2 h-full relative overflow-hidden">
           <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
