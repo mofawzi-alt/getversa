@@ -79,7 +79,7 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
           <img src={imgA} alt={vote.optionA} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
           {winnerIsA && (
-            <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/90 text-primary-foreground text-[9px] font-bold">
+            <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-option-a/90 text-option-a-foreground text-[9px] font-bold">
               <TrendUp className="h-2.5 w-2.5" /> Winner
             </div>
           )}

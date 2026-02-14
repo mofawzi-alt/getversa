@@ -34,7 +34,6 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute bottom-2 left-2 right-1">
               <p className="text-white text-xs font-bold drop-shadow-lg truncate">{poll.option_a}</p>
-              <span className={`text-lg font-bold drop-shadow-lg ${isWinnerA ? 'text-primary' : 'text-white/80'}`}>{poll.percentA}%</span>
             </div>
           </div>
           <div className="absolute inset-y-0 left-1/2 w-px bg-background/15 z-10" />
@@ -43,8 +42,17 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute bottom-2 left-1 right-2 text-right">
               <p className="text-white text-xs font-bold drop-shadow-lg truncate">{poll.option_b}</p>
-              <span className={`text-lg font-bold drop-shadow-lg ${!isWinnerA ? 'text-accent' : 'text-white/80'}`}>{poll.percentB}%</span>
             </div>
+          </div>
+        </div>
+
+        {/* Results below image */}
+        <div className="flex justify-between items-center px-4 pt-2">
+          <div className="flex flex-col items-center flex-1">
+            <span className="text-2xl font-bold text-option-a">{poll.percentA}%</span>
+          </div>
+          <div className="flex flex-col items-center flex-1">
+            <span className="text-2xl font-bold text-option-b">{poll.percentB}%</span>
           </div>
         </div>
 
@@ -68,7 +76,7 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
 }
 
 function Bar({ label, percent, isWinner, side }: { label: string; percent: number; isWinner: boolean; side: 'A' | 'B' }) {
-  const color = side === 'A' ? 'bg-primary' : 'bg-accent';
+  const color = side === 'A' ? 'bg-option-a' : 'bg-option-b';
   return (
     <div>
       <div className="flex justify-between text-xs mb-0.5">
