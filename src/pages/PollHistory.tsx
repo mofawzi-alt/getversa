@@ -84,11 +84,11 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
             </div>
           )}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-white drop-shadow-2xl">{vote.percentA}%</span>
-            {vote.userChoice === 'A' && <span className="text-xs font-semibold text-accent mt-1">Your vote</span>}
+            <span className="text-3xl font-bold text-option-a drop-shadow-2xl">{vote.percentA}%</span>
+            {vote.userChoice === 'A' && <span className="text-xs font-semibold text-option-a mt-1">Your vote</span>}
           </div>
           {vote.userChoice === 'A' && (
-            <div className="absolute inset-0 border-2 border-accent pointer-events-none" />
+            <div className="absolute inset-0 border-2 border-option-a pointer-events-none" />
           )}
           <div className="absolute bottom-0 left-0 right-0 p-2.5 pt-5">
             <p className="text-white text-xs font-bold drop-shadow-lg truncate">{vote.optionA}</p>
@@ -103,16 +103,16 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
           <img src={imgB} alt={vote.optionB} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
           {!winnerIsA && (
-            <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/90 text-accent-foreground text-[9px] font-bold">
+            <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-option-b/90 text-option-b-foreground text-[9px] font-bold">
               <TrendUp className="h-2.5 w-2.5" /> Winner
             </div>
           )}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-white drop-shadow-2xl">{vote.percentB}%</span>
-            {vote.userChoice === 'B' && <span className="text-xs font-semibold text-warning mt-1">Your vote</span>}
+            <span className="text-3xl font-bold text-option-b drop-shadow-2xl">{vote.percentB}%</span>
+            {vote.userChoice === 'B' && <span className="text-xs font-semibold text-option-b mt-1">Your vote</span>}
           </div>
           {vote.userChoice === 'B' && (
-            <div className="absolute inset-0 border-2 border-warning pointer-events-none" />
+            <div className="absolute inset-0 border-2 border-option-b pointer-events-none" />
           )}
           <div className="absolute bottom-0 left-0 right-0 p-2.5 pt-5">
             <p className="text-white text-xs font-bold drop-shadow-lg truncate">{vote.optionB}</p>
