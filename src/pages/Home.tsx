@@ -166,6 +166,24 @@ export default function Home() {
     <AppLayout>
       <div className="min-h-screen flex flex-col pb-24 gap-1">
 
+        {/* ── Active Polls Count (top) ── */}
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/vote')}
+          className="mx-3 mt-1 mb-1 rounded-xl bg-primary/5 border border-primary/20 px-3 py-2 cursor-pointer hover:bg-primary/10 transition-colors flex items-center gap-2.5"
+        >
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Zap className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs font-bold text-foreground">{allPolls.length} Active Polls</p>
+            <p className="text-[10px] text-muted-foreground">Tap to explore and vote</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </motion.div>
+
         {/* ── New Polls Hero Banner ── */}
         {hasUnseen && (
           <motion.div
@@ -269,22 +287,46 @@ export default function Home() {
               <Flame className="h-3.5 w-3.5 text-destructive" />
               <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Trending Categories</span>
             </div>
-            <div className="flex gap-2 overflow-x-auto px-3 scrollbar-hide snap-x">
-              {trendingCategories.map((cat, i) => (
-                <motion.div
-                  key={cat.name}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => navigate('/vote')}
-                  className="shrink-0 snap-start cursor-pointer rounded-xl bg-card border border-border px-4 py-3 min-w-[120px] hover:bg-muted/50 transition-colors"
-                >
-                  <p className="text-xs font-bold text-foreground truncate">{cat.name}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{cat.pollCount} polls</p>
-                  <p className="text-[10px] text-primary font-semibold">{cat.totalVotes} votes</p>
-                </motion.div>
-              ))}
+            <div className="flex gap-1.5 overflow-x-auto px-3 scrollbar-hide snap-x">
+              {trendingCategories.map((cat, i) => {
+                const categoryEmojis: Record<string, string> = {
+                  'Food & Drinks': '🍽️',
+                  'Food': '🍔',
+                  'Drinks': '🥤',
+                  'Fashion': '👗',
+                  'Sports': '⚽',
+                  'Music': '🎵',
+                  'Movies': '🎬',
+                  'Tech': '💻',
+                  'Travel': '✈️',
+                  'Gaming': '🎮',
+                  'Health': '💪',
+                  'Art': '🎨',
+                  'Books': '📚',
+                  'Nature': '🌿',
+                  'F&B': '🍰',
+                  'Lifestyle': '✨',
+                  'Uncategorized': '📊',
+                };
+                const emoji = categoryEmojis[cat.name] || '📌';
+                return (
+                  <motion.div
+                    key={cat.name}
+                    initial={{ opacity: 0, x: 15 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate('/vote')}
+                    className="shrink-0 snap-start cursor-pointer rounded-lg bg-card border border-border px-2.5 py-1.5 min-w-[90px] hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm">{emoji}</span>
+                      <p className="text-[10px] font-bold text-foreground truncate">{cat.name}</p>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">{cat.pollCount} polls · {cat.totalVotes} votes</p>
+                  </motion.div>
+                );
+              })}
             </div>
           </section>
         )}
@@ -363,23 +405,6 @@ export default function Home() {
           </section>
         )}
 
-        {/* ── Active Polls Count ── */}
-        <section className="mt-4 pt-4 border-t border-border">
-          <motion.div
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate('/vote')}
-            className="mx-3 rounded-xl bg-card border border-border p-4 cursor-pointer hover:bg-muted/50 transition-colors flex items-center gap-3"
-          >
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <Zap className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-foreground">{allPolls.length} Active Polls</p>
-              <p className="text-xs text-muted-foreground">Tap to explore and vote</p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </motion.div>
-        </section>
 
         {/* Bottom CTA */}
         <div className="px-3 mt-4">
