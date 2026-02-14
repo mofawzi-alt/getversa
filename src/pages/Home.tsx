@@ -344,7 +344,7 @@ export default function Home() {
         )}
 
         {/* ── All Active Polls ── */}
-        <section>
+        <section className="mt-4 pt-4 border-t border-border">
           <div className="px-3 flex items-center gap-1.5 mb-1.5">
             <Zap className="h-3.5 w-3.5 text-accent" />
             <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">All Active</span>
