@@ -317,7 +317,7 @@ export default function Home() {
                     transition={{ delay: i * 0.04 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => navigate('/vote')}
-                    className="shrink-0 snap-start cursor-pointer rounded-lg bg-card border border-border px-2.5 py-1.5 min-w-[90px] hover:bg-muted/50 transition-colors"
+                    className="shrink-0 snap-start cursor-pointer rounded-lg bg-[hsl(200_80%_92%)] dark:bg-[hsl(200_50%_30%)] border border-[hsl(200_60%_85%)] dark:border-[hsl(200_40%_40%)] px-2.5 py-1.5 min-w-[90px] hover:bg-[hsl(200_80%_88%)] dark:hover:bg-[hsl(200_50%_35%)] transition-colors"
                   >
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm">{emoji}</span>
