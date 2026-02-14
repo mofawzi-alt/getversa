@@ -137,7 +137,7 @@ export default function Home() {
     const aSpread = Math.abs(a.percentA - 50);
     const bSpread = Math.abs(b.percentA - 50);
     return aSpread - bSpread; // Most contested first
-  }).slice(0, 6);
+  }).slice(0, 4);
   // Stories: top voted polls as highlights
   const storyPolls = [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 10);
 
