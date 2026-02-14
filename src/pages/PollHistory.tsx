@@ -123,8 +123,8 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
       {/* Result bar + metadata */}
       <div className="px-4 py-3 shrink-0 space-y-2">
         <div className="h-2 bg-muted rounded-full overflow-hidden flex">
-          <div className="h-full bg-accent rounded-l-full" style={{ width: `${vote.percentA}%` }} />
-          <div className="h-full bg-warning rounded-r-full" style={{ width: `${vote.percentB}%` }} />
+          <div className="h-full bg-option-a rounded-l-full" style={{ width: `${vote.percentA}%` }} />
+          <div className="h-full bg-option-b rounded-r-full" style={{ width: `${vote.percentB}%` }} />
         </div>
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-muted-foreground flex items-center gap-1">
