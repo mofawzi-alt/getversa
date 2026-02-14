@@ -6,45 +6,45 @@
 
 @layer base {
   :root {
-    /* VERSA Brand Colors - Brighter Navy with Green Accents */
-    --background: 220 35% 28%;
-    --foreground: 210 40% 98%;
+    /* VERSA Brand Colors - Clean White Base */
+    --background: 0 0% 100%;
+    --foreground: 220 20% 15%;
 
-    /* Navy cards */
-    --card: 220 33% 33%;
-    --card-foreground: 210 40% 98%;
+    /* Light cards */
+    --card: 0 0% 98%;
+    --card-foreground: 220 20% 15%;
 
-    --popover: 220 33% 35%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 15%;
 
-    /* Bright Blue Primary */
-    --primary: 210 100% 60%;
-    --primary-foreground: 220 40% 15%;
+    /* Royal Blue Primary */
+    --primary: 225 73% 45%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 30% 38%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 220 20% 15%;
 
-    --muted: 220 28% 40%;
-    --muted-foreground: 210 25% 75%;
+    --muted: 220 14% 90%;
+    --muted-foreground: 220 10% 50%;
 
-    /* Vibrant Lime Green Accent - for clickables */
-    --accent: 75 100% 55%;
-    --accent-foreground: 220 40% 15%;
+    /* Accent */
+    --accent: 225 73% 45%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 30% 42%;
-    --input: 220 30% 35%;
-    --ring: 75 100% 55%;
+    --border: 220 13% 85%;
+    --input: 220 13% 88%;
+    --ring: 225 73% 45%;
 
     --radius: 1rem;
 
-    --success: 142 76% 45%;
+    --success: 145 63% 42%;
     --success-foreground: 0 0% 100%;
     
     --warning: 45 95% 55%;
-    --warning-foreground: 220 40% 15%;
+    --warning-foreground: 220 20% 15%;
 
     /* Poll Option Colors - Royal Blue vs Green */
     --option-a: 225 73% 45%;
@@ -53,20 +53,20 @@
     --option-b-foreground: 0 0% 100%;
 
     /* Poll cards */
-    --poll-card: 220 33% 35%;
-    --poll-card-foreground: 210 40% 98%;
+    --poll-card: 0 0% 98%;
+    --poll-card-foreground: 220 20% 15%;
 
     /* Nav */
-    --nav-bg: 220 35% 26%;
+    --nav-bg: 0 0% 100%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(210 100% 60%) 0%, hsl(200 90% 50%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(75 100% 55%) 0%, hsl(85 95% 50%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(220 33% 35%) 0%, hsl(220 33% 31%) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, hsl(210 100% 60% / 0.10) 0%, transparent 70%);
+    --gradient-primary: linear-gradient(135deg, hsl(225 73% 45%) 0%, hsl(225 73% 55%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(145 63% 42%) 0%, hsl(145 63% 50%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 98%) 0%, hsl(220 14% 95%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(225 73% 45% / 0.08) 0%, transparent 70%);
 
-    --shadow-glow: 0 0 50px hsl(75 100% 55% / 0.20);
-    --shadow-accent: 0 0 40px hsl(75 100% 55% / 0.30);
-    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.20);
+    --shadow-glow: 0 0 50px hsl(225 73% 45% / 0.10);
+    --shadow-accent: 0 0 40px hsl(225 73% 45% / 0.15);
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.08);
 
     --font-display: 'Space Grotesk', sans-serif;
     --font-body: 'Inter', sans-serif;
