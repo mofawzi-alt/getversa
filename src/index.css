@@ -46,11 +46,11 @@
     --warning: 45 95% 55%;
     --warning-foreground: 220 40% 15%;
 
-    /* Poll Option Colors - Blue vs Lime */
-    --option-a: 210 100% 60%;
+    /* Poll Option Colors - Royal Blue vs Green */
+    --option-a: 225 73% 45%;
     --option-a-foreground: 0 0% 100%;
-    --option-b: 75 100% 55%;
-    --option-b-foreground: 220 40% 15%;
+    --option-b: 145 63% 42%;
+    --option-b-foreground: 0 0% 100%;
 
     /* Poll cards */
     --poll-card: 220 33% 35%;
