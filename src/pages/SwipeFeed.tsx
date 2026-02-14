@@ -346,9 +346,10 @@ export default function SwipeFeed() {
 
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
+  const categoryFilter = searchParams.get('category');
 
   const { data: polls, isLoading, refetch } = useQuery({
-    queryKey: ['feed-polls', user?.id],
+    queryKey: ['feed-polls', user?.id, categoryFilter],
     queryFn: async () => {
       // Fetch all active polls — voted ones stay visible with results
       // Only show polls whose starts_at has passed (or is null)
@@ -396,6 +397,10 @@ export default function SwipeFeed() {
           if (p.target_country && p.target_country !== 'All' && profile.country && p.target_country !== profile.country) return false;
           return true;
         });
+      }
+      // Filter by category if specified
+      if (categoryFilter) {
+        allPolls = allPolls.filter(p => p.category === categoryFilter);
       }
       // Put unvoted polls first
       if (targetPollId) {

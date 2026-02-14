@@ -316,7 +316,7 @@ export default function Home() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.04 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => navigate('/vote')}
+                    onClick={() => navigate(`/vote?category=${encodeURIComponent(cat.name)}`)}
                     className="shrink-0 snap-start cursor-pointer rounded-lg bg-[hsl(200_80%_92%)] dark:bg-[hsl(200_50%_30%)] border border-[hsl(200_60%_85%)] dark:border-[hsl(200_40%_40%)] px-2.5 py-1.5 min-w-[90px] hover:bg-[hsl(200_80%_88%)] dark:hover:bg-[hsl(200_50%_35%)] transition-colors"
                   >
                     <div className="flex items-center gap-1.5">
