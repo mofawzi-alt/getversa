@@ -276,10 +276,69 @@ export default function Home() {
               <TrendingUp className="h-3.5 w-3.5 text-primary" />
               <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Most Contested</span>
             </div>
-            <div className="px-3 space-y-2">
-              {popularPolls.slice(0, 3).map((poll, i) => (
-                <ContestedCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} />
-              ))}
+            <div className="px-2 space-y-2">
+              {popularPolls.slice(0, 4).map((poll, i) => {
+                const hasVoted = !!votedPollIds?.has(poll.id);
+                const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
+                const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+                const isNew = !hasVoted;
+                const spread = Math.abs(poll.percentA - 50);
+
+                return (
+                  <motion.div
+                    key={poll.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handlePollTap(poll)}
+                    className="relative rounded-xl overflow-hidden cursor-pointer group"
+                  >
+                    <div className="flex h-36 relative">
+                      <div className="w-1/2 h-full relative overflow-hidden">
+                        <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                        <div className="absolute bottom-2 left-2 right-1">
+                          <p className="text-white text-[11px] font-bold drop-shadow-lg leading-tight truncate">{poll.option_a}</p>
+                          {hasVoted && <span className="text-sm font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>}
+                        </div>
+                      </div>
+                      <div className="absolute inset-y-0 left-1/2 w-[2px] bg-background/20 z-10" />
+                      <div className="w-1/2 h-full relative overflow-hidden">
+                        <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                        <div className="absolute bottom-2 left-1 right-2 text-right">
+                          <p className="text-white text-[11px] font-bold drop-shadow-lg leading-tight truncate">{poll.option_b}</p>
+                          {hasVoted && <span className="text-sm font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Question & meta overlay */}
+                    <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-5 bg-gradient-to-b from-black/65 to-transparent">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="text-white text-[11px] font-bold drop-shadow-lg leading-tight truncate flex-1">{poll.question}</h3>
+                        {spread <= 10 && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-destructive/80 text-white font-bold shrink-0">🔥 Close</span>}
+                      </div>
+                    </div>
+                    <div className="absolute bottom-1.5 right-2 flex items-center gap-1 z-10">
+                      {(!poll.ends_at || new Date(poll.ends_at) >= new Date()) && (!poll.starts_at || new Date(poll.starts_at) <= new Date()) && <LiveIndicator variant="overlay" />}
+                      {isNew && (
+                        <motion.span
+                          animate={{ boxShadow: ['0 0 0px hsl(75 100% 55% / 0)', '0 0 10px hsl(75 100% 55% / 0.4)', '0 0 0px hsl(75 100% 55% / 0)'] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="px-1.5 py-0.5 rounded-full text-[8px] font-extrabold bg-accent/90 text-accent-foreground"
+                        >
+                          NEW
+                        </motion.span>
+                      )}
+                      <span className="text-[9px] text-white/60 flex items-center gap-0.5 drop-shadow-lg">
+                        <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
+                      </span>
+                      {hasVoted && <span className="text-[8px] px-1 py-0.5 rounded-full bg-white/20 text-white font-bold">✓</span>}
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </section>
         )}
