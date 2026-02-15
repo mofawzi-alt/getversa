@@ -164,6 +164,8 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
   const [editingPoll, setEditingPoll] = useState<any>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [brandFilter, setBrandFilter] = useState('');
+  const [selectedPollIds, setSelectedPollIds] = useState<Set<string>>(new Set());
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
 
@@ -458,6 +460,50 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
     },
   });
 
+  const toggleSelectPoll = (pollId: string) => {
+    setSelectedPollIds(prev => {
+      const next = new Set(prev);
+      if (next.has(pollId)) next.delete(pollId);
+      else next.add(pollId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (!filteredPolls) return;
+    if (selectedPollIds.size === filteredPolls.length) {
+      setSelectedPollIds(new Set());
+    } else {
+      setSelectedPollIds(new Set(filteredPolls.map(p => p.id)));
+    }
+  };
+
+  const bulkDeletePolls = async () => {
+    if (selectedPollIds.size === 0) return;
+    if (!confirm(`Delete ${selectedPollIds.size} poll(s)? This will also delete all their votes.`)) return;
+    
+    setIsDeletingBulk(true);
+    try {
+      const ids = Array.from(selectedPollIds);
+      await supabase.from('votes').delete().in('poll_id', ids);
+      await supabase.from('favorite_polls').delete().in('poll_id', ids);
+      await supabase.from('poll_boosts').delete().in('poll_id', ids);
+      await supabase.from('sponsored_polls').delete().in('poll_id', ids);
+      await supabase.from('campaign_polls').delete().in('poll_id', ids);
+      await supabase.from('poll_dimensions').delete().in('poll_id', ids);
+      const { error } = await supabase.from('polls').delete().in('id', ids);
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ['admin-polls'] });
+      toast.success(`Deleted ${ids.length} poll(s)`);
+      setSelectedPollIds(new Set());
+    } catch {
+      toast.error('Failed to delete polls');
+    } finally {
+      setIsDeletingBulk(false);
+    }
+  };
+
   return (
     <>
       {/* Insight Highlights - The Weapon */}
@@ -483,10 +529,37 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
       </div>
 
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Polls ({filteredPolls?.length || 0})</h2>
-        <Button size="sm" onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-1" /> New Poll
-        </Button>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold">Polls ({filteredPolls?.length || 0})</h2>
+          {filteredPolls && filteredPolls.length > 0 && (
+            <button
+              onClick={toggleSelectAll}
+              className="text-xs text-muted-foreground hover:text-foreground underline"
+            >
+              {selectedPollIds.size === filteredPolls.length ? 'Deselect all' : 'Select all'}
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {selectedPollIds.size > 0 && (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={bulkDeletePolls}
+              disabled={isDeletingBulk}
+            >
+              {isDeletingBulk ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-1" />
+              )}
+              Delete {selectedPollIds.size}
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4 mr-1" /> New Poll
+          </Button>
+        </div>
       </div>
 
       {/* AI Poll Generator */}
@@ -1050,9 +1123,15 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
               new Date(poll.ends_at) >= new Date();
             
             return (
-              <div key={poll.id} className="glass rounded-xl p-4">
+              <div key={poll.id} className={`glass rounded-xl p-4 ${selectedPollIds.has(poll.id) ? 'ring-2 ring-primary' : ''}`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedPollIds.has(poll.id)}
+                      onChange={() => toggleSelectPoll(poll.id)}
+                      className="h-4 w-4 rounded border-border accent-primary shrink-0"
+                    />
                     {poll.category && (
                       <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs">
                         {poll.category}
