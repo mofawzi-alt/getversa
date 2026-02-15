@@ -528,12 +528,11 @@ export default function Home() {
                     transition={{ delay: i * 0.04 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => navigate(`/vote?category=${encodeURIComponent(cat.name)}`)}
-                    className="shrink-0 snap-start cursor-pointer rounded-2xl min-w-[110px] px-3 py-2.5 border border-white/20 dark:border-white/10 shadow-sm hover:shadow-md transition-all"
-                    style={{ background: `linear-gradient(135deg, ${iconConfig.bg}, ${iconConfig.color}15)` }}
+                    className="shrink-0 snap-start cursor-pointer rounded-2xl min-w-[110px] px-3 py-3 text-center shadow-sm hover:shadow-md transition-all"
+                    style={{ backgroundColor: iconConfig.color }}
                   >
-                    <p className="text-xs font-bold text-foreground truncate">{cat.name}</p>
-                    <p className="text-[9px] text-muted-foreground mt-1 font-medium">{cat.pollCount} polls</p>
-                    <p className="text-sm font-display font-bold mt-0.5" style={{ color: iconConfig.color }}>{cat.totalVotes} <span className="text-[8px] font-normal text-muted-foreground">votes</span></p>
+                    <p className="text-xs font-bold text-white truncate">{cat.name}</p>
+                    <p className="text-[9px] text-white/70 mt-1 font-medium">{cat.pollCount} polls · {cat.totalVotes} votes</p>
                   </motion.div>
                 );
               })}
