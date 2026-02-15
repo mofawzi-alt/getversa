@@ -70,6 +70,18 @@ export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const storiesRef = useRef<HTMLDivElement>(null);
+
+  // Support ?reset param to clear onboarding state for testing
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('reset')) {
+      localStorage.removeItem('versa_welcome_done');
+      localStorage.removeItem('versa_explore_unlocked');
+      window.history.replaceState({}, '', '/');
+      setShowWelcome(true);
+    }
+  }, []);
+
   const [showWelcome, setShowWelcome] = useState(!isWelcomeDone());
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
 
