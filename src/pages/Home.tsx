@@ -517,10 +517,9 @@ export default function Home() {
               <Flame className="h-3.5 w-3.5 text-destructive" />
               <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Trending Categories</span>
             </div>
-            <div className="flex gap-2 overflow-x-auto px-3 scrollbar-hide snap-x">
+            <div className="flex gap-2.5 overflow-x-auto px-3 scrollbar-hide snap-x">
               {trendingCategories.map((cat, i) => {
                 const iconConfig = getCategoryIcon(cat.name);
-                const IconComp = iconConfig.icon;
                 return (
                   <motion.div
                     key={cat.name}
@@ -529,15 +528,12 @@ export default function Home() {
                     transition={{ delay: i * 0.04 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => navigate(`/vote?category=${encodeURIComponent(cat.name)}`)}
-                    className="shrink-0 snap-start cursor-pointer flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-3 py-1.5 hover:border-primary/40 hover:shadow-sm transition-all"
+                    className="shrink-0 snap-start cursor-pointer rounded-2xl min-w-[110px] px-3 py-2.5 border border-white/20 dark:border-white/10 shadow-sm hover:shadow-md transition-all"
+                    style={{ background: `linear-gradient(135deg, ${iconConfig.bg}, ${iconConfig.color}15)` }}
                   >
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0`} style={{ backgroundColor: iconConfig.bg }}>
-                      <IconComp className="h-2.5 w-2.5" style={{ color: iconConfig.color }} />
-                    </div>
-                    <div className="flex flex-col">
-                      <p className="text-[10px] font-bold text-foreground whitespace-nowrap">{cat.name}</p>
-                      <p className="text-[8px] text-muted-foreground whitespace-nowrap">{cat.pollCount} polls · {cat.totalVotes} votes</p>
-                    </div>
+                    <p className="text-xs font-bold text-foreground truncate">{cat.name}</p>
+                    <p className="text-[9px] text-muted-foreground mt-1 font-medium">{cat.pollCount} polls</p>
+                    <p className="text-sm font-display font-bold mt-0.5" style={{ color: iconConfig.color }}>{cat.totalVotes} <span className="text-[8px] font-normal text-muted-foreground">votes</span></p>
                   </motion.div>
                 );
               })}
