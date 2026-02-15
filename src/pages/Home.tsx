@@ -427,14 +427,6 @@ export default function Home() {
             </div>
             <div className="flex gap-1.5 overflow-x-auto px-3 scrollbar-hide snap-x">
               {trendingCategories.map((cat, i) => {
-                const categoryEmojis: Record<string, string> = {
-                  'Food & Drinks': '🍽️', 'Food': '🍔', 'Drinks': '🥤', 'Fashion': '👗',
-                  'Sports': '⚽', 'Music': '🎵', 'Movies': '🎬', 'Tech': '💻',
-                  'Travel': '✈️', 'Gaming': '🎮', 'Health': '💪', 'Art': '🎨',
-                  'Books': '📚', 'Nature': '🌿', 'F&B': '🍰', 'Lifestyle': '✨',
-                  'Uncategorized': '📊',
-                };
-                const emoji = categoryEmojis[cat.name] || '📌';
                 return (
                   <motion.div
                     key={cat.name}
@@ -445,10 +437,7 @@ export default function Home() {
                     onClick={() => navigate(`/vote?category=${encodeURIComponent(cat.name)}`)}
                     className="shrink-0 snap-start cursor-pointer rounded-lg bg-[hsl(200_80%_92%)] dark:bg-[hsl(200_50%_30%)] border border-[hsl(200_60%_85%)] dark:border-[hsl(200_40%_40%)] px-2.5 py-1.5 min-w-[90px] hover:bg-[hsl(200_80%_88%)] dark:hover:bg-[hsl(200_50%_35%)] transition-colors"
                   >
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm">{emoji}</span>
-                      <p className="text-[10px] font-bold text-foreground truncate">{cat.name}</p>
-                    </div>
+                    <p className="text-[10px] font-bold text-foreground truncate">{cat.name}</p>
                     <p className="text-[9px] text-muted-foreground mt-0.5">{cat.pollCount} polls · {cat.totalVotes} votes</p>
                   </motion.div>
                 );
