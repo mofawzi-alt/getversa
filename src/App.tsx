@@ -18,6 +18,7 @@ import Notifications from "./pages/Notifications";
 import AdminDashboard from "./pages/AdminDashboard";
 import Privacy from "./pages/Privacy";
 import InsightProfile from "./pages/InsightProfile";
+import Explore from "./pages/Explore";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><Onboarding /></ProtectedRoute>} />
             <Route path="/" element={<Home />} />
             <Route path="/vote" element={<SwipeFeed />} />
+            <Route path="/explore" element={<Explore />} />
             <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
             <Route path="/archive" element={<PastPerspectives />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
