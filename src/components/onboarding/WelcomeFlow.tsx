@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,12 +24,47 @@ export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
   const [step, setStep] = useState(0);
   const [demoSwiped, setDemoSwiped] = useState(false);
   const [demoChoice, setDemoChoice] = useState<'A' | 'B' | null>(null);
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [flyDirection, setFlyDirection] = useState<'left' | 'right' | null>(null);
+  const startX = useRef(0);
+  const THRESHOLD = 80;
 
   const handleDemoVote = (choice: 'A' | 'B') => {
     if (demoSwiped) return;
     setDemoChoice(choice);
     setDemoSwiped(true);
   };
+
+  const handleStart = (clientX: number) => {
+    if (demoSwiped || flyDirection) return;
+    setIsDragging(true);
+    startX.current = clientX;
+  };
+  const handleMove = (clientX: number) => {
+    if (!isDragging) return;
+    setDragX(clientX - startX.current);
+  };
+  const handleEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    if (dragX < -THRESHOLD) {
+      setFlyDirection('left');
+      setTimeout(() => handleDemoVote('A'), 300);
+    } else if (dragX > THRESHOLD) {
+      setFlyDirection('right');
+      setTimeout(() => handleDemoVote('B'), 300);
+    }
+    if (Math.abs(dragX) <= THRESHOLD) setDragX(0);
+  };
+
+  const rotation = flyDirection
+    ? (flyDirection === 'left' ? -15 : 15)
+    : Math.sign(dragX) * Math.min(Math.abs(dragX), 200) / 200 * 12;
+  const translateX = flyDirection
+    ? (flyDirection === 'left' ? -window.innerWidth * 1.5 : window.innerWidth * 1.5)
+    : dragX;
+  const choiceOpacity = Math.min(Math.abs(dragX) / THRESHOLD, 1);
 
   const handleComplete = () => {
     markWelcomeDone();
@@ -92,15 +127,50 @@ export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
               Which do you prefer?
             </h2>
 
-            {/* Demo poll card */}
-            <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl">
-              <div className="flex aspect-[4/3] w-full">
-                <button
-                  onClick={() => handleDemoVote('A')}
-                  className={`w-1/2 h-full relative overflow-hidden transition-all ${demoSwiped && demoChoice === 'A' ? 'ring-4 ring-inset ring-option-a' : ''}`}
-                  disabled={demoSwiped}
+            {/* Swipe indicators */}
+            {!demoSwiped && (
+              <div className="w-full max-w-sm relative h-0">
+                <motion.div
+                  animate={{ opacity: dragX < -20 ? choiceOpacity : 0, scale: dragX < -20 ? 1 : 0.8 }}
+                  className="absolute -left-2 top-16 flex flex-col items-center gap-1 z-20"
                 >
-                  <img src={coffeeImg} alt="Coffee" className="w-full h-full object-cover" />
+                  <div className="w-12 h-12 rounded-full bg-option-a/20 border-2 border-option-a flex items-center justify-center">
+                    <span className="text-option-a font-display font-bold text-lg">A</span>
+                  </div>
+                </motion.div>
+                <motion.div
+                  animate={{ opacity: dragX > 20 ? choiceOpacity : 0, scale: dragX > 20 ? 1 : 0.8 }}
+                  className="absolute -right-2 top-16 flex flex-col items-center gap-1 z-20"
+                >
+                  <div className="w-12 h-12 rounded-full bg-option-b/20 border-2 border-option-b flex items-center justify-center">
+                    <span className="text-option-b font-display font-bold text-lg">B</span>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+
+            {/* Demo poll card */}
+            <div
+              className={`w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl ${!demoSwiped ? 'cursor-grab active:cursor-grabbing' : ''}`}
+              style={{
+                transform: demoSwiped ? 'none' : `translateX(${translateX}px) rotate(${rotation}deg)`,
+                transition: isDragging ? 'none' : flyDirection ? 'transform 0.4s ease-in, opacity 0.4s' : 'transform 0.3s ease-out',
+                opacity: flyDirection ? 0 : 1,
+              }}
+              onTouchStart={(e) => handleStart(e.touches[0].clientX)}
+              onTouchMove={(e) => { handleMove(e.touches[0].clientX); if (Math.abs(dragX) > 10) e.preventDefault(); }}
+              onTouchEnd={handleEnd}
+              onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX); }}
+              onMouseMove={(e) => handleMove(e.clientX)}
+              onMouseUp={handleEnd}
+              onMouseLeave={() => isDragging && handleEnd()}
+            >
+              <div className="flex aspect-[4/3] w-full relative">
+                <div
+                  onClick={() => handleDemoVote('A')}
+                  className={`w-1/2 h-full relative overflow-hidden transition-all cursor-pointer ${demoSwiped && demoChoice === 'A' ? 'ring-4 ring-inset ring-option-a' : ''}`}
+                >
+                  <img src={coffeeImg} alt="Coffee" className="w-full h-full object-cover" draggable={false} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
                   <div className="absolute bottom-3 left-3">
                     <p className="text-white text-sm font-bold drop-shadow-lg">Coffee ☕</p>
@@ -114,14 +184,13 @@ export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
                       <span className="text-3xl font-bold text-white drop-shadow-lg">32%</span>
                     </motion.div>
                   )}
-                </button>
+                </div>
                 <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/15 z-10" />
-                <button
+                <div
                   onClick={() => handleDemoVote('B')}
-                  className={`w-1/2 h-full relative overflow-hidden transition-all ${demoSwiped && demoChoice === 'B' ? 'ring-4 ring-inset ring-option-b' : ''}`}
-                  disabled={demoSwiped}
+                  className={`w-1/2 h-full relative overflow-hidden transition-all cursor-pointer ${demoSwiped && demoChoice === 'B' ? 'ring-4 ring-inset ring-option-b' : ''}`}
                 >
-                  <img src={teaImg} alt="Tea" className="w-full h-full object-cover" />
+                  <img src={teaImg} alt="Tea" className="w-full h-full object-cover" draggable={false} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
                   <div className="absolute bottom-3 right-3 text-right">
                     <p className="text-white text-sm font-bold drop-shadow-lg">Tea 🍵</p>
@@ -135,7 +204,7 @@ export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
                       <span className="text-3xl font-bold text-white drop-shadow-lg">68%</span>
                     </motion.div>
                   )}
-                </button>
+                </div>
               </div>
             </div>
 
@@ -159,7 +228,7 @@ export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
             )}
 
             {!demoSwiped && (
-              <p className="text-xs text-muted-foreground animate-pulse">Tap a side to vote</p>
+              <p className="text-xs text-muted-foreground animate-pulse">Swipe or tap to vote</p>
             )}
           </motion.div>
         )}
