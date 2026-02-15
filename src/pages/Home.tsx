@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Megaphone } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Loader2 } from 'lucide-react';
