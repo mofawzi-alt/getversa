@@ -6,7 +6,7 @@ interface VoteProgressIndicatorProps {
   target?: number;
 }
 
-export default function VoteProgressIndicator({ voteCount, target = 5 }: VoteProgressIndicatorProps) {
+export default function VoteProgressIndicator({ voteCount, target = 3 }: VoteProgressIndicatorProps) {
   const progress = Math.min(voteCount / target, 1);
 
   return (

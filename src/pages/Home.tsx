@@ -64,7 +64,7 @@ type PollCard = {
   votesB: number;
 };
 
-const EXPLORE_THRESHOLD = 5;
+const EXPLORE_THRESHOLD = 3;
 
 export default function Home() {
   const navigate = useNavigate();
