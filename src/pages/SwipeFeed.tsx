@@ -463,6 +463,7 @@ export default function SwipeFeed() {
       queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
       queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
       queryClient.invalidateQueries({ queryKey: ['my-votes'] });
+      queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
     },
     onError: (error: any) => {
       if (error.message === 'GUEST_LIMIT') return;
