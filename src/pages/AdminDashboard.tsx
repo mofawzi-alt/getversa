@@ -163,6 +163,7 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [editingPoll, setEditingPoll] = useState<any>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [brandFilter, setBrandFilter] = useState('');
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
 
@@ -277,6 +278,17 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
       if (error) throw error;
       return data;
     },
+  });
+
+  const filteredPolls = polls?.filter((poll) => {
+    if (!brandFilter.trim()) return true;
+    const term = brandFilter.toLowerCase();
+    return (
+      poll.option_a.toLowerCase().includes(term) ||
+      poll.option_b.toLowerCase().includes(term) ||
+      poll.question.toLowerCase().includes(term) ||
+      (poll.category && poll.category.toLowerCase().includes(term))
+    );
   });
 
   const createPollMutation = useMutation({
@@ -451,8 +463,27 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
       {/* Insight Highlights - The Weapon */}
       <InsightHighlights onPollSelect={onInsightClick} />
 
+      {/* Brand/Option Filter */}
+      <div className="relative">
+        <Input
+          value={brandFilter}
+          onChange={(e) => setBrandFilter(e.target.value)}
+          placeholder="Filter by brand or option name..."
+          className="bg-secondary pl-9"
+        />
+        <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        {brandFilter && (
+          <button
+            onClick={() => setBrandFilter('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Polls ({polls?.length || 0})</h2>
+        <h2 className="text-lg font-semibold">Polls ({filteredPolls?.length || 0})</h2>
         <Button size="sm" onClick={() => setShowForm(true)}>
           <Plus className="h-4 w-4 mr-1" /> New Poll
         </Button>
@@ -1012,7 +1043,7 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
         </div>
       ) : (
         <div className="space-y-3">
-          {polls?.map((poll) => {
+          {filteredPolls?.map((poll) => {
             const isExpired = poll.ends_at && new Date(poll.ends_at) < new Date();
             const isLive = poll.starts_at && poll.ends_at && 
               new Date(poll.starts_at) <= new Date() && 
