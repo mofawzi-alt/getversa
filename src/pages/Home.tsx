@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, type LucideIcon, Utensils, Shirt, Monitor, Plane, Music, Palette, Heart, Dumbbell, BookOpen } from 'lucide-react';
@@ -86,11 +86,14 @@ const EXPLORE_THRESHOLD = 3;
 
 // Animated counter component
 function AnimatedNumber({ value, className }: { value: number; className?: string }) {
-  const [display, setDisplay] = useState(0);
+  const [display, setDisplay] = useState(value);
+  const prevRef = useRef(value);
   useEffect(() => {
+    const from = prevRef.current;
+    prevRef.current = value;
+    if (from === value) return;
     const duration = 800;
     const start = performance.now();
-    const from = 0;
     const animate = (now: number) => {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
@@ -118,9 +121,30 @@ export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const storiesRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const [showWelcome, setShowWelcome] = useState(!isWelcomeDone());
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
+
+  // Realtime subscription: invalidate vote-related queries on new votes
+  useEffect(() => {
+    const channel = supabase
+      .channel('home-votes-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'votes' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
+          queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+          queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Count user's total votes
   const { data: userVoteCount } = useQuery({
@@ -170,7 +194,7 @@ export default function Home() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Votes in last 24 hours
+  // Votes in last 24 hours — refreshes via realtime + refetchInterval fallback
   const { data: votes24h } = useQuery({
     queryKey: ['votes-24h'],
     queryFn: async () => {
@@ -178,7 +202,8 @@ export default function Home() {
       const { count } = await supabase.from('votes').select('id', { count: 'exact', head: true }).gte('created_at', since);
       return count || 0;
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 10,
+    refetchInterval: 1000 * 10,
   });
 
   // User weekly vote count
