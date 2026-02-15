@@ -633,7 +633,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/insight-profile')}
+                onClick={() => navigate('/insights')}
                 className="bg-card rounded-xl px-3 py-2.5 border border-border/60 text-center cursor-pointer"
               >
                 <BarChart3 className="h-4 w-4 text-primary mx-auto mb-1" />
