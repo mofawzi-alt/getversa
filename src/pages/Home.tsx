@@ -393,17 +393,6 @@ export default function Home() {
     return bRate - aRate;
   }).slice(0, 6);
 
-  // Categories
-  const categoryMap = new Map<string, { name: string; pollCount: number; totalVotes: number }>();
-  allPolls.forEach(p => {
-    const cat = p.category || 'Uncategorized';
-    const existing = categoryMap.get(cat) || { name: cat, pollCount: 0, totalVotes: 0 };
-    existing.pollCount++;
-    existing.totalVotes += p.totalVotes;
-    categoryMap.set(cat, existing);
-  });
-  const trendingCategories = [...categoryMap.values()].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 8);
-
   const totalLiveVoters = livePolls.reduce((sum, p) => sum + p.totalVotes, 0);
 
   return (
@@ -650,35 +639,20 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ═══ CATEGORIES (reduced) ═══ */}
-        {trendingCategories.length > 0 && (
-          <section className="mb-3 px-3">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Categories</span>
+        {/* ═══ BROWSE BY CATEGORY LINK ═══ */}
+        <section className="px-3 mb-3">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate('/explore')}
+            className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-card border border-border/60 cursor-pointer group"
+          >
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-display font-bold text-foreground">Browse by Category</span>
             </div>
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide snap-x">
-              {trendingCategories.map((cat, i) => {
-                const iconConfig = getCategoryIcon(cat.name);
-                return (
-                  <motion.div
-                    key={cat.name}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.03 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate(`/vote?category=${encodeURIComponent(cat.name)}`)}
-                    className="shrink-0 snap-start cursor-pointer rounded-xl px-3 py-2 bg-card border-2 transition-all hover:shadow-sm"
-                    style={{ borderColor: iconConfig.color }}
-                  >
-                    <p className="text-[10px] font-bold text-foreground truncate">{cat.name}</p>
-                    <p className="text-[8px] text-muted-foreground font-medium">{cat.totalVotes} votes</p>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </section>
-        )}
+            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+          </motion.button>
+        </section>
 
         <HomeResultsModal
           open={!!modalPoll}
