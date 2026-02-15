@@ -72,6 +72,7 @@ export default function Home() {
   const storiesRef = useRef<HTMLDivElement>(null);
 
   // Support ?reset param to clear onboarding state for testing
+  const [forceNewUser, setForceNewUser] = useState(false);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('reset')) {
@@ -79,6 +80,7 @@ export default function Home() {
       localStorage.removeItem('versa_explore_unlocked');
       window.history.replaceState({}, '', '/');
       setShowWelcome(true);
+      setForceNewUser(true);
     }
   }, []);
 
@@ -90,7 +92,6 @@ export default function Home() {
     queryKey: ['user-vote-count', user?.id],
     queryFn: async () => {
       if (!user) {
-        // For guests, use localStorage guest vote count
         try { return parseInt(localStorage.getItem('versa_guest_votes') || '0', 10); } catch { return 0; }
       }
       const { count } = await supabase.from('votes').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
@@ -99,7 +100,7 @@ export default function Home() {
     staleTime: 1000 * 30,
   });
 
-  const voteCount = userVoteCount ?? 0;
+  const voteCount = forceNewUser ? 0 : (userVoteCount ?? 0);
   const isNewUser = voteCount < EXPLORE_THRESHOLD;
   const hasUnlockedExplore = !isNewUser;
 
