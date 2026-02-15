@@ -280,6 +280,12 @@ export default function Home() {
     categoryMap.set(cat, existing);
   });
   const trendingCategories = [...categoryMap.values()].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 8);
+  const now = new Date();
+  const livePolls = allPolls.filter(p => {
+    const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
+    const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
+    return hasStarted && !isExpired;
+  }).sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 6);
   const popularPolls = [...allPolls].filter(p => p.totalVotes > 0).sort((a, b) => {
     const aSpread = Math.abs(a.percentA - 50);
     const bSpread = Math.abs(b.percentA - 50);
@@ -432,6 +438,78 @@ export default function Home() {
                 );
               })}
             </div>
+          </section>
+        )}
+
+        {/* ── Live Polls ── */}
+        {livePolls.length > 0 && (
+          <section className="mb-1">
+            <div className="px-3 flex items-center gap-1.5 mb-1.5">
+              <LiveIndicator variant="inline" />
+              <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Live Polls</span>
+            </div>
+            <Carousel opts={{ align: 'start', loop: true }} className="px-2">
+              <CarouselContent className="-ml-2">
+                {livePolls.map((poll, i) => {
+                  const hasVoted = !!votedPollIds?.has(poll.id);
+                  const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
+                  const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+                  const isNew = !hasVoted;
+
+                  return (
+                    <CarouselItem key={poll.id} className="pl-2 basis-full">
+                      <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handlePollTap(poll)}
+                        className="relative rounded-xl overflow-hidden cursor-pointer group"
+                      >
+                        <div className="flex h-52 relative">
+                          <div className="w-1/2 h-full relative overflow-hidden">
+                            <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                            <div className="absolute bottom-2 left-2 right-1">
+                              <p className="text-white text-xs font-bold drop-shadow-lg leading-tight truncate">{poll.option_a}</p>
+                              {hasVoted && <span className="text-base font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>}
+                            </div>
+                          </div>
+                          <div className="absolute inset-y-0 left-1/2 w-[2px] bg-background/20 z-10" />
+                          <div className="w-1/2 h-full relative overflow-hidden">
+                            <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                            <div className="absolute bottom-2 left-1 right-2 text-right">
+                              <p className="text-white text-xs font-bold drop-shadow-lg leading-tight truncate">{poll.option_b}</p>
+                              {hasVoted && <span className="text-base font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-5 bg-gradient-to-b from-black/65 to-transparent">
+                          <h3 className="text-white text-xs font-bold drop-shadow-lg leading-tight truncate">{poll.question}</h3>
+                        </div>
+                        <div className="absolute bottom-1.5 right-2 flex items-center gap-1 z-10">
+                          <LiveIndicator variant="overlay" />
+                          {isNew && (
+                            <motion.span
+                              animate={{ boxShadow: ['0 0 0px hsl(75 100% 55% / 0)', '0 0 10px hsl(75 100% 55% / 0.4)', '0 0 0px hsl(75 100% 55% / 0)'] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                              className="px-1.5 py-0.5 rounded-full text-[8px] font-extrabold bg-accent/90 text-accent-foreground"
+                            >
+                              NEW
+                            </motion.span>
+                          )}
+                          <span className="text-[9px] text-white/60 flex items-center gap-0.5 drop-shadow-lg">
+                            <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
+                          </span>
+                          {hasVoted && <span className="text-[8px] px-1 py-0.5 rounded-full bg-white/20 text-white font-bold">✓</span>}
+                        </div>
+                      </motion.div>
+                    </CarouselItem>
+                  );
+                })}
+              </CarouselContent>
+            </Carousel>
           </section>
         )}
 
