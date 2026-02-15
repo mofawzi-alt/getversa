@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,9 @@ import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight 
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import WelcomeFlow, { isWelcomeDone } from '@/components/onboarding/WelcomeFlow';
+import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator';
+import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 
 import beachImg from '@/assets/polls/beach.jpg';
 import cityImg from '@/assets/polls/city.jpg';
@@ -61,10 +64,40 @@ type PollCard = {
   votesB: number;
 };
 
+const EXPLORE_THRESHOLD = 5;
+
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const storiesRef = useRef<HTMLDivElement>(null);
+  const [showWelcome, setShowWelcome] = useState(!isWelcomeDone());
+  const [showUnlockPopup, setShowUnlockPopup] = useState(false);
+
+  // Count user's total votes
+  const { data: userVoteCount } = useQuery({
+    queryKey: ['user-vote-count', user?.id],
+    queryFn: async () => {
+      if (!user) {
+        // For guests, use localStorage guest vote count
+        try { return parseInt(localStorage.getItem('versa_guest_votes') || '0', 10); } catch { return 0; }
+      }
+      const { count } = await supabase.from('votes').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+      return count || 0;
+    },
+    staleTime: 1000 * 30,
+  });
+
+  const voteCount = userVoteCount ?? 0;
+  const isNewUser = voteCount < EXPLORE_THRESHOLD;
+  const hasUnlockedExplore = !isNewUser;
+
+  // Check if we should show unlock popup (just crossed threshold)
+  useEffect(() => {
+    if (hasUnlockedExplore && !isExploreUnlocked()) {
+      markExploreUnlocked();
+      setShowUnlockPopup(true);
+    }
+  }, [hasUnlockedExplore]);
 
   const { data: votedPollIds } = useQuery({
     queryKey: ['user-voted-ids', user?.id],
@@ -119,6 +152,11 @@ export default function Home() {
 
   const [modalPoll, setModalPoll] = useState<PollCard | null>(null);
 
+  // Show welcome flow for first-time users
+  if (showWelcome) {
+    return <WelcomeFlow onComplete={() => setShowWelcome(false)} />;
+  }
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -132,7 +170,105 @@ export default function Home() {
   const allPolls = polls || [];
   const hasUnseen = (unseenCount || 0) > 0;
   const newPolls = allPolls.filter(p => !votedPollIds?.has(p.id));
-  // Trending categories: count polls per category and sort by vote count
+
+  const handlePollTap = (poll: PollCard) => {
+    const hasVoted = votedPollIds?.has(poll.id);
+    const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
+    const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
+    if (!hasStarted || isExpired) return;
+    if (hasVoted) {
+      setModalPoll(poll);
+    } else {
+      navigate(`/vote?pollId=${poll.id}`);
+    }
+  };
+
+  // ── SIMPLIFIED HOME for new users (<5 votes) ──
+  if (isNewUser) {
+    const todaysPolls = newPolls.slice(0, 5);
+    return (
+      <AppLayout>
+        <div className="min-h-screen flex flex-col pb-24 gap-1">
+          {/* Progress indicator */}
+          <VoteProgressIndicator voteCount={voteCount} target={EXPLORE_THRESHOLD} />
+
+          {/* Today's Polls header */}
+          <div className="px-3 pt-3 flex items-center gap-2">
+            <Flame className="h-4 w-4 text-destructive" />
+            <h2 className="text-sm font-display font-bold text-foreground">Today's Polls</h2>
+          </div>
+
+          {/* Simple vertical poll list */}
+          <div className="px-2 space-y-3 mt-2">
+            {todaysPolls.length > 0 ? todaysPolls.map((poll, i) => {
+              const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
+              const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+              return (
+                <motion.div
+                  key={poll.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handlePollTap(poll)}
+                  className="relative rounded-2xl overflow-hidden cursor-pointer group shadow-card"
+                >
+                  <div className="flex h-44 relative">
+                    <div className="w-1/2 h-full relative overflow-hidden">
+                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                      <div className="absolute bottom-3 left-3">
+                        <p className="text-white text-sm font-bold drop-shadow-lg">{poll.option_a}</p>
+                      </div>
+                    </div>
+                    <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
+                    <div className="w-1/2 h-full relative overflow-hidden">
+                      <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                      <div className="absolute bottom-3 right-3 text-right">
+                        <p className="text-white text-sm font-bold drop-shadow-lg">{poll.option_b}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="absolute top-0 inset-x-0 px-3 pt-2.5 pb-5 bg-gradient-to-b from-black/65 to-transparent">
+                    <h3 className="text-white text-xs font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
+                  </div>
+                  <div className="absolute bottom-2 right-3 flex items-center gap-1.5 z-10">
+                    <LiveIndicator variant="overlay" />
+                    <span className="text-[9px] text-white/60 flex items-center gap-0.5 drop-shadow-lg">
+                      <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            }) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-sm">No polls available right now</p>
+              </div>
+            )}
+          </div>
+
+          {/* Simple CTA */}
+          {todaysPolls.length > 0 && (
+            <div className="px-3 mt-4">
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate('/vote')}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-primary text-primary-foreground font-display font-bold text-sm tracking-wide"
+              >
+                <Zap className="h-4 w-4" />
+                Start Voting
+              </motion.button>
+            </div>
+          )}
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // ── FULL HOME (unlocked after 5+ votes) ──
+
+  // Trending categories
   const categoryMap = new Map<string, { name: string; pollCount: number; totalVotes: number }>();
   allPolls.forEach(p => {
     const cat = p.category || 'Uncategorized';
@@ -145,26 +281,16 @@ export default function Home() {
   const popularPolls = [...allPolls].filter(p => p.totalVotes > 0).sort((a, b) => {
     const aSpread = Math.abs(a.percentA - 50);
     const bSpread = Math.abs(b.percentA - 50);
-    return aSpread - bSpread; // Most contested first
+    return aSpread - bSpread;
   }).slice(0, 4);
-  // Stories: top voted polls as highlights
   const storyPolls = [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 10);
-
-  const handlePollTap = (poll: PollCard) => {
-    const hasVoted = votedPollIds?.has(poll.id);
-    const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
-    const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
-    if (!hasStarted || isExpired) return; // Don't navigate for scheduled/expired polls
-    if (hasVoted) {
-      setModalPoll(poll);
-    } else {
-      navigate(`/vote?pollId=${poll.id}`);
-    }
-  };
 
   return (
     <AppLayout>
       <div className="min-h-screen flex flex-col pb-24 gap-1">
+
+        {/* Explore unlock popup */}
+        <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
         {/* ── Active Polls Count (top) ── */}
         <motion.div
@@ -217,7 +343,6 @@ export default function Home() {
                 <ArrowRight className="h-4 w-4 text-accent-foreground" />
               </motion.div>
             </div>
-            {/* Animated glow ring */}
             <motion.div
               animate={{
                 boxShadow: [
@@ -290,22 +415,10 @@ export default function Home() {
             <div className="flex gap-1.5 overflow-x-auto px-3 scrollbar-hide snap-x">
               {trendingCategories.map((cat, i) => {
                 const categoryEmojis: Record<string, string> = {
-                  'Food & Drinks': '🍽️',
-                  'Food': '🍔',
-                  'Drinks': '🥤',
-                  'Fashion': '👗',
-                  'Sports': '⚽',
-                  'Music': '🎵',
-                  'Movies': '🎬',
-                  'Tech': '💻',
-                  'Travel': '✈️',
-                  'Gaming': '🎮',
-                  'Health': '💪',
-                  'Art': '🎨',
-                  'Books': '📚',
-                  'Nature': '🌿',
-                  'F&B': '🍰',
-                  'Lifestyle': '✨',
+                  'Food & Drinks': '🍽️', 'Food': '🍔', 'Drinks': '🥤', 'Fashion': '👗',
+                  'Sports': '⚽', 'Music': '🎵', 'Movies': '🎬', 'Tech': '💻',
+                  'Travel': '✈️', 'Gaming': '🎮', 'Health': '💪', 'Art': '🎨',
+                  'Books': '📚', 'Nature': '🌿', 'F&B': '🍰', 'Lifestyle': '✨',
                   'Uncategorized': '📊',
                 };
                 const emoji = categoryEmojis[cat.name] || '📌';
@@ -375,7 +488,6 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                    {/* Question & meta overlay */}
                     <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-5 bg-gradient-to-b from-black/65 to-transparent">
                       <div className="flex items-center gap-1.5">
                         <h3 className="text-white text-[11px] font-bold drop-shadow-lg leading-tight truncate flex-1">{poll.question}</h3>
@@ -404,7 +516,6 @@ export default function Home() {
             </div>
           </section>
         )}
-
 
         {/* Bottom CTA */}
         <div className="px-3 mt-4">
@@ -506,7 +617,6 @@ function ContestedCard({ poll, index, hasVoted, onTap }: { poll: PollCard; index
           </div>
         </div>
       </div>
-      {/* Question & closeness bar */}
       <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-4 bg-gradient-to-b from-black/60 to-transparent">
         <div className="flex items-center gap-1.5">
           <h3 className="text-white text-[10px] font-bold drop-shadow-lg leading-tight truncate flex-1">{poll.question}</h3>
