@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Utensils, Shirt, Monitor, Plane, Music, Palette, Heart, Dumbbell, BookOpen, type LucideIcon } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Loader2 } from 'lucide-react';
@@ -34,6 +34,23 @@ import booksImg from '@/assets/polls/books.jpg';
 import moviesImg from '@/assets/polls/movies.jpg';
 import daySkyImg from '@/assets/polls/day-sky.jpg';
 import nightSkyImg from '@/assets/polls/night-sky.jpg';
+
+const CATEGORY_ICONS: Record<string, { icon: LucideIcon; color: string; bg: string }> = {
+  food: { icon: Utensils, color: 'hsl(15, 80%, 50%)', bg: 'hsl(15, 80%, 93%)' },
+  fashion: { icon: Shirt, color: 'hsl(280, 60%, 50%)', bg: 'hsl(280, 60%, 93%)' },
+  tech: { icon: Monitor, color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
+  travel: { icon: Plane, color: 'hsl(170, 60%, 40%)', bg: 'hsl(170, 60%, 92%)' },
+  music: { icon: Music, color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
+  culture: { icon: Palette, color: 'hsl(30, 80%, 50%)', bg: 'hsl(30, 80%, 93%)' },
+  lifestyle: { icon: Heart, color: 'hsl(350, 65%, 55%)', bg: 'hsl(350, 65%, 93%)' },
+  health: { icon: Dumbbell, color: 'hsl(145, 55%, 42%)', bg: 'hsl(145, 55%, 92%)' },
+  education: { icon: BookOpen, color: 'hsl(225, 60%, 50%)', bg: 'hsl(225, 60%, 93%)' },
+};
+
+function getCategoryIcon(name: string): { icon: LucideIcon; color: string; bg: string } {
+  const key = name.toLowerCase();
+  return CATEGORY_ICONS[key] || { icon: TrendingUp, color: 'hsl(225, 73%, 45%)', bg: 'hsl(225, 73%, 93%)' };
+}
 
 const FALLBACK_IMAGES = [
   beachImg, cityImg, mountainsImg, natureImg, sunsetImg, sunriseImg,
@@ -500,20 +517,27 @@ export default function Home() {
               <Flame className="h-3.5 w-3.5 text-destructive" />
               <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Trending Categories</span>
             </div>
-            <div className="flex gap-1.5 overflow-x-auto px-3 scrollbar-hide snap-x">
+            <div className="flex gap-2 overflow-x-auto px-3 scrollbar-hide snap-x">
               {trendingCategories.map((cat, i) => {
+                const iconConfig = getCategoryIcon(cat.name);
+                const IconComp = iconConfig.icon;
                 return (
                   <motion.div
                     key={cat.name}
                     initial={{ opacity: 0, x: 15 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.04 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => navigate(`/vote?category=${encodeURIComponent(cat.name)}`)}
-                    className="shrink-0 snap-start cursor-pointer rounded-lg bg-[hsl(200_80%_92%)] dark:bg-[hsl(200_50%_30%)] border border-[hsl(200_60%_85%)] dark:border-[hsl(200_40%_40%)] px-2.5 py-1.5 min-w-[90px] hover:bg-[hsl(200_80%_88%)] dark:hover:bg-[hsl(200_50%_35%)] transition-colors"
+                    className="shrink-0 snap-start cursor-pointer flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-3 py-1.5 hover:border-primary/40 hover:shadow-sm transition-all"
                   >
-                    <p className="text-[10px] font-bold text-foreground truncate">{cat.name}</p>
-                    <p className="text-[9px] text-muted-foreground mt-0.5">{cat.pollCount} polls · {cat.totalVotes} votes</p>
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0`} style={{ backgroundColor: iconConfig.bg }}>
+                      <IconComp className="h-2.5 w-2.5" style={{ color: iconConfig.color }} />
+                    </div>
+                    <div className="flex flex-col">
+                      <p className="text-[10px] font-bold text-foreground whitespace-nowrap">{cat.name}</p>
+                      <p className="text-[8px] text-muted-foreground whitespace-nowrap">{cat.pollCount} polls · {cat.totalVotes} votes</p>
+                    </div>
                   </motion.div>
                 );
               })}
