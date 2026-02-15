@@ -167,7 +167,7 @@ export default function Home() {
 
   // Show welcome flow for first-time users
   if (showWelcome) {
-    return <WelcomeFlow onComplete={() => { setShowWelcome(false); navigate('/vote'); }} />;
+    return <WelcomeFlow onComplete={() => { setShowWelcome(false); navigate('/auth'); }} />;
   }
 
   if (isLoading) {
