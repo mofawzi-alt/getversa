@@ -10,7 +10,7 @@ import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import WelcomeFlow, { isWelcomeDone } from '@/components/onboarding/WelcomeFlow';
+import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
 import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator';
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 
@@ -120,12 +120,22 @@ function getTimeLeft(endsAt: string): string {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const storiesRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
-  const [showWelcome, setShowWelcome] = useState(!isWelcomeDone());
+  // Authenticated users with completed profiles should never see the welcome flow
+  const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
+  const [showWelcome, setShowWelcome] = useState(!isWelcomeDone() && !profileComplete);
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
+
+  // Dismiss welcome flow if profile loads and is complete (e.g. localStorage was cleared)
+  useEffect(() => {
+    if (profileComplete && showWelcome) {
+      markWelcomeDone();
+      setShowWelcome(false);
+    }
+  }, [profileComplete, showWelcome]);
 
   // Realtime subscription: invalidate vote-related queries on new votes
   useEffect(() => {
