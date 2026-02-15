@@ -394,18 +394,40 @@ export default function Home() {
 
   // (Featured poll removed — replaced by LIVE NOW carousel)
 
-  // Trending: most voted today, most contested, fastest rising
-  const mostVotedToday = [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 6);
-  const mostContested = [...allPolls].filter(p => p.totalVotes > 0).sort((a, b) => {
-    return Math.abs(a.percentA - 50) - Math.abs(b.percentA - 50);
-  }).slice(0, 6);
-  const fastestRising = [...allPolls].sort((a, b) => {
+  // Trending: build unified list with badges
+  const trendingPolls: (PollCard & { trendBadge: string; trendHot?: boolean })[] = [];
+  const seenIds = new Set<string>();
+
+  // Most Voted (top 3)
+  [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 3).forEach(p => {
+    if (!seenIds.has(p.id)) {
+      seenIds.add(p.id);
+      trendingPolls.push({ ...p, trendBadge: `🔥 ${p.totalVotes} votes` });
+    }
+  });
+
+  // Most Contested (top 3)
+  [...allPolls].filter(p => p.totalVotes > 0).sort((a, b) => Math.abs(a.percentA - 50) - Math.abs(b.percentA - 50)).slice(0, 3).forEach(p => {
+    const spread = Math.abs(p.percentA - 50);
+    if (!seenIds.has(p.id)) {
+      seenIds.add(p.id);
+      trendingPolls.push({ ...p, trendBadge: `⚡ ${spread}% gap`, trendHot: spread <= 5 });
+    }
+  });
+
+  // Fastest Rising (top 3)
+  [...allPolls].sort((a, b) => {
     const aAge = (Date.now() - new Date(a.created_at).getTime()) / (1000 * 60 * 60);
     const bAge = (Date.now() - new Date(b.created_at).getTime()) / (1000 * 60 * 60);
-    const aRate = aAge > 0 ? a.totalVotes / aAge : a.totalVotes;
-    const bRate = bAge > 0 ? b.totalVotes / bAge : b.totalVotes;
-    return bRate - aRate;
-  }).slice(0, 6);
+    return (bAge > 0 ? b.totalVotes / bAge : b.totalVotes) - (aAge > 0 ? a.totalVotes / aAge : a.totalVotes);
+  }).slice(0, 3).forEach(p => {
+    const ageHours = Math.max(1, (Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60));
+    const rate = Math.round(p.totalVotes / ageHours);
+    if (!seenIds.has(p.id)) {
+      seenIds.add(p.id);
+      trendingPolls.push({ ...p, trendBadge: `🚀 ${rate}/hr` });
+    }
+  });
 
   const totalLiveVoters = livePolls.reduce((sum, p) => sum + p.recentVotes, 0);
 
@@ -659,56 +681,20 @@ export default function Home() {
           </section>
         )}
 
-        {/* ═══ TRENDING NOW ═══ */}
-        <section className="mb-3">
-          <div className="px-3 flex items-center gap-1.5 mb-2">
-            <TrendingUp className="h-3.5 w-3.5 text-primary" />
-            <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Trending Now</span>
-          </div>
-
-          {/* Most Voted Today */}
-          <div className="mb-2">
-            <div className="px-3 mb-1">
-              <span className="text-[9px] font-bold text-foreground/70 uppercase tracking-wider">🔥 Most Voted</span>
+        {/* ═══ 🔥 TRENDING NOW ═══ */}
+        {trendingPolls.length > 0 && (
+          <section className="mb-3">
+            <div className="px-3 flex items-center gap-1.5 mb-2">
+              <TrendingUp className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">🔥 Trending Now</span>
             </div>
             <div className="flex gap-2.5 overflow-x-auto px-3 scrollbar-hide snap-x pb-1">
-              {mostVotedToday.map((poll, i) => (
-                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={`${poll.totalVotes} votes`} />
+              {trendingPolls.map((poll, i) => (
+                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={poll.trendBadge} hot={poll.trendHot} />
               ))}
             </div>
-          </div>
-
-          {/* Most Contested */}
-          <div className="mb-2">
-            <div className="px-3 mb-1">
-              <span className="text-[9px] font-bold text-foreground/70 uppercase tracking-wider">⚡ Most Contested</span>
-            </div>
-            <div className="flex gap-2.5 overflow-x-auto px-3 scrollbar-hide snap-x pb-1">
-              {mostContested.map((poll, i) => {
-                const spread = Math.abs(poll.percentA - 50);
-                return (
-                  <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={`${spread}% gap`} hot={spread <= 5} />
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Fastest Rising */}
-          <div>
-            <div className="px-3 mb-1">
-              <span className="text-[9px] font-bold text-foreground/70 uppercase tracking-wider">🚀 Fastest Rising</span>
-            </div>
-            <div className="flex gap-2.5 overflow-x-auto px-3 scrollbar-hide snap-x pb-1">
-              {fastestRising.map((poll, i) => {
-                const ageHours = Math.max(1, (Date.now() - new Date(poll.created_at).getTime()) / (1000 * 60 * 60));
-                const rate = Math.round(poll.totalVotes / ageHours);
-                return (
-                  <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={`${rate}/hr`} />
-                );
-              })}
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ═══ BROWSE BY CATEGORY LINK ═══ */}
         <section className="px-3 mb-3">
