@@ -422,12 +422,17 @@ export default function Home() {
             </div>
 
             <h1 className="text-2xl font-display font-bold text-foreground leading-tight">
-              Cairo Is Voting<br />
-              <span className="text-gradient">Right Now</span>
+              🔥 The Pulse Is<br />
+              <span className="text-gradient">Live</span>
             </h1>
 
             <p className="text-sm text-muted-foreground mt-1">
-              <AnimatedNumber value={votes24h || 0} className="font-bold text-foreground" /> votes in the last 24h
+              Real-time opinions. Real-time shifts.
+              {(votes24h || 0) > 0 && (
+                <>
+                  {' · '}<AnimatedNumber value={votes24h!} className="font-bold text-foreground" /> votes today
+                </>
+              )}
             </p>
 
             <motion.button
@@ -460,10 +465,10 @@ export default function Home() {
               transition={{ duration: 1.5, repeat: Infinity }}
               className="h-2.5 w-2.5 rounded-full bg-destructive"
             />
-            <span className="text-xs font-display font-bold text-foreground uppercase tracking-wider">LIVE NOW</span>
-            {livePolls.length > 0 && (
-              <span className="text-[10px] text-muted-foreground">{livePolls.length} active</span>
-            )}
+            <div className="flex flex-col">
+              <span className="text-xs font-display font-bold text-foreground uppercase tracking-wider">LIVE DEBATES</span>
+              <span className="text-[10px] text-muted-foreground -mt-0.5">Happening right now{livePolls.length > 0 ? ` · ${livePolls.length} active` : ''}</span>
+            </div>
           </div>
 
           {livePolls.length > 0 ? (
