@@ -80,6 +80,7 @@ type PollCard = {
   percentB: number;
   votesA: number;
   votesB: number;
+  recentVotes: number;
 };
 
 const EXPLORE_THRESHOLD = 3;
@@ -246,13 +247,26 @@ export default function Home() {
       const pollIds = rawPolls.map(p => p.id);
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
+
+      // Get recent votes (last 5 minutes) per poll for "voting now" count
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { data: recentVotesData } = await supabase
+        .from('votes')
+        .select('poll_id')
+        .in('poll_id', pollIds)
+        .gte('created_at', fiveMinAgo);
+      const recentVotesMap = new Map<string, number>();
+      recentVotesData?.forEach(v => {
+        recentVotesMap.set(v.poll_id, (recentVotesMap.get(v.poll_id) || 0) + 1);
+      });
+
       return rawPolls.map(p => {
         const r = resultsMap.get(p.id) as any;
         const total = (r?.total_votes as number) || 0;
         const votesA = (r?.votes_a as number) || 0;
         const votesB = (r?.votes_b as number) || 0;
         const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
-        return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB };
+        return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: recentVotesMap.get(p.id) || 0 };
       });
     },
     staleTime: 1000 * 10,
@@ -341,7 +355,7 @@ export default function Home() {
                   <div className="absolute bottom-2 right-3 flex items-center gap-1.5 z-10">
                     <LiveIndicator variant="overlay" />
                     <span className="text-[9px] text-white/60 flex items-center gap-0.5 drop-shadow-lg">
-                      <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
+                      <Users className="h-2.5 w-2.5" /> {poll.totalVotes} votes
                     </span>
                   </div>
                 </motion.div>
@@ -393,7 +407,7 @@ export default function Home() {
     return bRate - aRate;
   }).slice(0, 6);
 
-  const totalLiveVoters = livePolls.reduce((sum, p) => sum + p.totalVotes, 0);
+  const totalLiveVoters = livePolls.reduce((sum, p) => sum + p.recentVotes, 0);
 
   return (
     <AppLayout>
@@ -415,9 +429,8 @@ export default function Home() {
               <motion.span
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="text-[10px] text-muted-foreground font-medium"
               >
-                <AnimatedNumber value={totalLiveVoters} className="font-bold text-foreground" /> voting now
+                {totalLiveVoters > 0 ? <><AnimatedNumber value={totalLiveVoters} className="font-bold text-foreground" /> voting now</> : 'Live now'}
               </motion.span>
             </div>
 
@@ -558,7 +571,7 @@ export default function Home() {
                           <div className="flex items-center gap-1.5">
                             <LiveIndicator variant="overlay" />
                             <span className="text-[10px] text-white/70 flex items-center gap-0.5 drop-shadow-lg font-medium">
-                              <Users className="h-3 w-3" /> <AnimatedNumber value={poll.totalVotes} /> voting
+                              <Users className="h-3 w-3" /> {poll.recentVotes > 0 ? <><AnimatedNumber value={poll.recentVotes} /> voting now</> : <><AnimatedNumber value={poll.totalVotes} /> votes</>}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
