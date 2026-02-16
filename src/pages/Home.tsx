@@ -553,38 +553,41 @@ export default function Home() {
                           className="absolute inset-0 rounded-2xl z-20 pointer-events-none"
                         />
 
-                        {/* Images — taller to fill screen */}
+                        {/* Images */}
                         <div className="flex h-[65vh] max-h-[520px] relative">
                           <div className="w-1/2 h-full relative overflow-hidden">
                             <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                            <div className="absolute bottom-3 left-3 right-1">
-                              <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_a}</p>
-                              <span className="text-2xl font-bold text-option-a drop-shadow-lg">
-                                <AnimatedNumber value={poll.percentA} />%
-                              </span>
-                            </div>
                           </div>
                           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
                           <div className="w-1/2 h-full relative overflow-hidden">
                             <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                            <div className="absolute bottom-3 left-1 right-3 text-right">
-                              <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_b}</p>
+                          </div>
+                        </div>
+
+                        {/* Question overlay */}
+                        <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/70 to-transparent z-10">
+                          <h3 className="text-white text-base font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
+                        </div>
+
+                        {/* Bottom info bar */}
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-8 pb-3 px-4 z-10">
+                          {/* Option labels + percentages */}
+                          <div className="flex items-end justify-between mb-2">
+                            <div>
+                              <p className="text-white text-sm font-bold drop-shadow-lg truncate max-w-[140px]">{poll.option_a}</p>
+                              <span className="text-2xl font-bold text-option-a drop-shadow-lg">
+                                <AnimatedNumber value={poll.percentA} />%
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-white text-sm font-bold drop-shadow-lg truncate max-w-[140px]">{poll.option_b}</p>
                               <span className="text-2xl font-bold text-option-b drop-shadow-lg">
                                 <AnimatedNumber value={poll.percentB} />%
                               </span>
                             </div>
                           </div>
-                        </div>
-
-                        {/* Question overlay */}
-                        <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/70 to-transparent">
-                          <h3 className="text-white text-base font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
-                        </div>
-
-                        {/* Bottom info bar — outside image area */}
-                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-10 pb-3 px-4 z-10">
                           {/* Percentage bar */}
                           <div className="h-1.5 bg-white/15 rounded-full overflow-hidden mb-2">
                             <motion.div
