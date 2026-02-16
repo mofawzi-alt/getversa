@@ -318,6 +318,11 @@ export default function Home() {
     }
   };
 
+  const handleLivePollTap = (poll: PollCard) => {
+    // Open full-screen swipe feed filtered to live polls, starting at this poll
+    navigate(`/vote?pollId=${poll.id}&live=true`);
+  };
+
   // ── SIMPLIFIED HOME for new users (<3 votes) ──
   if (isNewUser) {
     const todaysPolls = newPolls.slice(0, 5);
@@ -527,13 +532,13 @@ export default function Home() {
                   const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
                   const hasVoted = votedPollIds?.has(poll.id);
                   return (
-                    <CarouselItem key={poll.id} className="pl-2.5 basis-[85%] sm:basis-[75%]">
+                    <CarouselItem key={poll.id} className="pl-2.5 basis-[92%]">
                       <motion.div
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.06 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => handlePollTap(poll)}
+                        onClick={() => handleLivePollTap(poll)}
                         className="relative rounded-2xl overflow-hidden cursor-pointer group border border-border/60 shadow-card"
                       >
                         {/* Pulse glow ring */}
@@ -549,8 +554,8 @@ export default function Home() {
                           className="absolute inset-0 rounded-2xl z-20 pointer-events-none"
                         />
 
-                        {/* Images */}
-                        <div className="flex h-52 relative">
+                        {/* Images — taller to fill screen */}
+                        <div className="flex h-[65vh] max-h-[520px] relative">
                           <div className="w-1/2 h-full relative overflow-hidden">
                             <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -562,8 +567,8 @@ export default function Home() {
                                 animate={{ scale: 1 }}
                                 transition={{ duration: 0.4 }}
                               >
-                                <AnimatedNumber value={poll.percentA} className="text-xl font-bold text-option-a drop-shadow-lg" />
-                                <span className="text-option-a text-xl font-bold drop-shadow-lg">%</span>
+                                <AnimatedNumber value={poll.percentA} className="text-2xl font-bold text-option-a drop-shadow-lg" />
+                                <span className="text-option-a text-2xl font-bold drop-shadow-lg">%</span>
                               </motion.div>
                             </div>
                           </div>
@@ -579,20 +584,20 @@ export default function Home() {
                                 animate={{ scale: 1 }}
                                 transition={{ duration: 0.4 }}
                               >
-                                <AnimatedNumber value={poll.percentB} className="text-xl font-bold text-option-b drop-shadow-lg" />
-                                <span className="text-option-b text-xl font-bold drop-shadow-lg">%</span>
+                                <AnimatedNumber value={poll.percentB} className="text-2xl font-bold text-option-b drop-shadow-lg" />
+                                <span className="text-option-b text-2xl font-bold drop-shadow-lg">%</span>
                               </motion.div>
                             </div>
                           </div>
                         </div>
 
                         {/* Question overlay */}
-                        <div className="absolute top-0 inset-x-0 px-3 pt-3 pb-6 bg-gradient-to-b from-black/70 to-transparent">
-                          <h3 className="text-white text-sm font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
+                        <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/70 to-transparent">
+                          <h3 className="text-white text-base font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
                         </div>
 
                         {/* Animated percentage bar */}
-                        <div className="absolute bottom-10 inset-x-3 h-1.5 bg-white/15 rounded-full overflow-hidden z-10">
+                        <div className="absolute bottom-12 inset-x-4 h-2 bg-white/15 rounded-full overflow-hidden z-10">
                           <motion.div
                             className="h-full bg-option-a rounded-full"
                             initial={{ width: '50%' }}
@@ -602,7 +607,7 @@ export default function Home() {
                         </div>
 
                         {/* Bottom bar */}
-                        <div className="absolute bottom-2 inset-x-3 flex items-center justify-between z-10">
+                        <div className="absolute bottom-3 inset-x-4 flex items-center justify-between z-10">
                           <div className="flex items-center gap-1.5">
                             <LiveIndicator variant="overlay" />
                             <span className="text-[10px] text-white/70 flex items-center gap-0.5 drop-shadow-lg font-medium">
@@ -619,9 +624,9 @@ export default function Home() {
                               <motion.span
                                 animate={{ scale: [1, 1.05, 1] }}
                                 transition={{ duration: 1.5, repeat: Infinity }}
-                                className="px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold"
+                                className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold"
                               >
-                                Vote
+                                Swipe to Vote
                               </motion.span>
                             )}
                           </div>
