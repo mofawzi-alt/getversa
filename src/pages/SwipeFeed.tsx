@@ -577,6 +577,7 @@ export default function SwipeFeed() {
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
   const categoryFilter = searchParams.get('category');
+  const liveOnlyFilter = searchParams.get('live') === 'true';
 
   // Streak data
   const streakData = profile ? {
@@ -633,6 +634,14 @@ export default function SwipeFeed() {
       }
       if (categoryFilter) {
         allPolls = allPolls.filter(p => p.category === categoryFilter);
+      }
+      if (liveOnlyFilter) {
+        const now = new Date();
+        allPolls = allPolls.filter(p => {
+          const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
+          const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
+          return hasStarted && !isExpired;
+        });
       }
       if (targetPollId) {
         const idx = allPolls.findIndex(p => p.id === targetPollId);
