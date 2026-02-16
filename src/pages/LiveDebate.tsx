@@ -119,12 +119,16 @@ export default function LiveDebate() {
       const { data: polls } = await query;
       let filtered = (polls || []) as Poll[];
 
-      // Remove already-voted
+      // Remove already-voted (but keep the target poll if specified)
       if (user) {
-        const { data: votes } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
+        const { data: votes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
         const votedIds = new Set(votes?.map(v => v.poll_id) || []);
-        filtered = filtered.filter(p => !votedIds.has(p.id));
+        const votedChoices = new Map(votes?.map(v => [v.poll_id, v.choice]) || []);
+        filtered = filtered.filter(p => !votedIds.has(p.id) || (startPollId && p.id === startPollId));
+        return { polls: filtered, votedChoices };
       }
+
+      return { polls: filtered, votedChoices: new Map() as Map<string, string> };
 
       // Demographic filter
       if (profile) {
@@ -140,14 +144,39 @@ export default function LiveDebate() {
         }
       }
 
-      return filtered;
+      return { polls: filtered, votedChoices };
     },
   });
 
-  const polls = livePolls || [];
+  const polls = livePolls?.polls || [];
+  const votedChoices = livePolls?.votedChoices || new Map<string, string>();
   const currentPoll = polls[currentIndex];
   const nextPoll = polls[currentIndex + 1];
   const hasMore = currentIndex < polls.length - 1;
+
+  // If the current poll was already voted on, auto-show results
+  useEffect(() => {
+    if (!currentPoll || phase !== 'swipe') return;
+    const prevChoice = votedChoices.get(currentPoll.id);
+    if (prevChoice) {
+      // Fetch results for this already-voted poll
+      supabase.from('votes').select('choice').eq('poll_id', currentPoll.id).then(({ data: votes }) => {
+        const total = votes?.length || 0;
+        const aVotes = votes?.filter(v => v.choice === 'A').length || 0;
+        const percentA = total > 0 ? Math.round((aVotes / total) * 100) : 0;
+        setResult({ choice: prevChoice as 'A' | 'B', percentA, percentB: 100 - percentA, totalVotes: total });
+        setPhase('result');
+        // Auto-advance after showing result
+        setTimeout(() => {
+          if (hasMore) {
+            setCurrentIndex(prev => prev + 1);
+            setResult(null);
+            setPhase('swipe');
+          }
+        }, RESULT_MS);
+      });
+    }
+  }, [currentPoll?.id]);
 
   // Preload next 3 images
   useEffect(() => {
