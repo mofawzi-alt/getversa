@@ -33,8 +33,9 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><Onboarding /></ProtectedRoute>} />
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<SwipeFeed />} />
             <Route path="/vote" element={<SwipeFeed />} />
+            <Route path="/home" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
             <Route path="/archive" element={<PastPerspectives />} />
