@@ -58,6 +58,7 @@ const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
 const RESULT_DISPLAY_MS = 1800;
 const MICRO_FEEDBACK_INTERVAL = 5;
+const SUSPENSE_DELAY_MS = 500;
 
 function getGuestVoteCount(): number {
   try { return parseInt(localStorage.getItem(GUEST_VOTES_KEY) || '0', 10); } catch { return 0; }
@@ -66,6 +67,12 @@ function incrementGuestVotes(): number {
   const count = getGuestVoteCount() + 1;
   localStorage.setItem(GUEST_VOTES_KEY, String(count));
   return count;
+}
+
+// Haptic feedback helper
+function triggerHaptic(intensity: 'light' | 'medium' = 'light') {
+  if (!navigator.vibrate) return;
+  navigator.vibrate(intensity === 'light' ? 15 : 40);
 }
 
 // Campaign label mapping from category
@@ -138,6 +145,9 @@ function ImmersivePollCard({
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [flyDirection, setFlyDirection] = useState<'left' | 'right' | null>(null);
+  const [showSuspense, setShowSuspense] = useState(false);
+  const [showMinorityBadge, setShowMinorityBadge] = useState(false);
+  const [showShiftMsg, setShowShiftMsg] = useState(false);
   const startX = useRef(0);
   const hasResult = !!result;
   const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
@@ -159,21 +169,55 @@ function ImmersivePollCard({
     setIsDragging(false);
     if (dragX < -THRESHOLD) {
       setFlyDirection('left');
+      triggerHaptic('light');
       setTimeout(() => onVote(poll.id, 'A'), 300);
     } else if (dragX > THRESHOLD) {
       setFlyDirection('right');
+      triggerHaptic('light');
       setTimeout(() => onVote(poll.id, 'B'), 300);
     }
     if (Math.abs(dragX) <= THRESHOLD) setDragX(0);
   };
 
+  // Suspense delay before showing results
   useEffect(() => {
-    if (hasResult) setFlyDirection(null);
-  }, [hasResult]);
+    if (!result) return;
+    setShowSuspense(true);
+    setFlyDirection(null);
+    const timer = setTimeout(() => setShowSuspense(false), SUSPENSE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [result]);
 
+  // Minority trigger
+  useEffect(() => {
+    if (!result || showSuspense) return;
+    const userPercent = result.choice === 'A' ? result.percentA : result.percentB;
+    if (userPercent < 40) {
+      triggerHaptic('medium');
+      setShowMinorityBadge(true);
+      const t = setTimeout(() => setShowMinorityBadge(false), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [result, showSuspense]);
+
+  // Majority power trigger — if close to 50/50
+  useEffect(() => {
+    if (!result || showSuspense) return;
+    const diff = Math.abs(result.percentA - result.percentB);
+    if (diff <= 6 && result.totalVotes > 5) {
+      setShowShiftMsg(true);
+      const t = setTimeout(() => setShowShiftMsg(false), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [result, showSuspense]);
+
+  // 3D tilt + scale calculations
+  const normalizedDrag = Math.min(Math.abs(dragX), 200) / 200;
   const rotation = flyDirection
     ? (flyDirection === 'left' ? -15 : 15)
-    : Math.sign(dragX) * Math.min(Math.abs(dragX), 200) / 200 * 12;
+    : Math.sign(dragX) * normalizedDrag * 12;
+  const tiltY = Math.sign(dragX) * normalizedDrag * 8; // 3D Y-axis tilt
+  const cardScale = isDragging ? 1 - normalizedDrag * 0.05 : 1; // scale down to 95%
 
   const translateX = flyDirection
     ? (flyDirection === 'left' ? -window.innerWidth * 1.5 : window.innerWidth * 1.5)
@@ -183,6 +227,13 @@ function ImmersivePollCard({
   const showA = dragX < -20;
   const showB = dragX > 20;
 
+  // Color glow feedback: green for right, red for left
+  const glowColor = dragX > 30
+    ? `0 0 ${normalizedDrag * 40}px hsl(145 63% 42% / ${normalizedDrag * 0.4})`
+    : dragX < -30
+    ? `0 0 ${normalizedDrag * 40}px hsl(0 84% 60% / ${normalizedDrag * 0.4})`
+    : 'none';
+
   const selectedGlow = result?.choice === 'A'
     ? 'shadow-[inset_0_0_30px_rgba(120,255,120,0.15)]'
     : result?.choice === 'B'
@@ -190,6 +241,8 @@ function ImmersivePollCard({
     : '';
 
   const campaignLabel = getCampaignLabel(poll.category);
+
+  const showResults = hasResult && !showSuspense;
 
   return (
     <div className="w-full relative flex flex-col">
@@ -199,8 +252,9 @@ function ImmersivePollCard({
           <span>{campaignLabel.emoji}</span> {campaignLabel.label}
         </span>
       </div>
+
       {/* Swipeable card area */}
-      <div className="flex-1 relative min-h-0 flex items-center justify-center">
+      <div className="flex-1 relative min-h-0 flex items-center justify-center" style={{ perspective: '1200px' }}>
         {/* Choice indicators behind the card */}
         {!hasResult && (
           <>
@@ -229,13 +283,17 @@ function ImmersivePollCard({
           </>
         )}
 
-        {/* The card itself */}
+        {/* The card itself with 3D tilt */}
         <div
           className={`w-full max-w-sm mx-auto rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''} ${hasResult ? selectedGlow : ''}`}
           style={{
-            transform: hasResult ? 'none' : `translateX(${translateX}px) rotate(${rotation}deg)`,
-            transition: isDragging ? 'none' : flyDirection ? 'transform 0.4s ease-in' : 'transform 0.3s ease-out',
+            transform: hasResult
+              ? 'none'
+              : `translateX(${translateX}px) rotateZ(${rotation}deg) rotateY(${tiltY}deg) scale(${cardScale})`,
+            transition: isDragging ? 'none' : flyDirection ? 'transform 0.4s ease-in, opacity 0.3s' : 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
             opacity: flyDirection ? 0 : 1,
+            boxShadow: !hasResult ? glowColor : undefined,
+            transformStyle: 'preserve-3d',
           }}
           onTouchStart={(e) => handleStart(e.touches[0].clientX)}
           onTouchMove={(e) => { handleMove(e.touches[0].clientX); if (Math.abs(dragX) > 10) e.preventDefault(); }}
@@ -250,17 +308,17 @@ function ImmersivePollCard({
             <div className="w-1/2 h-full relative overflow-hidden">
               <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
-              {hasResult && winnerIsA && (
+              {showResults && winnerIsA && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 }}
+                  transition={{ delay: 0.3 }}
                   className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-option-a/90 text-option-a-foreground text-[9px] font-bold backdrop-blur-sm"
                 >
                   <TrendUp className="h-2.5 w-2.5" /> Winner
                 </motion.div>
               )}
-              {hasResult && result?.choice === 'A' && (
+              {showResults && result?.choice === 'A' && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1, boxShadow: ['inset 0 0 20px hsl(var(--option-a) / 0.3)', 'inset 0 0 40px hsl(var(--option-a) / 0.1)', 'inset 0 0 20px hsl(var(--option-a) / 0.3)'] }}
@@ -278,17 +336,17 @@ function ImmersivePollCard({
             <div className="w-1/2 h-full relative overflow-hidden">
               <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
-              {hasResult && !winnerIsA && (
+              {showResults && !winnerIsA && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 }}
+                  transition={{ delay: 0.3 }}
                   className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-option-b/90 text-option-b-foreground text-[9px] font-bold backdrop-blur-sm"
                 >
                   <TrendUp className="h-2.5 w-2.5" /> Winner
                 </motion.div>
               )}
-              {hasResult && result?.choice === 'B' && (
+              {showResults && result?.choice === 'B' && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1, boxShadow: ['inset 0 0 20px hsl(var(--option-b) / 0.3)', 'inset 0 0 40px hsl(var(--option-b) / 0.1)', 'inset 0 0 20px hsl(var(--option-b) / 0.3)'] }}
@@ -307,8 +365,25 @@ function ImmersivePollCard({
             <p className="text-white text-xs font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
           </div>
 
+          {/* Suspense loading pulse */}
+          {hasResult && showSuspense && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+                className="w-12 h-12 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center"
+              >
+                <span className="text-white text-lg font-bold">?</span>
+              </motion.div>
+            </motion.div>
+          )}
+
           {/* Emotional feedback overlay */}
-          {hasResult && (
+          {showResults && (
             <VoteFeedbackOverlay
               percentA={result!.percentA}
               percentB={result!.percentB}
@@ -317,21 +392,53 @@ function ImmersivePollCard({
             />
           )}
         </div>
+
+        {/* Minority floating badge */}
+        <AnimatePresence>
+          {showMinorityBadge && result && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.9 }}
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-2xl bg-black/80 backdrop-blur-md border border-white/10"
+            >
+              <p className="text-white text-sm font-display font-bold text-center">
+                You're in the {result.choice === 'A' ? result.percentA : result.percentB}% 👀
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Majority shift message */}
+        <AnimatePresence>
+          {showShiftMsg && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.9 }}
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-2xl bg-primary/90 backdrop-blur-md border border-white/10"
+            >
+              <p className="text-primary-foreground text-sm font-display font-bold text-center">
+                You just shifted the debate.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Results below image */}
-      {hasResult && (
+      {showResults && (
         <div className="shrink-0 px-6 pt-2 space-y-2">
           <div className="flex justify-between items-center">
             <div className="flex flex-col items-center flex-1">
               <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-option-a">
-                <AnimatedPercent target={result!.percentA} />
+                <AnimatedPercent target={result!.percentA} delay={SUSPENSE_DELAY_MS} />
               </motion.span>
               {result?.choice === 'A' && <span className="text-sm font-bold text-option-a">Your vote</span>}
             </div>
             <div className="flex flex-col items-center flex-1">
               <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-option-b">
-                <AnimatedPercent target={result!.percentB} delay={100} />
+                <AnimatedPercent target={result!.percentB} delay={SUSPENSE_DELAY_MS + 100} />
               </motion.span>
               {result?.choice === 'B' && <span className="text-sm font-bold text-option-b">Your vote</span>}
             </div>
@@ -341,13 +448,13 @@ function ImmersivePollCard({
             <motion.div
               initial={{ width: '50%' }}
               animate={{ width: `${result!.percentA}%` }}
-              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
               className="h-full bg-option-a rounded-l-full"
             />
             <motion.div
               initial={{ width: '50%' }}
               animate={{ width: `${result!.percentB}%` }}
-              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
               className="h-full bg-option-b rounded-r-full"
             />
           </div>
@@ -356,7 +463,7 @@ function ImmersivePollCard({
 
       {/* Bottom labels — always visible */}
       <div className="shrink-0 px-6 pb-3 pt-1 flex items-center justify-between z-20">
-        {hasResult ? (
+        {showResults ? (
           <>
             <span className="text-muted-foreground text-xs flex items-center gap-1">
               <Users className="h-3 w-3" /> {result!.totalVotes} perspectives
@@ -389,6 +496,22 @@ function ImmersivePollCard({
   );
 }
 
+// ── Animated Swipe Counter ──
+function SwipeCounter({ count }: { count: number }) {
+  return (
+    <motion.div
+      key={count}
+      initial={{ scale: 1.3, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      className="flex items-center justify-center gap-1 py-1"
+    >
+      <span className="text-[10px] font-display font-bold text-foreground/40">
+        {count} swipe{count !== 1 ? 's' : ''} today
+      </span>
+    </motion.div>
+  );
+}
+
 // ── Main Feed ──
 export default function SwipeFeed() {
   const { user, profile, loading } = useAuth();
@@ -400,6 +523,7 @@ export default function SwipeFeed() {
   const [showMicroFeedback, setShowMicroFeedback] = useState(false);
   const [microFeedbackMsg, setMicroFeedbackMsg] = useState('');
   const [sessionVoteCount, setSessionVoteCount] = useState(0);
+  const [dailySwipeCount, setDailySwipeCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -417,6 +541,15 @@ export default function SwipeFeed() {
       setShowWelcome(true);
     }
   }, [loading, profileComplete, user]);
+
+  // Load daily swipe count from localStorage
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const key = `versa_daily_swipes_${today}`;
+    try {
+      setDailySwipeCount(parseInt(localStorage.getItem(key) || '0', 10));
+    } catch { /* ignore */ }
+  }, []);
 
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
@@ -530,6 +663,13 @@ export default function SwipeFeed() {
       setFeedbackPollId(data.pollId);
       setTimeout(() => setFeedbackPollId(null), 1800);
 
+      // Update daily swipe counter
+      const today = new Date().toISOString().split('T')[0];
+      const key = `versa_daily_swipes_${today}`;
+      const newDailyCount = dailySwipeCount + 1;
+      setDailySwipeCount(newDailyCount);
+      try { localStorage.setItem(key, String(newDailyCount)); } catch { /* ignore */ }
+
       // Track session votes and trigger micro-feedback every 5
       const newCount = sessionVoteCount + 1;
       setSessionVoteCount(newCount);
@@ -546,6 +686,7 @@ export default function SwipeFeed() {
         }
       }
 
+      // Auto-flow: scroll to next unvoted card
       setTimeout(() => {
         if (!polls) return;
         const idx = polls.findIndex(p => p.id === data.pollId);
@@ -697,6 +838,13 @@ export default function SwipeFeed() {
           </div>
         )}
       </div>
+
+      {/* Daily swipe counter */}
+      {dailySwipeCount > 0 && (
+        <div className="shrink-0 pb-1">
+          <SwipeCounter count={dailySwipeCount} />
+        </div>
+      )}
 
       {/* Explore unlock popup */}
       <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
