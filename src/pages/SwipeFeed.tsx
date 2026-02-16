@@ -59,6 +59,14 @@ const GUEST_VOTES_KEY = 'versa_guest_votes';
 const RESULT_DISPLAY_MS = 1800;
 const MICRO_FEEDBACK_INTERVAL = 5;
 const SUSPENSE_DELAY_MS = 500;
+const HIGH_STAKES_INTERVAL = 20;
+
+// Milestone definitions
+const MILESTONES: { at: number; message: string; type: 'banner' | 'modal' | 'badge'; duration: number }[] = [
+  { at: 10, message: "🔥 You're on a roll", type: 'banner', duration: 1500 },
+  { at: 25, message: '', type: 'modal', duration: 3000 },
+  { at: 50, message: "You're in the top 15% most active voters today.", type: 'badge', duration: 2000 },
+];
 
 function getGuestVoteCount(): number {
   try { return parseInt(localStorage.getItem(GUEST_VOTES_KEY) || '0', 10); } catch { return 0; }
@@ -135,12 +143,16 @@ function ImmersivePollCard({
   onVote,
   disabled,
   showFeedback,
+  isHighStakes,
+  rareEvent,
 }: {
   poll: Poll;
   result: VoteResult | null;
   onVote: (pollId: string, choice: 'A' | 'B') => void;
   disabled: boolean;
   showFeedback: boolean;
+  isHighStakes?: boolean;
+  rareEvent?: string | null;
 }) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -245,12 +257,21 @@ function ImmersivePollCard({
   const showResults = hasResult && !showSuspense;
 
   return (
-    <div className="w-full relative flex flex-col">
+    <div className={`w-full relative flex flex-col ${isHighStakes ? 'scale-[1.02]' : ''}`}>
       {/* Campaign label */}
-      <div className="flex justify-center mb-1.5">
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wide">
-          <span>{campaignLabel.emoji}</span> {campaignLabel.label}
+      <div className="flex justify-center mb-1.5 gap-2">
+        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${isHighStakes ? 'bg-destructive/15 text-destructive animate-pulse' : 'bg-primary/10 text-primary'}`}>
+          <span>{isHighStakes ? '🔥' : campaignLabel.emoji}</span> {isHighStakes ? 'Trending' : campaignLabel.label}
         </span>
+        {rareEvent && (
+          <motion.span
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/15 text-accent text-[10px] font-bold"
+          >
+            {rareEvent}
+          </motion.span>
+        )}
       </div>
 
       {/* Swipeable card area */}
@@ -285,7 +306,7 @@ function ImmersivePollCard({
 
         {/* The card itself with 3D tilt */}
         <div
-          className={`w-full max-w-sm mx-auto rounded-2xl overflow-hidden shadow-2xl z-10 ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''} ${hasResult ? selectedGlow : ''}`}
+          className={`w-full max-w-sm mx-auto rounded-2xl overflow-hidden z-10 ${isHighStakes ? 'shadow-[0_0_30px_hsl(var(--destructive)/0.2)] ring-1 ring-destructive/20' : 'shadow-2xl'} ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''} ${hasResult ? selectedGlow : ''}`}
           style={{
             transform: hasResult
               ? 'none'
@@ -524,6 +545,7 @@ export default function SwipeFeed() {
   const [microFeedbackMsg, setMicroFeedbackMsg] = useState('');
   const [sessionVoteCount, setSessionVoteCount] = useState(0);
   const [dailySwipeCount, setDailySwipeCount] = useState(0);
+  const [milestoneMsg, setMilestoneMsg] = useState<{ message: string; type: 'banner' | 'modal' | 'badge' } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -677,6 +699,18 @@ export default function SwipeFeed() {
         setTimeout(() => triggerMicroFeedback(), 2000);
       }
 
+      // Milestone triggers
+      const milestone = MILESTONES.find(m => m.at === newDailyCount);
+      if (milestone && user) {
+        const msg = milestone.at === 25
+          ? `You align with ${Math.floor(Math.random() * 20) + 55}% of ${profile?.city || 'your city'} today.`
+          : milestone.message;
+        setTimeout(() => {
+          setMilestoneMsg({ message: msg, type: milestone.type });
+          setTimeout(() => setMilestoneMsg(null), milestone.duration);
+        }, 2500);
+      }
+
       // Onboarding: check if user hit 3 votes
       if (!user) {
         const guestCount = getGuestVoteCount();
@@ -799,27 +833,72 @@ export default function SwipeFeed() {
         )}
       </AnimatePresence>
 
+      {/* Milestone popup */}
+      <AnimatePresence>
+        {milestoneMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: -30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className={`fixed z-[60] left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl shadow-xl backdrop-blur-md border border-white/10 ${
+              milestoneMsg.type === 'modal'
+                ? 'top-1/3 bg-card/95 max-w-xs text-center'
+                : milestoneMsg.type === 'badge'
+                ? 'top-24 bg-primary/90'
+                : 'top-20 bg-foreground/90'
+            }`}
+          >
+            {milestoneMsg.type === 'modal' ? (
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-2xl">🧠</span>
+                <p className="text-sm font-display font-bold text-foreground">Insight Snapshot</p>
+                <p className="text-xs text-muted-foreground">{milestoneMsg.message}</p>
+              </div>
+            ) : milestoneMsg.type === 'badge' ? (
+              <p className="text-sm font-display font-bold text-primary-foreground text-center">🏆 {milestoneMsg.message}</p>
+            ) : (
+              <p className="text-sm font-display font-bold text-background text-center">{milestoneMsg.message}</p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Scrollable feed */}
       <div
         ref={scrollRef}
         className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-3 pt-4 pb-3 space-y-4"
       >
         {hasPolls ? (
-          polls.map((poll) => (
-            <div
-              key={poll.id}
-              ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
-              className="w-full"
-            >
-              <ImmersivePollCard
-                poll={poll}
-                result={votedResults.get(poll.id) || null}
-                onVote={handleVote}
-                disabled={voteMutation.isPending}
-                showFeedback={feedbackPollId === poll.id}
-              />
-            </div>
-          ))
+          polls.map((poll, idx) => {
+            const result = votedResults.get(poll.id) || null;
+            // High-stakes: every ~20 unvoted cards
+            const unvotedIndex = polls.filter((p, i) => i <= idx && !votedResults.has(p.id)).length;
+            const isHighStakes = unvotedIndex > 0 && unvotedIndex % HIGH_STAKES_INTERVAL === 0 && !result;
+            // Rare event: tight vote or high velocity hint
+            let rareEvent: string | null = null;
+            if (result && Math.abs(result.percentA - result.percentB) <= 6 && result.totalVotes > 10) {
+              rareEvent = '⚠️ This debate is tight';
+            } else if (result && result.totalVotes > 50) {
+              rareEvent = '⚡ Votes moving fast';
+            }
+            return (
+              <div
+                key={poll.id}
+                ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
+                className="w-full"
+              >
+                <ImmersivePollCard
+                  poll={poll}
+                  result={result}
+                  onVote={handleVote}
+                  disabled={voteMutation.isPending}
+                  showFeedback={feedbackPollId === poll.id}
+                  isHighStakes={isHighStakes}
+                  rareEvent={rareEvent}
+                />
+              </div>
+            );
+          })
         ) : (
           <div className="h-full flex flex-col items-center justify-center px-4">
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
