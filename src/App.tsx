@@ -19,6 +19,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Privacy from "./pages/Privacy";
 import InsightProfile from "./pages/InsightProfile";
 import Explore from "./pages/Explore";
+import LiveDebate from "./pages/LiveDebate";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/vote" element={<SwipeFeed />} />
             <Route path="/home" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
+            <Route path="/live-debate" element={<LiveDebate />} />
             <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
             <Route path="/archive" element={<PastPerspectives />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

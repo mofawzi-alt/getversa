@@ -319,8 +319,7 @@ export default function Home() {
   };
 
   const handleLivePollTap = (poll: PollCard) => {
-    // Open full-screen swipe feed filtered to live polls, starting at this poll
-    navigate(`/vote?pollId=${poll.id}&live=true`);
+    navigate(`/live-debate?pollId=${poll.id}`);
   };
 
   // ── SIMPLIFIED HOME for new users (<3 votes) ──
