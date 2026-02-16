@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Home, Users, TrendingUp as TrendUp, Zap } from 'lucide-react';
+import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame } from 'lucide-react';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import { toast } from 'sonner';
@@ -10,6 +10,9 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
+import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
+import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator';
+import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 import {
   Dialog,
   DialogContent,
@@ -54,6 +57,7 @@ function getFallbackImage(seed: string, index: number): string {
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
 const RESULT_DISPLAY_MS = 1800;
+const MICRO_FEEDBACK_INTERVAL = 5;
 
 function getGuestVoteCount(): number {
   try { return parseInt(localStorage.getItem(GUEST_VOTES_KEY) || '0', 10); } catch { return 0; }
@@ -63,6 +67,33 @@ function incrementGuestVotes(): number {
   localStorage.setItem(GUEST_VOTES_KEY, String(count));
   return count;
 }
+
+// Campaign label mapping from category
+const CAMPAIGN_LABELS: Record<string, { emoji: string; label: string }> = {
+  'Telecom': { emoji: '📱', label: 'Telecom Wars' },
+  'Food': { emoji: '🍰', label: 'Food Face-Off' },
+  'Ramadan': { emoji: '🌙', label: 'Ramadan Season' },
+  'Entertainment': { emoji: '🎬', label: 'Series Battle' },
+  'Sports': { emoji: '⚽', label: 'Sports Clash' },
+  'Fashion': { emoji: '👗', label: 'Style Wars' },
+  'Tech': { emoji: '💻', label: 'Tech Debate' },
+  'Travel': { emoji: '✈️', label: 'Travel Pick' },
+  'Music': { emoji: '🎵', label: 'Music Showdown' },
+  'Gaming': { emoji: '🎮', label: 'Game On' },
+};
+
+function getCampaignLabel(category: string | null): { emoji: string; label: string } {
+  if (!category) return { emoji: '🔥', label: 'Live Now' };
+  return CAMPAIGN_LABELS[category] || { emoji: '🔥', label: category };
+}
+
+// Micro-feedback messages
+const ALIGNMENT_MESSAGES = [
+  "You align with {pct}% of {city}.",
+  "{pct}% of {city} voters agree with you.",
+  "You think like {pct}% of people in {city}.",
+  "Your taste matches {pct}% of {city}.",
+];
 
 interface Poll {
   id: string;
@@ -158,8 +189,16 @@ function ImmersivePollCard({
     ? 'shadow-[inset_0_0_30px_rgba(255,200,60,0.15)]'
     : '';
 
+  const campaignLabel = getCampaignLabel(poll.category);
+
   return (
     <div className="w-full relative flex flex-col">
+      {/* Campaign label */}
+      <div className="flex justify-center mb-1.5">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wide">
+          <span>{campaignLabel.emoji}</span> {campaignLabel.label}
+        </span>
+      </div>
       {/* Swipeable card area */}
       <div className="flex-1 relative min-h-0 flex items-center justify-center">
         {/* Choice indicators behind the card */}
@@ -282,18 +321,35 @@ function ImmersivePollCard({
 
       {/* Results below image */}
       {hasResult && (
-        <div className="shrink-0 px-6 pt-2 flex justify-between items-center">
-          <div className="flex flex-col items-center flex-1">
-            <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-option-a">
-              <AnimatedPercent target={result!.percentA} />
-            </motion.span>
-            {result?.choice === 'A' && <span className="text-sm font-bold text-option-a">Your vote</span>}
+        <div className="shrink-0 px-6 pt-2 space-y-2">
+          <div className="flex justify-between items-center">
+            <div className="flex flex-col items-center flex-1">
+              <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-option-a">
+                <AnimatedPercent target={result!.percentA} />
+              </motion.span>
+              {result?.choice === 'A' && <span className="text-sm font-bold text-option-a">Your vote</span>}
+            </div>
+            <div className="flex flex-col items-center flex-1">
+              <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-option-b">
+                <AnimatedPercent target={result!.percentB} delay={100} />
+              </motion.span>
+              {result?.choice === 'B' && <span className="text-sm font-bold text-option-b">Your vote</span>}
+            </div>
           </div>
-          <div className="flex flex-col items-center flex-1">
-            <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-option-b">
-              <AnimatedPercent target={result!.percentB} delay={100} />
-            </motion.span>
-            {result?.choice === 'B' && <span className="text-sm font-bold text-option-b">Your vote</span>}
+          {/* Animated result bar */}
+          <div className="h-2.5 rounded-full bg-muted overflow-hidden flex">
+            <motion.div
+              initial={{ width: '50%' }}
+              animate={{ width: `${result!.percentA}%` }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
+              className="h-full bg-option-a rounded-l-full"
+            />
+            <motion.div
+              initial={{ width: '50%' }}
+              animate={{ width: `${result!.percentB}%` }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
+              className="h-full bg-option-b rounded-r-full"
+            />
           </div>
         </div>
       )}
@@ -335,24 +391,46 @@ function ImmersivePollCard({
 
 // ── Main Feed ──
 export default function SwipeFeed() {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [votedResults, setVotedResults] = useState<Map<string, VoteResult>>(new Map());
   const [feedbackPollId, setFeedbackPollId] = useState<string | null>(null);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [showMicroFeedback, setShowMicroFeedback] = useState(false);
+  const [microFeedbackMsg, setMicroFeedbackMsg] = useState('');
+  const [sessionVoteCount, setSessionVoteCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  // Welcome flow for new users (since this is now the default landing)
+  const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [showUnlockPopup, setShowUnlockPopup] = useState(false);
+
+  useEffect(() => {
+    if (loading) return;
+    if (profileComplete || user) {
+      markWelcomeDone();
+      setShowWelcome(false);
+    } else if (!isWelcomeDone()) {
+      setShowWelcome(true);
+    }
+  }, [loading, profileComplete, user]);
 
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
   const categoryFilter = searchParams.get('category');
 
+  // Streak data
+  const streakData = profile ? {
+    current: (profile as any).current_streak as number || 0,
+    votedToday: (profile as any).last_vote_date === new Date().toISOString().split('T')[0],
+  } : null;
+
   const { data: polls, isLoading, refetch } = useQuery({
     queryKey: ['feed-polls', user?.id, categoryFilter],
     queryFn: async () => {
-      // Fetch all active polls — voted ones stay visible with results
-      // Only show polls whose starts_at has passed (or is null)
       const now = new Date().toISOString();
       let query = supabase.from('polls').select('*').eq('is_active', true).neq('is_archived', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
@@ -362,7 +440,6 @@ export default function SwipeFeed() {
       if (error) throw error;
       let allPolls = fetchedPolls || [];
 
-      // Pre-load existing votes as results
       if (user) {
         const { data: userVotes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
         if (userVotes && userVotes.length > 0) {
@@ -384,7 +461,7 @@ export default function SwipeFeed() {
           });
           setVotedResults(prev => {
             const merged = new Map(preloadedResults);
-            prev.forEach((v, k) => merged.set(k, v)); // local votes take priority
+            prev.forEach((v, k) => merged.set(k, v));
             return merged;
           });
         }
@@ -398,11 +475,9 @@ export default function SwipeFeed() {
           return true;
         });
       }
-      // Filter by category if specified
       if (categoryFilter) {
         allPolls = allPolls.filter(p => p.category === categoryFilter);
       }
-      // Put unvoted polls first
       if (targetPollId) {
         const idx = allPolls.findIndex(p => p.id === targetPollId);
         if (idx > 0) { const [t] = allPolls.splice(idx, 1); allPolls.unshift(t); }
@@ -418,6 +493,19 @@ export default function SwipeFeed() {
       }).subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [queryClient]);
+
+  // Micro-feedback trigger
+  const triggerMicroFeedback = useCallback(() => {
+    const city = profile?.city || 'your city';
+    const pct = Math.floor(Math.random() * 30) + 45;
+    const msgs = ALIGNMENT_MESSAGES;
+    const msg = msgs[Math.floor(Math.random() * msgs.length)]
+      .replace('{pct}', String(pct))
+      .replace('{city}', city);
+    setMicroFeedbackMsg(msg);
+    setShowMicroFeedback(true);
+    setTimeout(() => setShowMicroFeedback(false), 3000);
+  }, [profile?.city]);
 
   const voteMutation = useMutation({
     mutationFn: async ({ pollId, choice }: { pollId: string; choice: 'A' | 'B' }) => {
@@ -439,12 +527,25 @@ export default function SwipeFeed() {
     onSuccess: (data) => {
       playResultSound();
       setVotedResults(prev => new Map(prev).set(data.pollId, data));
-
-      // Show emotional feedback overlay
       setFeedbackPollId(data.pollId);
       setTimeout(() => setFeedbackPollId(null), 1800);
 
-      // Smooth auto-scroll to next poll
+      // Track session votes and trigger micro-feedback every 5
+      const newCount = sessionVoteCount + 1;
+      setSessionVoteCount(newCount);
+      if (newCount % MICRO_FEEDBACK_INTERVAL === 0 && user) {
+        setTimeout(() => triggerMicroFeedback(), 2000);
+      }
+
+      // Onboarding: check if user hit 3 votes
+      if (!user) {
+        const guestCount = getGuestVoteCount();
+        if (guestCount >= 3 && !isExploreUnlocked()) {
+          markExploreUnlocked();
+          setShowUnlockPopup(true);
+        }
+      }
+
       setTimeout(() => {
         if (!polls) return;
         const idx = polls.findIndex(p => p.id === data.pollId);
@@ -458,7 +559,6 @@ export default function SwipeFeed() {
         }
       }, RESULT_DISPLAY_MS);
 
-      // Refresh Home page data so it's up-to-date when user navigates back
       queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
       queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
       queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
@@ -479,6 +579,11 @@ export default function SwipeFeed() {
     voteMutation.mutate({ pollId, choice });
   }, [voteMutation, user, votedResults]);
 
+  // Welcome flow
+  if (showWelcome) {
+    return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); navigate('/auth'); }} />;
+  }
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
@@ -492,18 +597,66 @@ export default function SwipeFeed() {
 
   return (
     <div className="h-dvh w-full flex flex-col bg-secondary/50 overflow-hidden">
-      {/* Top bar with home + info */}
+      {/* Top bar with home + streak + info */}
       <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/home')}
           className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
         >
           <Home className="h-5 w-5" />
         </button>
+
+        {/* Streak indicator */}
+        {streakData && user && (
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm shadow-sm">
+            <Flame className="h-3.5 w-3.5 text-destructive" />
+            <span className="text-[10px] font-bold text-foreground">
+              {streakData.current > 0 ? `${streakData.current}-Day Streak` : 'Start a Streak!'}
+            </span>
+            {!streakData.votedToday && streakData.current > 0 && (
+              <span className="text-[8px] text-destructive font-bold animate-pulse ml-0.5">⚠️</span>
+            )}
+          </div>
+        )}
+
         <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm text-foreground shadow-sm flex items-center gap-1">
           <Zap className="h-3 w-3 text-accent" /> {unvotedCount > 0 ? `${unvotedCount} new` : `${polls?.length || 0} polls`}
         </span>
       </div>
+
+      {/* Streak urgency message */}
+      {streakData && user && !streakData.votedToday && streakData.current > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="shrink-0 mx-4 mb-1 px-3 py-1.5 rounded-xl bg-destructive/10 border border-destructive/20 text-center"
+        >
+          <span className="text-[10px] font-bold text-destructive">
+            🔥 Swipe now to protect your {streakData.current}-day streak!
+          </span>
+        </motion.div>
+      )}
+
+      {/* Onboarding progress for new users */}
+      {!user && !isExploreUnlocked() && (
+        <div className="shrink-0 px-4 pb-2">
+          <VoteProgressIndicator voteCount={getGuestVoteCount()} target={3} />
+        </div>
+      )}
+
+      {/* Micro-feedback popup */}
+      <AnimatePresence>
+        {showMicroFeedback && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-primary text-primary-foreground shadow-glow"
+          >
+            <p className="text-sm font-display font-bold text-center">{microFeedbackMsg}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Scrollable feed */}
       <div
@@ -530,14 +683,13 @@ export default function SwipeFeed() {
           <div className="h-full flex flex-col items-center justify-center px-4">
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
             <div className="mt-4 w-full max-w-sm">
-              <Button onClick={() => navigate('/')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
+              <Button onClick={() => navigate('/home')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
                 <Home className="h-4 w-4" /> Back to Home
               </Button>
             </div>
           </div>
         )}
 
-        {/* All caught up message at the bottom */}
         {hasPolls && polls.every(p => votedResults.has(p.id)) && (
           <div className="py-6 flex flex-col items-center gap-2">
             <p className="text-sm font-display font-bold text-foreground/70">You're all caught up! 🎉</p>
@@ -545,6 +697,9 @@ export default function SwipeFeed() {
           </div>
         )}
       </div>
+
+      {/* Explore unlock popup */}
+      <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
       <Dialog open={showSignupModal} onOpenChange={setShowSignupModal}>
         <DialogContent className="sm:max-w-sm bg-card border-border">

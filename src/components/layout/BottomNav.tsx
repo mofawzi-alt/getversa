@@ -12,7 +12,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
     return (
       <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-nav border-t border-border/40 safe-area-bottom z-50">
         <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
-          <NavButton path="/" icon={Home} label="Home" active={location.pathname === '/'} onClick={() => navigate('/')} />
+          <NavButton path="/" icon={Home} label="Vote" active={location.pathname === '/' || location.pathname === '/vote'} onClick={() => navigate('/')} />
           <NavButton path="/auth" icon={LogIn} label="Sign In" active={location.pathname === '/auth'} onClick={() => navigate('/auth')} />
         </div>
       </nav>
@@ -24,20 +24,20 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
         {/* Home */}
         <NavButton
-          path="/"
+          path="/home"
           icon={Home}
           label="Home"
-          active={location.pathname === '/'}
-          onClick={() => navigate('/')}
+          active={location.pathname === '/home'}
+          onClick={() => navigate('/home')}
         />
 
         {/* Vote - center, highlighted */}
         <button
-          onClick={() => navigate('/vote')}
+          onClick={() => navigate('/')}
           className="flex flex-col items-center gap-0.5 -mt-5"
         >
           <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] ${
-            location.pathname === '/vote'
+            location.pathname === '/' || location.pathname === '/vote'
               ? 'bg-primary shadow-[0_0_18px_hsl(var(--primary)/0.35)]'
               : 'bg-primary/90 hover:bg-primary shadow-[0_0_14px_hsl(var(--primary)/0.25)]'
           }`}>
@@ -46,7 +46,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
             </svg>
           </div>
           <span className={`text-[10px] font-semibold ${
-            location.pathname === '/vote' ? 'text-primary' : 'text-card-foreground/70'
+            location.pathname === '/' || location.pathname === '/vote' ? 'text-primary' : 'text-card-foreground/70'
           }`}>Vote</span>
         </button>
 
