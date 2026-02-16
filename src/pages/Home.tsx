@@ -559,16 +559,10 @@ export default function Home() {
                             <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                             <div className="absolute bottom-3 left-3 right-1">
-                              <p className="text-white text-sm font-bold drop-shadow-lg">{poll.option_a}</p>
-                              <motion.div
-                                key={poll.percentA}
-                                initial={{ scale: 1.15 }}
-                                animate={{ scale: 1 }}
-                                transition={{ duration: 0.4 }}
-                              >
-                                <AnimatedNumber value={poll.percentA} className="text-2xl font-bold text-option-a drop-shadow-lg" />
-                                <span className="text-option-a text-2xl font-bold drop-shadow-lg">%</span>
-                              </motion.div>
+                              <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_a}</p>
+                              <span className="text-2xl font-bold text-option-a drop-shadow-lg">
+                                <AnimatedNumber value={poll.percentA} />%
+                              </span>
                             </div>
                           </div>
                           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
@@ -576,16 +570,10 @@ export default function Home() {
                             <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                             <div className="absolute bottom-3 left-1 right-3 text-right">
-                              <p className="text-white text-sm font-bold drop-shadow-lg">{poll.option_b}</p>
-                              <motion.div
-                                key={poll.percentB}
-                                initial={{ scale: 1.15 }}
-                                animate={{ scale: 1 }}
-                                transition={{ duration: 0.4 }}
-                              >
-                                <AnimatedNumber value={poll.percentB} className="text-2xl font-bold text-option-b drop-shadow-lg" />
-                                <span className="text-option-b text-2xl font-bold drop-shadow-lg">%</span>
-                              </motion.div>
+                              <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_b}</p>
+                              <span className="text-2xl font-bold text-option-b drop-shadow-lg">
+                                <AnimatedNumber value={poll.percentB} />%
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -595,39 +583,41 @@ export default function Home() {
                           <h3 className="text-white text-base font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
                         </div>
 
-                        {/* Animated percentage bar */}
-                        <div className="absolute bottom-12 inset-x-4 h-2 bg-white/15 rounded-full overflow-hidden z-10">
-                          <motion.div
-                            className="h-full bg-option-a rounded-full"
-                            initial={{ width: '50%' }}
-                            animate={{ width: `${poll.percentA}%` }}
-                            transition={{ duration: 0.7, ease: 'easeOut' }}
-                          />
-                        </div>
-
-                        {/* Bottom bar */}
-                        <div className="absolute bottom-3 inset-x-4 flex items-center justify-between z-10">
-                          <div className="flex items-center gap-1.5">
-                            <LiveIndicator variant="overlay" />
-                            <span className="text-[10px] text-white/70 flex items-center gap-0.5 drop-shadow-lg font-medium">
-                              <Users className="h-3 w-3" /> {poll.recentVotes > 0 ? <><AnimatedNumber value={poll.recentVotes} /> voting now</> : <><AnimatedNumber value={poll.totalVotes} /> votes</>}
-                            </span>
+                        {/* Bottom info bar — outside image area */}
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-10 pb-3 px-4 z-10">
+                          {/* Percentage bar */}
+                          <div className="h-1.5 bg-white/15 rounded-full overflow-hidden mb-2">
+                            <motion.div
+                              className="h-full bg-option-a rounded-full"
+                              initial={{ width: '50%' }}
+                              animate={{ width: `${poll.percentA}%` }}
+                              transition={{ duration: 0.7, ease: 'easeOut' }}
+                            />
                           </div>
-                          <div className="flex items-center gap-2">
-                            {poll.ends_at && (
-                              <span className="text-[9px] text-white/60 flex items-center gap-0.5 drop-shadow-lg">
-                                <Timer className="h-2.5 w-2.5" /> {getTimeLeft(poll.ends_at)}
+                          {/* Meta row */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <LiveIndicator variant="overlay" />
+                              <span className="text-[10px] text-white/70 flex items-center gap-0.5 drop-shadow-lg font-medium">
+                                <Users className="h-3 w-3" /> {poll.recentVotes > 0 ? <><AnimatedNumber value={poll.recentVotes} /> voting now</> : <><AnimatedNumber value={poll.totalVotes} /> votes</>}
                               </span>
-                            )}
-                            {!hasVoted && (
-                              <motion.span
-                                animate={{ scale: [1, 1.05, 1] }}
-                                transition={{ duration: 1.5, repeat: Infinity }}
-                                className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold"
-                              >
-                                Swipe to Vote
-                              </motion.span>
-                            )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {poll.ends_at && (
+                                <span className="text-[9px] text-white/60 flex items-center gap-0.5 drop-shadow-lg">
+                                  <Timer className="h-2.5 w-2.5" /> {getTimeLeft(poll.ends_at)}
+                                </span>
+                              )}
+                              {!hasVoted && (
+                                <motion.span
+                                  animate={{ scale: [1, 1.05, 1] }}
+                                  transition={{ duration: 1.5, repeat: Infinity }}
+                                  className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold"
+                                >
+                                  Swipe to Vote
+                                </motion.span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </motion.div>
