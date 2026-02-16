@@ -105,77 +105,64 @@ export default function LiveDebate() {
     votedToday: (profile as any).last_vote_date === new Date().toISOString().split('T')[0],
   } : null;
 
-  // Fetch live polls
+  // Fetch ALL live polls (not filtered by voted status)
   const { data: livePolls, isLoading } = useQuery({
     queryKey: ['live-debate-polls', user?.id],
     queryFn: async () => {
       const now = new Date().toISOString();
-      let query = supabase.from('polls').select('id, question, option_a, option_b, category, image_a_url, image_b_url, starts_at, ends_at')
+      const { data: polls } = await supabase.from('polls')
+        .select('id, question, option_a, option_b, category, image_a_url, image_b_url, starts_at, ends_at')
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .or(`ends_at.is.null,ends_at.gt.${now}`)
         .order('created_at', { ascending: false })
         .limit(50);
-      const { data: polls } = await query;
-      let filtered = (polls || []) as Poll[];
 
-      // Remove already-voted (but keep the target poll if specified)
+      let allPolls = (polls || []) as Poll[];
+      let votedChoices = new Map<string, string>();
+
       if (user) {
         const { data: votes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
-        const votedIds = new Set(votes?.map(v => v.poll_id) || []);
-        const votedChoices = new Map(votes?.map(v => [v.poll_id, v.choice]) || []);
-        filtered = filtered.filter(p => !votedIds.has(p.id) || (startPollId && p.id === startPollId));
-        return { polls: filtered, votedChoices };
+        votedChoices = new Map(votes?.map(v => [v.poll_id, v.choice]) || []);
       }
 
-      return { polls: filtered, votedChoices: new Map() as Map<string, string> };
+      // Sort: unvoted first, then voted — but keep all visible
+      const unvoted = allPolls.filter(p => !votedChoices.has(p.id));
+      const voted = allPolls.filter(p => votedChoices.has(p.id));
 
-      // Demographic filter
-      if (profile) {
-        // Already filtered server-side ideally, but ensure client-side too
-      }
-
-      // Move target poll to front
+      // Move target poll to front if specified
+      let sorted = [...unvoted, ...voted];
       if (startPollId) {
-        const idx = filtered.findIndex(p => p.id === startPollId);
+        const idx = sorted.findIndex(p => p.id === startPollId);
         if (idx > 0) {
-          const [t] = filtered.splice(idx, 1);
-          filtered.unshift(t);
+          const [t] = sorted.splice(idx, 1);
+          sorted.unshift(t);
         }
       }
 
-      return { polls: filtered, votedChoices };
+      return { polls: sorted, votedChoices };
     },
   });
 
   const polls = livePolls?.polls || [];
   const votedChoices = livePolls?.votedChoices || new Map<string, string>();
   const currentPoll = polls[currentIndex];
-  const nextPoll = polls[currentIndex + 1];
   const hasMore = currentIndex < polls.length - 1;
+  const currentPollIsVoted = currentPoll ? votedChoices.has(currentPoll.id) : false;
 
-  // If the current poll was already voted on, auto-show results
+  // If the current poll was already voted on, show results immediately (no swipe)
   useEffect(() => {
-    if (!currentPoll || phase !== 'swipe') return;
+    if (!currentPoll || phase !== 'swipe' || !currentPollIsVoted) return;
     const prevChoice = votedChoices.get(currentPoll.id);
-    if (prevChoice) {
-      // Fetch results for this already-voted poll
-      supabase.from('votes').select('choice').eq('poll_id', currentPoll.id).then(({ data: votes }) => {
-        const total = votes?.length || 0;
-        const aVotes = votes?.filter(v => v.choice === 'A').length || 0;
-        const percentA = total > 0 ? Math.round((aVotes / total) * 100) : 0;
-        setResult({ choice: prevChoice as 'A' | 'B', percentA, percentB: 100 - percentA, totalVotes: total });
-        setPhase('result');
-        // Auto-advance after showing result
-        setTimeout(() => {
-          if (hasMore) {
-            setCurrentIndex(prev => prev + 1);
-            setResult(null);
-            setPhase('swipe');
-          }
-        }, RESULT_MS);
-      });
-    }
+    if (!prevChoice) return;
+    
+    supabase.from('votes').select('choice').eq('poll_id', currentPoll.id).then(({ data: votes }) => {
+      const total = votes?.length || 0;
+      const aVotes = votes?.filter(v => v.choice === 'A').length || 0;
+      const percentA = total > 0 ? Math.round((aVotes / total) * 100) : 0;
+      setResult({ choice: prevChoice as 'A' | 'B', percentA, percentB: 100 - percentA, totalVotes: total });
+      setPhase('result');
+    });
   }, [currentPoll?.id]);
 
   // Preload next 3 images
@@ -340,11 +327,12 @@ export default function LiveDebate() {
         phase={phase}
         result={result}
         disabled={voteMutation.isPending}
+        isVotedPoll={currentPollIsVoted}
       />
 
-      {/* Remaining count */}
+      {/* Remaining count & navigation */}
       <div className="absolute bottom-[env(safe-area-inset-bottom,8px)] inset-x-0 z-30 flex justify-center pb-2">
-        {phase === 'swipe' && (
+        {phase === 'swipe' && !currentPollIsVoted && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -358,11 +346,33 @@ export default function LiveDebate() {
             </span>
           </motion.div>
         )}
+
+        {/* For voted polls in result view — show Next/Exit buttons */}
+        {phase === 'result' && currentPollIsVoted && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center gap-3"
+          >
+            {hasMore ? (
+              <button
+                onClick={() => { setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe'); }}
+                className="px-5 py-2 rounded-full bg-white/15 text-white text-xs font-bold backdrop-blur-md"
+              >
+                Next Debate →
+              </button>
+            ) : (
+              <button onClick={handleExit} className="px-5 py-2 rounded-full bg-white/15 text-white text-xs font-bold backdrop-blur-md">
+                Back to Home
+              </button>
+            )}
+          </motion.div>
+        )}
       </div>
 
-      {/* All caught up */}
+      {/* All caught up — only for freshly voted polls */}
       <AnimatePresence>
-        {phase === 'result' && !hasMore && (
+        {phase === 'result' && !hasMore && !currentPollIsVoted && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -389,6 +399,7 @@ function FullScreenCard({
   phase,
   result,
   disabled,
+  isVotedPoll,
 }: {
   poll: Poll;
   imgA: string;
@@ -397,13 +408,14 @@ function FullScreenCard({
   phase: 'swipe' | 'suspense' | 'result';
   result: VoteResult | null;
   disabled: boolean;
+  isVotedPoll: boolean;
 }) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [flyDir, setFlyDir] = useState<'left' | 'right' | null>(null);
   const startX = useRef(0);
 
-  const canSwipe = phase === 'swipe' && !disabled && !flyDir;
+  const canSwipe = phase === 'swipe' && !disabled && !flyDir && !isVotedPoll;
 
   const handleStart = (clientX: number) => {
     if (!canSwipe) return;
