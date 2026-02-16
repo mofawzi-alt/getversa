@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { playSwipeSound, playResultSound } from '@/lib/sounds';
+import { playSwipeSound, playResultSound, playMinoritySound, playMilestoneSound } from '@/lib/sounds';
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
 import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator';
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
@@ -205,6 +205,7 @@ function ImmersivePollCard({
     if (!result || showSuspense) return;
     const userPercent = result.choice === 'A' ? result.percentA : result.percentB;
     if (userPercent < 40) {
+      playMinoritySound();
       triggerHaptic('medium');
       setShowMinorityBadge(true);
       const t = setTimeout(() => setShowMinorityBadge(false), 2000);
@@ -680,7 +681,8 @@ export default function SwipeFeed() {
       return { pollId, choice, percentA, percentB: totalVotes > 0 ? 100 - percentA : 0, totalVotes };
     },
     onSuccess: (data) => {
-      playResultSound();
+      // Result sound plays after suspense delay (when animation begins)
+      setTimeout(() => playResultSound(), SUSPENSE_DELAY_MS);
       setVotedResults(prev => new Map(prev).set(data.pollId, data));
       setFeedbackPollId(data.pollId);
       setTimeout(() => setFeedbackPollId(null), 1800);
@@ -706,6 +708,7 @@ export default function SwipeFeed() {
           ? `You align with ${Math.floor(Math.random() * 20) + 55}% of ${profile?.city || 'your city'} today.`
           : milestone.message;
         setTimeout(() => {
+          playMilestoneSound();
           setMilestoneMsg({ message: msg, type: milestone.type });
           setTimeout(() => setMilestoneMsg(null), milestone.duration);
         }, 2500);
