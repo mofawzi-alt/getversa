@@ -120,22 +120,25 @@ function getTimeLeft(endsAt: string): string {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const storiesRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   // Authenticated users with completed profiles should never see the welcome flow
   const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
-  const [showWelcome, setShowWelcome] = useState(!isWelcomeDone() && !profileComplete);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
 
-  // Dismiss welcome flow if profile loads and is complete (e.g. localStorage was cleared)
+  // Only show welcome after auth loading finishes and we know the user's state
   useEffect(() => {
-    if (profileComplete && showWelcome) {
+    if (loading) return;
+    if (profileComplete || user) {
       markWelcomeDone();
       setShowWelcome(false);
+    } else if (!isWelcomeDone()) {
+      setShowWelcome(true);
     }
-  }, [profileComplete, showWelcome]);
+  }, [loading, profileComplete, user]);
 
   // Realtime subscription: invalidate vote-related queries on new votes
   useEffect(() => {
