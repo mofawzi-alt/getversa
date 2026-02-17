@@ -88,11 +88,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
+    // Set up auth listener FIRST, then get initial session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        // Defer profile fetch to avoid Supabase deadlock
         setTimeout(() => {
           fetchProfile(session.user.id);
         }, 0);
@@ -104,16 +106,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-      
-      setLoading(false);
-    });
+    // Get initial session — onAuthStateChange with INITIAL_SESSION will handle state
+    // Only use this as fallback if onAuthStateChange doesn't fire quickly
+    const fallbackTimer = setTimeout(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(prev => prev ?? session);
+        setUser(prev => prev ?? (session?.user ?? null));
+        
+        if (session?.user) {
+          fetchProfile(session.user.id);
+        }
+        
+        setLoading(false);
+      });
+    }, 100);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   const signUp = async (email: string, password: string) => {
