@@ -86,6 +86,8 @@ export default function Onboarding() {
       // Upsert automation settings (ignore if exists)
       await supabase.from('automation_settings').upsert({ user_id: user.id }, { onConflict: 'user_id' });
       await refreshProfile();
+      // Mark welcome as done so user never sees it again
+      try { localStorage.setItem('versa_welcome_done', 'true'); } catch {}
       toast.success('Welcome to VERSA!');
       navigate('/');
     } catch (err) {
