@@ -450,11 +450,11 @@ export default function Home() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen flex flex-col pb-24 gap-0">
+      <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
         {/* ═══ HERO SECTION ═══ */}
-        <section className="relative px-4 pt-4 pb-5">
+        <section className="relative px-4 pt-3 pb-4">
           {/* Live glow background */}
           <motion.div
             animate={{ opacity: [0.3, 0.6, 0.3] }}
@@ -554,7 +554,7 @@ export default function Home() {
                         />
 
                         {/* Images */}
-                        <div className="flex h-[65vh] max-h-[520px] relative">
+                        <div className="flex h-[55vh] max-h-[420px] relative">
                           <div className="w-1/2 h-full relative overflow-hidden">
                             <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
