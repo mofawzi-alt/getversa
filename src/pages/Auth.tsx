@@ -45,6 +45,7 @@ export default function Auth() {
           }
         } else {
           toast.success('Welcome back!');
+          // Navigate to feed; SwipeFeed will redirect to /onboarding if profile is incomplete
           navigate('/');
         }
       } else {

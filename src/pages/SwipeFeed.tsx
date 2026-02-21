@@ -557,13 +557,21 @@ export default function SwipeFeed() {
 
   useEffect(() => {
     if (loading) return;
-    if (profileComplete || user) {
+    // Logged-in users never see the welcome flow
+    if (user) {
       markWelcomeDone();
       setShowWelcome(false);
-    } else if (!isWelcomeDone()) {
+      // Redirect to onboarding if profile is incomplete
+      if (profile && !profileComplete) {
+        navigate('/onboarding');
+      }
+      return;
+    }
+    // Guest users: show welcome only if not already completed
+    if (!isWelcomeDone()) {
       setShowWelcome(true);
     }
-  }, [loading, profileComplete, user]);
+  }, [loading, profileComplete, user, profile, navigate]);
 
   // Load daily swipe count from localStorage
   useEffect(() => {
