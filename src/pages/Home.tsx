@@ -509,6 +509,38 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ═══ 🌙 RAMADAN 2026 SEASONAL HUB (TOP PRIORITY) ═══ */}
+        <section className="px-3 mb-3">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/seasonal/ramadan-2026')}
+            className="relative rounded-2xl overflow-hidden cursor-pointer border border-amber-700/40 bg-gradient-to-r from-[#1a1510] via-[#0a0a0a] to-[#1a1510] shadow-[0_0_20px_-4px_rgba(245,158,11,0.15)]"
+          >
+            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/70 to-transparent" />
+            <div className="px-5 py-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🌙</span>
+                <div>
+                  <h3 className="text-amber-400 font-display font-bold text-lg">Ramadan 2026</h3>
+                  <p className="text-white/40 text-[10px] mt-0.5">Egypt is voting right now.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <motion.span
+                  animate={{ opacity: [0.6, 1, 0.6] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 text-[9px] font-bold"
+                >
+                  LIVE
+                </motion.span>
+                <ChevronRight className="h-4 w-4 text-amber-400/60" />
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
         {/* ═══ 🔴 LIVE NOW ═══ */}
         <section className="mb-3">
           <div className="px-3 flex items-center gap-2 mb-2">
@@ -643,31 +675,7 @@ export default function Home() {
           )}
         </section>
 
-        {/* ═══ 🌙 RAMADAN 2026 SEASONAL HUB ═══ */}
-        <section className="px-3 mb-3">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate('/seasonal/ramadan-2026')}
-            className="relative rounded-2xl overflow-hidden cursor-pointer border border-amber-800/30 bg-gradient-to-r from-[#1a1510] via-[#0a0a0a] to-[#1a1510]"
-          >
-            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />
-            <div className="px-5 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">🌙</span>
-                <div>
-                  <h3 className="text-amber-400 font-display font-bold text-base">Ramadan 2026</h3>
-                  <p className="text-white/40 text-[10px] mt-0.5">Series · Desserts · Gym Battles</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 text-[9px] font-bold">LIVE</span>
-                <ChevronRight className="h-4 w-4 text-amber-400/60" />
-              </div>
-            </div>
-          </motion.div>
-        </section>
+        {/* Ramadan hub moved to top — old position removed */}
 
         {/* ═══ GAMIFICATION STRIP ═══ */}
         {user && (
