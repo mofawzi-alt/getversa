@@ -234,7 +234,7 @@ function SectionSwipeView({
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [result, setResult] = useState<VoteResult | null>(null);
-  const [phase, setPhase] = useState<'swipe' | 'result'>('swipe');
+  const [phase, setPhase] = useState<'swipe' | 'result' | 'complete'>('swipe');
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const startXRef = useRef(0);
@@ -292,7 +292,7 @@ function SectionSwipeView({
       setPhase('swipe');
       setDragX(0);
     } else {
-      onBack();
+      setPhase('complete');
     }
   };
 
@@ -313,6 +313,58 @@ function SectionSwipeView({
     else if (dragX > SWIPE_THRESHOLD) handleVote('B');
     setDragX(0);
   };
+
+  // ── Completion Screen ──
+  if (phase === 'complete') {
+    const handleShare = async () => {
+      const shareText = `🔥 I just completed ${section.emoji} ${section.label} in ${hub.title}! Egypt is voting right now.`;
+      if (navigator.share) {
+        try { await navigator.share({ text: shareText }); } catch {}
+      } else {
+        try { await navigator.clipboard.writeText(shareText); } catch {}
+      }
+    };
+
+    return (
+      <div className={`fixed inset-0 z-[100] bg-gradient-to-b ${hub.bgGradient} flex flex-col items-center justify-center px-6`}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center text-center gap-4"
+        >
+          <motion.span
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="text-5xl"
+          >
+            🔥
+          </motion.span>
+          <h2 className="text-2xl font-display font-bold text-white">
+            {section.emoji} {section.label} Completed
+          </h2>
+          <p className="text-white/50 text-sm">
+            More Ramadan battles are coming soon.
+          </p>
+
+          <div className="flex flex-col gap-3 w-full mt-4">
+            <button
+              onClick={onBack}
+              className="w-full px-6 py-3 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-sm font-bold"
+            >
+              Back to Ramadan Hub
+            </button>
+            <button
+              onClick={handleShare}
+              className="w-full px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm font-bold"
+            >
+              Share this battle
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (!poll) {
     return (
