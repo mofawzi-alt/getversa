@@ -29,7 +29,7 @@ const SEASONAL_HUBS: Record<string, HubConfig> = {
   'ramadan-2026': {
     slug: 'ramadan-2026',
     title: '🌙 Ramadan 2026',
-    subtitle: 'Egypt is voting live.',
+    subtitle: 'Egypt is voting right now.',
     headerText: 'Ramadan Battles',
     accentColor: 'text-amber-400',
     bgGradient: 'from-[#0a0a0a] via-[#1a1510] to-[#0a0a0a]',
