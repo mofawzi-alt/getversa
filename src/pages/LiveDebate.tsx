@@ -203,12 +203,14 @@ export default function LiveDebate() {
         }
       }, SUSPENSE_MS);
 
-      // Auto-advance after result display
+      // Auto-advance after result display (or auto-return home if last poll)
       setTimeout(() => {
         if (hasMore) {
           setCurrentIndex(prev => prev + 1);
           setResult(null);
           setPhase('swipe');
+        } else {
+          navigate('/home');
         }
       }, SUSPENSE_MS + RESULT_MS);
 
@@ -520,24 +522,24 @@ function FullScreenCard({
         <div className="flex h-full w-full">
           <div className="w-1/2 h-full relative overflow-hidden">
             <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" draggable={false} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/40" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/50" />
             <div className="absolute bottom-24 left-4 right-1">
-              <p className="text-white text-base font-bold drop-shadow-lg">{poll.option_a}</p>
+              <p className="text-white text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{poll.option_a}</p>
             </div>
           </div>
-          <div className="absolute inset-y-0 left-1/2 w-[1px] bg-white/10 z-10" />
+          <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
           <div className="w-1/2 h-full relative overflow-hidden">
             <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" draggable={false} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/40" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/50" />
             <div className="absolute bottom-24 left-1 right-4 text-right">
-              <p className="text-white text-base font-bold drop-shadow-lg">{poll.option_b}</p>
+              <p className="text-white text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{poll.option_b}</p>
             </div>
           </div>
         </div>
 
         {/* Question overlay at top */}
         <div className="absolute top-16 inset-x-0 px-6 z-20 pointer-events-none">
-          <p className="text-white text-lg font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
+          <p className="text-white text-xl font-display font-bold drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] text-center leading-snug">{poll.question}</p>
         </div>
 
         {/* Suspense loading */}
