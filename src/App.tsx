@@ -20,6 +20,7 @@ import Privacy from "./pages/Privacy";
 import InsightProfile from "./pages/InsightProfile";
 import Explore from "./pages/Explore";
 import LiveDebate from "./pages/LiveDebate";
+import SeasonalHub from "./pages/SeasonalHub";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/home" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/live-debate" element={<LiveDebate />} />
+            <Route path="/seasonal/:slug" element={<SeasonalHub />} />
             <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
             <Route path="/archive" element={<PastPerspectives />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
