@@ -757,7 +757,7 @@ export default function Home() {
 
         {/* ═══ 🏆 TODAY'S LEADERS ═══ */}
         {(() => {
-          const topPolls = [...(polls || [])].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 3);
+          const topPolls = [...(polls || [])].sort((a, b) => Math.max(b.percentA, b.percentB) - Math.max(a.percentA, a.percentB)).slice(0, 3);
           if (topPolls.length === 0) return null;
           const medals = ['🥇', '🥈', '🥉'];
           return (
