@@ -755,23 +755,23 @@ export default function Home() {
           </motion.button>
         </section>
 
-        {/* ═══ 🏆 TODAY'S LEADERS ═══ */}
+        {/* ═══ 🏆 TOP RANKED ═══ */}
         {(() => {
           const topPolls = [...(polls || [])]
             .filter(p => p.totalVotes > 0)
-            .sort((a, b) => Math.max(b.percentA, b.percentB) - Math.max(a.percentA, a.percentB))
+            .sort((a, b) => b.totalVotes - a.totalVotes)
             .slice(0, 3)
             .map(p => ({
               ...p,
               winnerName: p.percentA >= p.percentB ? p.option_a : p.option_b,
             }));
           if (topPolls.length === 0) return null;
-          const medals = ['🥇', '🥈', '🥉'];
+          const rankColors = ['bg-amber-400', 'bg-gray-300', 'bg-amber-700'];
           return (
             <section className="px-3 mb-3">
               <div className="flex items-center gap-1.5 mb-2">
                 <Trophy className="h-3.5 w-3.5 text-amber-500" />
-                <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">🏆 Today's Leaders</span>
+                <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">🏆 Top Ranked</span>
               </div>
               <div className="bg-card rounded-xl border border-border/60 overflow-hidden shadow-card">
                 {topPolls.map((poll, i) => (
@@ -784,9 +784,9 @@ export default function Home() {
                     onClick={() => handlePollTap(poll)}
                     className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors ${i < topPolls.length - 1 ? 'border-b border-border/40' : ''}`}
                   >
-                    <span className="text-lg">{medals[i]}</span>
+                    <span className={`w-2.5 h-2.5 rounded-full ${rankColors[i]} shrink-0`} />
                     <span className="text-xs font-bold text-foreground line-clamp-1 flex-1">
-                      #{i + 1} — {poll.winnerName}
+                      {poll.winnerName}
                     </span>
                     <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                   </motion.div>
