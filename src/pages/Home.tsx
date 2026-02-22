@@ -757,7 +757,14 @@ export default function Home() {
 
         {/* ═══ 🏆 TODAY'S LEADERS ═══ */}
         {(() => {
-          const topPolls = [...(polls || [])].sort((a, b) => Math.max(b.percentA, b.percentB) - Math.max(a.percentA, a.percentB)).slice(0, 3);
+          const topPolls = [...(polls || [])]
+            .filter(p => p.totalVotes > 0)
+            .sort((a, b) => Math.max(b.percentA, b.percentB) - Math.max(a.percentA, a.percentB))
+            .slice(0, 3)
+            .map(p => ({
+              ...p,
+              winnerName: p.percentA >= p.percentB ? p.option_a : p.option_b,
+            }));
           if (topPolls.length === 0) return null;
           const medals = ['🥇', '🥈', '🥉'];
           return (
@@ -779,7 +786,7 @@ export default function Home() {
                   >
                     <span className="text-lg">{medals[i]}</span>
                     <span className="text-xs font-bold text-foreground line-clamp-1 flex-1">
-                      #{i + 1} — {poll.question}
+                      #{i + 1} — {poll.winnerName}
                     </span>
                     <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                   </motion.div>
