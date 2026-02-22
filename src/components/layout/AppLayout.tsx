@@ -1,6 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import BottomNav from './BottomNav';
 import AppHeader from './AppHeader';
+import PullToRefresh from './PullToRefresh';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -8,6 +10,14 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children, hideNav }: AppLayoutProps) {
+  const queryClient = useQueryClient();
+
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries();
+    // Small delay so the spinner is visible
+    await new Promise(r => setTimeout(r, 400));
+  }, [queryClient]);
+
   return (
     <div className="min-h-screen pt-14 pb-20 relative overflow-hidden">
       {/* Decorative Background Elements - Concentric Rings */}
@@ -33,7 +43,11 @@ export default function AppLayout({ children, hideNav }: AppLayoutProps) {
       </div>
       
       {!hideNav && <AppHeader />}
-      <main className="safe-area-top relative z-10">{children}</main>
+      <main className="safe-area-top relative z-10">
+        <PullToRefresh onRefresh={handleRefresh}>
+          {children}
+        </PullToRefresh>
+      </main>
       {!hideNav && <BottomNav />}
     </div>
   );
