@@ -755,6 +755,40 @@ export default function Home() {
           </motion.button>
         </section>
 
+        {/* ═══ 🏆 TODAY'S LEADERS ═══ */}
+        {(() => {
+          const topPolls = [...(polls || [])].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 3);
+          if (topPolls.length === 0) return null;
+          const medals = ['🥇', '🥈', '🥉'];
+          return (
+            <section className="px-3 mb-3">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">🏆 Today's Leaders</span>
+              </div>
+              <div className="bg-card rounded-xl border border-border/60 overflow-hidden shadow-card">
+                {topPolls.map((poll, i) => (
+                  <motion.div
+                    key={poll.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handlePollTap(poll)}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors ${i < topPolls.length - 1 ? 'border-b border-border/40' : ''}`}
+                  >
+                    <span className="text-lg">{medals[i]}</span>
+                    <span className="text-xs font-bold text-foreground line-clamp-1 flex-1">
+                      #{i + 1} — {poll.question}
+                    </span>
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+          );
+        })()}
+
         <HomeResultsModal
           open={!!modalPoll}
           onOpenChange={(open) => !open && setModalPoll(null)}
