@@ -621,12 +621,18 @@ export default function Home() {
                               </span>
                             </div>
                           </div>
-                          {/* Percentage bar */}
-                          <div className="h-1.5 bg-white/15 rounded-full overflow-hidden mb-2">
+                          {/* Percentage bar - split colors */}
+                          <div className="h-1.5 bg-white/15 rounded-full overflow-hidden mb-2 flex">
                             <motion.div
-                              className="h-full bg-option-a rounded-full"
+                              className="h-full bg-option-a"
                               initial={{ width: '50%' }}
                               animate={{ width: `${poll.percentA}%` }}
+                              transition={{ duration: 0.7, ease: 'easeOut' }}
+                            />
+                            <motion.div
+                              className="h-full bg-option-b"
+                              initial={{ width: '50%' }}
+                              animate={{ width: `${poll.percentB}%` }}
                               transition={{ duration: 0.7, ease: 'easeOut' }}
                             />
                           </div>
