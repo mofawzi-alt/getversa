@@ -251,9 +251,10 @@ export default function Home() {
       const now = new Date().toISOString();
       const { data: rawPolls } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at')
+        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score')
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
+        .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
         .limit(200);
       if (!rawPolls || rawPolls.length === 0) return [];
@@ -407,7 +408,7 @@ export default function Home() {
     const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
     const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
     return hasStarted && !isExpired;
-  }).sort((a, b) => b.totalVotes - a.totalVotes);
+  }).sort((a, b) => ((b as any).weight_score || 1) - ((a as any).weight_score || 1) || b.totalVotes - a.totalVotes);
 
   // (Featured poll removed — replaced by LIVE NOW carousel)
 
