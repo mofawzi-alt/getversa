@@ -797,7 +797,7 @@ export default function Home() {
                   >
                     <span className={`w-2.5 h-2.5 rounded-full ${rankColors[i]} shrink-0`} />
                     {opt.imageUrl ? (
-                      <img src={opt.imageUrl} alt={opt.name} className="w-7 h-7 rounded-lg object-contain bg-black shrink-0" />
+                      <img src={opt.imageUrl} alt={opt.name} className="w-7 h-7 rounded-lg object-cover shrink-0" />
                     ) : null}
                     <span className="text-xs font-bold text-foreground line-clamp-1 flex-1">
                       {opt.name}
