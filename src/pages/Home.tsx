@@ -251,9 +251,10 @@ export default function Home() {
       const now = new Date().toISOString();
       const { data: rawPolls } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at')
+        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score')
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
+        .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
         .limit(200);
       if (!rawPolls || rawPolls.length === 0) return [];
