@@ -755,17 +755,29 @@ export default function Home() {
           </motion.button>
         </section>
 
-        {/* ═══ 🏆 TOP RANKED ═══ */}
+        {/* ═══ 🏆 TOP RANKED (aggregated by option name) ═══ */}
         {(() => {
-          const topPolls = [...(polls || [])]
-            .filter(p => p.totalVotes > 0)
+          const allP = polls || [];
+          if (allP.length === 0) return null;
+
+          // Aggregate votes per unique option name across all polls
+          const optionMap = new Map<string, { name: string; totalVotes: number; imageUrl: string | null }>();
+          const ensure = (name: string, img: string | null) => {
+            if (!optionMap.has(name)) optionMap.set(name, { name, totalVotes: 0, imageUrl: img });
+          };
+          for (const p of allP) {
+            if (p.totalVotes === 0) continue;
+            ensure(p.option_a, p.image_a_url);
+            ensure(p.option_b, p.image_b_url);
+            optionMap.get(p.option_a)!.totalVotes += p.votesA;
+            optionMap.get(p.option_b)!.totalVotes += p.votesB;
+          }
+
+          const topOptions = Array.from(optionMap.values())
             .sort((a, b) => b.totalVotes - a.totalVotes)
-            .slice(0, 3)
-            .map(p => ({
-              ...p,
-              winnerName: p.percentA >= p.percentB ? p.option_a : p.option_b,
-            }));
-          if (topPolls.length === 0) return null;
+            .slice(0, 3);
+
+          if (topOptions.length === 0) return null;
           const rankColors = ['bg-amber-400', 'bg-gray-300', 'bg-amber-700'];
           return (
             <section className="px-3 mb-3">
@@ -774,21 +786,22 @@ export default function Home() {
                 <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">🏆 Top Ranked</span>
               </div>
               <div className="bg-card rounded-xl border border-border/60 overflow-hidden shadow-card">
-                {topPolls.map((poll, i) => (
+                {topOptions.map((opt, i) => (
                   <motion.div
-                    key={poll.id}
+                    key={opt.name}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.06 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handlePollTap(poll)}
-                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors ${i < topPolls.length - 1 ? 'border-b border-border/40' : ''}`}
+                    className={`flex items-center gap-3 px-4 py-3 ${i < topOptions.length - 1 ? 'border-b border-border/40' : ''}`}
                   >
                     <span className={`w-2.5 h-2.5 rounded-full ${rankColors[i]} shrink-0`} />
+                    {opt.imageUrl ? (
+                      <img src={opt.imageUrl} alt={opt.name} className="w-7 h-7 rounded-lg object-contain bg-black shrink-0" />
+                    ) : null}
                     <span className="text-xs font-bold text-foreground line-clamp-1 flex-1">
-                      {poll.winnerName}
+                      {opt.name}
                     </span>
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-[10px] text-muted-foreground shrink-0">{opt.totalVotes.toLocaleString()}</span>
                   </motion.div>
                 ))}
               </div>
