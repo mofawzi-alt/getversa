@@ -351,7 +351,7 @@ export default function Home() {
                 >
                   <div className="flex h-44 relative">
                     <div className="w-1/2 h-full relative overflow-hidden">
-                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-black transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
                       <div className="absolute bottom-3 left-3">
                         <p className="text-white text-sm font-bold drop-shadow-lg">{poll.option_a}</p>
