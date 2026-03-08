@@ -255,7 +255,7 @@ export default function Home() {
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(200);
       if (!rawPolls || rawPolls.length === 0) return [];
       const pollIds = rawPolls.map(p => p.id);
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
