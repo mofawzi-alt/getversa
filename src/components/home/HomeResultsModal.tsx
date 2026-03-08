@@ -30,7 +30,7 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
         {/* Split images */}
         <div className="flex h-44 relative">
           <div className="w-1/2 h-full relative overflow-hidden">
-            <img src={poll.image_a_url || imageA} alt={poll.option_a} className="w-full h-full object-cover" />
+            <img src={poll.image_a_url || imageA} alt={poll.option_a} className="w-full h-full object-contain bg-black" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute bottom-2 left-2 right-1">
               <p className="text-white text-xs font-bold drop-shadow-lg truncate">{poll.option_a}</p>
