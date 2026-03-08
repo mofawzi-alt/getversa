@@ -608,14 +608,14 @@ export default function Home() {
                         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-8 pb-3 px-4 z-10">
                           {/* Option labels + percentages */}
                           <div className="flex items-end justify-between mb-2">
-                            <div>
-                              <p className="text-white text-sm font-bold drop-shadow-lg truncate max-w-[140px]">{poll.option_a}</p>
+                            <div className="flex-1 text-center">
+                              <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_a}</p>
                               <span className="text-2xl font-bold text-option-a drop-shadow-lg">
                                 <AnimatedNumber value={poll.percentA} />%
                               </span>
                             </div>
-                            <div className="text-right">
-                              <p className="text-white text-sm font-bold drop-shadow-lg truncate max-w-[140px]">{poll.option_b}</p>
+                            <div className="flex-1 text-center">
+                              <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_b}</p>
                               <span className="text-2xl font-bold text-option-b drop-shadow-lg">
                                 <AnimatedNumber value={poll.percentB} />%
                               </span>
