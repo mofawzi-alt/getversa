@@ -827,7 +827,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot }: {
     >
       <div className="flex h-24 relative">
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+          <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-black transition-transform duration-300 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 left-1.5">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_a}</p>
