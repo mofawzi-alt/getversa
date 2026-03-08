@@ -408,7 +408,7 @@ export default function Home() {
     const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
     const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
     return hasStarted && !isExpired;
-  }).sort((a, b) => b.totalVotes - a.totalVotes);
+  }).sort((a, b) => ((b as any).weight_score || 1) - ((a as any).weight_score || 1) || b.totalVotes - a.totalVotes);
 
   // (Featured poll removed — replaced by LIVE NOW carousel)
 
