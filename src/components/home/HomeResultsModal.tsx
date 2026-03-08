@@ -38,7 +38,7 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
           </div>
           <div className="absolute inset-y-0 left-1/2 w-px bg-background/15 z-10" />
           <div className="w-1/2 h-full relative overflow-hidden">
-            <img src={poll.image_b_url || imageB} alt={poll.option_b} className="w-full h-full object-cover" />
+            <img src={poll.image_b_url || imageB} alt={poll.option_b} className="w-full h-full object-contain bg-black" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute bottom-2 left-1 right-2 text-right">
               <p className="text-white text-xs font-bold drop-shadow-lg truncate">{poll.option_b}</p>

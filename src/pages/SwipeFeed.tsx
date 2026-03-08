@@ -356,7 +356,7 @@ function ImmersivePollCard({
             <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/15 z-10" />
 
             <div className="w-1/2 h-full relative overflow-hidden">
-              <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" draggable={false} />
+              <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-black" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
               {showResults && !winnerIsA && (
                 <motion.div

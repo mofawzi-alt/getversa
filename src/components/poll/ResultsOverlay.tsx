@@ -125,7 +125,7 @@ function OptionRow({ label, imageUrl, percent, isWinner, isUserChoice, side }: {
         isUserChoice ? `ring-2 ring-${side === 'A' ? 'option-a' : 'option-b'}` : ''
       }`}>
         {imageUrl ? (
-          <img src={imageUrl} alt={label} className="w-full h-full object-cover" />
+          <img src={imageUrl} alt={label} className="w-full h-full object-contain bg-black" />
         ) : (
           <div className={`w-full h-full ${barColor} flex items-center justify-center`}>
             <span className="text-primary-foreground font-bold text-xs">{side}</span>
