@@ -446,7 +446,7 @@ function SectionSwipeView({
             {/* Option B */}
             <div className="w-1/2 h-full relative overflow-hidden">
               {poll.image_b_url ? (
-                <img src={poll.image_b_url} alt={poll.option_b} className="w-full h-full object-cover" draggable={false} onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-amber-900/40', 'to-black'); }} />
+                <img src={poll.image_b_url} alt={poll.option_b} className="w-full h-full object-contain bg-black" draggable={false} onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-amber-900/40', 'to-black'); }} />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-amber-900/40 to-black flex items-center justify-center p-4">
                   <span className="text-white font-bold text-center text-lg">{poll.option_b}</span>
