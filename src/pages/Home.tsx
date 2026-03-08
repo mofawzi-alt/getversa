@@ -351,7 +351,7 @@ export default function Home() {
                 >
                   <div className="flex h-44 relative">
                     <div className="w-1/2 h-full relative overflow-hidden">
-                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-black transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
                       <div className="absolute bottom-3 left-3">
                         <p className="text-white text-sm font-bold drop-shadow-lg">{poll.option_a}</p>
@@ -359,7 +359,7 @@ export default function Home() {
                     </div>
                     <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
                     <div className="w-1/2 h-full relative overflow-hidden">
-                      <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+                      <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-black transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
                       <div className="absolute bottom-3 right-3 text-right">
                         <p className="text-white text-sm font-bold drop-shadow-lg">{poll.option_b}</p>
@@ -588,12 +588,12 @@ export default function Home() {
                         {/* Images */}
                         <div className="flex h-[55vh] max-h-[420px] relative">
                           <div className="w-1/2 h-full relative overflow-hidden">
-                            <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+                            <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-black transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                           </div>
                           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
                           <div className="w-1/2 h-full relative overflow-hidden">
-                            <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+                            <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-black transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                           </div>
                         </div>
@@ -827,7 +827,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot }: {
     >
       <div className="flex h-24 relative">
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+          <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-black transition-transform duration-300 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 left-1.5">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_a}</p>
@@ -836,7 +836,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot }: {
         </div>
         <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+          <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-black transition-transform duration-300 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 right-1.5 text-right">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_b}</p>
