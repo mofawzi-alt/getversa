@@ -601,7 +601,7 @@ export default function Home() {
 
                         {/* Question overlay */}
                         <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/70 to-transparent z-10">
-                          <h3 className="text-white text-base font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
+                          <h3 className="text-white text-base font-bold drop-shadow-lg leading-tight text-center">{poll.question}</h3>
                         </div>
 
                         {/* Bottom info bar */}
