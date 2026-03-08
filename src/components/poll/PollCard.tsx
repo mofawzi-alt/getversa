@@ -168,7 +168,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
                   key={`${poll.id}-a`}
                   src={poll.image_a_url}
                   alt={poll.option_a}
-                  className={`w-full h-full object-cover transition-all duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`}
+                  className={`w-full h-full object-contain bg-black transition-all duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`}
                   draggable={false}
                   onLoad={() => setImageALoaded(true)}
                   loading="eager"
