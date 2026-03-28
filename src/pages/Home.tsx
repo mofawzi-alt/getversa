@@ -398,7 +398,7 @@ export default function Home() {
     }
   });
 
-  const totalLiveVoters = livePolls.reduce((sum, p) => sum + p.recentVotes, 0);
+  const totalLiveVoters = allRecentVoters?.size || 0;
 
   return (
     <AppLayout>
