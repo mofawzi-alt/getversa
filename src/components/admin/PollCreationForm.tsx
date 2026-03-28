@@ -433,28 +433,43 @@ export default function PollCreationForm({
                 <option value="55+">55+</option>
               </select>
             </div>
-            <div>
-              <Label className="text-xs">Country</Label>
-              <select
-                value={targetCountry}
-                onChange={(e) => setTargetCountry(e.target.value)}
-                className="w-full h-9 px-3 rounded-md border border-input bg-secondary text-sm"
-              >
-                <option value="">All</option>
-                <option value="Saudi Arabia">Saudi Arabia</option>
-                <option value="United Arab Emirates">UAE</option>
-                <option value="Qatar">Qatar</option>
-                <option value="Kuwait">Kuwait</option>
-                <option value="Bahrain">Bahrain</option>
-                <option value="Oman">Oman</option>
-                <option value="Jordan">Jordan</option>
-                <option value="Lebanon">Lebanon</option>
-                <option value="Iraq">Iraq</option>
-                <option value="Palestine">Palestine</option>
-                <option value="Syria">Syria</option>
-                <option value="Yemen">Yemen</option>
-                <option value="Egypt">Egypt</option>
-              </select>
+            <div className="col-span-3">
+              <Label className="text-xs">Target Countries <span className="text-muted-foreground">(select multiple)</span></Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {[
+                  { value: 'Egypt', label: 'Egypt' },
+                  { value: 'Saudi Arabia', label: 'Saudi Arabia' },
+                  { value: 'United Arab Emirates', label: 'UAE' },
+                  { value: 'Qatar', label: 'Qatar' },
+                  { value: 'Kuwait', label: 'Kuwait' },
+                  { value: 'Bahrain', label: 'Bahrain' },
+                  { value: 'Oman', label: 'Oman' },
+                  { value: 'Jordan', label: 'Jordan' },
+                  { value: 'Lebanon', label: 'Lebanon' },
+                  { value: 'Iraq', label: 'Iraq' },
+                  { value: 'Palestine', label: 'Palestine' },
+                  { value: 'Syria', label: 'Syria' },
+                  { value: 'Yemen', label: 'Yemen' },
+                ].map(c => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setTargetCountries(prev => 
+                      prev.includes(c.value) ? prev.filter(x => x !== c.value) : [...prev, c.value]
+                    )}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      targetCountries.includes(c.value) 
+                        ? 'bg-primary text-primary-foreground border-primary' 
+                        : 'bg-secondary text-muted-foreground border-border hover:border-primary/50'
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+              {targetCountries.length > 0 && (
+                <p className="text-xs text-primary mt-1">Targeting: {targetCountries.join(', ')}</p>
+              )}
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
