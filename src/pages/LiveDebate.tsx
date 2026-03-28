@@ -240,6 +240,26 @@ export default function LiveDebate() {
     }
   }, [handleExit]);
 
+  // Horizontal swipe navigation (result phase only)
+  const navSwipeRef = useRef(0);
+  const handleNavSwipeStart = useCallback((clientX: number) => {
+    if (phase !== 'result' || !currentPollIsVoted) return;
+    navSwipeRef.current = clientX;
+  }, [phase, currentPollIsVoted]);
+  const handleNavSwipeEnd = useCallback((clientX: number) => {
+    if (phase !== 'result' || !currentPollIsVoted) return;
+    const delta = clientX - navSwipeRef.current;
+    const SWIPE_THRESHOLD = 80;
+    if (delta < -SWIPE_THRESHOLD && hasMore) {
+      // Swipe left → next
+      setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe');
+    } else if (delta > SWIPE_THRESHOLD && currentIndex > 0) {
+      // Swipe right → previous
+      setCurrentIndex(prev => prev - 1); setResult(null); setPhase('result');
+    }
+    navSwipeRef.current = 0;
+  }, [phase, currentPollIsVoted, hasMore, currentIndex]);
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center">
