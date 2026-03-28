@@ -979,6 +979,7 @@ export default function SwipeFeed() {
                   isHighStakes={isHighStakes}
                   rareEvent={rareEvent}
                   userCountry={profile?.country}
+                  sessionVoteCount={sessionVoteCount}
                 />
               </div>
             );
