@@ -90,6 +90,7 @@ export default function VotingInsights() {
   if (!traits || traits.length === 0) return null;
 
   const insights = traits
+    .filter((t: any) => t.vote_count >= 2)
     .slice(0, MAX_INSIGHTS)
     .map((t: any) => TAG_INSIGHTS[t.tag] || FALLBACK_INSIGHT(t.tag));
 
