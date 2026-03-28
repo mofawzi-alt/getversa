@@ -168,7 +168,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
                   key={`${poll.id}-a`}
                   src={poll.image_a_url}
                   alt={poll.option_a}
-                  className={`w-full h-full object-contain bg-black transition-all duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`}
+                  className={`w-full h-full object-contain bg-muted transition-all duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`}
                   draggable={false}
                   onLoad={() => setImageALoaded(true)}
                   loading="eager"
@@ -218,7 +218,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
                   key={`${poll.id}-b`}
                   src={poll.image_b_url}
                   alt={poll.option_b}
-                  className={`w-full h-full object-contain bg-black transition-all duration-300 ${imageBLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  className={`w-full h-full object-contain bg-muted transition-all duration-300 ${imageBLoaded ? 'opacity-100' : 'opacity-0'}`}
                   draggable={false}
                   onLoad={() => setImageBLoaded(true)}
                   loading="eager"
