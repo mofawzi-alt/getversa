@@ -154,8 +154,8 @@ export default function PollCreationForm({
           target_country: null,
           target_countries: targetCountries.length > 0 ? targetCountries : [],
            intent_tag: intentTag || null,
-           tag_a: tagA || null,
-           tag_b: tagB || null,
+           option_a_tag: tagA || null,
+           option_b_tag: tagB || null,
          } as any)
         .select()
         .single();
