@@ -914,7 +914,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
           </span>
           {poll.category && (
             <span
-              onClick={(e) => { e.stopPropagation(); navigate(`/vote?category=${encodeURIComponent(poll.category!)}`); }}
+              onClick={(e) => { e.stopPropagation(); onCategoryTap?.(poll.category!); }}
               className="text-[8px] px-1.5 py-0.5 rounded-full font-bold bg-primary/10 text-primary cursor-pointer hover:bg-primary/20 transition-colors"
             >
               {getCategoryMeta(poll.category).emoji} {poll.category}
