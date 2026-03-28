@@ -163,7 +163,7 @@ export default function LiveDebate() {
       setResult({ choice: prevChoice as 'A' | 'B', percentA, percentB: 100 - percentA, totalVotes: total });
       setPhase('result');
     });
-  }, [currentPoll?.id]);
+  }, [currentPoll?.id, phase]);
 
   // Preload next 3 images
   useEffect(() => {
@@ -255,7 +255,7 @@ export default function LiveDebate() {
       setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe');
     } else if (delta > SWIPE_THRESHOLD && currentIndex > 0) {
       // Swipe right → previous
-      setCurrentIndex(prev => prev - 1); setResult(null); setPhase('result');
+      setCurrentIndex(prev => prev - 1); setResult(null); setPhase('swipe');
     }
     navSwipeRef.current = 0;
   }, [phase, currentPollIsVoted, hasMore, currentIndex]);
@@ -384,8 +384,8 @@ export default function LiveDebate() {
               {currentIndex > 0 && (
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => { setCurrentIndex(prev => prev - 1); setResult(null); setPhase('result'); }}
-                  className="px-5 py-2.5 rounded-full bg-white/15 text-white text-sm font-display font-bold backdrop-blur-md"
+                  onClick={() => { setCurrentIndex(prev => prev - 1); setResult(null); setPhase('swipe'); }}
+                  className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
                 >
                   ← Previous
                 </motion.button>
@@ -394,7 +394,7 @@ export default function LiveDebate() {
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => { setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe'); }}
-                  className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
+                  className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
                 >
                   Next Insight →
                 </motion.button>
