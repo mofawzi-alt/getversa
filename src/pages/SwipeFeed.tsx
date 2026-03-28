@@ -811,14 +811,18 @@ export default function SwipeFeed() {
         }
       }
 
-      // Auto-flow: scroll to next unvoted card
+      // Auto-flow: scroll to next unvoted card, prioritizing same category
       setTimeout(() => {
         if (!polls) return;
         const idx = polls.findIndex(p => p.id === data.pollId);
+        const currentCategory = polls[idx]?.category;
         const updatedVoted = new Map(votedResults).set(data.pollId, data);
-        const nextUnvoted = polls.find((p, i) => i > idx && !updatedVoted.has(p.id));
-        if (nextUnvoted) {
-          const nextEl = cardRefs.current.get(nextUnvoted.id);
+        const unvotedAfter = polls.filter((p, i) => i > idx && !updatedVoted.has(p.id));
+        // Prefer same category, then any unvoted
+        const sameCat = currentCategory ? unvotedAfter.find(p => p.category === currentCategory) : null;
+        const nextPoll = sameCat || unvotedAfter[0];
+        if (nextPoll) {
+          const nextEl = cardRefs.current.get(nextPoll.id);
           nextEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
           scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
