@@ -149,7 +149,8 @@ export default function PollCreationForm({
           ends_at: endsAt.toISOString(),
           target_gender: targetGender || null,
           target_age_range: targetAgeRange || null,
-          target_country: targetCountry || null,
+          target_country: null,
+          target_countries: targetCountries.length > 0 ? targetCountries : [],
           intent_tag: intentTag || null,
         } as any)
         .select()
@@ -380,7 +381,7 @@ export default function PollCreationForm({
           <Input
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            placeholder="e.g. trending, gen-z, tech"
+            placeholder="e.g. delivery, food, grocery, ride-hailing, price-sensitive, convenience"
             className="bg-secondary"
           />
         </div>
