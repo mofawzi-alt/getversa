@@ -802,6 +802,14 @@ export default function SwipeFeed() {
         setTimeout(() => triggerMicroFeedback(), 2000);
       }
 
+      // Value message — show once at threshold
+      if (newCount === VALUE_MSG_VOTE_THRESHOLD && !showValueMsg) {
+        setTimeout(() => {
+          setShowValueMsg(true);
+          setTimeout(() => setShowValueMsg(false), 4000);
+        }, 2500);
+      }
+
       // Milestone triggers
       const milestone = MILESTONES.find(m => m.at === newDailyCount);
       if (milestone && user) {
