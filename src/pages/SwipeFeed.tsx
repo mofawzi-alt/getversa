@@ -449,46 +449,80 @@ function ImmersivePollCard({
       </div>
 
       {/* Results below image */}
-      {showResults && (
-        <div className="shrink-0 px-6 pt-2 space-y-2">
-          <div className="flex justify-between items-center">
-            <div className="flex flex-col items-center flex-1">
-              <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-option-a">
-                <AnimatedPercent target={result!.percentA} delay={SUSPENSE_DELAY_MS} />
-              </motion.span>
-              {result?.choice === 'A' && <span className="text-sm font-bold text-option-a">Your vote</span>}
+      {showResults && (() => {
+        const userPercent = result!.choice === 'A' ? result!.percentA : result!.percentB;
+        const isMajority = userPercent >= 50;
+        return (
+          <div className="shrink-0 px-6 pt-2 space-y-2">
+            <div className="flex justify-between items-center">
+              <div className={`flex flex-col items-center flex-1 ${result?.choice === 'A' ? 'relative' : ''}`}>
+                {result?.choice === 'A' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute -top-1 -left-1 -right-1 -bottom-1 rounded-xl bg-option-a/8 border border-option-a/20"
+                  />
+                )}
+                <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className={`text-2xl font-bold text-option-a relative z-10 ${result?.choice === 'A' ? 'text-3xl' : ''}`}>
+                  <AnimatedPercent target={result!.percentA} delay={SUSPENSE_DELAY_MS} />
+                </motion.span>
+                {result?.choice === 'A' && <span className="text-xs font-bold text-option-a relative z-10">Your vote ✓</span>}
+              </div>
+              <div className={`flex flex-col items-center flex-1 ${result?.choice === 'B' ? 'relative' : ''}`}>
+                {result?.choice === 'B' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute -top-1 -left-1 -right-1 -bottom-1 rounded-xl bg-option-b/8 border border-option-b/20"
+                  />
+                )}
+                <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className={`text-2xl font-bold text-option-b relative z-10 ${result?.choice === 'B' ? 'text-3xl' : ''}`}>
+                  <AnimatedPercent target={result!.percentB} delay={SUSPENSE_DELAY_MS + 100} />
+                </motion.span>
+                {result?.choice === 'B' && <span className="text-xs font-bold text-option-b relative z-10">Your vote ✓</span>}
+              </div>
             </div>
-            <div className="flex flex-col items-center flex-1">
-              <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-option-b">
-                <AnimatedPercent target={result!.percentB} delay={SUSPENSE_DELAY_MS + 100} />
-              </motion.span>
-              {result?.choice === 'B' && <span className="text-sm font-bold text-option-b">Your vote</span>}
+            {/* Animated result bar */}
+            <div className="h-2.5 rounded-full bg-muted overflow-hidden flex">
+              <motion.div
+                initial={{ width: '50%' }}
+                animate={{ width: `${result!.percentA}%` }}
+                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
+                className="h-full bg-option-a rounded-l-full"
+              />
+              <motion.div
+                initial={{ width: '50%' }}
+                animate={{ width: `${result!.percentB}%` }}
+                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
+                className="h-full bg-option-b rounded-r-full"
+              />
             </div>
-          </div>
-          {/* Animated result bar */}
-          <div className="h-2.5 rounded-full bg-muted overflow-hidden flex">
+            {/* Alignment message */}
             <motion.div
-              initial={{ width: '50%' }}
-              animate={{ width: `${result!.percentA}%` }}
-              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
-              className="h-full bg-option-a rounded-l-full"
-            />
-            <motion.div
-              initial={{ width: '50%' }}
-              animate={{ width: `${result!.percentB}%` }}
-              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
-              className="h-full bg-option-b rounded-r-full"
-            />
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="text-center"
+            >
+              <p className="text-sm font-display font-bold text-foreground">
+                You voted with {userPercent}% of users
+              </p>
+              <span className={`inline-block mt-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
+                isMajority ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+              }`}>
+                {isMajority ? '👥 Majority' : '👀 Minority'}
+              </span>
+            </motion.div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Bottom labels — always visible */}
       <div className="shrink-0 px-6 pb-3 pt-1 flex items-center justify-between z-20">
         {showResults ? (
           <>
             <span className="text-muted-foreground text-xs flex items-center gap-1">
-              <Users className="h-3 w-3" /> {result!.totalVotes} perspectives
+              <Users className="h-3 w-3" /> {result!.totalVotes.toLocaleString()} perspectives
             </span>
             <motion.span
               initial={{ opacity: 0, scale: 0.9 }}
