@@ -48,6 +48,8 @@ export default function PollCreationForm({
   const [targetAgeRange, setTargetAgeRange] = useState('');
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
   const [intentTag, setIntentTag] = useState('');
+  const [tagA, setTagA] = useState('');
+  const [tagB, setTagB] = useState('');
   const [showCustomIntentInput, setShowCustomIntentInput] = useState(false);
   const [customIntentName, setCustomIntentName] = useState('');
   const [entityName, setEntityName] = useState(initialEntityName || '');
@@ -151,8 +153,10 @@ export default function PollCreationForm({
           target_age_range: targetAgeRange || null,
           target_country: null,
           target_countries: targetCountries.length > 0 ? targetCountries : [],
-          intent_tag: intentTag || null,
-        } as any)
+           intent_tag: intentTag || null,
+           tag_a: tagA || null,
+           tag_b: tagB || null,
+         } as any)
         .select()
         .single();
       
