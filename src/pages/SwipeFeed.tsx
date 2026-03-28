@@ -600,6 +600,8 @@ function SwipeCounter({ count }: { count: number }) {
   );
 }
 
+const VALUE_MSG_VOTE_THRESHOLD = 3;
+
 // ── Main Feed ──
 export default function SwipeFeed() {
   const { user, profile, loading } = useAuth();
@@ -613,6 +615,7 @@ export default function SwipeFeed() {
   const [sessionVoteCount, setSessionVoteCount] = useState(0);
   const [dailySwipeCount, setDailySwipeCount] = useState(0);
   const [milestoneMsg, setMilestoneMsg] = useState<{ message: string; type: 'banner' | 'modal' | 'badge' } | null>(null);
+  const [showValueMsg, setShowValueMsg] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -799,6 +802,14 @@ export default function SwipeFeed() {
         setTimeout(() => triggerMicroFeedback(), 2000);
       }
 
+      // Value message — show once at threshold
+      if (newCount === VALUE_MSG_VOTE_THRESHOLD && !showValueMsg) {
+        setTimeout(() => {
+          setShowValueMsg(true);
+          setTimeout(() => setShowValueMsg(false), 4000);
+        }, 2500);
+      }
+
       // Milestone triggers
       const milestone = MILESTONES.find(m => m.at === newDailyCount);
       if (milestone && user) {
@@ -964,6 +975,22 @@ export default function SwipeFeed() {
             ) : (
               <p className="text-sm font-display font-bold text-background text-center">{milestoneMsg.message}</p>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Value message — shown once after 3 votes */}
+      <AnimatePresence>
+        {showValueMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-muted/90 backdrop-blur-sm border border-border max-w-xs"
+          >
+            <p className="text-[11px] text-muted-foreground text-center leading-snug">
+              Insights like these help brands understand real consumer behavior
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
