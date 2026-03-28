@@ -6,15 +6,16 @@ import { Sparkles } from 'lucide-react';
 
 // Maps tags to human-readable insight phrases
 const TAG_INSIGHTS: Record<string, string> = {
-  convenience: 'You tend to prioritize convenience over cost',
-  price_sensitive: 'You lean towards value-driven, budget-smart choices',
-  brand_oriented: 'You prefer trusted brands over cheaper alternatives',
+  convenience: 'You tend to prioritize convenience over effort',
+  price_sensitive: 'You are highly price-conscious in your decisions',
+  brand_oriented: 'You prefer strong brands over cheaper alternatives',
   growth: 'You lean towards long-term growth decisions',
-  conservative: 'You favor stability and careful planning',
+  conservative: 'You prefer stability and low-risk choices',
+  risk_taker: 'You are comfortable taking risks for higher rewards',
+  experience: 'You value experience and lifestyle choices',
+  practical: 'You tend to make practical, value-driven decisions',
   quality: 'You choose quality over quantity',
   speed: 'You value speed and efficiency',
-  experience: 'You prioritize experiences over material things',
-  practical: 'You make practical, grounded decisions',
   adventurous: 'You tend to explore new options over familiar ones',
   social: 'You value social connection and community',
   independent: 'You prefer independence and self-reliance',
@@ -70,7 +71,7 @@ export default function VotingInsights() {
       <div className="glass rounded-2xl p-4 text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Sparkles className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-display font-bold text-foreground">Your Insights</h3>
+          <h3 className="text-sm font-display font-bold text-foreground">Your Decision Profile</h3>
         </div>
         <p className="text-xs text-muted-foreground">
           Vote on {remaining} more poll{remaining !== 1 ? 's' : ''} to unlock your personal insights
@@ -100,7 +101,7 @@ export default function VotingInsights() {
     >
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-display font-bold text-foreground">Your Insights</h3>
+        <h3 className="text-sm font-display font-bold text-foreground">Your Decision Profile</h3>
       </div>
 
       <div className="space-y-2">
