@@ -29,6 +29,7 @@ interface Poll {
   target_gender: string | null;
   target_age_range: string | null;
   target_country: string | null;
+  target_countries: string[] | null;
 }
 
 interface PollEditDialogProps {
@@ -55,6 +56,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
   const [imageBFile, setImageBFile] = useState<File | null>(null);
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
+  const [targetCountries, setTargetCountries] = useState<string[]>([]);
 
   // Sync state when poll changes
   const [lastPollId, setLastPollId] = useState<string | null>(null);
@@ -73,6 +75,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setImageBPreview('');
     setImageAFile(null);
     setImageBFile(null);
+    setTargetCountries(poll.target_countries || []);
   }
 
   const uploadImage = async (file: File): Promise<string | null> => {
@@ -134,6 +137,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           intent_tag: intentTag || null,
           starts_at: startsAt ? new Date(startsAt).toISOString() : null,
           ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+          target_countries: targetCountries.length > 0 ? targetCountries : [],
         })
         .eq('id', poll.id);
       if (error) throw error;
