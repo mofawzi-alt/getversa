@@ -282,6 +282,26 @@ export default function PollCreationForm({
             />
           </div>
         </div>
+        {/* Behavioral tags per option */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label className="text-xs text-muted-foreground">Tag A (behavioral)</Label>
+            <Input
+              value={tagA}
+              onChange={(e) => setTagA(e.target.value)}
+              placeholder="e.g. convenience"
+              className="bg-secondary text-xs"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Tag B (behavioral)</Label>
+            <Input
+              value={tagB}
+              onChange={(e) => setTagB(e.target.value)}
+              placeholder="e.g. price_sensitive"
+              className="bg-secondary text-xs"
+            />
+          </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>Image A</Label>
