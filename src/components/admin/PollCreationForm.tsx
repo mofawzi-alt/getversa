@@ -51,48 +51,9 @@ export default function PollCreationForm({
   const [showCustomIntentInput, setShowCustomIntentInput] = useState(false);
   const [customIntentName, setCustomIntentName] = useState('');
   const [entityName, setEntityName] = useState(initialEntityName || '');
-  const [entityName, setEntityName] = useState(initialEntityName || '');
   
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
-
-  // Fetch categories from database
-  const { data: categories, refetch: refetchCategories } = useQuery({
-    queryKey: ['poll-categories'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('is_preset', { ascending: false })
-        .order('name');
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  // Add new category mutation
-  const addCategoryMutation = useMutation({
-    mutationFn: async (name: string) => {
-      const { error } = await supabase
-        .from('categories')
-        .insert({ name, is_preset: false, created_by: userId });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success('Category added!');
-      refetchCategories();
-      setCategory(newCategoryName);
-      setNewCategoryName('');
-      setShowNewCategoryInput(false);
-    },
-    onError: (error: any) => {
-      if (error.message?.includes('duplicate')) {
-        toast.error('Category already exists');
-      } else {
-        toast.error('Failed to add category');
-      }
-    },
-  });
 
   const handleImageSelect = (file: File, option: 'A' | 'B') => {
     const reader = new FileReader();
