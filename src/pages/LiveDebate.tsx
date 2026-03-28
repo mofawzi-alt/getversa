@@ -354,17 +354,8 @@ export default function LiveDebate() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center gap-3"
+            className="flex flex-col items-center gap-2"
           >
-            {currentIndex > 0 && (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => { setCurrentIndex(prev => prev - 1); setResult(null); setPhase('result'); }}
-                className="px-5 py-2.5 rounded-full bg-white/15 text-white text-sm font-display font-bold backdrop-blur-md"
-              >
-                ← Previous
-              </motion.button>
-            )}
             {hasMore ? (
               <motion.button
                 whileTap={{ scale: 0.95 }}
@@ -378,6 +369,9 @@ export default function LiveDebate() {
                 Back to Home
               </button>
             )}
+            <span className="text-white/30 text-[8px]">
+              {currentIndex > 0 ? '← swipe right for previous' : ''}{currentIndex > 0 && hasMore ? ' · ' : ''}{hasMore ? 'swipe left for next →' : ''}
+            </span>
           </motion.div>
         )}
       </div>
