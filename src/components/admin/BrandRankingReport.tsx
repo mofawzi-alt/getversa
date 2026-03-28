@@ -117,8 +117,8 @@ export default function BrandRankingReport() {
     link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
     setTimeout(() => {
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }, 100);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }, 200);
     toast.success('Rankings exported');
   };
 
