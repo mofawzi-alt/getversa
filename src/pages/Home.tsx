@@ -398,7 +398,12 @@ export default function Home() {
     }
   });
 
-  const totalLiveVoters = allRecentVoters?.size || 0;
+  const totalLiveVoters = useMemo(() => {
+    if (!livePolls.length) return 0;
+    const uniqueIds = new Set<string>();
+    livePolls.forEach((p: any) => p._recentVoterIds?.forEach((id: string) => uniqueIds.add(id)));
+    return uniqueIds.size;
+  }, [livePolls]);
 
   return (
     <AppLayout>
