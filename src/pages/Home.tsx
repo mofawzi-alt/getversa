@@ -252,19 +252,32 @@ export default function Home() {
   });
 
   const { data: polls, isLoading } = useQuery({
-    queryKey: ['visual-feed-home'],
+    queryKey: ['visual-feed-home', profile?.gender, profile?.age_range, profile?.country],
     queryFn: async () => {
       const now = new Date().toISOString();
       const { data: rawPolls } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score')
+        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country')
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
         .limit(200);
       if (!rawPolls || rawPolls.length === 0) return [];
-      const pollIds = rawPolls.map(p => p.id);
+
+      // Filter by user demographics
+      let filteredPolls = rawPolls;
+      if (profile) {
+        filteredPolls = rawPolls.filter(p => {
+          if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) return false;
+          if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range && p.target_age_range !== profile.age_range) return false;
+          if (p.target_country && p.target_country !== 'All' && profile.country && p.target_country !== profile.country) return false;
+          return true;
+        });
+      }
+
+      const pollIds = filteredPolls.map(p => p.id);
+      if (pollIds.length === 0) return [];
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
 
@@ -280,7 +293,7 @@ export default function Home() {
         recentVotesMap.set(v.poll_id, (recentVotesMap.get(v.poll_id) || 0) + 1);
       });
 
-      return rawPolls.map(p => {
+      return filteredPolls.map(p => {
         const r = resultsMap.get(p.id) as any;
         const total = (r?.total_votes as number) || 0;
         const votesA = (r?.votes_a as number) || 0;
