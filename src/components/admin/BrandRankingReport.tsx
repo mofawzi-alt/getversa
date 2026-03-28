@@ -106,6 +106,7 @@ export default function BrandRankingReport() {
     rankings.forEach((item, i) => {
       csv += `${i + 1},"${item.name}",${item.totalVotes},${item.wins},${item.losses},${item.winRate},${item.matchups}\n`;
     });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
