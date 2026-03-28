@@ -282,7 +282,7 @@ export default function AdminAnalyticsExport() {
     link.download = `${filename}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     link.style.display = 'none';
     document.body.appendChild(link);
-    a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+    link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
     setTimeout(() => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);

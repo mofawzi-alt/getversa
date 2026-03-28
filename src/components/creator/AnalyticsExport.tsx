@@ -78,7 +78,7 @@ export default function AnalyticsExport() {
         link.download = `versa-${type}-${new Date().toISOString().split('T')[0]}.csv`;
         link.style.display = 'none';
         document.body.appendChild(link);
-        link.click();
+        link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
         setTimeout(() => {
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
