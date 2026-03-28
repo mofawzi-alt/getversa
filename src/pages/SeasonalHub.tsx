@@ -232,6 +232,7 @@ function SectionSwipeView({
   userId?: string;
   onBack: () => void;
 }) {
+  const { profile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [result, setResult] = useState<VoteResult | null>(null);
   const [phase, setPhase] = useState<'swipe' | 'result' | 'complete'>('swipe');
