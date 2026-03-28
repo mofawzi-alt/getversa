@@ -600,6 +600,8 @@ function SwipeCounter({ count }: { count: number }) {
   );
 }
 
+const VALUE_MSG_VOTE_THRESHOLD = 3;
+
 // ── Main Feed ──
 export default function SwipeFeed() {
   const { user, profile, loading } = useAuth();
