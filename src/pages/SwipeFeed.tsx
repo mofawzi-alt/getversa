@@ -157,6 +157,7 @@ function ImmersivePollCard({
   userCountry?: string | null;
   sessionVoteCount?: number;
 }) {
+  const navigate = useNavigate();
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [flyDirection, setFlyDirection] = useState<'left' | 'right' | null>(null);
