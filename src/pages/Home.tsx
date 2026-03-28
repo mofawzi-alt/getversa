@@ -355,48 +355,90 @@ export default function Home() {
 
    // ── FULL HOME ──
   const now = new Date();
-  const livePolls = allPolls.filter(p => {
+  const livePollsRaw = allPolls.filter(p => {
     const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
     const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
     return hasStarted && !isExpired;
   }).sort((a, b) => ((b as any).weight_score || 1) - ((a as any).weight_score || 1) || b.totalVotes - a.totalVotes);
 
+  // Diversify live polls by category (round-robin pick)
+  const livePolls = (() => {
+    const byCategory = new Map<string, PollCard[]>();
+    livePollsRaw.forEach(p => {
+      const cat = p.category || 'Other';
+      if (!byCategory.has(cat)) byCategory.set(cat, []);
+      byCategory.get(cat)!.push(p);
+    });
+    const cats = Array.from(byCategory.values());
+    const result: PollCard[] = [];
+    const usedIds = new Set<string>();
+    let round = 0;
+    while (result.length < livePollsRaw.length) {
+      let added = false;
+      for (const catPolls of cats) {
+        if (round < catPolls.length && !usedIds.has(catPolls[round].id)) {
+          usedIds.add(catPolls[round].id);
+          result.push(catPolls[round]);
+          added = true;
+        }
+      }
+      if (!added) break;
+      round++;
+    }
+    return result;
+  })();
+
   // (Featured poll removed — replaced by LIVE NOW carousel)
 
-  // Trending: build unified list with badges
+  // Trending: build unified list with badges, diversified by category
   const trendingPolls: (PollCard & { trendBadge: string; trendHot?: boolean })[] = [];
   const seenIds = new Set<string>();
+  const seenTrendingCategories = new Set<string>();
 
-  // Most Voted (top 3)
-  [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 3).forEach(p => {
-    if (!seenIds.has(p.id)) {
-      seenIds.add(p.id);
-      trendingPolls.push({ ...p, trendBadge: `🔥 ${p.totalVotes} votes` });
-    }
+  const tryAddTrending = (p: PollCard, badge: string, hot?: boolean) => {
+    if (seenIds.has(p.id)) return;
+    const cat = p.category || 'Other';
+    // Prefer unseen categories first, but allow repeats if we have <6 unique cats
+    if (seenTrendingCategories.has(cat) && trendingPolls.length < 9) return;
+    seenIds.add(p.id);
+    seenTrendingCategories.add(cat);
+    trendingPolls.push({ ...p, trendBadge: badge, trendHot: hot });
+  };
+
+  // Pass 1: one per category from each ranking
+  // Most Voted
+  [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).forEach(p => {
+    if (trendingPolls.length >= 9) return;
+    tryAddTrending(p, `🔥 ${p.totalVotes} votes`);
   });
 
-  // Most Contested (top 3)
-  [...allPolls].filter(p => p.totalVotes > 0).sort((a, b) => Math.abs(a.percentA - 50) - Math.abs(b.percentA - 50)).slice(0, 3).forEach(p => {
+  // Most Contested
+  [...allPolls].filter(p => p.totalVotes > 0).sort((a, b) => Math.abs(a.percentA - 50) - Math.abs(b.percentA - 50)).forEach(p => {
+    if (trendingPolls.length >= 9) return;
     const spread = Math.abs(p.percentA - 50);
-    if (!seenIds.has(p.id)) {
-      seenIds.add(p.id);
-      trendingPolls.push({ ...p, trendBadge: `⚡ ${spread}% gap`, trendHot: spread <= 5 });
-    }
+    tryAddTrending(p, `⚡ ${spread}% gap`, spread <= 5);
   });
 
-  // Fastest Rising (top 3)
+  // Fastest Rising
   [...allPolls].sort((a, b) => {
     const aAge = (Date.now() - new Date(a.created_at).getTime()) / (1000 * 60 * 60);
     const bAge = (Date.now() - new Date(b.created_at).getTime()) / (1000 * 60 * 60);
     return (bAge > 0 ? b.totalVotes / bAge : b.totalVotes) - (aAge > 0 ? a.totalVotes / aAge : a.totalVotes);
-  }).slice(0, 3).forEach(p => {
+  }).forEach(p => {
+    if (trendingPolls.length >= 9) return;
     const ageHours = Math.max(1, (Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60));
     const rate = Math.round(p.totalVotes / ageHours);
-    if (!seenIds.has(p.id)) {
-      seenIds.add(p.id);
-      trendingPolls.push({ ...p, trendBadge: `🚀 ${rate}/hr` });
-    }
+    tryAddTrending(p, `🚀 ${rate}/hr`);
   });
+
+  // Pass 2: fill remaining slots allowing category repeats
+  if (trendingPolls.length < 9) {
+    [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).forEach(p => {
+      if (trendingPolls.length >= 9 || seenIds.has(p.id)) return;
+      seenIds.add(p.id);
+      trendingPolls.push({ ...p, trendBadge: `🔥 ${p.totalVotes} votes` });
+    });
+  }
 
   const totalLiveVoters = (() => {
     if (!livePolls.length) return 0;
@@ -569,6 +611,14 @@ export default function Home() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5">
                               <LiveIndicator variant="overlay" />
+                              {poll.category && (
+                                <span
+                                  onClick={(e) => { e.stopPropagation(); navigate(`/vote?category=${encodeURIComponent(poll.category!)}`); }}
+                                  className="text-[9px] px-2 py-0.5 rounded-full font-bold bg-white/20 text-white backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors drop-shadow-lg"
+                                >
+                                  {getCategoryMeta(poll.category).emoji} {poll.category}
+                                </span>
+                              )}
                               <span className="text-[10px] text-white/70 flex items-center gap-0.5 drop-shadow-lg font-medium">
                                 <Users className="h-3 w-3" /> {poll.recentVotes > 0 ? <><AnimatedNumber value={poll.recentVotes} /> voting now</> : <><AnimatedNumber value={poll.totalVotes} /> votes</>}
                               </span>
@@ -670,7 +720,7 @@ export default function Home() {
             </div>
             <div className="flex gap-2.5 overflow-x-auto px-3 scrollbar-hide snap-x pb-1">
               {trendingPolls.map((poll, i) => (
-                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={poll.trendBadge} hot={poll.trendHot} />
+                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={poll.trendBadge} hot={poll.trendHot} onCategoryTap={(cat) => navigate(`/vote?category=${encodeURIComponent(cat)}`)} />
               ))}
             </div>
           </section>
@@ -818,8 +868,8 @@ export default function Home() {
 }
 
 // ── Trending Poll Card (compact horizontal scroll) ──
-function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot }: {
-  poll: PollCard; index: number; hasVoted: boolean; onTap: (p: PollCard) => void; badge: string; hot?: boolean;
+function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategoryTap }: {
+  poll: PollCard; index: number; hasVoted: boolean; onTap: (p: PollCard) => void; badge: string; hot?: boolean; onCategoryTap?: (cat: string) => void;
 }) {
   const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
   const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
@@ -866,9 +916,19 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot }: {
         <p className="text-[9px] font-bold text-foreground truncate flex-1">{poll.question}</p>
       </div>
       <div className="px-2 pb-1.5 bg-card flex items-center justify-between">
-        <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${hot ? 'bg-destructive/15 text-destructive' : 'bg-muted text-muted-foreground'}`}>
-          {badge}
-        </span>
+        <div className="flex items-center gap-1">
+          <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${hot ? 'bg-destructive/15 text-destructive' : 'bg-muted text-muted-foreground'}`}>
+            {badge}
+          </span>
+          {poll.category && (
+            <span
+              onClick={(e) => { e.stopPropagation(); onCategoryTap?.(poll.category!); }}
+              className="text-[8px] px-1.5 py-0.5 rounded-full font-bold bg-primary/10 text-primary cursor-pointer hover:bg-primary/20 transition-colors"
+            >
+              {getCategoryMeta(poll.category).emoji} {poll.category}
+            </span>
+          )}
+        </div>
         {!hasVoted && (
           <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Vote</span>
         )}
