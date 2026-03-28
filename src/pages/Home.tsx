@@ -772,7 +772,9 @@ export default function Home() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.06 }}
-                    className={`flex items-center gap-3 px-4 py-3 ${i < topOptions.length - 1 ? 'border-b border-border/40' : ''}`}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate(`/vote?search=${encodeURIComponent(opt.name)}`)}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-muted/50 transition-colors ${i < topOptions.length - 1 ? 'border-b border-border/40' : ''}`}
                   >
                     <span className={`w-2.5 h-2.5 rounded-full ${rankColors[i]} shrink-0`} />
                     {opt.imageUrl ? (
@@ -781,7 +783,10 @@ export default function Home() {
                     <span className="text-xs font-bold text-foreground line-clamp-1 flex-1">
                       {opt.name}
                     </span>
-                    <span className="text-[10px] text-muted-foreground shrink-0">{opt.totalVotes.toLocaleString()}</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-[10px] text-muted-foreground">{opt.totalVotes.toLocaleString()}</span>
+                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                    </div>
                   </motion.div>
                 ))}
               </div>
