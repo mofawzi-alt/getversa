@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, Check, Search } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const AGE_RANGES = ['13-17', '18-24', '25-34', '35-44', '45-54', '55+'];
 const GENDERS = ['Male', 'Female'];
@@ -32,24 +32,42 @@ const CITIES: Record<string, string[]> = {
   'Egypt': ['Cairo', 'Alexandria', 'Giza', 'Sharm El Sheikh', 'Hurghada', 'Luxor', 'Aswan', 'Mansoura', 'Tanta', 'Port Said', 'Suez', 'Ismailia'],
 };
 
-const INTRO_SLIDES = [
-  { title: 'Your opinion. Structured.', subtitle: 'VERSA captures what people really think — one vote at a time.' },
-  { title: 'Vote in 3 seconds.', subtitle: 'Swipe or tap. No overthinking. Just pick your side.' },
-  { title: 'See how people like you think.', subtitle: 'Instant results. Real data. Your voice matters.' },
-];
+// Try to detect country from timezone
+function detectCountry(): string {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz.includes('Riyadh')) return 'Saudi Arabia';
+    if (tz.includes('Dubai')) return 'United Arab Emirates';
+    if (tz.includes('Qatar') || tz.includes('Doha')) return 'Qatar';
+    if (tz.includes('Kuwait')) return 'Kuwait';
+    if (tz.includes('Bahrain')) return 'Bahrain';
+    if (tz.includes('Muscat')) return 'Oman';
+    if (tz.includes('Amman')) return 'Jordan';
+    if (tz.includes('Beirut')) return 'Lebanon';
+    if (tz.includes('Damascus')) return 'Syria';
+    if (tz.includes('Baghdad')) return 'Iraq';
+    if (tz.includes('Gaza') || tz.includes('Hebron')) return 'Palestine';
+    if (tz.includes('Aden')) return 'Yemen';
+    if (tz.includes('Cairo')) return 'Egypt';
+  } catch {}
+  return '';
+}
 
 export default function Onboarding() {
-  const [step, setStep] = useState(0); // 0-2 = intro slides, 3-6 = profile steps
+  // Steps: 0=username, 1=age, 2=gender, 3=country, 4=city, 5=confirmation
+  const [step, setStep] = useState(0);
   const [username, setUsername] = useState('');
   const [ageRange, setAgeRange] = useState('');
   const [gender, setGender] = useState('');
-  const [country, setCountry] = useState('');
+  const [country, setCountry] = useState(detectCountry);
   const [city, setCity] = useState('');
+  const [citySearch, setCitySearch] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const { user, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
-  const totalSteps = 8; // 3 intro + 5 profile (username, age, gender, country, city)
+  const totalSteps = 5; // username, age, gender, country, city
 
   const handleComplete = async () => {
     if (!user) return;
@@ -61,7 +79,6 @@ export default function Onboarding() {
 
     setLoading(true);
     try {
-      // Upsert user profile (handles both new and existing users)
       const { error: profileError } = await supabase
         .from('users')
         .upsert({
@@ -83,13 +100,14 @@ export default function Onboarding() {
         throw profileError;
       }
 
-      // Upsert automation settings (ignore if exists)
       await supabase.from('automation_settings').upsert({ user_id: user.id }, { onConflict: 'user_id' });
       await refreshProfile();
-      // Mark welcome as done so user never sees it again
-      try { localStorage.setItem('versa_welcome_done', 'true'); } catch {}
-      toast.success('Welcome to VERSA!');
-      navigate('/');
+
+      // Show confirmation then redirect to voting
+      setShowConfirmation(true);
+      setTimeout(() => {
+        navigate('/vote');
+      }, 2000);
     } catch (err) {
       toast.error('Failed to save profile');
     } finally {
@@ -98,185 +116,217 @@ export default function Onboarding() {
   };
 
   const nextStep = () => {
-    if (step === 3 && !username.trim()) { toast.error('Please enter a username'); return; }
-    if (step === 4 && !ageRange) { toast.error('Please select your age range'); return; }
-    if (step === 5 && !gender) { toast.error('Please select your gender'); return; }
-    if (step === 6 && !country) { toast.error('Please select your country'); return; }
-    // Reset city when moving past country step if country changed
-    if (step === 6) { setCity(''); }
+    if (step === 0 && !username.trim()) { toast.error('Please enter a username'); return; }
+    if (step === 1 && !ageRange) { toast.error('Please select your age range'); return; }
+    if (step === 2 && !gender) { toast.error('Please select your gender'); return; }
+    if (step === 3 && !country) { toast.error('Please select your country'); return; }
+    if (step === 3) { setCity(''); setCitySearch(''); }
     setStep(step + 1);
   };
 
-  const isIntroSlide = step < 3;
+  // Filter cities by search
+  const availableCities = (CITIES[country] || []).filter(c =>
+    !citySearch || c.toLowerCase().includes(citySearch.toLowerCase())
+  );
+
+  // Confirmation screen
+  if (showConfirmation) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+          className="flex flex-col items-center gap-4 text-center"
+        >
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <Check className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-display font-bold text-foreground">Your insights are now personalized</h1>
+          <p className="text-muted-foreground text-sm">Taking you back to voting...</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col p-6 safe-area-top safe-area-bottom">
-      {/* Top bar: Progress + Skip */}
+    <div className="min-h-screen flex flex-col p-6 safe-area-top safe-area-bottom bg-background">
+      {/* Progress bar */}
       <div className="flex items-center gap-3 mb-8">
-        <div className="flex gap-2 flex-1">
+        <div className="flex gap-1.5 flex-1">
           {Array.from({ length: totalSteps }).map((_, s) => (
             <div
               key={s}
-              className={`h-1 flex-1 rounded-full transition-all ${
+              className={`h-1 flex-1 rounded-full transition-all duration-300 ${
                 s <= step ? 'bg-gradient-primary' : 'bg-secondary'
               }`}
             />
           ))}
         </div>
-        {isIntroSlide && (
-          <button
-            onClick={() => setStep(3)}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Skip
-          </button>
-        )}
+        <span className="text-xs text-muted-foreground font-medium">{step + 1}/{totalSteps}</span>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full animate-slide-up">
-        {/* Intro Slides */}
-        {isIntroSlide && (
-          <div className="space-y-6 text-center">
-            <div className="text-6xl mb-4">
-              {step === 0 ? '📊' : step === 1 ? '⚡' : '🌍'}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -30 }}
+          transition={{ duration: 0.2 }}
+          className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full"
+        >
+          {/* Step 0: Username */}
+          {step === 0 && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">Choose your username</h1>
+                <p className="text-foreground/60">This is how others will see you</p>
+              </div>
+              <div className="space-y-2 bg-card rounded-xl p-4 border border-border">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  placeholder="@cooluser"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  className="text-lg h-14"
+                  maxLength={20}
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground">Only letters, numbers, and underscores</p>
+              </div>
             </div>
-            <h1 className="text-3xl font-display font-bold text-foreground">
-              {INTRO_SLIDES[step].title}
-            </h1>
-            <p className="text-foreground/60 text-lg">
-              {INTRO_SLIDES[step].subtitle}
-            </p>
-          </div>
-        )}
+          )}
 
-        {/* Step 3: Username */}
-        {step === 3 && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-display font-bold text-foreground mb-2">Choose your username</h1>
-              <p className="text-foreground/60">This is how others will see you</p>
+          {/* Step 1: Age (chips) */}
+          {step === 1 && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">How old are you?</h1>
+                <p className="text-foreground/60">Helps personalize your experience</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {AGE_RANGES.map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => setAgeRange(range)}
+                    className={`px-5 py-3 rounded-full border-2 transition-all font-medium text-sm ${
+                      ageRange === range
+                        ? 'border-primary bg-primary/10 text-primary scale-105'
+                        : 'border-border bg-card text-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    {range}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="space-y-2 bg-card rounded-xl p-4 border border-border">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                placeholder="@cooluser"
-                value={username}
-                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                className="text-lg h-14"
-                maxLength={20}
-              />
-              <p className="text-xs text-muted-foreground">Only letters, numbers, and underscores</p>
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Step 4: Age (REQUIRED) */}
-        {step === 4 && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-display font-bold text-foreground mb-2">How old are you?</h1>
-              <p className="text-foreground/60">Required for personalized content</p>
+          {/* Step 2: Gender (buttons) */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">What's your gender?</h1>
+                <p className="text-foreground/60">For demographic insights</p>
+              </div>
+              <div className="flex gap-3">
+                {GENDERS.map((g) => (
+                  <button
+                    key={g}
+                    onClick={() => setGender(g)}
+                    className={`flex-1 p-4 rounded-xl border-2 transition-all font-medium text-center ${
+                      gender === g
+                        ? 'border-primary bg-primary/10 text-primary scale-[1.02]'
+                        : 'border-border bg-card text-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    {g === 'Male' ? '👨' : '👩'} {g}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {AGE_RANGES.map((range) => (
-                <button
-                  key={range}
-                  onClick={() => setAgeRange(range)}
-                  className={`p-4 rounded-xl border-2 transition-all font-medium ${
-                    ageRange === range
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-card text-foreground hover:border-primary/50'
-                  }`}
-                >
-                  {range}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Step 5: Gender (REQUIRED) */}
-        {step === 5 && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-display font-bold text-foreground mb-2">What's your gender?</h1>
-              <p className="text-foreground/60">Required for demographic insights</p>
-            </div>
-            <div className="grid grid-cols-1 gap-3">
-              {GENDERS.map((g) => (
-                <button
-                  key={g}
-                  onClick={() => setGender(g)}
-                  className={`p-4 rounded-xl border-2 transition-all text-left font-medium ${
-                    gender === g
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-card text-foreground hover:border-primary/50'
-                  }`}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 6: Country (REQUIRED) */}
-        {step === 6 && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-display font-bold text-foreground mb-2">Where are you from?</h1>
-              <p className="text-foreground/60">Required — see polls from your region</p>
-            </div>
-            <Select value={country} onValueChange={(v) => { setCountry(v); setCity(''); }}>
-              <SelectTrigger className="h-14 text-lg">
-                <SelectValue placeholder="Select your country" />
-              </SelectTrigger>
-              <SelectContent className="max-h-80">
+          {/* Step 3: Country (auto-filled, selectable) */}
+          {step === 3 && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">Where are you from?</h1>
+                <p className="text-foreground/60">
+                  {country ? `Detected: ${country}` : 'Select your country'}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 max-h-[50vh] overflow-y-auto scrollbar-hide">
                 {COUNTRIES.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                  <button
+                    key={c}
+                    onClick={() => { setCountry(c); setCity(''); setCitySearch(''); }}
+                    className={`p-3 rounded-xl border-2 transition-all text-sm font-medium text-left ${
+                      country === c
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-card text-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    {c}
+                  </button>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {/* Step 7: City (REQUIRED) */}
-        {step === 7 && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-display font-bold text-foreground mb-2">What city are you in?</h1>
-              <p className="text-foreground/60">Required — helps with local polls</p>
+              </div>
             </div>
-            <Select value={city} onValueChange={setCity}>
-              <SelectTrigger className="h-14 text-lg">
-                <SelectValue placeholder="Select your city" />
-              </SelectTrigger>
-              <SelectContent className="max-h-80">
-                {(CITIES[country] || []).map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
+          )}
+
+          {/* Step 4: City (searchable) */}
+          {step === 4 && (
+            <div className="space-y-4">
+              <div>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">What city are you in?</h1>
+                <p className="text-foreground/60">Helps with local polls</p>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search cities..."
+                  value={citySearch}
+                  onChange={(e) => setCitySearch(e.target.value)}
+                  className="pl-10 h-12"
+                  autoFocus
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2 max-h-[45vh] overflow-y-auto scrollbar-hide">
+                {availableCities.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCity(c)}
+                    className={`p-3 rounded-xl border-2 transition-all text-sm font-medium text-left ${
+                      city === c
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-card text-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    {c}
+                  </button>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-      </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Navigation */}
-      <div className="flex gap-3 mt-8">
+      <div className="flex gap-3 mt-6">
         {step > 0 && (
-          <Button variant="outline" onClick={() => setStep(step - 1)} className="flex-1 h-14">
+          <Button variant="outline" onClick={() => setStep(step - 1)} className="flex-1 h-14 rounded-xl">
             Back
           </Button>
         )}
         
-        {step < 7 ? (
-          <Button onClick={nextStep} className="flex-1 h-14 bg-gradient-primary hover:opacity-90">
-            {isIntroSlide ? 'Next' : 'Continue'}
+        {step < 4 ? (
+          <Button onClick={nextStep} className="flex-1 h-14 bg-gradient-primary hover:opacity-90 rounded-xl">
+            Continue
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         ) : (
-          <Button onClick={handleComplete} disabled={loading} className="flex-1 h-14 bg-gradient-primary hover:opacity-90">
+          <Button onClick={handleComplete} disabled={loading || !city} className="flex-1 h-14 bg-gradient-primary hover:opacity-90 rounded-xl">
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (
               <>Get Started<ArrowRight className="ml-2 h-5 w-5" /></>
             )}
