@@ -145,6 +145,7 @@ function ImmersivePollCard({
   showFeedback,
   isHighStakes,
   rareEvent,
+  userCountry,
 }: {
   poll: Poll;
   result: VoteResult | null;
@@ -153,6 +154,7 @@ function ImmersivePollCard({
   showFeedback: boolean;
   isHighStakes?: boolean;
   rareEvent?: string | null;
+  userCountry?: string | null;
 }) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -411,6 +413,7 @@ function ImmersivePollCard({
               percentB={result!.percentB}
               choice={result!.choice}
               visible={showFeedback}
+              userCountry={userCountry}
             />
           )}
         </div>
@@ -505,7 +508,7 @@ function ImmersivePollCard({
               className="text-center"
             >
               <p className="text-sm font-display font-bold text-foreground">
-                You voted with {userPercent}% of users
+                You voted with {userPercent}% of users{userCountry ? ` in ${userCountry}` : ''}
               </p>
               <span className={`inline-block mt-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
                 isMajority ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
@@ -964,6 +967,7 @@ export default function SwipeFeed() {
                   showFeedback={feedbackPollId === poll.id}
                   isHighStakes={isHighStakes}
                   rareEvent={rareEvent}
+                  userCountry={profile?.country}
                 />
               </div>
             );

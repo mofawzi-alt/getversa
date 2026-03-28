@@ -18,6 +18,7 @@ interface VoteFeedbackOverlayProps {
   percentB: number;
   choice: 'A' | 'B';
   visible: boolean;
+  userCountry?: string | null;
 }
 
 function AnimatedPercent({ target, delay = 0 }: { target: number; delay?: number }) {
@@ -46,9 +47,12 @@ function AnimatedPercent({ target, delay = 0 }: { target: number; delay?: number
   return <>{value}%</>;
 }
 
-export default function VoteFeedbackOverlay({ percentA, percentB, choice, visible }: VoteFeedbackOverlayProps) {
+export default function VoteFeedbackOverlay({ percentA, percentB, choice, visible, userCountry }: VoteFeedbackOverlayProps) {
   const message = pickFeedbackMessage(percentA, percentB, choice);
   const userPercent = choice === 'A' ? percentA : percentB;
+  const alignmentText = userCountry
+    ? `You voted with ${userPercent}% of users in ${userCountry}`
+    : `You voted with ${userPercent}% of users`;
 
   return (
     <AnimatePresence>
@@ -69,7 +73,7 @@ export default function VoteFeedbackOverlay({ percentA, percentB, choice, visibl
             className="px-5 py-3 rounded-2xl bg-black/75 backdrop-blur-md border border-white/15 shadow-lg"
           >
             <p className="text-white text-base font-display font-bold text-center leading-snug tracking-wide">
-              You voted with {userPercent}% of users
+              {alignmentText}
             </p>
           </motion.div>
 
