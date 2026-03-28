@@ -277,16 +277,18 @@ export default function AdminAnalyticsExport() {
   const downloadCSV = (content: string, filename: string) => {
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
+    // Try download link first, fall back to window.open for iframe contexts
     const link = document.createElement('a');
     link.href = url;
     link.download = `${filename}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     link.style.display = 'none';
     document.body.appendChild(link);
     link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+    // Fallback: open in new tab so user can save manually
     setTimeout(() => {
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }, 100);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }, 200);
   };
 
   return (
