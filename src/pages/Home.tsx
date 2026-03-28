@@ -411,35 +411,39 @@ export default function Home() {
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
         {/* ═══ HERO SECTION ═══ */}
-        <section className="relative px-4 pt-3 pb-4">
+        <section className="relative px-4 pt-6 pb-6">
           {/* Live glow background */}
           <motion.div
-            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            animate={{ opacity: [0.3, 0.7, 0.3] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/10 to-transparent pointer-events-none rounded-b-3xl"
+            className="absolute inset-0 bg-gradient-to-b from-primary/8 via-primary/15 to-transparent pointer-events-none rounded-b-3xl"
           />
 
           <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-2">
               <LiveIndicator variant="badge" />
               <motion.span
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
+                className="text-sm font-medium"
               >
                 {totalLiveVoters > 0 ? <><AnimatedNumber value={totalLiveVoters} className="font-bold text-foreground" /> voting now</> : 'Live now'}
               </motion.span>
             </div>
 
-            <h1 className="text-2xl font-display font-bold text-foreground leading-tight">
+            <h1 className="text-3xl font-display font-bold text-foreground leading-tight">
               🔥 The Pulse Is<br />
               <span className="text-gradient">Live</span>
             </h1>
 
-            <p className="text-sm text-muted-foreground mt-1">
-              Real-time opinions. Real-time shifts.
+            <p className="text-sm text-muted-foreground mt-1.5">
+              Live insights on how people think, buy, and decide
+            </p>
+
+            <p className="text-xs text-muted-foreground/70 mt-1">
               {(votes24h || 0) > 0 && (
                 <>
-                  {' · '}<AnimatedNumber value={votes24h!} className="font-bold text-foreground" /> votes today
+                  <AnimatedNumber value={votes24h!} className="font-bold text-foreground" /> votes today
                 </>
               )}
             </p>
@@ -448,7 +452,7 @@ export default function Home() {
               whileTap={{ scale: 0.95 }}
               whileHover={{ scale: 1.02 }}
               onClick={() => navigate('/vote')}
-              className="mt-3 w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base tracking-wide shadow-glow"
+              className="mt-4 w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-primary text-primary-foreground font-display font-bold text-lg tracking-wide shadow-glow"
             >
               <motion.div
                 animate={{ x: [0, 4, 0] }}
@@ -456,7 +460,7 @@ export default function Home() {
               >
                 <Zap className="h-5 w-5" />
               </motion.div>
-              Start Swiping
+              Start Voting
               {hasUnseen && (
                 <span className="ml-1 px-2 py-0.5 rounded-full bg-primary-foreground/20 text-[11px] font-bold">
                   {unseenCount} new
