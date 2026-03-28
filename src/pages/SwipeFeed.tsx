@@ -145,6 +145,7 @@ function ImmersivePollCard({
   showFeedback,
   isHighStakes,
   rareEvent,
+  userCountry,
 }: {
   poll: Poll;
   result: VoteResult | null;
@@ -153,6 +154,7 @@ function ImmersivePollCard({
   showFeedback: boolean;
   isHighStakes?: boolean;
   rareEvent?: string | null;
+  userCountry?: string | null;
 }) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
