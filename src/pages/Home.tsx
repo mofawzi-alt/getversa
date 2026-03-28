@@ -291,13 +291,18 @@ export default function Home() {
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const { data: recentVotesData } = await supabase
         .from('votes')
-        .select('poll_id')
+        .select('poll_id, user_id')
         .in('poll_id', pollIds)
         .gte('created_at', fiveMinAgo);
-      const recentVotesMap = new Map<string, number>();
+      // Count unique users per poll
+      const recentVotesMap = new Map<string, Set<string>>();
       recentVotesData?.forEach(v => {
-        recentVotesMap.set(v.poll_id, (recentVotesMap.get(v.poll_id) || 0) + 1);
+        if (!recentVotesMap.has(v.poll_id)) recentVotesMap.set(v.poll_id, new Set());
+        recentVotesMap.get(v.poll_id)!.add(v.user_id);
       });
+      // Count total unique voters across all polls
+      const allRecentVoters = new Set<string>();
+      recentVotesData?.forEach(v => allRecentVoters.add(v.user_id));
 
       return filteredPolls.map(p => {
         const r = resultsMap.get(p.id) as any;
