@@ -615,6 +615,7 @@ export default function SwipeFeed() {
   const [sessionVoteCount, setSessionVoteCount] = useState(0);
   const [dailySwipeCount, setDailySwipeCount] = useState(0);
   const [milestoneMsg, setMilestoneMsg] = useState<{ message: string; type: 'banner' | 'modal' | 'badge' } | null>(null);
+  const [showValueMsg, setShowValueMsg] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
