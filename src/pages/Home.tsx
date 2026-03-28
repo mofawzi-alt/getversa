@@ -860,8 +860,8 @@ export default function Home() {
 }
 
 // ── Trending Poll Card (compact horizontal scroll) ──
-function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot }: {
-  poll: PollCard; index: number; hasVoted: boolean; onTap: (p: PollCard) => void; badge: string; hot?: boolean;
+function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategoryTap }: {
+  poll: PollCard; index: number; hasVoted: boolean; onTap: (p: PollCard) => void; badge: string; hot?: boolean; onCategoryTap?: (cat: string) => void;
 }) {
   const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
   const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
