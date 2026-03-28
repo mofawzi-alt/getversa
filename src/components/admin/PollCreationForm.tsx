@@ -302,6 +302,7 @@ export default function PollCreationForm({
               className="bg-secondary text-xs"
             />
           </div>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>Image A</Label>
