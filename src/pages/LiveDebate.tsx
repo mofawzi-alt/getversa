@@ -380,19 +380,30 @@ export default function LiveDebate() {
             animate={{ opacity: 1 }}
             className="flex flex-col items-center gap-2"
           >
-            {hasMore ? (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => { setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe'); }}
-                className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
-              >
-                Next Insight →
-              </motion.button>
-            ) : (
-              <button onClick={handleExit} className="px-5 py-2 rounded-full bg-white/15 text-white text-xs font-bold backdrop-blur-md">
-                Back to Home
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {currentIndex > 0 && (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { setCurrentIndex(prev => prev - 1); setResult(null); setPhase('result'); }}
+                  className="px-5 py-2.5 rounded-full bg-white/15 text-white text-sm font-display font-bold backdrop-blur-md"
+                >
+                  ← Previous
+                </motion.button>
+              )}
+              {hasMore ? (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe'); }}
+                  className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
+                >
+                  Next Insight →
+                </motion.button>
+              ) : (
+                <button onClick={handleExit} className="px-5 py-2 rounded-full bg-white/15 text-white text-xs font-bold backdrop-blur-md">
+                  Back to Home
+                </button>
+              )}
+            </div>
             <span className="text-white/30 text-[8px]">
               {currentIndex > 0 ? '← swipe right for previous' : ''}{currentIndex > 0 && hasMore ? ' · ' : ''}{hasMore ? 'swipe left for next →' : ''}
             </span>
