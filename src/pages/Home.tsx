@@ -611,6 +611,14 @@ export default function Home() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5">
                               <LiveIndicator variant="overlay" />
+                              {poll.category && (
+                                <span
+                                  onClick={(e) => { e.stopPropagation(); navigate(`/vote?category=${encodeURIComponent(poll.category!)}`); }}
+                                  className="text-[9px] px-2 py-0.5 rounded-full font-bold bg-white/20 text-white backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors drop-shadow-lg"
+                                >
+                                  {getCategoryMeta(poll.category).emoji} {poll.category}
+                                </span>
+                              )}
                               <span className="text-[10px] text-white/70 flex items-center gap-0.5 drop-shadow-lg font-medium">
                                 <Users className="h-3 w-3" /> {poll.recentVotes > 0 ? <><AnimatedNumber value={poll.recentVotes} /> voting now</> : <><AnimatedNumber value={poll.totalVotes} /> votes</>}
                               </span>
