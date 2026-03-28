@@ -505,7 +505,7 @@ function ImmersivePollCard({
               className="text-center"
             >
               <p className="text-sm font-display font-bold text-foreground">
-                You voted with {userPercent}% of users
+                You voted with {userPercent}% of users{profile?.country ? ` in ${profile.country}` : ''}
               </p>
               <span className={`inline-block mt-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
                 isMajority ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'

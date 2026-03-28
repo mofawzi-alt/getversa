@@ -18,6 +18,7 @@ interface VoteFeedbackOverlayProps {
   percentB: number;
   choice: 'A' | 'B';
   visible: boolean;
+  userCountry?: string | null;
 }
 
 function AnimatedPercent({ target, delay = 0 }: { target: number; delay?: number }) {
