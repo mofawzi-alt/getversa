@@ -650,6 +650,14 @@ export default function SwipeFeed() {
       if (categoryFilter) {
         allPolls = allPolls.filter(p => p.category === categoryFilter);
       }
+      if (searchFilter) {
+        const s = searchFilter.toLowerCase();
+        allPolls = allPolls.filter(p => 
+          p.option_a.toLowerCase().includes(s) || 
+          p.option_b.toLowerCase().includes(s) || 
+          p.question.toLowerCase().includes(s)
+        );
+      }
       if (liveOnlyFilter) {
         const now = new Date();
         allPolls = allPolls.filter(p => {
