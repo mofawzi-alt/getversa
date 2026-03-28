@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -20,8 +20,13 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect authenticated users to voting
+  useEffect(() => {
+    if (user) navigate('/vote', { replace: true });
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,8 +50,7 @@ export default function Auth() {
           }
         } else {
           toast.success('Welcome back!');
-          // Navigate to feed; SwipeFeed will redirect to /onboarding if profile is incomplete
-          navigate('/');
+          navigate('/vote');
         }
       } else {
         const { error } = await signUp(email, password);
