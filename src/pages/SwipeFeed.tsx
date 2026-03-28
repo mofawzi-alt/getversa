@@ -537,13 +537,23 @@ function ImmersivePollCard({
             <span className="text-muted-foreground text-xs flex items-center gap-1">
               <Users className="h-3 w-3" /> {result!.totalVotes.toLocaleString()} perspectives
             </span>
+            {poll.category && (
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-[10px] font-semibold text-primary px-2 py-0.5 rounded-full bg-primary/10"
+              >
+                More in {poll.category} →
+              </motion.span>
+            )}
             {sessionVoteCount && sessionVoteCount > 0 ? (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="text-muted-foreground/60 text-[10px] font-medium"
               >
-                You've answered {sessionVoteCount} {sessionVoteCount === 1 ? 'poll' : 'polls'}
+                {sessionVoteCount} answered
               </motion.span>
             ) : null}
             <motion.span
