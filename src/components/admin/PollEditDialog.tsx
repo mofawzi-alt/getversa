@@ -29,6 +29,7 @@ interface Poll {
   target_gender: string | null;
   target_age_range: string | null;
   target_country: string | null;
+  target_countries: string[] | null;
 }
 
 interface PollEditDialogProps {
@@ -55,6 +56,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
   const [imageBFile, setImageBFile] = useState<File | null>(null);
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
+  const [targetCountries, setTargetCountries] = useState<string[]>([]);
 
   // Sync state when poll changes
   const [lastPollId, setLastPollId] = useState<string | null>(null);
@@ -73,6 +75,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setImageBPreview('');
     setImageAFile(null);
     setImageBFile(null);
+    setTargetCountries(poll.target_countries || []);
   }
 
   const uploadImage = async (file: File): Promise<string | null> => {
@@ -134,6 +137,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           intent_tag: intentTag || null,
           starts_at: startsAt ? new Date(startsAt).toISOString() : null,
           ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+          target_countries: targetCountries.length > 0 ? targetCountries : [],
         })
         .eq('id', poll.id);
       if (error) throw error;
@@ -243,6 +247,27 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             <div>
               <Label className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Ends</Label>
               <Input type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className="bg-secondary text-xs" />
+            </div>
+          </div>
+
+          {/* Target Countries */}
+          <div>
+            <Label>Target Countries <span className="text-muted-foreground text-xs">(none = all)</span></Label>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {['Egypt', 'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 'Jordan', 'Lebanon', 'Iraq', 'Palestine'].map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setTargetCountries(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])}
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium border transition-colors ${
+                    targetCountries.includes(c)
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-secondary text-muted-foreground border-border'
+                  }`}
+                >
+                  {c === 'United Arab Emirates' ? 'UAE' : c}
+                </button>
+              ))}
             </div>
           </div>
 

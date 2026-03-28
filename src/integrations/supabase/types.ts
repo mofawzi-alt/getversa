@@ -508,6 +508,7 @@ export type Database = {
           starts_at: string | null
           tags: string[] | null
           target_age_range: string | null
+          target_countries: string[] | null
           target_country: string | null
           target_gender: string | null
           weight_score: number | null
@@ -533,6 +534,7 @@ export type Database = {
           starts_at?: string | null
           tags?: string[] | null
           target_age_range?: string | null
+          target_countries?: string[] | null
           target_country?: string | null
           target_gender?: string | null
           weight_score?: number | null
@@ -558,6 +560,7 @@ export type Database = {
           starts_at?: string | null
           tags?: string[] | null
           target_age_range?: string | null
+          target_countries?: string[] | null
           target_country?: string | null
           target_gender?: string | null
           weight_score?: number | null
@@ -1105,6 +1108,7 @@ export type Database = {
           id: string
           poll_id: string
           user_id: string
+          voter_country: string | null
         }
         Insert: {
           choice: string
@@ -1112,6 +1116,7 @@ export type Database = {
           id?: string
           poll_id: string
           user_id: string
+          voter_country?: string | null
         }
         Update: {
           choice?: string
@@ -1119,6 +1124,7 @@ export type Database = {
           id?: string
           poll_id?: string
           user_id?: string
+          voter_country?: string | null
         }
         Relationships: [
           {

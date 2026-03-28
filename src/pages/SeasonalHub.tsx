@@ -63,7 +63,7 @@ const SWIPE_THRESHOLD = 80;
 export default function SeasonalHub() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const hub = SEASONAL_HUBS[slug || ''];
 
@@ -232,6 +232,7 @@ function SectionSwipeView({
   userId?: string;
   onBack: () => void;
 }) {
+  const { profile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [result, setResult] = useState<VoteResult | null>(null);
   const [phase, setPhase] = useState<'swipe' | 'result' | 'complete'>('swipe');
@@ -264,7 +265,7 @@ function SectionSwipeView({
   const voteMutation = useMutation({
     mutationFn: async ({ pollId, choice }: { pollId: string; choice: 'A' | 'B' }) => {
       if (!userId) throw new Error('Not authenticated');
-      await supabase.from('votes').insert({ poll_id: pollId, user_id: userId, choice });
+      await supabase.from('votes').insert({ poll_id: pollId, user_id: userId, choice, voter_country: profile?.country || null } as any);
       const { data: votes } = await supabase.from('votes').select('choice').eq('poll_id', pollId);
       const total = votes?.length || 0;
       const aVotes = votes?.filter(v => v.choice === 'A').length || 0;
