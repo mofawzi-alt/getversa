@@ -146,6 +146,7 @@ function ImmersivePollCard({
   isHighStakes,
   rareEvent,
   userCountry,
+  sessionVoteCount,
 }: {
   poll: Poll;
   result: VoteResult | null;
@@ -155,6 +156,7 @@ function ImmersivePollCard({
   isHighStakes?: boolean;
   rareEvent?: string | null;
   userCountry?: string | null;
+  sessionVoteCount?: number;
 }) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -527,6 +529,15 @@ function ImmersivePollCard({
             <span className="text-muted-foreground text-xs flex items-center gap-1">
               <Users className="h-3 w-3" /> {result!.totalVotes.toLocaleString()} perspectives
             </span>
+            {sessionVoteCount && sessionVoteCount > 0 ? (
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-muted-foreground/60 text-[10px] font-medium"
+              >
+                You've answered {sessionVoteCount} {sessionVoteCount === 1 ? 'poll' : 'polls'}
+              </motion.span>
+            ) : null}
             <motion.span
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -968,6 +979,7 @@ export default function SwipeFeed() {
                   isHighStakes={isHighStakes}
                   rareEvent={rareEvent}
                   userCountry={profile?.country}
+                  sessionVoteCount={sessionVoteCount}
                 />
               </div>
             );
