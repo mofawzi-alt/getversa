@@ -50,8 +50,7 @@ export default function PollCreationForm({
   const [intentTag, setIntentTag] = useState('');
   const [showCustomIntentInput, setShowCustomIntentInput] = useState(false);
   const [customIntentName, setCustomIntentName] = useState('');
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const [entityName, setEntityName] = useState(initialEntityName || '');
   const [entityName, setEntityName] = useState(initialEntityName || '');
   
   const imageAInputRef = useRef<HTMLInputElement>(null);
