@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, type LucideIcon, Utensils, Shirt, Monitor, Plane, Music, Palette, Heart, Dumbbell, BookOpen } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3 } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Loader2 } from 'lucide-react';
@@ -35,21 +35,27 @@ import moviesImg from '@/assets/polls/movies.jpg';
 import daySkyImg from '@/assets/polls/day-sky.jpg';
 import nightSkyImg from '@/assets/polls/night-sky.jpg';
 
-const CATEGORY_ICONS: Record<string, { icon: LucideIcon; color: string; bg: string }> = {
-  food: { icon: Utensils, color: 'hsl(15, 80%, 50%)', bg: 'hsl(15, 80%, 93%)' },
-  fashion: { icon: Shirt, color: 'hsl(280, 60%, 50%)', bg: 'hsl(280, 60%, 93%)' },
-  tech: { icon: Monitor, color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
-  travel: { icon: Plane, color: 'hsl(170, 60%, 40%)', bg: 'hsl(170, 60%, 92%)' },
-  music: { icon: Music, color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
-  culture: { icon: Palette, color: 'hsl(30, 80%, 50%)', bg: 'hsl(30, 80%, 93%)' },
-  lifestyle: { icon: Heart, color: 'hsl(350, 65%, 55%)', bg: 'hsl(350, 65%, 93%)' },
-  health: { icon: Dumbbell, color: 'hsl(145, 55%, 42%)', bg: 'hsl(145, 55%, 92%)' },
-  education: { icon: BookOpen, color: 'hsl(225, 60%, 50%)', bg: 'hsl(225, 60%, 93%)' },
+const CATEGORY_META: Record<string, { emoji: string; color: string; bg: string }> = {
+  money: { emoji: '💰', color: 'hsl(45, 80%, 45%)', bg: 'hsl(45, 80%, 93%)' },
+  business: { emoji: '🚀', color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
+  market: { emoji: '🌍', color: 'hsl(170, 60%, 40%)', bg: 'hsl(170, 60%, 92%)' },
+  platforms: { emoji: '📱', color: 'hsl(260, 60%, 55%)', bg: 'hsl(260, 60%, 93%)' },
+  consumer: { emoji: '🛍️', color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
+  brands: { emoji: '🏷️', color: 'hsl(15, 80%, 50%)', bg: 'hsl(15, 80%, 93%)' },
+  lifestyle: { emoji: '🧠', color: 'hsl(350, 65%, 55%)', bg: 'hsl(350, 65%, 93%)' },
+  fashion: { emoji: '👗', color: 'hsl(280, 60%, 50%)', bg: 'hsl(280, 60%, 93%)' },
+  food: { emoji: '🍔', color: 'hsl(25, 80%, 50%)', bg: 'hsl(25, 80%, 93%)' },
+  tech: { emoji: '💻', color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
+  travel: { emoji: '✈️', color: 'hsl(170, 60%, 40%)', bg: 'hsl(170, 60%, 92%)' },
+  music: { emoji: '🎵', color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
+  culture: { emoji: '🎨', color: 'hsl(30, 80%, 50%)', bg: 'hsl(30, 80%, 93%)' },
+  health: { emoji: '💪', color: 'hsl(145, 55%, 42%)', bg: 'hsl(145, 55%, 92%)' },
+  education: { emoji: '📚', color: 'hsl(225, 60%, 50%)', bg: 'hsl(225, 60%, 93%)' },
 };
 
-function getCategoryIcon(name: string): { icon: LucideIcon; color: string; bg: string } {
+function getCategoryMeta(name: string): { emoji: string; color: string; bg: string } {
   const key = name.toLowerCase();
-  return CATEGORY_ICONS[key] || { icon: TrendingUp, color: 'hsl(225, 73%, 45%)', bg: 'hsl(225, 73%, 93%)' };
+  return CATEGORY_META[key] || { emoji: '🔥', color: 'hsl(225, 73%, 45%)', bg: 'hsl(225, 73%, 93%)' };
 }
 
 const FALLBACK_IMAGES = [
@@ -716,20 +722,68 @@ export default function Home() {
           </section>
         )}
 
-        {/* ═══ BROWSE BY CATEGORY LINK ═══ */}
-        <section className="px-3 mb-3">
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => navigate('/explore')}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-card border border-border/60 cursor-pointer group"
-          >
-            <div className="flex items-center gap-2">
-              <Eye className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-display font-bold text-foreground">Browse by Category</span>
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-          </motion.button>
-        </section>
+        {/* ═══ BROWSE BY CATEGORY ═══ */}
+        {(() => {
+          const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
+          for (const p of allPolls) {
+            const cat = p.category || 'Other';
+            const existing = categoryMap.get(cat) || { count: 0, unseen: 0, thumbnail: null };
+            existing.count++;
+            if (!votedPollIds?.has(p.id)) existing.unseen++;
+            if (!existing.thumbnail && p.image_a_url) existing.thumbnail = p.image_a_url;
+            categoryMap.set(cat, existing);
+          }
+          const categories = Array.from(categoryMap.entries())
+            .sort((a, b) => b[1].count - a[1].count);
+
+          if (categories.length === 0) return null;
+
+          return (
+            <section className="px-3 mb-3">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Eye className="h-3.5 w-3.5 text-primary" />
+                <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Browse by Category</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {categories.map(([catName, info], i) => {
+                  const meta = getCategoryMeta(catName);
+                  return (
+                    <motion.div
+                      key={catName}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => navigate(`/vote?category=${encodeURIComponent(catName)}`)}
+                      className="relative rounded-xl overflow-hidden cursor-pointer group border border-border/60 shadow-card h-24"
+                    >
+                      {info.thumbnail ? (
+                        <img src={info.thumbnail} alt={catName} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity" />
+                      ) : (
+                        <div className="absolute inset-0" style={{ background: meta.bg }} />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-card/40" />
+                      <div className="relative h-full flex flex-col justify-end p-3">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="text-lg">{meta.emoji}</span>
+                          <span className="text-xs font-display font-bold text-foreground">{catName}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-muted-foreground">{info.count} polls</span>
+                          {info.unseen > 0 && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
+                              {info.unseen} new
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })()}
 
         {/* ═══ 🏆 TOP RANKED (aggregated by option name) ═══ */}
         {(() => {
