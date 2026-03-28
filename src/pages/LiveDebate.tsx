@@ -163,7 +163,7 @@ export default function LiveDebate() {
       setResult({ choice: prevChoice as 'A' | 'B', percentA, percentB: 100 - percentA, totalVotes: total });
       setPhase('result');
     });
-  }, [currentPoll?.id]);
+  }, [currentPoll?.id, phase]);
 
   // Preload next 3 images
   useEffect(() => {
