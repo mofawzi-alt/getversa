@@ -585,6 +585,7 @@ export default function SwipeFeed() {
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
   const categoryFilter = searchParams.get('category');
+  const searchFilter = searchParams.get('search');
   const liveOnlyFilter = searchParams.get('live') === 'true';
 
   // Streak data
