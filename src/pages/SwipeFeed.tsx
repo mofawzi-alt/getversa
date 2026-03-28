@@ -157,6 +157,7 @@ function ImmersivePollCard({
   userCountry?: string | null;
   sessionVoteCount?: number;
 }) {
+  const navigate = useNavigate();
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [flyDirection, setFlyDirection] = useState<'left' | 'right' | null>(null);
@@ -556,9 +557,12 @@ function ImmersivePollCard({
                 transition={{ delay: 0.5 }}
                 className="flex justify-center"
               >
-                <span className="text-[10px] font-semibold text-primary px-2.5 py-0.5 rounded-full bg-primary/10">
+                <button
+                  onClick={() => navigate(`/vote?category=${encodeURIComponent(poll.category!)}`)}
+                  className="text-[10px] font-semibold text-primary px-2.5 py-0.5 rounded-full bg-primary/10 hover:bg-primary/20 active:scale-95 transition-all"
+                >
                   More in {poll.category} →
-                </span>
+                </button>
               </motion.div>
             )}
           </div>
