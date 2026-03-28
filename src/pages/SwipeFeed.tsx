@@ -585,6 +585,7 @@ export default function SwipeFeed() {
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
   const categoryFilter = searchParams.get('category');
+  const searchFilter = searchParams.get('search');
   const liveOnlyFilter = searchParams.get('live') === 'true';
 
   // Streak data
@@ -594,7 +595,7 @@ export default function SwipeFeed() {
   } : null;
 
   const { data: polls, isLoading, refetch } = useQuery({
-    queryKey: ['feed-polls', user?.id, categoryFilter],
+    queryKey: ['feed-polls', user?.id, categoryFilter, searchFilter],
     queryFn: async () => {
       const now = new Date().toISOString();
       let query = supabase.from('polls').select('*').eq('is_active', true).neq('is_archived', true)
@@ -648,6 +649,14 @@ export default function SwipeFeed() {
       }
       if (categoryFilter) {
         allPolls = allPolls.filter(p => p.category === categoryFilter);
+      }
+      if (searchFilter) {
+        const s = searchFilter.toLowerCase();
+        allPolls = allPolls.filter(p => 
+          p.option_a.toLowerCase().includes(s) || 
+          p.option_b.toLowerCase().includes(s) || 
+          p.question.toLowerCase().includes(s)
+        );
       }
       if (liveOnlyFilter) {
         const now = new Date();
