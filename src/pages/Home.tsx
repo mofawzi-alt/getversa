@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
@@ -291,13 +291,18 @@ export default function Home() {
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const { data: recentVotesData } = await supabase
         .from('votes')
-        .select('poll_id')
+        .select('poll_id, user_id')
         .in('poll_id', pollIds)
         .gte('created_at', fiveMinAgo);
-      const recentVotesMap = new Map<string, number>();
+      // Count unique users per poll
+      const recentVotesMap = new Map<string, Set<string>>();
       recentVotesData?.forEach(v => {
-        recentVotesMap.set(v.poll_id, (recentVotesMap.get(v.poll_id) || 0) + 1);
+        if (!recentVotesMap.has(v.poll_id)) recentVotesMap.set(v.poll_id, new Set());
+        recentVotesMap.get(v.poll_id)!.add(v.user_id);
       });
+      // Count total unique voters across all polls
+      const allRecentVoters = new Set<string>();
+      recentVotesData?.forEach(v => allRecentVoters.add(v.user_id));
 
       return filteredPolls.map(p => {
         const r = resultsMap.get(p.id) as any;
@@ -305,7 +310,7 @@ export default function Home() {
         const votesA = (r?.votes_a as number) || 0;
         const votesB = (r?.votes_b as number) || 0;
         const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
-        return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: recentVotesMap.get(p.id) || 0 };
+        return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: recentVotesMap.get(p.id)?.size || 0, _recentVoterIds: Array.from(recentVotesMap.get(p.id) || []) };
       });
     },
     staleTime: 1000 * 10,
@@ -393,7 +398,12 @@ export default function Home() {
     }
   });
 
-  const totalLiveVoters = livePolls.reduce((sum, p) => sum + p.recentVotes, 0);
+  const totalLiveVoters = (() => {
+    if (!livePolls.length) return 0;
+    const uniqueIds = new Set<string>();
+    livePolls.forEach((p: any) => p._recentVoterIds?.forEach((id: string) => uniqueIds.add(id)));
+    return uniqueIds.size;
+  })();
 
   return (
     <AppLayout>
