@@ -215,7 +215,7 @@ export default function Explore() {
                 >
                   <div className="flex h-32 relative">
                     <div className="w-1/2 h-full relative overflow-hidden">
-                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted transition-transform duration-300 group-hover:scale-105" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                       <div className="absolute bottom-2 left-2">
                         <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_a}</p>
@@ -224,7 +224,7 @@ export default function Explore() {
                     </div>
                     <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
                     <div className="w-1/2 h-full relative overflow-hidden">
-                      <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted transition-transform duration-300 group-hover:scale-105" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                       <div className="absolute bottom-2 right-2 text-right">
                         <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_b}</p>
