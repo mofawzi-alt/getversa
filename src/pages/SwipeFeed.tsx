@@ -636,7 +636,13 @@ export default function SwipeFeed() {
         allPolls = allPolls.filter(p => {
           if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) return false;
           if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range && p.target_age_range !== profile.age_range) return false;
-          if (p.target_country && p.target_country !== 'All' && profile.country && p.target_country !== profile.country) return false;
+          // Multi-country targeting: target_countries array takes priority over legacy target_country
+          const countries = (p as any).target_countries as string[] | null;
+          if (countries && countries.length > 0) {
+            if (profile.country && !countries.includes(profile.country)) return false;
+          } else if (p.target_country && p.target_country !== 'All' && profile.country && p.target_country !== profile.country) {
+            return false;
+          }
           return true;
         });
       }
@@ -689,7 +695,7 @@ export default function SwipeFeed() {
         if (count >= GUEST_VOTE_LIMIT) setTimeout(() => setShowSignupModal(true), 2000);
         return { pollId, choice, percentA, percentB: 100 - percentA, totalVotes: 1 };
       }
-      const { error: voteError } = await supabase.from('votes').insert({ poll_id: pollId, user_id: user.id, choice });
+      const { error: voteError } = await supabase.from('votes').insert({ poll_id: pollId, user_id: user.id, choice, voter_country: profile?.country || null } as any);
       if (voteError) throw voteError;
       const { data: votes } = await supabase.from('votes').select('choice').eq('poll_id', pollId);
       const totalVotes = votes?.length || 0;
