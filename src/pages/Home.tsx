@@ -304,7 +304,7 @@ export default function Home() {
       const allRecentVoters = new Set<string>();
       recentVotesData?.forEach(v => allRecentVoters.add(v.user_id));
 
-      return filteredPolls.map(p => {
+      const polls = filteredPolls.map(p => {
         const r = resultsMap.get(p.id) as any;
         const total = (r?.total_votes as number) || 0;
         const votesA = (r?.votes_a as number) || 0;
@@ -312,6 +312,7 @@ export default function Home() {
         const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
         return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: recentVotesMap.get(p.id)?.size || 0 };
       });
+      return { polls, uniqueVotersNow: allRecentVoters.size };
     },
     staleTime: 1000 * 10,
     refetchInterval: 1000 * 10,
