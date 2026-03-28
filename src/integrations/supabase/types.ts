@@ -502,12 +502,12 @@ export type Database = {
           is_archived: boolean | null
           is_daily_poll: boolean | null
           option_a: string
+          option_a_tag: string | null
           option_b: string
+          option_b_tag: string | null
           poll_type: string
           question: string
           starts_at: string | null
-          tag_a: string | null
-          tag_b: string | null
           tags: string[] | null
           target_age_range: string | null
           target_countries: string[] | null
@@ -530,12 +530,12 @@ export type Database = {
           is_archived?: boolean | null
           is_daily_poll?: boolean | null
           option_a: string
+          option_a_tag?: string | null
           option_b: string
+          option_b_tag?: string | null
           poll_type?: string
           question: string
           starts_at?: string | null
-          tag_a?: string | null
-          tag_b?: string | null
           tags?: string[] | null
           target_age_range?: string | null
           target_countries?: string[] | null
@@ -558,12 +558,12 @@ export type Database = {
           is_archived?: boolean | null
           is_daily_poll?: boolean | null
           option_a?: string
+          option_a_tag?: string | null
           option_b?: string
+          option_b_tag?: string | null
           poll_type?: string
           question?: string
           starts_at?: string | null
-          tag_a?: string | null
-          tag_b?: string | null
           tags?: string[] | null
           target_age_range?: string | null
           target_countries?: string[] | null
