@@ -255,7 +255,7 @@ export default function LiveDebate() {
       setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe');
     } else if (delta > SWIPE_THRESHOLD && currentIndex > 0) {
       // Swipe right → previous
-      setCurrentIndex(prev => prev - 1); setResult(null); setPhase('result');
+      setCurrentIndex(prev => prev - 1); setResult(null); setPhase('swipe');
     }
     navSwipeRef.current = 0;
   }, [phase, currentPollIsVoted, hasMore, currentIndex]);
