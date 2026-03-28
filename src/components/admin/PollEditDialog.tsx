@@ -250,6 +250,27 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             </div>
           </div>
 
+          {/* Target Countries */}
+          <div>
+            <Label>Target Countries <span className="text-muted-foreground text-xs">(none = all)</span></Label>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {['Egypt', 'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 'Jordan', 'Lebanon', 'Iraq', 'Palestine'].map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setTargetCountries(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])}
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium border transition-colors ${
+                    targetCountries.includes(c)
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-secondary text-muted-foreground border-border'
+                  }`}
+                >
+                  {c === 'United Arab Emirates' ? 'UAE' : c}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Button
             onClick={() => updateMutation.mutate()}
             disabled={!question || !optionA || !optionB || updateMutation.isPending || isUploading}
