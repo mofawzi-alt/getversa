@@ -506,6 +506,8 @@ export type Database = {
           poll_type: string
           question: string
           starts_at: string | null
+          tag_a: string | null
+          tag_b: string | null
           tags: string[] | null
           target_age_range: string | null
           target_countries: string[] | null
@@ -532,6 +534,8 @@ export type Database = {
           poll_type?: string
           question: string
           starts_at?: string | null
+          tag_a?: string | null
+          tag_b?: string | null
           tags?: string[] | null
           target_age_range?: string | null
           target_countries?: string[] | null
@@ -558,6 +562,8 @@ export type Database = {
           poll_type?: string
           question?: string
           starts_at?: string | null
+          tag_a?: string | null
+          tag_b?: string | null
           tags?: string[] | null
           target_age_range?: string | null
           target_countries?: string[] | null
@@ -1283,6 +1289,13 @@ export type Database = {
           badge_id: string
           badge_name: string
           earned_at: string
+        }[]
+      }
+      get_user_voting_traits: {
+        Args: { p_user_id: string }
+        Returns: {
+          tag: string
+          vote_count: number
         }[]
       }
       has_role: {

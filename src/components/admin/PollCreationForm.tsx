@@ -48,6 +48,8 @@ export default function PollCreationForm({
   const [targetAgeRange, setTargetAgeRange] = useState('');
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
   const [intentTag, setIntentTag] = useState('');
+  const [tagA, setTagA] = useState('');
+  const [tagB, setTagB] = useState('');
   const [showCustomIntentInput, setShowCustomIntentInput] = useState(false);
   const [customIntentName, setCustomIntentName] = useState('');
   const [entityName, setEntityName] = useState(initialEntityName || '');
@@ -151,8 +153,10 @@ export default function PollCreationForm({
           target_age_range: targetAgeRange || null,
           target_country: null,
           target_countries: targetCountries.length > 0 ? targetCountries : [],
-          intent_tag: intentTag || null,
-        } as any)
+           intent_tag: intentTag || null,
+           tag_a: tagA || null,
+           tag_b: tagB || null,
+         } as any)
         .select()
         .single();
       
@@ -275,6 +279,27 @@ export default function PollCreationForm({
               onChange={(e) => setOptionB(e.target.value)}
               placeholder="Second option"
               className="bg-secondary"
+            />
+          </div>
+        </div>
+        {/* Behavioral tags per option */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label className="text-xs text-muted-foreground">Tag A (behavioral)</Label>
+            <Input
+              value={tagA}
+              onChange={(e) => setTagA(e.target.value)}
+              placeholder="e.g. convenience"
+              className="bg-secondary text-xs"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Tag B (behavioral)</Label>
+            <Input
+              value={tagB}
+              onChange={(e) => setTagB(e.target.value)}
+              placeholder="e.g. price_sensitive"
+              className="bg-secondary text-xs"
             />
           </div>
         </div>

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, ChevronRight, User, Bell, Shield, Flame, History } from 'lucide-react';
 import { toast } from 'sonner';
 import ProfileDimensionsSection from '@/components/profile/ProfileDimensionsSection';
+import VotingInsights from '@/components/profile/VotingInsights';
 
 export default function Profile() {
   const { profile, isAdmin, signOut } = useAuth();
@@ -73,6 +74,9 @@ export default function Profile() {
 
         {/* Your Dimensions (with quiz inside) */}
         <ProfileDimensionsSection />
+
+        {/* Voting Insights */}
+        <VotingInsights />
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
