@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shield } from 'lucide-react';
-import versaLogo from '@/assets/versa-logo-icon.png';
 
 export default function AppHeader() {
   const navigate = useNavigate();
@@ -17,11 +16,6 @@ export default function AppHeader() {
           onClick={() => navigate('/')}
           className="flex items-center gap-2"
         >
-          <img 
-            src={versaLogo} 
-            alt="Versa" 
-            className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-lg object-contain"
-          />
           <span className="font-display font-bold text-xl text-primary">Versa</span>
         </button>
 
