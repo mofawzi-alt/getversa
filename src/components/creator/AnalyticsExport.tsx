@@ -81,8 +81,8 @@ export default function AnalyticsExport() {
         link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
         setTimeout(() => {
           document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }, 100);
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }, 200);
         toast.success(`${type} data exported successfully`);
       } else {
         toast.error('No data to export');
