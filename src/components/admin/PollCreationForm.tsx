@@ -46,7 +46,7 @@ export default function PollCreationForm({
   const [isDailyPoll, setIsDailyPoll] = useState(true);
   const [targetGender, setTargetGender] = useState('');
   const [targetAgeRange, setTargetAgeRange] = useState('');
-  const [targetCountry, setTargetCountry] = useState('');
+  const [targetCountries, setTargetCountries] = useState<string[]>([]);
   const [intentTag, setIntentTag] = useState('');
   const [showCustomIntentInput, setShowCustomIntentInput] = useState(false);
   const [customIntentName, setCustomIntentName] = useState('');
