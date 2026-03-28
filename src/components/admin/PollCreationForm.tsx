@@ -42,6 +42,7 @@ export default function PollCreationForm({
   const [imageBPreview, setImageBPreview] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [category, setCategory] = useState('');
+  const [tags, setTags] = useState('');
   const [isDailyPoll, setIsDailyPoll] = useState(true);
   const [targetGender, setTargetGender] = useState('');
   const [targetAgeRange, setTargetAgeRange] = useState('');
@@ -180,7 +181,8 @@ export default function PollCreationForm({
           option_b: optionB,
           image_a_url: finalImageAUrl || null,
           image_b_url: finalImageBUrl || null,
-          category: category || null,
+          category: category,
+          tags: tags.trim() ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
           created_by: userId,
           is_daily_poll: isDailyPoll,
           starts_at: startsAt.toISOString(),
@@ -189,7 +191,7 @@ export default function PollCreationForm({
           target_age_range: targetAgeRange || null,
           target_country: targetCountry || null,
           intent_tag: intentTag || null,
-        })
+        } as any)
         .select()
         .single();
       
@@ -396,68 +398,31 @@ export default function PollCreationForm({
           </div>
         </div>
         <div>
-          <Label>Category</Label>
-          {showNewCategoryInput ? (
-            <div className="flex gap-2 mt-1">
-              <Input
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="Enter new category name..."
-                className="bg-secondary flex-1"
-              />
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => {
-                  if (newCategoryName.trim()) {
-                    addCategoryMutation.mutate(newCategoryName.trim());
-                  }
-                }}
-                disabled={!newCategoryName.trim() || addCategoryMutation.isPending}
-              >
-                {addCategoryMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Check className="h-4 w-4" />
-                )}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setShowNewCategoryInput(false);
-                  setNewCategoryName('');
-                }}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="flex-1 h-10 px-3 rounded-md bg-secondary border border-border text-sm"
-              >
-                <option value="">Select a category...</option>
-                {categories?.map((cat) => (
-                  <option key={cat.id} value={cat.name}>
-                    {cat.name} {!cat.is_preset && '(custom)'}
-                  </option>
-                ))}
-              </select>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setShowNewCategoryInput(true)}
-                title="Add new category"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+          <Label>Category <span className="text-destructive">*</span></Label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm"
+          >
+            <option value="">Select a category...</option>
+            <option value="Consumer">Consumer</option>
+            <option value="Brands">Brands</option>
+            <option value="Platforms">Platforms</option>
+            <option value="Lifestyle">Lifestyle</option>
+            <option value="Money">Money</option>
+            <option value="Food">Food</option>
+            <option value="Fashion">Fashion</option>
+          </select>
+          {!category && <p className="text-xs text-destructive mt-1">Category is required</p>}
+        </div>
+        <div>
+          <Label>Tags <span className="text-muted-foreground text-xs">(optional, comma-separated)</span></Label>
+          <Input
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="e.g. trending, gen-z, tech"
+            className="bg-secondary"
+          />
         </div>
         <div className="flex items-center gap-3">
           <input 
@@ -611,7 +576,7 @@ export default function PollCreationForm({
         
         <Button
           onClick={() => createPollMutation.mutate()}
-          disabled={!question || !optionA || !optionB || (campaignId && !entityName) || createPollMutation.isPending || isUploading}
+          disabled={!question || !optionA || !optionB || !category || (campaignId && !entityName) || createPollMutation.isPending || isUploading}
           className="w-full bg-gradient-primary"
         >
           {(createPollMutation.isPending || isUploading) ? (
