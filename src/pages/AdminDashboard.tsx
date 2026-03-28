@@ -23,6 +23,7 @@ import InsightHighlights from '@/components/admin/InsightHighlights';
 import CampaignAnalytics from '@/components/admin/CampaignAnalytics';
 import CategoryAnalytics from '@/components/admin/CategoryAnalytics';
 import BrandRankingReport from '@/components/admin/BrandRankingReport';
+import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
@@ -75,17 +76,22 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
-          <Tabs defaultValue="overview" className="space-y-4">
+          <Tabs defaultValue="dashboard" className="space-y-4">
             <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-secondary/50">
-              <TabsTrigger value="overview" className="text-xs px-3 py-1.5">Overview</TabsTrigger>
+              <TabsTrigger value="dashboard" className="text-xs px-3 py-1.5">Dashboard</TabsTrigger>
+              <TabsTrigger value="overview" className="text-xs px-3 py-1.5">Per Poll</TabsTrigger>
               <TabsTrigger value="brands" className="text-xs px-3 py-1.5">Brands</TabsTrigger>
               <TabsTrigger value="industry" className="text-xs px-3 py-1.5">Industry</TabsTrigger>
               <TabsTrigger value="campaigns" className="text-xs px-3 py-1.5">Campaigns</TabsTrigger>
-              <TabsTrigger value="timing" className="text-xs px-3 py-1.5">Response Time</TabsTrigger>
+              <TabsTrigger value="timing" className="text-xs px-3 py-1.5">Timing</TabsTrigger>
               <TabsTrigger value="retention" className="text-xs px-3 py-1.5">Retention</TabsTrigger>
               <TabsTrigger value="export" className="text-xs px-3 py-1.5">Export</TabsTrigger>
             </TabsList>
             
+            <TabsContent value="dashboard">
+              <AnalyticsDashboard />
+            </TabsContent>
+
             <TabsContent value="overview">
               <PollAnalytics initialPollId={selectedPollId} />
             </TabsContent>
