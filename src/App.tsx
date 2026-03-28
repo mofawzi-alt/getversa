@@ -28,13 +28,9 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Smart landing: existing users → home, new users → auth
+// Smart landing: everyone goes to voting first (zero friction)
 function SmartLanding() {
-  const { user, loading } = useAuth();
-
-  if (loading) return null; // Splash handles this
-  if (user) return <Navigate to="/home" replace />;
-  return <Navigate to="/auth" replace />;
+  return <Navigate to="/vote" replace />;
 }
 
 function AppInner() {
