@@ -187,7 +187,7 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
                   <img 
                     src={poll.image_a_url} 
                     alt={poll.option_a} 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-muted"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-option-a/30 to-option-a/10 flex items-center justify-center">
@@ -215,7 +215,7 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
                   <img 
                     src={poll.image_b_url} 
                     alt={poll.option_b} 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-muted"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-option-b/30 to-option-b/10 flex items-center justify-center">
