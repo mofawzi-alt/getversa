@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import versaLogo from '@/assets/versa-logo-icon.png';
 
 export default function SplashScreen() {
   return (
@@ -10,13 +9,6 @@ export default function SplashScreen() {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="flex flex-col items-center gap-4"
       >
-        <motion.img
-          src={versaLogo}
-          alt="Versa"
-          className="w-24 h-24 rounded-2xl"
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

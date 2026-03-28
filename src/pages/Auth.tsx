@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { z } from 'zod';
-import versaLogo from '@/assets/versa-logo-icon.png';
+
 
 const authSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -77,14 +77,6 @@ export default function Auth() {
       </div>
 
       <div className="w-full max-w-sm space-y-8 animate-slide-up relative z-10">
-        {/* Logo */}
-        <div className="flex justify-center">
-          <img 
-            src={versaLogo} 
-            alt="Versa Logo" 
-            className="w-24 h-24 rounded-2xl"
-          />
-        </div>
 
         <div className="text-center">
           <h1 className="text-4xl font-display font-bold text-primary tracking-tight">versa</h1>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X, Share } from 'lucide-react';
-import versaLogo from '@/assets/versa-logo-icon.png';
+
 
 const DISMISS_KEY = 'versa_pwa_dismissed';
 const DISMISS_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
@@ -76,7 +76,6 @@ export default function PWAInstallPrompt() {
           </button>
 
           <div className="flex items-center gap-3 mb-3">
-            <img src={versaLogo} alt="Versa" className="w-12 h-12 rounded-xl" />
             <div>
               <h3 className="font-display font-bold text-sm text-foreground">Add Versa to Home Screen</h3>
               <p className="text-xs text-muted-foreground">Get the full app experience</p>
