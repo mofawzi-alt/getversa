@@ -506,6 +506,7 @@ export type Database = {
           poll_type: string
           question: string
           starts_at: string | null
+          tags: string[] | null
           target_age_range: string | null
           target_country: string | null
           target_gender: string | null
@@ -530,6 +531,7 @@ export type Database = {
           poll_type?: string
           question: string
           starts_at?: string | null
+          tags?: string[] | null
           target_age_range?: string | null
           target_country?: string | null
           target_gender?: string | null
@@ -554,6 +556,7 @@ export type Database = {
           poll_type?: string
           question?: string
           starts_at?: string | null
+          tags?: string[] | null
           target_age_range?: string | null
           target_country?: string | null
           target_gender?: string | null
