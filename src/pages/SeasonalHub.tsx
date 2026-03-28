@@ -63,7 +63,7 @@ const SWIPE_THRESHOLD = 80;
 export default function SeasonalHub() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const hub = SEASONAL_HUBS[slug || ''];
 
