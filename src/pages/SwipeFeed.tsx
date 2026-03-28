@@ -979,6 +979,22 @@ export default function SwipeFeed() {
         )}
       </AnimatePresence>
 
+      {/* Value message — shown once after 3 votes */}
+      <AnimatePresence>
+        {showValueMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-muted/90 backdrop-blur-sm border border-border max-w-xs"
+          >
+            <p className="text-[11px] text-muted-foreground text-center leading-snug">
+              Insights like these help brands understand real consumer behavior
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Scrollable feed */}
       <div
         ref={scrollRef}
