@@ -300,6 +300,10 @@ export default function LiveDebate() {
       dragElastic={0.3}
       onDrag={(_, info) => { setExitDragY(info.offset.y > 0 ? info.offset.y : 0); setIsDraggingExit(info.offset.y > 30); }}
       onDragEnd={handleExitDragEnd}
+      onTouchStart={(e) => handleNavSwipeStart(e.touches[0].clientX)}
+      onTouchEnd={(e) => handleNavSwipeEnd(e.changedTouches[0].clientX)}
+      onMouseDown={(e) => handleNavSwipeStart(e.clientX)}
+      onMouseUp={(e) => handleNavSwipeEnd(e.clientX)}
     >
       {/* Minimal top bar */}
       <div className="absolute top-0 inset-x-0 z-30 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-2">
