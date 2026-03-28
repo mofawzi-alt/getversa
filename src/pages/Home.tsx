@@ -310,7 +310,7 @@ export default function Home() {
         const votesA = (r?.votes_a as number) || 0;
         const votesB = (r?.votes_b as number) || 0;
         const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
-        return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: recentVotesMap.get(p.id) || 0 };
+        return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: recentVotesMap.get(p.id)?.size || 0 };
       });
     },
     staleTime: 1000 * 10,
