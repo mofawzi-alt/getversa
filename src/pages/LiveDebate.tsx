@@ -356,6 +356,15 @@ export default function LiveDebate() {
             animate={{ opacity: 1 }}
             className="flex items-center gap-3"
           >
+            {currentIndex > 0 && (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => { setCurrentIndex(prev => prev - 1); setResult(null); setPhase('result'); }}
+                className="px-5 py-2.5 rounded-full bg-white/15 text-white text-sm font-display font-bold backdrop-blur-md"
+              >
+                ← Previous
+              </motion.button>
+            )}
             {hasMore ? (
               <motion.button
                 whileTap={{ scale: 0.95 }}
