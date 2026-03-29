@@ -671,6 +671,33 @@ export default function Home() {
 
         
 
+        {/* ═══ POLLS WAITING NUDGE ═══ */}
+        {user && (unseenCount || 0) > 0 && (
+          <section className="px-3 mb-3">
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate('/vote')}
+              className="rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 px-4 py-3 flex items-center gap-3 cursor-pointer"
+            >
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <Target className="h-5 w-5 text-primary" />
+              </motion.div>
+              <div className="flex-1">
+                <p className="text-xs font-display font-bold text-foreground">
+                  {unseenCount} poll{unseenCount !== 1 ? 's' : ''} waiting for your vote
+                </p>
+                <p className="text-[10px] text-muted-foreground">Every vote shapes the insights</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-primary" />
+            </motion.div>
+          </section>
+        )}
+
         {/* ═══ GAMIFICATION STRIP ═══ */}
         {user && (
           <section className="px-3 mb-3">
@@ -782,12 +809,25 @@ export default function Home() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-muted-foreground">{info.count} polls</span>
-                          {info.unseen > 0 && (
+                          {info.unseen > 0 ? (
                             <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
-                              {info.unseen} new
+                              {info.unseen} left
+                            </span>
+                          ) : (
+                            <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-bold flex items-center gap-0.5">
+                              ✓ Done
                             </span>
                           )}
                         </div>
+                        {/* Mini progress bar */}
+                        {user && (
+                          <div className="h-1 w-full rounded-full bg-muted mt-1.5 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-primary transition-all duration-500"
+                              style={{ width: `${info.count > 0 ? ((info.count - info.unseen) / info.count) * 100 : 0}%` }}
+                            />
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   );

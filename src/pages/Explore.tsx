@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/layout/AppLayout';
-import { Search, TrendingUp, ArrowUp, ArrowDown, Minus, Zap, Users, Timer, ChevronLeft } from 'lucide-react';
+import { Search, TrendingUp, ArrowUp, ArrowDown, Minus, Zap, Users, Timer, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Input } from '@/components/ui/input';
@@ -44,6 +46,7 @@ function getFallbackImage(seed: string, index: number): string {
 type CategoryData = {
   name: string;
   activePolls: number;
+  votedPolls: number;
   hasLive: boolean;
   votes24h: number;
   growthPercent: number;
@@ -79,9 +82,21 @@ function getTimeLeft(endsAt: string): string {
 }
 
 export default function Explore() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Fetch user's voted poll IDs
+  const { data: votedPollIds } = useQuery({
+    queryKey: ['user-voted-ids-explore', user?.id],
+    queryFn: async () => {
+      if (!user) return new Set<string>();
+      const { data: votes } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
+      return new Set(votes?.map(v => v.poll_id) || []);
+    },
+    staleTime: 1000 * 60 * 2,
+  });
 
   // Fetch all active polls with results
   const { data: pollsData } = useQuery({
@@ -142,11 +157,12 @@ export default function Explore() {
 
   // Build categories
   const categories: CategoryData[] = useMemo(() => {
-    const catMap = new Map<string, { name: string; activePolls: number; hasLive: boolean; votes24h: number; totalVotes: number }>();
+    const catMap = new Map<string, { name: string; activePolls: number; votedPolls: number; hasLive: boolean; votes24h: number; totalVotes: number }>();
     polls.forEach(p => {
       const cat = p.category || 'Uncategorized';
-      const existing = catMap.get(cat) || { name: cat, activePolls: 0, hasLive: false, votes24h: 0, totalVotes: 0 };
+      const existing = catMap.get(cat) || { name: cat, activePolls: 0, votedPolls: 0, hasLive: false, votes24h: 0, totalVotes: 0 };
       existing.activePolls++;
+      if (votedPollIds?.has(p.id)) existing.votedPolls++;
       if (p.isLive) existing.hasLive = true;
       existing.votes24h += (votes24hMap.get(p.id) || 0);
       existing.totalVotes += p.totalVotes;
@@ -158,7 +174,7 @@ export default function Explore() {
       const momentum: 'rising' | 'slowing' | 'steady' = growthPercent > 15 ? 'rising' : growthPercent < 5 ? 'slowing' : 'steady';
       return { ...c, growthPercent, momentum };
     }).sort((a, b) => b.votes24h - a.votes24h);
-  }, [polls, votes24hMap]);
+  }, [polls, votes24hMap, votedPollIds]);
 
   const trendingCategories = categories.slice(0, 5);
 
@@ -327,7 +343,14 @@ export default function Explore() {
                       {cat.growthPercent > 0 ? `+${cat.growthPercent}%` : `${cat.growthPercent}%`} today
                     </span>
                   </div>
-                  <p className="text-[9px] text-muted-foreground mt-0.5">{cat.activePolls} active polls</p>
+                  {user ? (
+                    <div className="mt-1">
+                      <span className="text-[9px] text-muted-foreground">{cat.votedPolls}/{cat.activePolls} voted</span>
+                      <Progress value={cat.activePolls > 0 ? (cat.votedPolls / cat.activePolls) * 100 : 0} className="h-1 mt-0.5" />
+                    </div>
+                  ) : (
+                    <p className="text-[9px] text-muted-foreground mt-0.5">{cat.activePolls} active polls</p>
+                  )}
                 </motion.div>
               ))}
             </div>
@@ -358,7 +381,25 @@ export default function Explore() {
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1">{cat.activePolls} active poll{cat.activePolls !== 1 ? 's' : ''}</p>
+                {/* Progress bar: voted / total */}
+                {user && (
+                  <div className="mt-1.5">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[9px] text-muted-foreground">
+                        {cat.votedPolls}/{cat.activePolls} voted
+                      </span>
+                      {cat.votedPolls >= cat.activePolls && cat.activePolls > 0 && (
+                        <span className="flex items-center gap-0.5 text-[8px] font-bold text-success">
+                          <CheckCircle2 className="h-2.5 w-2.5" /> Complete!
+                        </span>
+                      )}
+                    </div>
+                    <Progress value={cat.activePolls > 0 ? (cat.votedPolls / cat.activePolls) * 100 : 0} className="h-1.5" />
+                  </div>
+                )}
+                {!user && (
+                  <p className="text-[10px] text-muted-foreground mt-1">{cat.activePolls} active poll{cat.activePolls !== 1 ? 's' : ''}</p>
+                )}
                 {cat.momentum === 'rising' && (
                   <div className="flex items-center gap-0.5 mt-1">
                     <ArrowUp className="h-2.5 w-2.5 text-success" />
