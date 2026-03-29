@@ -46,6 +46,7 @@ function getFallbackImage(seed: string, index: number): string {
 type CategoryData = {
   name: string;
   activePolls: number;
+  votedPolls: number;
   hasLive: boolean;
   votes24h: number;
   growthPercent: number;
