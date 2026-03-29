@@ -161,12 +161,14 @@ function ImmersivePollCard({
 }) {
   const navigate = useNavigate();
   const [dragX, setDragX] = useState(0);
+  const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [flyDirection, setFlyDirection] = useState<'left' | 'right' | null>(null);
+  const [flyDirection, setFlyDirection] = useState<'left' | 'right' | 'up' | null>(null);
   const [showSuspense, setShowSuspense] = useState(false);
   const [showMinorityBadge, setShowMinorityBadge] = useState(false);
   const [showShiftMsg, setShowShiftMsg] = useState(false);
   const startX = useRef(0);
+  const startY = useRef(0);
   const hasResult = !!result;
   const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
   const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
