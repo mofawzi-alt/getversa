@@ -123,6 +123,10 @@ export default {
           "70%": { transform: "scale(0.9)" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+        "breathe": {
+          "0%, 100%": { transform: "scale(1)", opacity: "0.3" },
+          "50%": { transform: "scale(1.18)", opacity: "0.08" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
