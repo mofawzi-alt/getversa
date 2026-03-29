@@ -123,6 +123,10 @@ export default {
           "70%": { transform: "scale(0.9)" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+        "breathe": {
+          "0%, 100%": { transform: "scale(1)", opacity: "0.3" },
+          "50%": { transform: "scale(1.18)", opacity: "0.08" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -131,6 +135,7 @@ export default {
         "swipe-right": "swipe-right 0.4s ease-out forwards",
         "fade-in": "fade-in 0.3s ease-out",
         "bounce-in": "bounce-in 0.5s ease-out",
+        "breathe": "breathe 2.5s ease-in-out infinite",
       },
     },
   },
