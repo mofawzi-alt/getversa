@@ -1075,6 +1075,7 @@ export default function SwipeFeed() {
                   poll={poll}
                   result={result}
                   onVote={handleVote}
+                  onSkip={handleSkip}
                   disabled={voteMutation.isPending}
                   showFeedback={feedbackPollId === poll.id}
                   isHighStakes={isHighStakes}
