@@ -577,19 +577,27 @@ export default function Home() {
 
                         {/* Bottom info bar */}
                         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-8 pb-3 px-4 z-10">
-                          {/* Option labels + percentages */}
+                          {/* Option labels + percentages or tap to vote */}
                           <div className="flex items-end justify-between mb-2">
                             <div className="flex-1 text-center">
                               <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_a}</p>
-                              <span className="text-2xl font-bold text-option-a drop-shadow-lg">
-                                <AnimatedNumber value={poll.percentA} />%
-                              </span>
+                              {hasVoted ? (
+                                <span className="text-2xl font-bold text-option-a drop-shadow-lg">
+                                  <AnimatedNumber value={poll.percentA} />%
+                                </span>
+                              ) : (
+                                <span className="text-xs font-bold text-primary drop-shadow-lg animate-pulse">Tap to vote</span>
+                              )}
                             </div>
                             <div className="flex-1 text-center">
                               <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_b}</p>
-                              <span className="text-2xl font-bold text-option-b drop-shadow-lg">
-                                <AnimatedNumber value={poll.percentB} />%
-                              </span>
+                              {hasVoted ? (
+                                <span className="text-2xl font-bold text-option-b drop-shadow-lg">
+                                  <AnimatedNumber value={poll.percentB} />%
+                                </span>
+                              ) : (
+                                <span className="text-xs font-bold text-primary drop-shadow-lg animate-pulse">Tap to vote</span>
+                              )}
                             </div>
                           </div>
                           {/* Percentage bar - split colors */}
@@ -597,13 +605,13 @@ export default function Home() {
                             <motion.div
                               className="h-full bg-option-a"
                               initial={{ width: '50%' }}
-                              animate={{ width: `${poll.percentA}%` }}
+                              animate={{ width: hasVoted ? `${poll.percentA}%` : '50%' }}
                               transition={{ duration: 0.7, ease: 'easeOut' }}
                             />
                             <motion.div
                               className="h-full bg-option-b"
                               initial={{ width: '50%' }}
-                              animate={{ width: `${poll.percentB}%` }}
+                              animate={{ width: hasVoted ? `${poll.percentB}%` : '50%' }}
                               transition={{ duration: 0.7, ease: 'easeOut' }}
                             />
                           </div>
