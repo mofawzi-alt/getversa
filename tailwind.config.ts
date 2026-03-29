@@ -135,6 +135,7 @@ export default {
         "swipe-right": "swipe-right 0.4s ease-out forwards",
         "fade-in": "fade-in 0.3s ease-out",
         "bounce-in": "bounce-in 0.5s ease-out",
+        "breathe": "breathe 2.5s ease-in-out infinite",
       },
     },
   },
