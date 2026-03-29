@@ -96,7 +96,6 @@ export default function Explore() {
     },
     staleTime: 1000 * 60 * 2,
   });
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Fetch all active polls with results
   const { data: pollsData } = useQuery({
