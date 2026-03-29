@@ -81,8 +81,21 @@ function getTimeLeft(endsAt: string): string {
 }
 
 export default function Explore() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Fetch user's voted poll IDs
+  const { data: votedPollIds } = useQuery({
+    queryKey: ['user-voted-ids-explore', user?.id],
+    queryFn: async () => {
+      if (!user) return new Set<string>();
+      const { data: votes } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
+      return new Set(votes?.map(v => v.poll_id) || []);
+    },
+    staleTime: 1000 * 60 * 2,
+  });
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Fetch all active polls with results
