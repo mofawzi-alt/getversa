@@ -343,11 +343,11 @@ function ImmersivePollCard({
             boxShadow: !hasResult ? glowColor : undefined,
             transformStyle: 'preserve-3d',
           }}
-          onTouchStart={(e) => handleStart(e.touches[0].clientX)}
-          onTouchMove={(e) => { handleMove(e.touches[0].clientX); if (Math.abs(dragX) > 10) e.preventDefault(); }}
+          onTouchStart={(e) => handleStart(e.touches[0].clientX, e.touches[0].clientY)}
+          onTouchMove={(e) => { handleMove(e.touches[0].clientX, e.touches[0].clientY); if (Math.abs(dragX) > 10 || dragY < -10) e.preventDefault(); }}
           onTouchEnd={handleEnd}
-          onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX); }}
-          onMouseMove={(e) => handleMove(e.clientX)}
+          onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX, e.clientY); }}
+          onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
           onMouseUp={handleEnd}
           onMouseLeave={() => isDragging && handleEnd()}
         >
