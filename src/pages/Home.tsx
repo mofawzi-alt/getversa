@@ -809,12 +809,25 @@ export default function Home() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-muted-foreground">{info.count} polls</span>
-                          {info.unseen > 0 && (
+                          {info.unseen > 0 ? (
                             <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
-                              {info.unseen} new
+                              {info.unseen} left
+                            </span>
+                          ) : (
+                            <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-bold flex items-center gap-0.5">
+                              ✓ Done
                             </span>
                           )}
                         </div>
+                        {/* Mini progress bar */}
+                        {user && (
+                          <div className="h-1 w-full rounded-full bg-muted mt-1.5 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-primary transition-all duration-500"
+                              style={{ width: `${info.count > 0 ? ((info.count - info.unseen) / info.count) * 100 : 0}%` }}
+                            />
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   );
