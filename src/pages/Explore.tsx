@@ -157,11 +157,12 @@ export default function Explore() {
 
   // Build categories
   const categories: CategoryData[] = useMemo(() => {
-    const catMap = new Map<string, { name: string; activePolls: number; hasLive: boolean; votes24h: number; totalVotes: number }>();
+    const catMap = new Map<string, { name: string; activePolls: number; votedPolls: number; hasLive: boolean; votes24h: number; totalVotes: number }>();
     polls.forEach(p => {
       const cat = p.category || 'Uncategorized';
-      const existing = catMap.get(cat) || { name: cat, activePolls: 0, hasLive: false, votes24h: 0, totalVotes: 0 };
+      const existing = catMap.get(cat) || { name: cat, activePolls: 0, votedPolls: 0, hasLive: false, votes24h: 0, totalVotes: 0 };
       existing.activePolls++;
+      if (votedPollIds?.has(p.id)) existing.votedPolls++;
       if (p.isLive) existing.hasLive = true;
       existing.votes24h += (votes24hMap.get(p.id) || 0);
       existing.totalVotes += p.totalVotes;
