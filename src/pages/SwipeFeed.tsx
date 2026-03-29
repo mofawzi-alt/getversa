@@ -175,19 +175,34 @@ function ImmersivePollCard({
   const winnerIsA = result ? result.percentA >= result.percentB : true;
   const THRESHOLD = 80;
 
-  const handleStart = (clientX: number) => {
+  const handleStart = (clientX: number, clientY: number) => {
     if (hasResult || disabled || flyDirection) return;
     setIsDragging(true);
     startX.current = clientX;
+    startY.current = clientY;
   };
-  const handleMove = (clientX: number) => {
+  const handleMove = (clientX: number, clientY: number) => {
     if (!isDragging) return;
-    setDragX(clientX - startX.current);
+    const dx = clientX - startX.current;
+    const dy = clientY - startY.current;
+    // Determine primary axis: if vertical movement dominates, track Y
+    if (Math.abs(dy) > Math.abs(dx) && dy < -20) {
+      setDragY(dy);
+      setDragX(0);
+    } else {
+      setDragX(dx);
+      setDragY(0);
+    }
   };
   const handleEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    if (dragX < -THRESHOLD) {
+    if (dragY < -THRESHOLD) {
+      // Swipe up = skip
+      setFlyDirection('up');
+      triggerHaptic('light');
+      setTimeout(() => onSkip(poll.id), 300);
+    } else if (dragX < -THRESHOLD) {
       setFlyDirection('left');
       triggerHaptic('light');
       setTimeout(() => onVote(poll.id, 'A'), 300);
@@ -196,7 +211,10 @@ function ImmersivePollCard({
       triggerHaptic('light');
       setTimeout(() => onVote(poll.id, 'B'), 300);
     }
-    if (Math.abs(dragX) <= THRESHOLD) setDragX(0);
+    if (Math.abs(dragX) <= THRESHOLD && dragY >= -THRESHOLD) {
+      setDragX(0);
+      setDragY(0);
+    }
   };
 
   // Suspense delay before showing results
