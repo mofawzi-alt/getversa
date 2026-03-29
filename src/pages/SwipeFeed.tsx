@@ -140,6 +140,7 @@ function ImmersivePollCard({
   poll,
   result,
   onVote,
+  onSkip,
   disabled,
   showFeedback,
   isHighStakes,
@@ -150,6 +151,7 @@ function ImmersivePollCard({
   poll: Poll;
   result: VoteResult | null;
   onVote: (pollId: string, choice: 'A' | 'B') => void;
+  onSkip: (pollId: string) => void;
   disabled: boolean;
   showFeedback: boolean;
   isHighStakes?: boolean;
