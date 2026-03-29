@@ -140,6 +140,7 @@ function ImmersivePollCard({
   poll,
   result,
   onVote,
+  onSkip,
   disabled,
   showFeedback,
   isHighStakes,
@@ -150,6 +151,7 @@ function ImmersivePollCard({
   poll: Poll;
   result: VoteResult | null;
   onVote: (pollId: string, choice: 'A' | 'B') => void;
+  onSkip: (pollId: string) => void;
   disabled: boolean;
   showFeedback: boolean;
   isHighStakes?: boolean;
@@ -159,31 +161,48 @@ function ImmersivePollCard({
 }) {
   const navigate = useNavigate();
   const [dragX, setDragX] = useState(0);
+  const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [flyDirection, setFlyDirection] = useState<'left' | 'right' | null>(null);
+  const [flyDirection, setFlyDirection] = useState<'left' | 'right' | 'up' | null>(null);
   const [showSuspense, setShowSuspense] = useState(false);
   const [showMinorityBadge, setShowMinorityBadge] = useState(false);
   const [showShiftMsg, setShowShiftMsg] = useState(false);
   const startX = useRef(0);
+  const startY = useRef(0);
   const hasResult = !!result;
   const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
   const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
   const winnerIsA = result ? result.percentA >= result.percentB : true;
   const THRESHOLD = 80;
 
-  const handleStart = (clientX: number) => {
+  const handleStart = (clientX: number, clientY: number) => {
     if (hasResult || disabled || flyDirection) return;
     setIsDragging(true);
     startX.current = clientX;
+    startY.current = clientY;
   };
-  const handleMove = (clientX: number) => {
+  const handleMove = (clientX: number, clientY: number) => {
     if (!isDragging) return;
-    setDragX(clientX - startX.current);
+    const dx = clientX - startX.current;
+    const dy = clientY - startY.current;
+    // Determine primary axis: if vertical movement dominates, track Y
+    if (Math.abs(dy) > Math.abs(dx) && dy < -20) {
+      setDragY(dy);
+      setDragX(0);
+    } else {
+      setDragX(dx);
+      setDragY(0);
+    }
   };
   const handleEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    if (dragX < -THRESHOLD) {
+    if (dragY < -THRESHOLD) {
+      // Swipe up = skip
+      setFlyDirection('up');
+      triggerHaptic('light');
+      setTimeout(() => onSkip(poll.id), 300);
+    } else if (dragX < -THRESHOLD) {
       setFlyDirection('left');
       triggerHaptic('light');
       setTimeout(() => onVote(poll.id, 'A'), 300);
@@ -192,7 +211,10 @@ function ImmersivePollCard({
       triggerHaptic('light');
       setTimeout(() => onVote(poll.id, 'B'), 300);
     }
-    if (Math.abs(dragX) <= THRESHOLD) setDragX(0);
+    if (Math.abs(dragX) <= THRESHOLD && dragY >= -THRESHOLD) {
+      setDragX(0);
+      setDragY(0);
+    }
   };
 
   // Suspense delay before showing results
@@ -230,15 +252,18 @@ function ImmersivePollCard({
 
   // 3D tilt + scale calculations
   const normalizedDrag = Math.min(Math.abs(dragX), 200) / 200;
+  const normalizedDragY = Math.min(Math.abs(dragY), 200) / 200;
   const rotation = flyDirection
-    ? (flyDirection === 'left' ? -15 : 15)
+    ? (flyDirection === 'left' ? -15 : flyDirection === 'right' ? 15 : 0)
     : Math.sign(dragX) * normalizedDrag * 12;
-  const tiltY = Math.sign(dragX) * normalizedDrag * 8; // 3D Y-axis tilt
-  const cardScale = isDragging ? 1 - normalizedDrag * 0.05 : 1; // scale down to 95%
+  const tiltY = Math.sign(dragX) * normalizedDrag * 8;
+  const cardScale = isDragging ? 1 - Math.max(normalizedDrag, normalizedDragY) * 0.05 : 1;
 
-  const translateX = flyDirection
-    ? (flyDirection === 'left' ? -window.innerWidth * 1.5 : window.innerWidth * 1.5)
+  const translateX = flyDirection === 'left' ? -window.innerWidth * 1.5
+    : flyDirection === 'right' ? window.innerWidth * 1.5
+    : flyDirection === 'up' ? 0
     : dragX;
+  const translateY = flyDirection === 'up' ? -window.innerHeight : Math.min(dragY, 0);
 
   const choiceOpacity = Math.min(Math.abs(dragX) / THRESHOLD, 1);
   const showA = dragX < -20;
@@ -315,17 +340,17 @@ function ImmersivePollCard({
           style={{
             transform: hasResult
               ? 'none'
-              : `translateX(${translateX}px) rotateZ(${rotation}deg) rotateY(${tiltY}deg) scale(${cardScale})`,
+              : `translateX(${translateX}px) translateY(${translateY}px) rotateZ(${rotation}deg) rotateY(${tiltY}deg) scale(${cardScale})`,
             transition: isDragging ? 'none' : flyDirection ? 'transform 0.4s ease-in, opacity 0.3s' : 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
             opacity: flyDirection ? 0 : 1,
             boxShadow: !hasResult ? glowColor : undefined,
             transformStyle: 'preserve-3d',
           }}
-          onTouchStart={(e) => handleStart(e.touches[0].clientX)}
-          onTouchMove={(e) => { handleMove(e.touches[0].clientX); if (Math.abs(dragX) > 10) e.preventDefault(); }}
+          onTouchStart={(e) => handleStart(e.touches[0].clientX, e.touches[0].clientY)}
+          onTouchMove={(e) => { handleMove(e.touches[0].clientX, e.touches[0].clientY); if (Math.abs(dragX) > 10 || dragY < -10) e.preventDefault(); }}
           onTouchEnd={handleEnd}
-          onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX); }}
-          onMouseMove={(e) => handleMove(e.clientX)}
+          onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX, e.clientY); }}
+          onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
           onMouseUp={handleEnd}
           onMouseLeave={() => isDragging && handleEnd()}
         >
@@ -572,12 +597,31 @@ function ImmersivePollCard({
               <span className="text-option-a font-display font-bold text-base">A</span>
               <span className="text-foreground/50 text-[9px] font-medium max-w-20 text-center truncate">← {poll.option_a}</span>
             </div>
-            <span className="text-foreground/30 text-[9px]">swipe to choose</span>
+            <div className="flex flex-col items-center gap-0">
+              <span className="text-foreground/30 text-[9px]">swipe to choose</span>
+              {/* Subtle skip hint */}
+              <button
+                onClick={(e) => { e.stopPropagation(); onSkip(poll.id); }}
+                className="text-[8px] text-muted-foreground/40 mt-0.5 hover:text-muted-foreground/60 transition-colors"
+              >
+                or swipe ↑ to skip
+              </button>
+            </div>
             <div className="flex flex-col items-center gap-0.5">
               <span className="text-option-b font-display font-bold text-base">B</span>
               <span className="text-foreground/50 text-[9px] font-medium max-w-20 text-center truncate">{poll.option_b} →</span>
             </div>
           </div>
+        )}
+        {/* Skip up indicator when dragging up */}
+        {dragY < -30 && !hasResult && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: Math.min(Math.abs(dragY) / THRESHOLD, 1) }}
+            className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-muted-foreground/60"
+          >
+            ↑ Skip
+          </motion.div>
         )}
       </div>
     </div>
@@ -861,6 +905,26 @@ export default function SwipeFeed() {
     voteMutation.mutate({ pollId, choice });
   }, [voteMutation, user, votedResults]);
 
+  // Skip handler — track in backend and scroll to next
+  const [skippedIds, setSkippedIds] = useState<Set<string>>(new Set());
+  const handleSkip = useCallback((pollId: string) => {
+    if (skippedIds.has(pollId) || votedResults.has(pollId)) return;
+    setSkippedIds(prev => new Set(prev).add(pollId));
+    // Track in backend
+    if (user) {
+      supabase.from('skipped_polls').insert({ user_id: user.id, poll_id: pollId } as any).then(() => {});
+    }
+    // Scroll to next unvoted poll
+    if (polls) {
+      const idx = polls.findIndex(p => p.id === pollId);
+      const nextPoll = polls.find((p, i) => i > idx && !votedResults.has(p.id) && !skippedIds.has(p.id) && p.id !== pollId);
+      if (nextPoll) {
+        const nextEl = cardRefs.current.get(nextPoll.id);
+        nextEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [user, polls, votedResults, skippedIds]);
+
   // No welcome flow — polls show immediately
 
   if (isLoading) {
@@ -1011,6 +1075,7 @@ export default function SwipeFeed() {
                   poll={poll}
                   result={result}
                   onVote={handleVote}
+                  onSkip={handleSkip}
                   disabled={voteMutation.isPending}
                   showFeedback={feedbackPollId === poll.id}
                   isHighStakes={isHighStakes}
