@@ -252,15 +252,18 @@ function ImmersivePollCard({
 
   // 3D tilt + scale calculations
   const normalizedDrag = Math.min(Math.abs(dragX), 200) / 200;
+  const normalizedDragY = Math.min(Math.abs(dragY), 200) / 200;
   const rotation = flyDirection
-    ? (flyDirection === 'left' ? -15 : 15)
+    ? (flyDirection === 'left' ? -15 : flyDirection === 'right' ? 15 : 0)
     : Math.sign(dragX) * normalizedDrag * 12;
-  const tiltY = Math.sign(dragX) * normalizedDrag * 8; // 3D Y-axis tilt
-  const cardScale = isDragging ? 1 - normalizedDrag * 0.05 : 1; // scale down to 95%
+  const tiltY = Math.sign(dragX) * normalizedDrag * 8;
+  const cardScale = isDragging ? 1 - Math.max(normalizedDrag, normalizedDragY) * 0.05 : 1;
 
-  const translateX = flyDirection
-    ? (flyDirection === 'left' ? -window.innerWidth * 1.5 : window.innerWidth * 1.5)
+  const translateX = flyDirection === 'left' ? -window.innerWidth * 1.5
+    : flyDirection === 'right' ? window.innerWidth * 1.5
+    : flyDirection === 'up' ? 0
     : dragX;
+  const translateY = flyDirection === 'up' ? -window.innerHeight : Math.min(dragY, 0);
 
   const choiceOpacity = Math.min(Math.abs(dragX) / THRESHOLD, 1);
   const showA = dragX < -20;
