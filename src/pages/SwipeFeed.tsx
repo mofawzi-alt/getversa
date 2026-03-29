@@ -340,7 +340,7 @@ function ImmersivePollCard({
           style={{
             transform: hasResult
               ? 'none'
-              : `translateX(${translateX}px) rotateZ(${rotation}deg) rotateY(${tiltY}deg) scale(${cardScale})`,
+              : `translateX(${translateX}px) translateY(${translateY}px) rotateZ(${rotation}deg) rotateY(${tiltY}deg) scale(${cardScale})`,
             transition: isDragging ? 'none' : flyDirection ? 'transform 0.4s ease-in, opacity 0.3s' : 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
             opacity: flyDirection ? 0 : 1,
             boxShadow: !hasResult ? glowColor : undefined,
