@@ -905,6 +905,26 @@ export default function SwipeFeed() {
     voteMutation.mutate({ pollId, choice });
   }, [voteMutation, user, votedResults]);
 
+  // Skip handler — track in backend and scroll to next
+  const [skippedIds, setSkippedIds] = useState<Set<string>>(new Set());
+  const handleSkip = useCallback((pollId: string) => {
+    if (skippedIds.has(pollId) || votedResults.has(pollId)) return;
+    setSkippedIds(prev => new Set(prev).add(pollId));
+    // Track in backend
+    if (user) {
+      supabase.from('skipped_polls').insert({ user_id: user.id, poll_id: pollId } as any).then(() => {});
+    }
+    // Scroll to next unvoted poll
+    if (polls) {
+      const idx = polls.findIndex(p => p.id === pollId);
+      const nextPoll = polls.find((p, i) => i > idx && !votedResults.has(p.id) && !skippedIds.has(p.id) && p.id !== pollId);
+      if (nextPoll) {
+        const nextEl = cardRefs.current.get(nextPoll.id);
+        nextEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [user, polls, votedResults, skippedIds]);
+
   // No welcome flow — polls show immediately
 
   if (isLoading) {
