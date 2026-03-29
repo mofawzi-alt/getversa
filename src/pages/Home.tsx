@@ -504,7 +504,7 @@ export default function Home() {
               </motion.div>
               Start Voting
               {hasUnseen && (
-                <span className="ml-1 px-2 py-0.5 rounded-full bg-primary-foreground/20 text-[11px] font-bold">
+                <span className="ml-1 px-2 py-0.5 rounded-full bg-primary-foreground/20 text-[11px] font-bold animate-pulse">
                   {unseenCount} new
                 </span>
               )}
