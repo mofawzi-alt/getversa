@@ -174,7 +174,7 @@ export default function Explore() {
       const momentum: 'rising' | 'slowing' | 'steady' = growthPercent > 15 ? 'rising' : growthPercent < 5 ? 'slowing' : 'steady';
       return { ...c, growthPercent, momentum };
     }).sort((a, b) => b.votes24h - a.votes24h);
-  }, [polls, votes24hMap]);
+  }, [polls, votes24hMap, votedPollIds]);
 
   const trendingCategories = categories.slice(0, 5);
 
