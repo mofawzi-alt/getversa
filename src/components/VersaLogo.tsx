@@ -6,17 +6,21 @@ interface VersaLogoProps {
 }
 
 export default function VersaLogo({ className = '', size = 'md' }: VersaLogoProps) {
-  const sizeClasses = {
-    sm: 'h-5',
-    md: 'h-7',
-    lg: 'h-10',
-    xl: 'h-12',
+  const sizeMap = {
+    sm: { height: 20, width: 60 },
+    md: { height: 28, width: 84 },
+    lg: { height: 40, width: 120 },
+    xl: { height: 48, width: 144 },
   };
+
+  const { height, width } = sizeMap[size];
 
   return (
     <div
-      className={`${sizeClasses[size]} aspect-[3/1] bg-primary ${className}`}
+      className={`bg-primary ${className}`}
       style={{
+        height,
+        width,
         WebkitMaskImage: `url(${versaLogoImg})`,
         maskImage: `url(${versaLogoImg})`,
         WebkitMaskSize: 'contain',
