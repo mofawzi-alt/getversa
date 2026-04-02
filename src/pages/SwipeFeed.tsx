@@ -542,14 +542,15 @@ function ImmersivePollCard({
               }`}>
                 {isMajority ? '👥 Majority' : '👀 Minority'}
               </span>
-              <motion.p
+              <motion.div
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: [0, 1, 1, 0] }}
-                transition={{ duration: 2, times: [0, 0.15, 0.75, 1], delay: 0.8 }}
-                className="text-[10px] text-muted-foreground/70 mt-1.5"
+                transition={{ duration: 2.5, times: [0, 0.15, 0.75, 1], delay: 0.8 }}
+                className="flex items-center gap-2 mt-1.5"
               >
-                +1 perspective added ✨
-              </motion.p>
+                <span className="text-[10px] font-bold text-accent">+5 points ⚡</span>
+                <span className="text-[10px] text-muted-foreground/70">• streak kept 🔥</span>
+              </motion.div>
             </motion.div>
           </div>
         );
