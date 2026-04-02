@@ -4,6 +4,7 @@ import { ArrowRight, Flame, Zap, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
+import VersaLogo from '@/components/VersaLogo';
 
 import coffeeImg from '@/assets/polls/coffee.jpg';
 import teaImg from '@/assets/polls/tea.jpg';
