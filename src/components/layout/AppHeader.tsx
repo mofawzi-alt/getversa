@@ -7,14 +7,12 @@ export default function AppHeader() {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
 
-  if (!user) return null;
-
   return (
     <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-b border-border/40 z-50 safe-area-top">
       <div className="flex items-center justify-between h-14 px-4 max-w-lg mx-auto">
         {/* Logo */}
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate(user ? '/home' : '/')}
           className="flex items-center gap-2"
         >
           <VersaLogo size="sm" />

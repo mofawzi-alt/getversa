@@ -378,7 +378,7 @@ function ImmersivePollCard({
                 />
               )}
               <div className="absolute bottom-2 left-2 right-1">
-                <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_a}</p>
+                <p className="text-white text-base font-extrabold drop-shadow-lg">{poll.option_a}</p>
               </div>
             </div>
 
@@ -406,14 +406,14 @@ function ImmersivePollCard({
                 />
               )}
               <div className="absolute bottom-2 left-1 right-2 text-right">
-                <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_b}</p>
+                <p className="text-white text-base font-extrabold drop-shadow-lg">{poll.option_b}</p>
               </div>
             </div>
           </div>
 
           {/* Question overlay */}
-          <div className="absolute top-0 inset-x-0 px-3 pt-3 pb-6 bg-gradient-to-b from-black/70 to-transparent z-20 pointer-events-none">
-            <p className="text-white text-xs font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
+          <div className="absolute top-0 inset-x-0 px-4 pt-3 pb-8 bg-gradient-to-b from-black/70 to-transparent z-20 pointer-events-none">
+            <p className="text-white text-base font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
           </div>
 
           {/* Suspense loading pulse */}
@@ -594,23 +594,23 @@ function ImmersivePollCard({
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <div className="flex flex-col items-center gap-0.5">
-              <span className="text-option-a font-display font-bold text-base">A</span>
-              <span className="text-foreground/50 text-[9px] font-medium max-w-20 text-center truncate">← {poll.option_a}</span>
+            <div className="flex flex-col items-center gap-0.5 flex-1">
+              <span className="text-option-a font-display font-bold text-lg">A</span>
+              <span className="text-foreground/50 text-xs font-medium max-w-24 text-center truncate">← {poll.option_a}</span>
             </div>
-            <div className="flex flex-col items-center gap-0">
-              <span className="text-foreground/30 text-[9px]">swipe to choose</span>
+            <div className="flex flex-col items-center gap-0 flex-1">
+              <span className="text-foreground/30 text-xs">swipe to choose</span>
               {/* Subtle skip hint */}
               <button
                 onClick={(e) => { e.stopPropagation(); onSkip(poll.id); }}
-                className="text-[8px] text-muted-foreground/40 mt-0.5 hover:text-muted-foreground/60 transition-colors"
+                className="text-[9px] text-muted-foreground/40 mt-0.5 hover:text-muted-foreground/60 transition-colors"
               >
                 or swipe ↑ to skip
               </button>
             </div>
-            <div className="flex flex-col items-center gap-0.5">
-              <span className="text-option-b font-display font-bold text-base">B</span>
-              <span className="text-foreground/50 text-[9px] font-medium max-w-20 text-center truncate">{poll.option_b} →</span>
+            <div className="flex flex-col items-center gap-0.5 flex-1">
+              <span className="text-option-b font-display font-bold text-lg">B</span>
+              <span className="text-foreground/50 text-xs font-medium max-w-24 text-center truncate">{poll.option_b} →</span>
             </div>
           </div>
         )}
