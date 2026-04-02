@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,20 +54,45 @@ function detectCountry(): string {
 }
 
 export default function Onboarding() {
-  // Steps: 0=username, 1=age, 2=gender, 3=country, 4=city, 5=confirmation
-  const [step, setStep] = useState(0);
-  const [username, setUsername] = useState('');
-  const [ageRange, setAgeRange] = useState('');
-  const [gender, setGender] = useState('');
-  const [country, setCountry] = useState(detectCountry);
-  const [city, setCity] = useState('');
+  const { user, profile, refreshProfile } = useAuth();
+  const navigate = useNavigate();
+
+  // Determine which steps are needed based on existing profile data
+  const allSteps = useMemo(() => {
+    const steps: ('username' | 'age' | 'gender' | 'country' | 'city')[] = [];
+    if (!profile?.username) steps.push('username');
+    if (!profile?.age_range) steps.push('age');
+    if (!profile?.gender) steps.push('gender');
+    if (!profile?.country) steps.push('country');
+    if (!profile?.city) steps.push('city');
+    // If somehow all fields are filled, show all (shouldn't happen)
+    if (steps.length === 0) return ['username', 'age', 'gender', 'country', 'city'] as const;
+    return steps;
+  }, [profile]);
+
+  const totalSteps = allSteps.length;
+  const [stepIndex, setStepIndex] = useState(0);
+  const currentStep = allSteps[stepIndex] || allSteps[0];
+
+  const [username, setUsername] = useState(profile?.username || '');
+  const [ageRange, setAgeRange] = useState(profile?.age_range || '');
+  const [gender, setGender] = useState(profile?.gender || '');
+  const [country, setCountry] = useState(profile?.country || detectCountry());
+  const [city, setCity] = useState(profile?.city || '');
   const [citySearch, setCitySearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const { user, refreshProfile } = useAuth();
-  const navigate = useNavigate();
 
-  const totalSteps = 5; // username, age, gender, country, city
+  // Pre-fill from profile if it loads later
+  useEffect(() => {
+    if (profile) {
+      if (profile.username && !username) setUsername(profile.username);
+      if (profile.age_range && !ageRange) setAgeRange(profile.age_range);
+      if (profile.gender && !gender) setGender(profile.gender);
+      if (profile.country && !country) setCountry(profile.country);
+      if (profile.city && !city) setCity(profile.city);
+    }
+  }, [profile]);
 
   const handleComplete = async () => {
     if (!user) return;
@@ -116,12 +141,12 @@ export default function Onboarding() {
   };
 
   const nextStep = () => {
-    if (step === 0 && !username.trim()) { toast.error('Please enter a username'); return; }
-    if (step === 1 && !ageRange) { toast.error('Please select your age range'); return; }
-    if (step === 2 && !gender) { toast.error('Please select your gender'); return; }
-    if (step === 3 && !country) { toast.error('Please select your country'); return; }
-    if (step === 3) { setCity(''); setCitySearch(''); }
-    setStep(step + 1);
+    if (currentStep === 'username' && !username.trim()) { toast.error('Please enter a username'); return; }
+    if (currentStep === 'age' && !ageRange) { toast.error('Please select your age range'); return; }
+    if (currentStep === 'gender' && !gender) { toast.error('Please select your gender'); return; }
+    if (currentStep === 'country' && !country) { toast.error('Please select your country'); return; }
+    if (currentStep === 'country') { setCity(''); setCitySearch(''); }
+    setStepIndex(stepIndex + 1);
   };
 
   // Filter cities by search
@@ -158,17 +183,17 @@ export default function Onboarding() {
             <div
               key={s}
               className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                s <= step ? 'bg-gradient-primary' : 'bg-secondary'
+                s <= stepIndex ? 'bg-gradient-primary' : 'bg-secondary'
               }`}
             />
           ))}
         </div>
-        <span className="text-xs text-muted-foreground font-medium">{step + 1}/{totalSteps}</span>
+        <span className="text-xs text-muted-foreground font-medium">{stepIndex + 1}/{totalSteps}</span>
       </div>
 
       <AnimatePresence mode="wait">
         <motion.div
-          key={step}
+          key={currentStep}
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -30 }}
@@ -176,7 +201,7 @@ export default function Onboarding() {
           className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full"
         >
           {/* Step 0: Username */}
-          {step === 0 && (
+          {currentStep === 'username' && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">Choose your username</h1>
@@ -199,7 +224,7 @@ export default function Onboarding() {
           )}
 
           {/* Step 1: Age (chips) */}
-          {step === 1 && (
+          {currentStep === 'age' && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">How old are you?</h1>
@@ -224,7 +249,7 @@ export default function Onboarding() {
           )}
 
           {/* Step 2: Gender (buttons) */}
-          {step === 2 && (
+          {currentStep === 'gender' && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">What's your gender?</h1>
@@ -249,7 +274,7 @@ export default function Onboarding() {
           )}
 
           {/* Step 3: Country (auto-filled, selectable) */}
-          {step === 3 && (
+          {currentStep === 'country' && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">Where are you from?</h1>
@@ -276,7 +301,7 @@ export default function Onboarding() {
           )}
 
           {/* Step 4: City (searchable) */}
-          {step === 4 && (
+          {currentStep === 'city' && (
             <div className="space-y-4">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">What city are you in?</h1>
@@ -314,13 +339,13 @@ export default function Onboarding() {
 
       {/* Navigation */}
       <div className="flex gap-3 mt-6">
-        {step > 0 && (
-          <Button variant="outline" onClick={() => setStep(step - 1)} className="flex-1 h-14 rounded-xl">
+        {stepIndex > 0 && (
+          <Button variant="outline" onClick={() => setStepIndex(stepIndex - 1)} className="flex-1 h-14 rounded-xl">
             Back
           </Button>
         )}
         
-        {step < 4 ? (
+        {stepIndex < totalSteps - 1 ? (
           <Button onClick={nextStep} className="flex-1 h-14 bg-gradient-primary hover:opacity-90 rounded-xl">
             Continue
             <ArrowRight className="ml-2 h-5 w-5" />

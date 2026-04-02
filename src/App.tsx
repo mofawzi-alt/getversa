@@ -48,6 +48,20 @@ function SmartLanding() {
   );
 }
 
+// Checks if a logged-in user has incomplete demographics and redirects to onboarding
+function DemographicsGuard({ children }: { children: React.ReactNode }) {
+  const { user, profile, loading } = useAuth();
+
+  if (loading) return <>{children}</>;
+
+  // Only redirect logged-in users with incomplete profiles
+  if (user && profile && (!profile.age_range || !profile.gender || !profile.country || !profile.city)) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppInner() {
   const { loading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
@@ -79,9 +93,9 @@ function AppInner() {
           <Route path="/" element={<SmartLanding />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><Onboarding /></ProtectedRoute>} />
-          <Route path="/vote" element={<SwipeFeed />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/explore" element={<Explore />} />
+          <Route path="/vote" element={<DemographicsGuard><SwipeFeed /></DemographicsGuard>} />
+          <Route path="/home" element={<DemographicsGuard><Home /></DemographicsGuard>} />
+          <Route path="/explore" element={<DemographicsGuard><Explore /></DemographicsGuard>} />
           <Route path="/live-debate" element={<LiveDebate />} />
           <Route path="/seasonal/:slug" element={<SeasonalHub />} />
           <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
