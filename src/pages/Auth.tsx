@@ -52,7 +52,7 @@ export default function Auth() {
           }
         } else {
           toast.success('Welcome back!');
-          navigate('/vote');
+          navigate('/home');
         }
       } else {
         const { error } = await signUp(email, password);
