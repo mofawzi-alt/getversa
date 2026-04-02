@@ -804,11 +804,9 @@ export default function SwipeFeed() {
   const voteMutation = useMutation({
     mutationFn: async ({ pollId, choice }: { pollId: string; choice: 'A' | 'B' }) => {
       if (!user) {
-        const count = incrementGuestVotes();
-        if (count > GUEST_VOTE_LIMIT) { setShowSignupModal(true); throw new Error('GUEST_LIMIT'); }
-        const percentA = choice === 'A' ? 100 : 0;
-        if (count >= GUEST_VOTE_LIMIT) setTimeout(() => setShowSignupModal(true), 2000);
-        return { pollId, choice, percentA, percentB: 100 - percentA, totalVotes: 1 };
+        // No guest voting in real feed — must create account
+        setShowSignupModal(true);
+        throw new Error('GUEST_LIMIT');
       }
       const { error: voteError } = await supabase.from('votes').insert({ poll_id: pollId, user_id: user.id, choice, voter_country: profile?.country || null } as any);
       if (voteError) throw voteError;
