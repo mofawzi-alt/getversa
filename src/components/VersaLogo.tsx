@@ -2,7 +2,7 @@ import versaLogoImg from '@/assets/versa-logo.png';
 
 interface VersaLogoProps {
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'hero';
 }
 
 export default function VersaLogo({ className = '', size = 'md' }: VersaLogoProps) {
@@ -10,7 +10,8 @@ export default function VersaLogo({ className = '', size = 'md' }: VersaLogoProp
     sm: 'h-5',
     md: 'h-7',
     lg: 'h-10',
-    xl: 'h-12',
+    xl: 'h-16',
+    hero: 'h-20',
   };
 
   return (

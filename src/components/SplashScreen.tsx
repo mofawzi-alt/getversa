@@ -15,7 +15,7 @@ export default function SplashScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <VersaLogo size="xl" />
+          <VersaLogo size="hero" />
         </motion.div>
         <motion.div
           initial={{ opacity: 0 }}
