@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
 import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator';
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
+import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 
 import beachImg from '@/assets/polls/beach.jpg';
 import cityImg from '@/assets/polls/city.jpg';
@@ -134,6 +135,15 @@ export default function Home() {
   const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Show tutorial for new visitors who completed welcome but haven't seen tutorial
+  useEffect(() => {
+    if (loading) return;
+    if (!user && isWelcomeDone() && !isTutorialDone()) {
+      setShowTutorial(true);
+    }
+  }, [loading, user]);
 
   // Only show welcome after auth loading finishes and we know the user's state
   useEffect(() => {
@@ -320,7 +330,7 @@ export default function Home() {
   const [modalPoll, setModalPoll] = useState<PollCard | null>(null);
 
   if (showWelcome) {
-    return <WelcomeFlow onComplete={() => { setShowWelcome(false); navigate('/auth'); }} />;
+    return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); setShowTutorial(true); }} />;
   }
 
   if (isLoading) {
@@ -449,6 +459,10 @@ export default function Home() {
 
   return (
     <AppLayout>
+      {/* App Tutorial for new visitors */}
+      {showTutorial && (
+        <AppTutorial onComplete={() => setShowTutorial(false)} />
+      )}
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 

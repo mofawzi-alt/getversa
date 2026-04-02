@@ -411,37 +411,18 @@ function DemoTrialScreen({ onComplete }: { onComplete: () => void }) {
             className="flex flex-col items-center gap-4 py-4"
           >
             <div className="text-5xl">🎉</div>
-            <h2 className="text-xl font-display font-bold text-foreground">You've unlocked Explore Mode</h2>
-            <p className="text-sm text-muted-foreground">Highlights, Trending, and more are now available!</p>
+            <h2 className="text-xl font-display font-bold text-foreground">Nice taste!</h2>
+            <p className="text-sm text-muted-foreground">Let's explore what VERSA has to offer.</p>
             <Button
-              onClick={() => { setShowUnlock(false); setUnlockDismissed(true); }}
+              onClick={() => { setShowUnlock(false); setUnlockDismissed(true); onComplete(); }}
               className="w-full h-12 bg-gradient-primary hover:opacity-90 font-display font-bold rounded-2xl"
             >
               <Sparkles className="mr-2 h-4 w-4" />
-              Let's Go
+              Explore the App
             </Button>
           </motion.div>
         </DialogContent>
       </Dialog>
-
-      {/* Sign up CTA after unlock dismissed */}
-      {unlockDismissed && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center gap-4 mt-4"
-        >
-          <p className="text-lg font-display font-bold text-foreground text-center max-w-xs">
-            Sign up to save your progress and explore more!
-          </p>
-          <Button
-            onClick={onComplete}
-            className="w-full max-w-xs h-14 bg-gradient-primary hover:opacity-90 text-lg font-display font-bold rounded-2xl"
-          >
-            Create Account <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-        </motion.div>
-      )}
     </motion.div>
   );
 }

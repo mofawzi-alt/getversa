@@ -25,7 +25,7 @@ import Explore from "./pages/Explore";
 import LiveDebate from "./pages/LiveDebate";
 import SeasonalHub from "./pages/SeasonalHub";
 import NotFound from "./pages/NotFound";
-import WelcomeFlow, { isWelcomeDone } from "./components/onboarding/WelcomeFlow";
+import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
 
@@ -39,9 +39,12 @@ function SmartLanding() {
     return <Navigate to="/home" replace />;
   }
 
-  // First-time visitor: show WelcomeFlow with 3 demo polls
+  // First-time visitor: show WelcomeFlow with 3 demo polls, then go to home with tutorial
   return (
-    <WelcomeFlow onComplete={() => navigate('/auth?mode=signup', { replace: true })} />
+    <WelcomeFlow onComplete={() => {
+      markWelcomeDone();
+      navigate('/home', { replace: true });
+    }} />
   );
 }
 
