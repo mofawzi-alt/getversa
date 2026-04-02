@@ -224,7 +224,7 @@ export default function Onboarding() {
           )}
 
           {/* Step 1: Age (chips) */}
-          {step === 1 && (
+          {currentStep === 'age' && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">How old are you?</h1>
