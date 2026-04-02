@@ -85,9 +85,9 @@ export default function Auth() {
 
       <div className="w-full max-w-sm space-y-8 animate-slide-up relative z-10">
 
-        <div className="text-center">
-          <h1 className="text-4xl font-display font-bold text-primary tracking-tight">versa</h1>
-          <p className="text-muted-foreground mt-1">Your opinion. Structured.</p>
+        <div className="text-center flex flex-col items-center">
+          <VersaLogo size="lg" />
+          <p className="text-muted-foreground mt-2">Your opinion. Structured.</p>
         </div>
 
         {/* Auth Form */}
