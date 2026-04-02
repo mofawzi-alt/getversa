@@ -73,13 +73,12 @@ export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       <AnimatePresence mode="wait">
         {step === 0 && <IntroScreen onNext={() => setStep(1)} />}
-        {step === 1 && <TutorialScreen onNext={() => setStep(2)} />}
-        {step === 2 && <DemoTrialScreen onComplete={handleComplete} />}
+        {step === 1 && <DemoTrialScreen onComplete={handleComplete} />}
       </AnimatePresence>
 
       {/* Step dots */}
       <div className="shrink-0 flex justify-center gap-2 pb-8 safe-area-bottom">
-        {[0, 1, 2].map(s => (
+        {[0, 1].map(s => (
           <div
             key={s}
             className={`h-1.5 rounded-full transition-all ${s === step ? 'w-6 bg-primary' : 'w-1.5 bg-muted'}`}
