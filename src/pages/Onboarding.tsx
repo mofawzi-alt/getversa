@@ -54,20 +54,45 @@ function detectCountry(): string {
 }
 
 export default function Onboarding() {
-  // Steps: 0=username, 1=age, 2=gender, 3=country, 4=city, 5=confirmation
-  const [step, setStep] = useState(0);
-  const [username, setUsername] = useState('');
-  const [ageRange, setAgeRange] = useState('');
-  const [gender, setGender] = useState('');
-  const [country, setCountry] = useState(detectCountry);
-  const [city, setCity] = useState('');
+  const { user, profile, refreshProfile } = useAuth();
+  const navigate = useNavigate();
+
+  // Determine which steps are needed based on existing profile data
+  const allSteps = useMemo(() => {
+    const steps: ('username' | 'age' | 'gender' | 'country' | 'city')[] = [];
+    if (!profile?.username) steps.push('username');
+    if (!profile?.age_range) steps.push('age');
+    if (!profile?.gender) steps.push('gender');
+    if (!profile?.country) steps.push('country');
+    if (!profile?.city) steps.push('city');
+    // If somehow all fields are filled, show all (shouldn't happen)
+    if (steps.length === 0) return ['username', 'age', 'gender', 'country', 'city'] as const;
+    return steps;
+  }, [profile]);
+
+  const totalSteps = allSteps.length;
+  const [stepIndex, setStepIndex] = useState(0);
+  const currentStep = allSteps[stepIndex] || allSteps[0];
+
+  const [username, setUsername] = useState(profile?.username || '');
+  const [ageRange, setAgeRange] = useState(profile?.age_range || '');
+  const [gender, setGender] = useState(profile?.gender || '');
+  const [country, setCountry] = useState(profile?.country || detectCountry());
+  const [city, setCity] = useState(profile?.city || '');
   const [citySearch, setCitySearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const { user, refreshProfile } = useAuth();
-  const navigate = useNavigate();
 
-  const totalSteps = 5; // username, age, gender, country, city
+  // Pre-fill from profile if it loads later
+  useEffect(() => {
+    if (profile) {
+      if (profile.username && !username) setUsername(profile.username);
+      if (profile.age_range && !ageRange) setAgeRange(profile.age_range);
+      if (profile.gender && !gender) setGender(profile.gender);
+      if (profile.country && !country) setCountry(profile.country);
+      if (profile.city && !city) setCity(profile.city);
+    }
+  }, [profile]);
 
   const handleComplete = async () => {
     if (!user) return;
