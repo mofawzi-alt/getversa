@@ -339,13 +339,13 @@ export default function Onboarding() {
 
       {/* Navigation */}
       <div className="flex gap-3 mt-6">
-        {step > 0 && (
-          <Button variant="outline" onClick={() => setStep(step - 1)} className="flex-1 h-14 rounded-xl">
+        {stepIndex > 0 && (
+          <Button variant="outline" onClick={() => setStepIndex(stepIndex - 1)} className="flex-1 h-14 rounded-xl">
             Back
           </Button>
         )}
         
-        {step < 4 ? (
+        {stepIndex < totalSteps - 1 ? (
           <Button onClick={nextStep} className="flex-1 h-14 bg-gradient-primary hover:opacity-90 rounded-xl">
             Continue
             <ArrowRight className="ml-2 h-5 w-5" />
