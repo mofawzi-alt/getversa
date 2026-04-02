@@ -795,6 +795,26 @@ export default function SwipeFeed() {
           return hasStarted && !isExpired;
         });
       }
+
+      // ── Personalized sorting: prioritize categories user engages with most ──
+      if (categoryAffinity.size > 0 && !categoryFilter && !searchFilter) {
+        const maxAffinity = Math.max(...categoryAffinity.values());
+        allPolls.sort((a, b) => {
+          // Daily polls always first
+          if (a.is_daily_poll !== b.is_daily_poll) return a.is_daily_poll ? -1 : 1;
+          // Weight score priority
+          const wA = Number(a.weight_score) || 1;
+          const wB = Number(b.weight_score) || 1;
+          if (wA !== wB) return wB - wA;
+          // Category affinity score (0-1), with a baseline of 0.3 for new categories to ensure diversity
+          const affinityA = a.category ? (categoryAffinity.get(a.category) || 0) / maxAffinity : 0.3;
+          const affinityB = b.category ? (categoryAffinity.get(b.category) || 0) / maxAffinity : 0.3;
+          if (Math.abs(affinityA - affinityB) > 0.1) return affinityB - affinityA;
+          // Fallback: newer first
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        });
+      }
+
       if (targetPollId) {
         const idx = allPolls.findIndex(p => p.id === targetPollId);
         if (idx > 0) { const [t] = allPolls.splice(idx, 1); allPolls.unshift(t); }
