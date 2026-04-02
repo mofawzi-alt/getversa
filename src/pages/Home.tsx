@@ -135,6 +135,15 @@ export default function Home() {
   const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Show tutorial for new visitors who completed welcome but haven't seen tutorial
+  useEffect(() => {
+    if (loading) return;
+    if (!user && isWelcomeDone() && !isTutorialDone()) {
+      setShowTutorial(true);
+    }
+  }, [loading, user]);
 
   // Only show welcome after auth loading finishes and we know the user's state
   useEffect(() => {
