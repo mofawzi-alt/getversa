@@ -183,12 +183,12 @@ export default function Onboarding() {
             <div
               key={s}
               className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                s <= step ? 'bg-gradient-primary' : 'bg-secondary'
+                s <= stepIndex ? 'bg-gradient-primary' : 'bg-secondary'
               }`}
             />
           ))}
         </div>
-        <span className="text-xs text-muted-foreground font-medium">{step + 1}/{totalSteps}</span>
+        <span className="text-xs text-muted-foreground font-medium">{stepIndex + 1}/{totalSteps}</span>
       </div>
 
       <AnimatePresence mode="wait">
