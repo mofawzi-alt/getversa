@@ -594,23 +594,23 @@ function ImmersivePollCard({
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <div className="flex flex-col items-center gap-0.5">
-              <span className="text-option-a font-display font-bold text-base">A</span>
-              <span className="text-foreground/50 text-[9px] font-medium max-w-20 text-center truncate">← {poll.option_a}</span>
+            <div className="flex flex-col items-center gap-0.5 flex-1">
+              <span className="text-option-a font-display font-bold text-lg">A</span>
+              <span className="text-foreground/50 text-xs font-medium max-w-24 text-center truncate">← {poll.option_a}</span>
             </div>
-            <div className="flex flex-col items-center gap-0">
-              <span className="text-foreground/30 text-[9px]">swipe to choose</span>
+            <div className="flex flex-col items-center gap-0 flex-1">
+              <span className="text-foreground/30 text-xs">swipe to choose</span>
               {/* Subtle skip hint */}
               <button
                 onClick={(e) => { e.stopPropagation(); onSkip(poll.id); }}
-                className="text-[8px] text-muted-foreground/40 mt-0.5 hover:text-muted-foreground/60 transition-colors"
+                className="text-[9px] text-muted-foreground/40 mt-0.5 hover:text-muted-foreground/60 transition-colors"
               >
                 or swipe ↑ to skip
               </button>
             </div>
-            <div className="flex flex-col items-center gap-0.5">
-              <span className="text-option-b font-display font-bold text-base">B</span>
-              <span className="text-foreground/50 text-[9px] font-medium max-w-20 text-center truncate">{poll.option_b} →</span>
+            <div className="flex flex-col items-center gap-0.5 flex-1">
+              <span className="text-option-b font-display font-bold text-lg">B</span>
+              <span className="text-foreground/50 text-xs font-medium max-w-24 text-center truncate">{poll.option_b} →</span>
             </div>
           </div>
         )}
