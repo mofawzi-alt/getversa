@@ -378,7 +378,7 @@ function ImmersivePollCard({
                 />
               )}
               <div className="absolute bottom-2 left-2 right-1">
-                <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_a}</p>
+                <p className="text-white text-base font-extrabold drop-shadow-lg">{poll.option_a}</p>
               </div>
             </div>
 
