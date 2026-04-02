@@ -14,10 +14,20 @@ export default function VersaLogo({ className = '', size = 'md' }: VersaLogoProp
   };
 
   return (
-    <img
-      src={versaLogoImg}
-      alt="Versa"
-      className={`${sizeClasses[size]} w-auto object-contain [filter:brightness(0)_saturate(100%)_invert(22%)_sepia(93%)_saturate(2000%)_hue-rotate(216deg)_brightness(90%)_contrast(95%)] dark:[filter:brightness(0)_saturate(100%)_invert(55%)_sepia(80%)_saturate(1500%)_hue-rotate(196deg)_brightness(100%)_contrast(90%)] ${className}`}
+    <div
+      className={`${sizeClasses[size]} aspect-[3/1] bg-primary ${className}`}
+      style={{
+        WebkitMaskImage: `url(${versaLogoImg})`,
+        maskImage: `url(${versaLogoImg})`,
+        WebkitMaskSize: 'contain',
+        maskSize: 'contain',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center',
+      }}
+      role="img"
+      aria-label="Versa"
     />
   );
 }
