@@ -658,6 +658,7 @@ export default function SwipeFeed() {
   const [showMicroFeedback, setShowMicroFeedback] = useState(false);
   const [microFeedbackMsg, setMicroFeedbackMsg] = useState('');
   const [sessionVoteCount, setSessionVoteCount] = useState(0);
+  const [showPointsEarned, setShowPointsEarned] = useState(false);
   const [dailySwipeCount, setDailySwipeCount] = useState(0);
   const [milestoneMsg, setMilestoneMsg] = useState<{ message: string; type: 'banner' | 'modal' | 'badge' } | null>(null);
   const [showValueMsg, setShowValueMsg] = useState(false);
