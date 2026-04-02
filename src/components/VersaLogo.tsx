@@ -21,5 +21,4 @@ export default function VersaLogo({ className = '', size = 'md' }: VersaLogoProp
       className={`${sizeClasses[size]} w-auto object-contain ${className}`}
     />
   );
-  );
 }
