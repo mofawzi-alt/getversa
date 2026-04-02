@@ -192,7 +192,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-3 pt-6">
-            <p className="text-white text-base font-bold truncate drop-shadow-lg">{poll.option_a}</p>
+            <p className="text-white text-xl font-bold truncate drop-shadow-lg">{poll.option_a}</p>
           </div>
         </div>
 
