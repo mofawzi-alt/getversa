@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X, Share } from 'lucide-react';
+import VersaLogo from '@/components/VersaLogo';
 
 
 const DISMISS_KEY = 'versa_pwa_dismissed';
