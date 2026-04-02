@@ -1039,7 +1039,21 @@ export default function SwipeFeed() {
         )}
       </AnimatePresence>
 
-      {/* Value message — shown once after 3 votes */}
+      {/* Points earned floating badge */}
+      <AnimatePresence>
+        {showPointsEarned && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.8 }}
+            className="fixed top-16 right-4 z-[70] flex items-center gap-1.5 px-3 py-2 rounded-full bg-accent/90 backdrop-blur-md shadow-lg"
+          >
+            <Zap className="h-3.5 w-3.5 text-accent-foreground" />
+            <span className="text-sm font-display font-bold text-accent-foreground">+5 pts</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showValueMsg && (
           <motion.div
