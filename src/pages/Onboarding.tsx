@@ -301,7 +301,7 @@ export default function Onboarding() {
           )}
 
           {/* Step 4: City (searchable) */}
-          {step === 4 && (
+          {currentStep === 'city' && (
             <div className="space-y-4">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">What city are you in?</h1>
