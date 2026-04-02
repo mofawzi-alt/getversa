@@ -330,7 +330,7 @@ export default function Home() {
   const [modalPoll, setModalPoll] = useState<PollCard | null>(null);
 
   if (showWelcome) {
-    return <WelcomeFlow onComplete={() => { setShowWelcome(false); navigate('/auth'); }} />;
+    return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); setShowTutorial(true); }} />;
   }
 
   if (isLoading) {
