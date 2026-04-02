@@ -39,9 +39,12 @@ function SmartLanding() {
     return <Navigate to="/home" replace />;
   }
 
-  // First-time visitor: show WelcomeFlow with 3 demo polls
+  // First-time visitor: show WelcomeFlow with 3 demo polls, then go to home with tutorial
   return (
-    <WelcomeFlow onComplete={() => navigate('/auth?mode=signup', { replace: true })} />
+    <WelcomeFlow onComplete={() => {
+      markWelcomeDone();
+      navigate('/home', { replace: true });
+    }} />
   );
 }
 
