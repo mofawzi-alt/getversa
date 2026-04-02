@@ -93,9 +93,9 @@ function AppInner() {
           <Route path="/" element={<SmartLanding />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><Onboarding /></ProtectedRoute>} />
-          <Route path="/vote" element={<SwipeFeed />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/explore" element={<Explore />} />
+          <Route path="/vote" element={<DemographicsGuard><SwipeFeed /></DemographicsGuard>} />
+          <Route path="/home" element={<DemographicsGuard><Home /></DemographicsGuard>} />
+          <Route path="/explore" element={<DemographicsGuard><Explore /></DemographicsGuard>} />
           <Route path="/live-debate" element={<LiveDebate />} />
           <Route path="/seasonal/:slug" element={<SeasonalHub />} />
           <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
