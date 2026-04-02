@@ -226,7 +226,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               </>
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-option-b to-option-b/80 flex items-center justify-center p-4">
-                <span className="text-option-b-foreground text-center font-bold text-base leading-tight">{poll.option_b}</span>
+                <span className="text-option-b-foreground text-center font-bold text-xl leading-tight">{poll.option_b}</span>
               </div>
             )}
 
