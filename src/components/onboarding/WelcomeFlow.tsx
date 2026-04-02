@@ -100,14 +100,13 @@ function IntroScreen({ onNext }: { onNext: () => void }) {
       exit={{ opacity: 0, x: -100 }}
       className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-6"
     >
-      <motion.h1
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="text-5xl font-display font-bold text-gradient"
       >
-        VERSA
-      </motion.h1>
+        <VersaLogo size="hero" />
+      </motion.div>
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
