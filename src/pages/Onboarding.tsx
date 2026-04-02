@@ -274,7 +274,7 @@ export default function Onboarding() {
           )}
 
           {/* Step 3: Country (auto-filled, selectable) */}
-          {step === 3 && (
+          {currentStep === 'country' && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">Where are you from?</h1>
