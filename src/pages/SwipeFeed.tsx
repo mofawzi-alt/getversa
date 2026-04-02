@@ -825,6 +825,12 @@ export default function SwipeFeed() {
       setFeedbackPollId(data.pollId);
       setTimeout(() => setFeedbackPollId(null), 1800);
 
+      // Show points earned feedback
+      if (user) {
+        setShowPointsEarned(true);
+        setTimeout(() => setShowPointsEarned(false), 2000);
+      }
+
       // Update daily swipe counter
       const today = new Date().toISOString().split('T')[0];
       const key = `versa_daily_swipes_${today}`;
