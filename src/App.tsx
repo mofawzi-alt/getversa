@@ -30,7 +30,7 @@ const queryClient = new QueryClient();
 
 // Smart landing: everyone goes to voting first (zero friction)
 function SmartLanding() {
-  return <Navigate to="/vote" replace />;
+  return <Navigate to="/home" replace />;
 }
 
 function AppInner() {
