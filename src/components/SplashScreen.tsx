@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import VersaLogo from '@/components/VersaLogo';
 
 export default function SplashScreen() {
   return (
@@ -9,14 +10,13 @@ export default function SplashScreen() {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="flex flex-col items-center gap-4"
       >
-        <motion.h1
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-3xl font-display font-bold text-primary tracking-tight"
         >
-          versa
-        </motion.h1>
+          <VersaLogo size="xl" />
+        </motion.div>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

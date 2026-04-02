@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X, Share } from 'lucide-react';
+import VersaLogo from '@/components/VersaLogo';
 
 
 const DISMISS_KEY = 'versa_pwa_dismissed';
@@ -76,8 +77,9 @@ export default function PWAInstallPrompt() {
           </button>
 
           <div className="flex items-center gap-3 mb-3">
+            <VersaLogo size="sm" />
             <div>
-              <h3 className="font-display font-bold text-sm text-foreground">Add Versa to Home Screen</h3>
+              <h3 className="font-display font-bold text-sm text-foreground">Add to Home Screen</h3>
               <p className="text-xs text-muted-foreground">Get the full app experience</p>
             </div>
           </div>

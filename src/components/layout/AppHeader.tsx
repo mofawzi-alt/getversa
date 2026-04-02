@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shield } from 'lucide-react';
+import VersaLogo from '@/components/VersaLogo';
 
 export default function AppHeader() {
   const navigate = useNavigate();
@@ -11,12 +12,12 @@ export default function AppHeader() {
   return (
     <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-b border-border/40 z-50 safe-area-top">
       <div className="flex items-center justify-between h-14 px-4 max-w-lg mx-auto">
-        {/* Logo/Title */}
+        {/* Logo */}
         <button 
           onClick={() => navigate('/')}
           className="flex items-center gap-2"
         >
-          <span className="font-display font-bold text-xl text-primary">Versa</span>
+          <VersaLogo size="sm" />
         </button>
 
         {/* Right side actions */}
