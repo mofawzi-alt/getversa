@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SplashScreen from "@/components/SplashScreen";
@@ -25,12 +25,24 @@ import Explore from "./pages/Explore";
 import LiveDebate from "./pages/LiveDebate";
 import SeasonalHub from "./pages/SeasonalHub";
 import NotFound from "./pages/NotFound";
+import WelcomeFlow, { isWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
 
-// Smart landing: everyone goes to voting first (zero friction)
+// Smart landing: new visitors see WelcomeFlow, returning users go to /home
 function SmartLanding() {
-  return <Navigate to="/home" replace />;
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // If user is logged in or has completed welcome, go to home
+  if (user || isWelcomeDone()) {
+    return <Navigate to="/home" replace />;
+  }
+
+  // First-time visitor: show WelcomeFlow with 3 demo polls
+  return (
+    <WelcomeFlow onComplete={() => navigate('/auth?mode=signup', { replace: true })} />
+  );
 }
 
 function AppInner() {

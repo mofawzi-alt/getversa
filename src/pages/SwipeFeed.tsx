@@ -542,14 +542,15 @@ function ImmersivePollCard({
               }`}>
                 {isMajority ? '👥 Majority' : '👀 Minority'}
               </span>
-              <motion.p
+              <motion.div
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: [0, 1, 1, 0] }}
-                transition={{ duration: 2, times: [0, 0.15, 0.75, 1], delay: 0.8 }}
-                className="text-[10px] text-muted-foreground/70 mt-1.5"
+                transition={{ duration: 2.5, times: [0, 0.15, 0.75, 1], delay: 0.8 }}
+                className="flex items-center gap-2 mt-1.5"
               >
-                +1 perspective added ✨
-              </motion.p>
+                <span className="text-[10px] font-bold text-accent">+5 points ⚡</span>
+                <span className="text-[10px] text-muted-foreground/70">• streak kept 🔥</span>
+              </motion.div>
             </motion.div>
           </div>
         );
@@ -657,6 +658,7 @@ export default function SwipeFeed() {
   const [showMicroFeedback, setShowMicroFeedback] = useState(false);
   const [microFeedbackMsg, setMicroFeedbackMsg] = useState('');
   const [sessionVoteCount, setSessionVoteCount] = useState(0);
+  const [showPointsEarned, setShowPointsEarned] = useState(false);
   const [dailySwipeCount, setDailySwipeCount] = useState(0);
   const [milestoneMsg, setMilestoneMsg] = useState<{ message: string; type: 'banner' | 'modal' | 'badge' } | null>(null);
   const [showValueMsg, setShowValueMsg] = useState(false);
@@ -822,6 +824,12 @@ export default function SwipeFeed() {
       setVotedResults(prev => new Map(prev).set(data.pollId, data));
       setFeedbackPollId(data.pollId);
       setTimeout(() => setFeedbackPollId(null), 1800);
+
+      // Show points earned feedback
+      if (user) {
+        setShowPointsEarned(true);
+        setTimeout(() => setShowPointsEarned(false), 2000);
+      }
 
       // Update daily swipe counter
       const today = new Date().toISOString().split('T')[0];
@@ -1031,7 +1039,21 @@ export default function SwipeFeed() {
         )}
       </AnimatePresence>
 
-      {/* Value message — shown once after 3 votes */}
+      {/* Points earned floating badge */}
+      <AnimatePresence>
+        {showPointsEarned && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.8 }}
+            className="fixed top-16 right-4 z-[70] flex items-center gap-1.5 px-3 py-2 rounded-full bg-accent/90 backdrop-blur-md shadow-lg"
+          >
+            <Zap className="h-3.5 w-3.5 text-accent-foreground" />
+            <span className="text-sm font-display font-bold text-accent-foreground">+5 pts</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showValueMsg && (
           <motion.div
