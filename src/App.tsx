@@ -48,6 +48,20 @@ function SmartLanding() {
   );
 }
 
+// Checks if a logged-in user has incomplete demographics and redirects to onboarding
+function DemographicsGuard({ children }: { children: React.ReactNode }) {
+  const { user, profile, loading } = useAuth();
+
+  if (loading) return <>{children}</>;
+
+  // Only redirect logged-in users with incomplete profiles
+  if (user && profile && (!profile.age_range || !profile.gender || !profile.country || !profile.city)) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppInner() {
   const { loading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
