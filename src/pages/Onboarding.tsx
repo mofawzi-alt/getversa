@@ -141,12 +141,12 @@ export default function Onboarding() {
   };
 
   const nextStep = () => {
-    if (step === 0 && !username.trim()) { toast.error('Please enter a username'); return; }
-    if (step === 1 && !ageRange) { toast.error('Please select your age range'); return; }
-    if (step === 2 && !gender) { toast.error('Please select your gender'); return; }
-    if (step === 3 && !country) { toast.error('Please select your country'); return; }
-    if (step === 3) { setCity(''); setCitySearch(''); }
-    setStep(step + 1);
+    if (currentStep === 'username' && !username.trim()) { toast.error('Please enter a username'); return; }
+    if (currentStep === 'age' && !ageRange) { toast.error('Please select your age range'); return; }
+    if (currentStep === 'gender' && !gender) { toast.error('Please select your gender'); return; }
+    if (currentStep === 'country' && !country) { toast.error('Please select your country'); return; }
+    if (currentStep === 'country') { setCity(''); setCitySearch(''); }
+    setStepIndex(stepIndex + 1);
   };
 
   // Filter cities by search
