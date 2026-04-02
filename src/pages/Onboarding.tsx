@@ -249,7 +249,7 @@ export default function Onboarding() {
           )}
 
           {/* Step 2: Gender (buttons) */}
-          {step === 2 && (
+          {currentStep === 'gender' && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">What's your gender?</h1>
