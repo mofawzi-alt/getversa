@@ -459,6 +459,10 @@ export default function Home() {
 
   return (
     <AppLayout>
+      {/* App Tutorial for new visitors */}
+      {showTutorial && (
+        <AppTutorial onComplete={() => setShowTutorial(false)} />
+      )}
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
