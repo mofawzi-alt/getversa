@@ -201,7 +201,7 @@ export default function Onboarding() {
           className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full"
         >
           {/* Step 0: Username */}
-          {step === 0 && (
+          {currentStep === 'username' && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">Choose your username</h1>
