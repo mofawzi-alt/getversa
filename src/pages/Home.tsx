@@ -1025,8 +1025,11 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
             </span>
           )}
         </div>
-        {!hasVoted && (
+        {!hasVoted && !isExpired && (
           <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Vote</span>
+        )}
+        {isExpired && (
+          <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-bold">Results</span>
         )}
       </div>
     </motion.div>
