@@ -780,7 +780,9 @@ export default function Home() {
             const existing = categoryMap.get(cat) || { count: 0, unseen: 0, thumbnail: null };
             existing.count++;
             if (!votedPollIds?.has(p.id)) existing.unseen++;
-            if (!existing.thumbnail && p.image_a_url) existing.thumbnail = p.image_a_url;
+             if (!existing.thumbnail) {
+               existing.thumbnail = getPollDisplayImageSrc({ imageUrl: p.image_a_url, option: p.option_a, question: p.question, side: 'A' });
+             }
             categoryMap.set(cat, existing);
           }
           const categories = Array.from(categoryMap.entries())
