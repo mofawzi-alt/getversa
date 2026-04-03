@@ -580,7 +580,7 @@ export default function Home() {
                           </div>
                           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
                           <div className="w-1/2 h-full relative overflow-hidden">
-                            <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+                            <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                           </div>
                         </div>
