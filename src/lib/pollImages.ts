@@ -44,7 +44,7 @@ const OPTION_ALIASES: Record<string, string> = {
   metro: 'metro.jpg',
   falafel: 'falafel.jpg',
   hummus: 'hummus.jpg',
-  'designer sunglasses': 'designer.jpg',
+  'designer sunglasses': 'designer.jpg',  
   'financial freedom': 'financial-freedom.jpg',
   'first class': 'first-class.jpg',
   'natural energy': 'nature.jpg',
@@ -61,15 +61,14 @@ const OPTION_ALIASES: Record<string, string> = {
   suit: 'suit.jpg',
   read: 'books.jpg',
   watch: 'movies.jpg',
-  // Additional aliases for broader coverage
-  arabic: 'arabic.jpg',
-  english: 'english.jpg',
+  arabic: 'cairo.jpg',
+  english: 'language.jpg',
   'live there': 'city.jpg',
   'visit only': 'dubai-visit.jpg',
   cairo: 'cairo.jpg',
-  iphone: 'iphone.jpg',
-  samsung: 'samsung.jpg',
-  android: 'samsung.jpg',
+  iphone: 'phone-camera.jpg',
+  samsung: 'phone-camera.jpg',
+  android: 'phone-camera.jpg',
   tea: 'tea.jpg',
   coffee: 'coffee.jpg',
   pizza: 'pizza.jpg',
@@ -92,33 +91,70 @@ const OPTION_ALIASES: Record<string, string> = {
   nature: 'nature.jpg',
   careem: 'careem.jpg',
   'brand store': 'brand-store.jpg',
-  'online shop': 'online-shop.jpg',
+  'online shop': 'shopping.jpg',
   home: 'home-dinner.jpg',
   'local market': 'local-brand.jpg',
-  'buy in bulk': 'bulk.jpg',
-  'pick fresh': 'fresh.jpg',
-  gold: 'gold.jpg',
-  cash: 'cash.jpg',
-  rooftop: 'rooftop.jpg',
-  'nile cruise': 'nile.jpg',
-  budget: 'budget.jpg',
-  luxury: 'luxury.jpg',
-  traditional: 'traditional.jpg',
-  modern: 'modern.jpg',
-  'gift card': 'gift.jpg',
-  'picked gift': 'gift.jpg',
-  gym: 'gym.jpg',
-  'home workout': 'home-workout.jpg',
-  freelance: 'freelance.jpg',
+  'buy in bulk': 'buy-bulk.jpg',
+  'pick fresh': 'buy-bulk.jpg',
+  gold: 'financial-freedom.jpg',
+  cash: 'financial-freedom.jpg',
+  rooftop: 'city.jpg',
+  'nile cruise': 'nile-cruise.jpg',
+  budget: 'financial-freedom.jpg',
+  luxury: 'hilton.jpg',
+  traditional: 'iftar-home.jpg',
+  modern: 'city.jpg',
+  'gift card': 'pick-gift.jpg',
+  'picked gift': 'pick-gift.jpg',
+  'pick gift': 'pick-gift.jpg',
+  gym: 'suit.jpg',
+  'home workout': 'wfh.jpg',
+  freelance: 'wfh.jpg',
   '9 to 5': 'suit.jpg',
   netflix: 'netflix.jpg',
-  youtube: 'youtube.jpg',
-  spotify: 'spotify.jpg',
-  'apple music': 'apple-music.jpg',
+  youtube: 'movies.jpg',
+  spotify: 'movies.jpg',
+  'apple music': 'movies.jpg',
   morning: 'sunrise.jpg',
   night: 'night.jpg',
   'night owl': 'night-sky.jpg',
   'early bird': 'day-sky.jpg',
+  shopping: 'shopping.jpg',
+  travel: 'fly.jpg',
+  tablet: 'phone-camera.jpg',
+  laptop: 'wfh.jpg',
+  nike: 'sneakers.jpg',
+  adidas: 'sneakers.jpg',
+  'abu dhabi': 'abu-dhabi.jpg',
+  riyadh: 'abu-dhabi.jpg',
+  jeddah: 'dubai-visit.jpg',
+  kunafa: 'kunafa.jpg',
+  basbousa: 'kunafa.jpg',
+  'egyptian': 'egyptian-series.jpg',
+  khaleeji: 'dubai-visit.jpg',
+  branded: 'branded.jpg',
+  unbranded: 'shopping.jpg',
+  alone: 'alone-shopping.jpg',
+  'with friends': 'going-out.png',
+  'black friday': 'shopping.jpg',
+  'normal prices': 'mall.jpg',
+  matters: 'shopping.jpg',
+  "doesn't matter": 'mall.jpg',
+  private: 'books.jpg',
+  public: 'books.jpg',
+  drive: 'city.jpg',
+  maadi: 'cairo.jpg',
+  heliopolis: 'cairo.jpg',
+  'friday brunch': 'fancy-restaurant.jpg',
+  'sahel weekend': 'beach.jpg',
+  dell: 'wfh.jpg',
+  hp: 'wfh.jpg',
+  'one big': 'branded.jpg',
+  'many small': 'shopping.jpg',
+  'cash on delivery': 'shopping.jpg',
+  prepay: 'phone-camera.jpg',
+  'try first': 'mall.jpg',
+  'trust online': 'phone-camera.jpg',
 };
 
 interface PollImageParams {
@@ -212,18 +248,17 @@ export function getPollDisplayImageSrc(params: PollImageParams) {
   if (preferredLocal) return preferredLocal;
 
   if (params.imageUrl) {
-    // Always try local match for storage URLs (they're broken)
     const sourceLocal = getLocalImageByName(extractFilename(params.imageUrl));
-    if (sourceLocal && isStoragePollImageUrl(params.imageUrl)) {
-      return sourceLocal;
-    }
-    // For non-storage URLs (e.g. Unsplash), still try local if we have a match
     if (sourceLocal) return sourceLocal;
 
-    return params.imageUrl;
+    // Only return the raw URL if it's NOT a storage URL (e.g. Unsplash works fine)
+    if (!isStoragePollImageUrl(params.imageUrl)) {
+      return params.imageUrl;
+    }
+    // Storage URLs are known to be broken — fall through to generic fallback
   }
 
-  return getPollImageFallbackSrc(params);
+  return params.genericFallback || getGenericFallback(params.option || params.question);
 }
 
 /** onError handler for img tags — swaps to local fallback */
