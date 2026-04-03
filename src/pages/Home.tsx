@@ -991,7 +991,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 right-1.5 text-right">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_b}</p>
-            {hasVoted && <span className="text-[10px] font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>}
+            {(hasVoted || isExpired) && <span className="text-[10px] font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>}
           </div>
         </div>
         {/* Live glow overlay */}
