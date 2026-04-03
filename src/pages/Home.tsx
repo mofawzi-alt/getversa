@@ -467,8 +467,8 @@ export default function Home() {
         {(() => {
           const firstUnvoted = newPolls[0];
           if (!firstUnvoted) return null;
-          const imgA = firstUnvoted.image_a_url || getFallbackImage(firstUnvoted.id, 0);
-          const imgB = firstUnvoted.image_b_url || getFallbackImage(firstUnvoted.id, 1);
+          const imgA = getPollDisplayImageSrc({ imageUrl: firstUnvoted.image_a_url, option: firstUnvoted.option_a, question: firstUnvoted.question, side: 'A' });
+          const imgB = getPollDisplayImageSrc({ imageUrl: firstUnvoted.image_b_url, option: firstUnvoted.option_b, question: firstUnvoted.question, side: 'B' });
           return (
             <section className="px-3 pt-4 pb-2">
               <motion.div
