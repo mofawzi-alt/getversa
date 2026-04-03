@@ -546,8 +546,8 @@ export default function Home() {
             <Carousel opts={{ align: 'start', loop: false }} className="px-3">
               <CarouselContent className="-ml-2.5">
                 {livePolls.map((poll, i) => {
-                  const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
-                  const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+                  const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
+                  const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
                   const hasVoted = votedPollIds?.has(poll.id);
                   return (
                     <CarouselItem key={poll.id} className="pl-2.5 basis-[92%]">
