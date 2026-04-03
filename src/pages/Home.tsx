@@ -812,7 +812,7 @@ export default function Home() {
           </section>
         )}
 
-        {/* ═══ BROWSE BY CATEGORY ═══ */}
+        {/* ═══ BROWSE BY CATEGORY (FIX 3 & 4) ═══ */}
         {(() => {
           const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
           for (const p of allPolls) {
@@ -836,7 +836,8 @@ export default function Home() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {categories.map(([catName, info], i) => {
-                  const meta = getCategoryMeta(catName);
+                  const displayName = getDisplayCategoryName(catName);
+                  const meta = getCategoryMeta(displayName.toLowerCase());
                   return (
                     <motion.div
                       key={catName}
@@ -848,7 +849,7 @@ export default function Home() {
                       className="relative rounded-xl overflow-hidden cursor-pointer group border border-border/60 shadow-card h-24"
                     >
                       {info.thumbnail ? (
-                        <img src={info.thumbnail} alt={catName} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity" />
+                        <img src={info.thumbnail} alt={displayName} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity" />
                       ) : (
                         <div className="absolute inset-0" style={{ background: meta.bg }} />
                       )}
@@ -856,29 +857,20 @@ export default function Home() {
                       <div className="relative h-full flex flex-col justify-end p-3">
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <span className="text-lg">{meta.emoji}</span>
-                          <span className="text-xs font-display font-bold text-foreground">{catName}</span>
+                          <span className="text-xs font-display font-bold text-foreground">{displayName}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-muted-foreground">{info.count} polls</span>
                           {info.unseen > 0 ? (
                             <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
-                              {info.unseen} left
+                              {info.unseen} new today
                             </span>
                           ) : (
-                            <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-bold flex items-center gap-0.5">
-                              ✓ Done
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                              Updated daily
                             </span>
                           )}
                         </div>
-                        {/* Mini progress bar */}
-                        {user && (
-                          <div className="h-1 w-full rounded-full bg-muted mt-1.5 overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-primary transition-all duration-500"
-                              style={{ width: `${info.count > 0 ? ((info.count - info.unseen) / info.count) * 100 : 0}%` }}
-                            />
-                          </div>
-                        )}
                       </div>
                     </motion.div>
                   );
