@@ -240,7 +240,7 @@ function TutorialScreen({ onNext }: { onNext: () => void }) {
         </motion.div>
       )}
 
-      {!swiped && <p className="text-xs text-muted-foreground animate-pulse">Swipe or tap to vote</p>}
+      {!swiped && <p className="text-xs text-muted-foreground animate-pulse">Swipe left or right to vote</p>}
     </motion.div>
   );
 }
