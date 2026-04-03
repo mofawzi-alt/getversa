@@ -146,13 +146,30 @@ export function getPollDisplayImageSrc(params: PollImageParams) {
   if (preferredLocal) return preferredLocal;
 
   if (params.imageUrl) {
+    // Always try local match for storage URLs (they're broken)
     const sourceLocal = getLocalImageByName(extractFilename(params.imageUrl));
     if (sourceLocal && isStoragePollImageUrl(params.imageUrl)) {
       return sourceLocal;
     }
+    // For non-storage URLs (e.g. Unsplash), still try local if we have a match
+    if (sourceLocal) return sourceLocal;
 
     return params.imageUrl;
   }
 
   return getPollImageFallbackSrc(params);
+}
+
+/** onError handler for img tags — swaps to local fallback */
+export function handlePollImageError(
+  e: React.SyntheticEvent<HTMLImageElement>,
+  params: Omit<PollImageParams, 'imageUrl'>
+) {
+  const target = e.currentTarget;
+  if (target.dataset.fallbackApplied) return; // prevent infinite loop
+  target.dataset.fallbackApplied = 'true';
+  const fallback = getPollImageFallbackSrc({ ...params, imageUrl: target.src });
+  if (fallback) {
+    target.src = fallback;
+  }
 }

@@ -20,39 +20,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-
-import beachImg from '@/assets/polls/beach.jpg';
-import cityImg from '@/assets/polls/city.jpg';
-import mountainsImg from '@/assets/polls/mountains.jpg';
-import natureImg from '@/assets/polls/nature.jpg';
-import sunsetImg from '@/assets/polls/sunset.jpg';
-import sunriseImg from '@/assets/polls/sunrise.jpg';
-import coffeeImg from '@/assets/polls/coffee.jpg';
-import teaImg from '@/assets/polls/tea.jpg';
-import pizzaImg from '@/assets/polls/pizza.jpg';
-import sushiImg from '@/assets/polls/sushi.jpg';
-import catsImg from '@/assets/polls/cats.jpg';
-import dogsImg from '@/assets/polls/dogs.jpg';
-import summerImg from '@/assets/polls/summer.jpg';
-import winterImg from '@/assets/polls/winter.jpg';
-import sneakersImg from '@/assets/polls/sneakers.jpg';
-import bootsImg from '@/assets/polls/boots.jpg';
-import booksImg from '@/assets/polls/books.jpg';
-import moviesImg from '@/assets/polls/movies.jpg';
-import daySkyImg from '@/assets/polls/day-sky.jpg';
-import nightSkyImg from '@/assets/polls/night-sky.jpg';
-
-const FALLBACK_IMAGES = [
-  beachImg, cityImg, mountainsImg, natureImg, sunsetImg, sunriseImg,
-  coffeeImg, teaImg, pizzaImg, sushiImg, catsImg, dogsImg,
-  summerImg, winterImg, sneakersImg, bootsImg, booksImg, moviesImg,
-  daySkyImg, nightSkyImg,
-];
-
-function getFallbackImage(seed: string, index: number): string {
-  const hash = seed.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return FALLBACK_IMAGES[(hash + index) % FALLBACK_IMAGES.length];
-}
+import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
@@ -171,8 +139,8 @@ function ImmersivePollCard({
   const startX = useRef(0);
   const startY = useRef(0);
   const hasResult = !!result;
-  const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
-  const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+  const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
+  const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
   const winnerIsA = result ? result.percentA >= result.percentB : true;
   const THRESHOLD = 80;
 
@@ -358,7 +326,7 @@ function ImmersivePollCard({
           {/* Split images */}
           <div className="flex aspect-[4/3] w-full">
             <div className="w-1/2 h-full relative overflow-hidden">
-              <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted" draggable={false} />
+              <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
               {showResults && winnerIsA && (
                 <motion.div
@@ -386,7 +354,7 @@ function ImmersivePollCard({
             <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/15 z-10" />
 
             <div className="w-1/2 h-full relative overflow-hidden">
-              <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted" draggable={false} />
+              <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
               {showResults && !winnerIsA && (
                 <motion.div

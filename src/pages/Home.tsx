@@ -15,26 +15,7 @@ import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 
-import beachImg from '@/assets/polls/beach.jpg';
-import cityImg from '@/assets/polls/city.jpg';
-import mountainsImg from '@/assets/polls/mountains.jpg';
-import natureImg from '@/assets/polls/nature.jpg';
-import sunsetImg from '@/assets/polls/sunset.jpg';
-import sunriseImg from '@/assets/polls/sunrise.jpg';
-import coffeeImg from '@/assets/polls/coffee.jpg';
-import teaImg from '@/assets/polls/tea.jpg';
-import pizzaImg from '@/assets/polls/pizza.jpg';
-import sushiImg from '@/assets/polls/sushi.jpg';
-import catsImg from '@/assets/polls/cats.jpg';
-import dogsImg from '@/assets/polls/dogs.jpg';
-import summerImg from '@/assets/polls/summer.jpg';
-import winterImg from '@/assets/polls/winter.jpg';
-import sneakersImg from '@/assets/polls/sneakers.jpg';
-import bootsImg from '@/assets/polls/boots.jpg';
-import booksImg from '@/assets/polls/books.jpg';
-import moviesImg from '@/assets/polls/movies.jpg';
-import daySkyImg from '@/assets/polls/day-sky.jpg';
-import nightSkyImg from '@/assets/polls/night-sky.jpg';
+import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
 // FIX 4: Conversational category name mapping
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
@@ -85,18 +66,6 @@ const CATEGORY_META: Record<string, { emoji: string; color: string; bg: string }
 function getCategoryMeta(name: string): { emoji: string; color: string; bg: string } {
   const key = name.toLowerCase();
   return CATEGORY_META[key] || { emoji: '🔥', color: 'hsl(225, 73%, 45%)', bg: 'hsl(225, 73%, 93%)' };
-}
-
-const FALLBACK_IMAGES = [
-  beachImg, cityImg, mountainsImg, natureImg, sunsetImg, sunriseImg,
-  coffeeImg, teaImg, pizzaImg, sushiImg, catsImg, dogsImg,
-  summerImg, winterImg, sneakersImg, bootsImg, booksImg, moviesImg,
-  daySkyImg, nightSkyImg,
-];
-
-function getFallbackImage(seed: string, index: number): string {
-  const hash = seed.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return FALLBACK_IMAGES[(hash + index) % FALLBACK_IMAGES.length];
 }
 
 type PollCard = {
@@ -498,8 +467,8 @@ export default function Home() {
         {(() => {
           const firstUnvoted = newPolls[0];
           if (!firstUnvoted) return null;
-          const imgA = firstUnvoted.image_a_url || getFallbackImage(firstUnvoted.id, 0);
-          const imgB = firstUnvoted.image_b_url || getFallbackImage(firstUnvoted.id, 1);
+          const imgA = getPollDisplayImageSrc({ imageUrl: firstUnvoted.image_a_url, option: firstUnvoted.option_a, question: firstUnvoted.question, side: 'A' });
+          const imgB = getPollDisplayImageSrc({ imageUrl: firstUnvoted.image_b_url, option: firstUnvoted.option_b, question: firstUnvoted.question, side: 'B' });
           return (
             <section className="px-3 pt-4 pb-2">
               <motion.div
@@ -512,7 +481,7 @@ export default function Home() {
                 {/* Images */}
                 <div className="flex h-[55vh] max-h-[420px] relative">
                   <div className="w-1/2 h-full relative overflow-hidden">
-                    <img src={imgA} alt={firstUnvoted.option_a} className="w-full h-full object-contain bg-muted" />
+                    <img src={imgA} alt={firstUnvoted.option_a} className="w-full h-full object-contain bg-muted" onError={(e) => handlePollImageError(e, { option: firstUnvoted.option_a, question: firstUnvoted.question, side: 'A' })} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-3 left-3">
                       <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_a}</p>
@@ -520,7 +489,7 @@ export default function Home() {
                   </div>
                   <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
                   <div className="w-1/2 h-full relative overflow-hidden">
-                    <img src={imgB} alt={firstUnvoted.option_b} className="w-full h-full object-contain bg-muted" />
+                    <img src={imgB} alt={firstUnvoted.option_b} className="w-full h-full object-contain bg-muted" onError={(e) => handlePollImageError(e, { option: firstUnvoted.option_b, question: firstUnvoted.question, side: 'B' })} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-3 right-3 text-right">
                       <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_b}</p>
@@ -577,8 +546,8 @@ export default function Home() {
             <Carousel opts={{ align: 'start', loop: false }} className="px-3">
               <CarouselContent className="-ml-2.5">
                 {livePolls.map((poll, i) => {
-                  const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
-                  const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+                  const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
+                  const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
                   const hasVoted = votedPollIds?.has(poll.id);
                   return (
                     <CarouselItem key={poll.id} className="pl-2.5 basis-[92%]">
@@ -606,12 +575,12 @@ export default function Home() {
                         {/* Images */}
                         <div className="flex h-[55vh] max-h-[420px] relative">
                           <div className="w-1/2 h-full relative overflow-hidden">
-                            <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+                            <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                           </div>
                           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
                           <div className="w-1/2 h-full relative overflow-hidden">
-                            <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+                            <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                           </div>
                         </div>
@@ -941,8 +910,8 @@ export default function Home() {
           open={!!modalPoll}
           onOpenChange={(open) => !open && setModalPoll(null)}
           poll={modalPoll}
-          imageA={modalPoll ? (modalPoll.image_a_url || getFallbackImage(modalPoll.id, 0)) : ''}
-          imageB={modalPoll ? (modalPoll.image_b_url || getFallbackImage(modalPoll.id, 1)) : ''}
+          imageA={modalPoll ? getPollDisplayImageSrc({ imageUrl: modalPoll.image_a_url, option: modalPoll.option_a, question: modalPoll.question, side: 'A' }) : ''}
+          imageB={modalPoll ? getPollDisplayImageSrc({ imageUrl: modalPoll.image_b_url, option: modalPoll.option_b, question: modalPoll.question, side: 'B' }) : ''}
         />
       </div>
     </AppLayout>
@@ -953,8 +922,8 @@ export default function Home() {
 function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategoryTap }: {
   poll: PollCard; index: number; hasVoted: boolean; onTap: (p: PollCard) => void; badge: string; hot?: boolean; onCategoryTap?: (cat: string) => void;
 }) {
-  const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
-  const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+  const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
+  const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
   const isLive = (!poll.ends_at || new Date(poll.ends_at) >= new Date()) && (!poll.starts_at || new Date(poll.starts_at) <= new Date());
   const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
 
@@ -969,7 +938,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
     >
       <div className="flex h-24 relative">
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+          <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 left-1.5">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_a}</p>
@@ -978,7 +947,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
         </div>
         <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10'); }} />
+          <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 right-1.5 text-right">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_b}</p>
