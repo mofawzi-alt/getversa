@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame } from 'lucide-react';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
+import ShareImageCard from '@/components/poll/ShareImageCard';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -575,7 +576,18 @@ function ImmersivePollCard({
                 You picked {result!.choice === 'A' ? poll.option_a : poll.option_b}
               </motion.span>
             </div>
-            {/* Row 2: Category link (centered) */}
+            {/* FIX 2: Prominent Share Button */}
+            <ShareImageCard
+              question={poll.question}
+              optionA={poll.option_a}
+              optionB={poll.option_b}
+              percentA={result!.percentA}
+              percentB={result!.percentB}
+              imageAUrl={poll.image_a_url}
+              imageBUrl={poll.image_b_url}
+              choice={result!.choice}
+            />
+            {/* Category link */}
             {poll.category && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -847,11 +859,21 @@ export default function SwipeFeed() {
   const voteMutation = useMutation({
     mutationFn: async ({ pollId, choice }: { pollId: string; choice: 'A' | 'B' }) => {
       if (!user) {
-        // No guest voting in real feed — must create account
         setShowSignupModal(true);
         throw new Error('GUEST_LIMIT');
       }
-      const { error: voteError } = await supabase.from('votes').insert({ poll_id: pollId, user_id: user.id, choice, voter_country: profile?.country || null } as any);
+      // Find poll to get category
+      const currentPoll = polls?.find(p => p.id === pollId);
+      const { error: voteError } = await supabase.from('votes').insert({
+        poll_id: pollId,
+        user_id: user.id,
+        choice,
+        voter_country: profile?.country || null,
+        category: currentPoll?.category || null,
+        voter_age_range: profile?.age_range || null,
+        voter_gender: profile?.gender || null,
+        voter_city: profile?.city || null,
+      } as any);
       if (voteError) throw voteError;
       const { data: votes } = await supabase.from('votes').select('choice').eq('poll_id', pollId);
       const totalVotes = votes?.length || 0;
@@ -959,9 +981,18 @@ export default function SwipeFeed() {
   const handleSkip = useCallback((pollId: string) => {
     if (skippedIds.has(pollId) || votedResults.has(pollId)) return;
     setSkippedIds(prev => new Set(prev).add(pollId));
-    // Track in backend
+    // Track skip in backend with enriched data
     if (user) {
-      supabase.from('skipped_polls').insert({ user_id: user.id, poll_id: pollId } as any).then(() => {});
+      const currentPoll = polls?.find(p => p.id === pollId);
+      supabase.from('skipped_polls').insert({
+        user_id: user.id,
+        poll_id: pollId,
+        category: currentPoll?.category || null,
+        voter_age_range: profile?.age_range || null,
+        voter_gender: profile?.gender || null,
+        voter_city: profile?.city || null,
+        voter_country: profile?.country || null,
+      } as any).then(() => {});
     }
     // Scroll to next unvoted poll
     if (polls) {

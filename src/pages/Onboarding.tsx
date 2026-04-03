@@ -9,8 +9,8 @@ import { toast } from 'sonner';
 import { Loader2, ArrowRight, Check, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const AGE_RANGES = ['13-17', '18-24', '25-34', '35-44', '45-54', '55+'];
-const GENDERS = ['Male', 'Female'];
+const AGE_RANGES = ['Under 18', '18-24', '25-34', '35-44', '45+'];
+const GENDERS = ['Male', 'Female', 'Prefer not to say'];
 const COUNTRIES = [
   'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
   'Jordan', 'Lebanon', 'Syria', 'Iraq', 'Palestine', 'Yemen', 'Egypt'
@@ -228,7 +228,7 @@ export default function Onboarding() {
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">How old are you?</h1>
-                <p className="text-foreground/60">Helps personalize your experience</p>
+                <p className="text-foreground/60">Help us show you better comparisons</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 {AGE_RANGES.map((range) => (
@@ -253,20 +253,20 @@ export default function Onboarding() {
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">What's your gender?</h1>
-                <p className="text-foreground/60">For demographic insights</p>
+                <p className="text-foreground/60">Help us show you better comparisons</p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3">
                 {GENDERS.map((g) => (
                   <button
                     key={g}
                     onClick={() => setGender(g)}
-                    className={`flex-1 p-4 rounded-xl border-2 transition-all font-medium text-center ${
+                    className={`p-4 rounded-xl border-2 transition-all font-medium text-center ${
                       gender === g
                         ? 'border-primary bg-primary/10 text-primary scale-[1.02]'
                         : 'border-border bg-card text-foreground hover:border-primary/50'
                     }`}
                   >
-                    {g === 'Male' ? '👨' : '👩'} {g}
+                    {g === 'Male' ? '👨' : g === 'Female' ? '👩' : '🙂'} {g}
                   </button>
                 ))}
               </div>

@@ -36,16 +36,44 @@ import moviesImg from '@/assets/polls/movies.jpg';
 import daySkyImg from '@/assets/polls/day-sky.jpg';
 import nightSkyImg from '@/assets/polls/night-sky.jpg';
 
+// FIX 4: Conversational category name mapping
+const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
+  'Platforms': 'Apps & Tech',
+  'platforms': 'Apps & Tech',
+  'Money': 'Spending & Money',
+  'money': 'Spending & Money',
+  'Food': 'Eat & Drink',
+  'food': 'Eat & Drink',
+  'Fashion': 'Style',
+  'fashion': 'Style',
+  'Lifestyle': 'Everyday Life',
+  'lifestyle': 'Everyday Life',
+  'Consumer': 'Shopping',
+  'consumer': 'Shopping',
+  'Brands': 'Brands',
+  'brands': 'Brands',
+};
+
+function getDisplayCategoryName(name: string): string {
+  return CATEGORY_DISPLAY_NAMES[name] || name;
+}
+
 const CATEGORY_META: Record<string, { emoji: string; color: string; bg: string }> = {
-  money: { emoji: '💰', color: 'hsl(45, 80%, 45%)', bg: 'hsl(45, 80%, 93%)' },
+  money: { emoji: '💸', color: 'hsl(45, 80%, 45%)', bg: 'hsl(45, 80%, 93%)' },
+  'spending & money': { emoji: '💸', color: 'hsl(45, 80%, 45%)', bg: 'hsl(45, 80%, 93%)' },
   business: { emoji: '🚀', color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
   market: { emoji: '🌍', color: 'hsl(170, 60%, 40%)', bg: 'hsl(170, 60%, 92%)' },
   platforms: { emoji: '📱', color: 'hsl(260, 60%, 55%)', bg: 'hsl(260, 60%, 93%)' },
-  consumer: { emoji: '🛍️', color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
+  'apps & tech': { emoji: '📱', color: 'hsl(260, 60%, 55%)', bg: 'hsl(260, 60%, 93%)' },
+  consumer: { emoji: '🛒', color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
+  shopping: { emoji: '🛒', color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
   brands: { emoji: '🏷️', color: 'hsl(15, 80%, 50%)', bg: 'hsl(15, 80%, 93%)' },
   lifestyle: { emoji: '🧠', color: 'hsl(350, 65%, 55%)', bg: 'hsl(350, 65%, 93%)' },
+  'everyday life': { emoji: '🧠', color: 'hsl(350, 65%, 55%)', bg: 'hsl(350, 65%, 93%)' },
   fashion: { emoji: '👗', color: 'hsl(280, 60%, 50%)', bg: 'hsl(280, 60%, 93%)' },
+  style: { emoji: '👗', color: 'hsl(280, 60%, 50%)', bg: 'hsl(280, 60%, 93%)' },
   food: { emoji: '🍔', color: 'hsl(25, 80%, 50%)', bg: 'hsl(25, 80%, 93%)' },
+  'eat & drink': { emoji: '🍔', color: 'hsl(25, 80%, 50%)', bg: 'hsl(25, 80%, 93%)' },
   tech: { emoji: '💻', color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
   travel: { emoji: '✈️', color: 'hsl(170, 60%, 40%)', bg: 'hsl(170, 60%, 92%)' },
   music: { emoji: '🎵', color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
@@ -466,65 +494,74 @@ export default function Home() {
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
-        {/* ═══ HERO SECTION ═══ */}
-        <section className="relative px-4 pt-6 pb-6">
-          {/* Live glow background */}
-          <motion.div
-            animate={{ opacity: [0.3, 0.7, 0.3] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 bg-gradient-to-b from-primary/8 via-primary/15 to-transparent pointer-events-none rounded-b-3xl"
-          />
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <LiveIndicator variant="badge" />
-              <motion.span
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="text-sm font-medium"
-              >
-                {totalLiveVoters > 0 ? <><AnimatedNumber value={totalLiveVoters} className="font-bold text-foreground" /> voting now</> : 'Live now'}
-              </motion.span>
-            </div>
-
-            <h1 className="text-3xl font-display font-bold text-foreground leading-tight">
-              🔥 The Pulse Is<br />
-              <span className="text-gradient">Live</span>
-            </h1>
-
-            <p className="text-sm text-muted-foreground mt-1.5">
-              Live insights on how people think, buy, and decide
-            </p>
-
-            <p className="text-xs text-muted-foreground/70 mt-1">
-              {(votes24h || 0) > 0 && (
-                <>
-                  <AnimatedNumber value={votes24h!} className="font-bold text-foreground" /> votes today
-                </>
-              )}
-            </p>
-
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => navigate('/vote')}
-              className="mt-4 w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-primary text-primary-foreground font-display font-bold text-lg tracking-wide shadow-glow"
-            >
+        {/* ═══ FIX 1: INLINE VOTE CARD — first thing users see ═══ */}
+        {(() => {
+          const firstUnvoted = newPolls[0];
+          if (!firstUnvoted) return null;
+          const imgA = firstUnvoted.image_a_url || getFallbackImage(firstUnvoted.id, 0);
+          const imgB = firstUnvoted.image_b_url || getFallbackImage(firstUnvoted.id, 1);
+          return (
+            <section className="px-3 pt-4 pb-2">
               <motion.div
-                animate={{ x: [0, 4, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate(`/vote?pollId=${firstUnvoted.id}`)}
+                className="relative rounded-2xl overflow-hidden cursor-pointer border border-border/60 shadow-xl"
               >
-                <Zap className="h-5 w-5" />
+                {/* Images */}
+                <div className="flex h-[55vh] max-h-[420px] relative">
+                  <div className="w-1/2 h-full relative overflow-hidden">
+                    <img src={imgA} alt={firstUnvoted.option_a} className="w-full h-full object-contain bg-muted" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-3 left-3">
+                      <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_a}</p>
+                    </div>
+                  </div>
+                  <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
+                  <div className="w-1/2 h-full relative overflow-hidden">
+                    <img src={imgB} alt={firstUnvoted.option_b} className="w-full h-full object-contain bg-muted" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-3 right-3 text-right">
+                      <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_b}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Question overlay */}
+                <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-10 bg-gradient-to-b from-black/70 to-transparent z-10">
+                  <h2 className="text-white text-xl font-display font-bold drop-shadow-lg text-center leading-snug">{firstUnvoted.question}</h2>
+                </div>
+
+                {/* Bottom CTA */}
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 to-transparent pt-10 pb-4 px-4 z-10 flex items-center justify-center">
+                  <motion.span
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="px-5 py-2 rounded-full bg-primary text-primary-foreground font-display font-bold text-sm"
+                  >
+                    Tap to Vote
+                  </motion.span>
+                </div>
               </motion.div>
-              Start Voting
-              {hasUnseen && (
-                <span className="ml-1 px-2 py-0.5 rounded-full bg-primary-foreground/20 text-[11px] font-bold animate-pulse">
-                  {unseenCount} new
-                </span>
-              )}
-            </motion.button>
-          </div>
-        </section>
+
+              {/* Live activity strip */}
+              <div className="flex items-center justify-center gap-3 mt-2">
+                <LiveIndicator variant="badge" />
+                {totalLiveVoters > 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    <AnimatedNumber value={totalLiveVoters} className="font-bold text-foreground" /> voting now
+                  </span>
+                )}
+                {(votes24h || 0) > 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    <AnimatedNumber value={votes24h!} className="font-bold text-foreground" /> today
+                  </span>
+                )}
+              </div>
+            </section>
+          );
+        })()}
 
 
         {/* ═══ 🔴 LIVE NOW ═══ */}
@@ -775,7 +812,7 @@ export default function Home() {
           </section>
         )}
 
-        {/* ═══ BROWSE BY CATEGORY ═══ */}
+        {/* ═══ BROWSE BY CATEGORY (FIX 3 & 4) ═══ */}
         {(() => {
           const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
           for (const p of allPolls) {
@@ -799,7 +836,8 @@ export default function Home() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {categories.map(([catName, info], i) => {
-                  const meta = getCategoryMeta(catName);
+                  const displayName = getDisplayCategoryName(catName);
+                  const meta = getCategoryMeta(displayName.toLowerCase());
                   return (
                     <motion.div
                       key={catName}
@@ -811,7 +849,7 @@ export default function Home() {
                       className="relative rounded-xl overflow-hidden cursor-pointer group border border-border/60 shadow-card h-24"
                     >
                       {info.thumbnail ? (
-                        <img src={info.thumbnail} alt={catName} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity" />
+                        <img src={info.thumbnail} alt={displayName} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity" />
                       ) : (
                         <div className="absolute inset-0" style={{ background: meta.bg }} />
                       )}
@@ -819,29 +857,20 @@ export default function Home() {
                       <div className="relative h-full flex flex-col justify-end p-3">
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <span className="text-lg">{meta.emoji}</span>
-                          <span className="text-xs font-display font-bold text-foreground">{catName}</span>
+                          <span className="text-xs font-display font-bold text-foreground">{displayName}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-muted-foreground">{info.count} polls</span>
                           {info.unseen > 0 ? (
                             <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
-                              {info.unseen} left
+                              {info.unseen} new today
                             </span>
                           ) : (
-                            <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-bold flex items-center gap-0.5">
-                              ✓ Done
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                              Updated daily
                             </span>
                           )}
                         </div>
-                        {/* Mini progress bar */}
-                        {user && (
-                          <div className="h-1 w-full rounded-full bg-muted mt-1.5 overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-primary transition-all duration-500"
-                              style={{ width: `${info.count > 0 ? ((info.count - info.unseen) / info.count) * 100 : 0}%` }}
-                            />
-                          </div>
-                        )}
                       </div>
                     </motion.div>
                   );
