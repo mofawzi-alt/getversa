@@ -859,11 +859,21 @@ export default function SwipeFeed() {
   const voteMutation = useMutation({
     mutationFn: async ({ pollId, choice }: { pollId: string; choice: 'A' | 'B' }) => {
       if (!user) {
-        // No guest voting in real feed — must create account
         setShowSignupModal(true);
         throw new Error('GUEST_LIMIT');
       }
-      const { error: voteError } = await supabase.from('votes').insert({ poll_id: pollId, user_id: user.id, choice, voter_country: profile?.country || null } as any);
+      // Find poll to get category
+      const currentPoll = polls?.find(p => p.id === pollId);
+      const { error: voteError } = await supabase.from('votes').insert({
+        poll_id: pollId,
+        user_id: user.id,
+        choice,
+        voter_country: profile?.country || null,
+        category: currentPoll?.category || null,
+        voter_age_range: profile?.age_range || null,
+        voter_gender: profile?.gender || null,
+        voter_city: profile?.city || null,
+      } as any);
       if (voteError) throw voteError;
       const { data: votes } = await supabase.from('votes').select('choice').eq('poll_id', pollId);
       const totalVotes = votes?.length || 0;
