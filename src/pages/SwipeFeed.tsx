@@ -981,9 +981,18 @@ export default function SwipeFeed() {
   const handleSkip = useCallback((pollId: string) => {
     if (skippedIds.has(pollId) || votedResults.has(pollId)) return;
     setSkippedIds(prev => new Set(prev).add(pollId));
-    // Track in backend
+    // Track skip in backend with enriched data
     if (user) {
-      supabase.from('skipped_polls').insert({ user_id: user.id, poll_id: pollId } as any).then(() => {});
+      const currentPoll = polls?.find(p => p.id === pollId);
+      supabase.from('skipped_polls').insert({
+        user_id: user.id,
+        poll_id: pollId,
+        category: currentPoll?.category || null,
+        voter_age_range: profile?.age_range || null,
+        voter_gender: profile?.gender || null,
+        voter_city: profile?.city || null,
+        voter_country: profile?.country || null,
+      } as any).then(() => {});
     }
     // Scroll to next unvoted poll
     if (polls) {
