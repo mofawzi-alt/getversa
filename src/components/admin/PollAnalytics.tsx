@@ -253,10 +253,10 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
     );
   };
 
-  // Calculate percentages only when analytics is available
+  // Calculate percentages from computed (filtered) data
   const getPercentages = () => {
-    if (!analytics || analytics.totalVotes === 0) return { percentA: 0, percentB: 0, winner: 'Tie' as const };
-    const pA = Math.round((analytics.overallA / analytics.totalVotes) * 100);
+    if (!analytics || computed.totalVotes === 0) return { percentA: 0, percentB: 0, winner: 'Tie' as const };
+    const pA = Math.round((computed.overallA / computed.totalVotes) * 100);
     const pB = 100 - pA;
     const w = pA > pB ? 'A' : pB > pA ? 'B' : 'Tie';
     return { percentA: pA, percentB: pB, winner: w };
@@ -269,50 +269,32 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
     }
     
     try {
-      // Get votes with demographics for current poll
-      const { data: votes } = await supabase
-        .from('votes')
-        .select('choice, created_at, users!inner(gender, age_range, country)')
-        .eq('poll_id', analytics.poll.id);
-
-      // Build detailed CSV
       let csvContent = "Poll Details\n";
       csvContent += `Question,"${analytics.poll.question}"\n`;
       csvContent += `Option A,"${analytics.poll.option_a}"\n`;
       csvContent += `Option B,"${analytics.poll.option_b}"\n`;
       csvContent += `Category,"${analytics.poll.category || 'N/A'}"\n`;
-      csvContent += `Total Votes,${analytics.totalVotes}\n`;
-      csvContent += `Votes for A,${analytics.overallA} (${analytics.totalVotes > 0 ? Math.round((analytics.overallA / analytics.totalVotes) * 100) : 0}%)\n`;
-      csvContent += `Votes for B,${analytics.overallB} (${analytics.totalVotes > 0 ? Math.round((analytics.overallB / analytics.totalVotes) * 100) : 0}%)\n`;
-      csvContent += `Created At,"${analytics.poll.created_at}"\n\n`;
+      if (hasActiveFilters) {
+        csvContent += `Filters,"Gender: ${filterGender}, Age: ${filterAge}, Country: ${filterCountry}, City: ${filterCity}"\n`;
+      }
+      csvContent += `Total Votes,${computed.totalVotes}\n`;
+      csvContent += `Votes for A,${computed.overallA} (${computed.totalVotes > 0 ? Math.round((computed.overallA / computed.totalVotes) * 100) : 0}%)\n`;
+      csvContent += `Votes for B,${computed.overallB} (${computed.totalVotes > 0 ? Math.round((computed.overallB / computed.totalVotes) * 100) : 0}%)\n\n`;
 
-      // Demographics breakdown
-      csvContent += "Demographics by Gender\n";
-      csvContent += "Gender,Option A,Option B,Total\n";
-      analytics.byGender.forEach(g => {
-        csvContent += `"${g.label}",${g.optionA},${g.optionB},${g.total}\n`;
+      csvContent += "Demographics by Gender\nGender,Option A,Option B,Total\n";
+      computed.byGender.forEach(g => csvContent += `"${g.label}",${g.optionA},${g.optionB},${g.total}\n`);
+      csvContent += "\nDemographics by Age Range\nAge Range,Option A,Option B,Total\n";
+      computed.byAgeRange.forEach(a => csvContent += `"${a.label}",${a.optionA},${a.optionB},${a.total}\n`);
+      csvContent += "\nDemographics by Country\nCountry,Option A,Option B,Total\n";
+      computed.byCountry.forEach(c => csvContent += `"${c.label}",${c.optionA},${c.optionB},${c.total}\n`);
+      csvContent += "\nDemographics by City\nCity,Option A,Option B,Total\n";
+      computed.byCity.forEach(c => csvContent += `"${c.label}",${c.optionA},${c.optionB},${c.total}\n`);
+
+      csvContent += "\nIndividual Votes\nChoice,Gender,Age Range,Country,City,Voted At\n";
+      filteredVotes.forEach(v => {
+        csvContent += `"${v.choice}","${v.voter_gender || 'Unknown'}","${v.voter_age_range || 'Unknown'}","${v.voter_country || 'Unknown'}","${v.voter_city || 'Unknown'}","${v.created_at}"\n`;
       });
 
-      csvContent += "\nDemographics by Age Range\n";
-      csvContent += "Age Range,Option A,Option B,Total\n";
-      analytics.byAgeRange.forEach(a => {
-        csvContent += `"${a.label}",${a.optionA},${a.optionB},${a.total}\n`;
-      });
-
-      csvContent += "\nDemographics by Country\n";
-      csvContent += "Country,Option A,Option B,Total\n";
-      analytics.byCountry.forEach(c => {
-        csvContent += `"${c.label}",${c.optionA},${c.optionB},${c.total}\n`;
-      });
-
-      csvContent += "\nIndividual Votes\n";
-      csvContent += "Choice,Gender,Age Range,Country,Voted At\n";
-      votes?.forEach(v => {
-        const user = v.users as any;
-        csvContent += `"${v.choice}","${user?.gender || 'Unknown'}","${user?.age_range || 'Unknown'}","${user?.country || 'Unknown'}","${v.created_at}"\n`;
-      });
-
-      // Download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
@@ -327,7 +309,6 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
 
   const exportAllAnalytics = async () => {
     try {
-      // Get all polls
       const { data: allPolls } = await supabase
         .from('polls')
         .select('id, question, option_a, option_b, category, created_at')
@@ -339,33 +320,23 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
       }
 
       const pollIds = allPolls.map(p => p.id);
-      
-      // Get all votes with demographics
       const { data: allVotes } = await supabase
         .from('votes')
-        .select('poll_id, choice, created_at, users!inner(gender, age_range, country)')
+        .select('poll_id, choice, created_at, voter_gender, voter_age_range, voter_country, voter_city')
         .in('poll_id', pollIds);
-
-      // Get poll results
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
 
-      // Build CSV with demographics
       let csvContent = "Poll ID,Question,Option A,Option B,Category,Total Votes,Votes A,Votes B,Percent A,Percent B,Created At\n";
-      
       allPolls.forEach(poll => {
         const result = results?.find(r => r.poll_id === poll.id);
         csvContent += `"${poll.id}","${poll.question}","${poll.option_a}","${poll.option_b}","${poll.category || ''}","${result?.total_votes || 0}","${result?.votes_a || 0}","${result?.votes_b || 0}","${result?.percent_a || 0}%","${result?.percent_b || 0}%","${poll.created_at}"\n`;
       });
 
-      // Add individual votes sheet
-      csvContent += "\n\nIndividual Votes\n";
-      csvContent += "Poll ID,Choice,Gender,Age Range,Country,Voted At\n";
+      csvContent += "\n\nIndividual Votes\nPoll ID,Choice,Gender,Age Range,Country,City,Voted At\n";
       allVotes?.forEach(v => {
-        const user = v.users as any;
-        csvContent += `"${v.poll_id}","${v.choice}","${user?.gender || 'Unknown'}","${user?.age_range || 'Unknown'}","${user?.country || 'Unknown'}","${v.created_at}"\n`;
+        csvContent += `"${v.poll_id}","${v.choice}","${(v as any).voter_gender || 'Unknown'}","${(v as any).voter_age_range || 'Unknown'}","${(v as any).voter_country || 'Unknown'}","${(v as any).voter_city || 'Unknown'}","${v.created_at}"\n`;
       });
 
-      // Download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
@@ -399,7 +370,7 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
         </div>
       </div>
 
-      {/* Poll Selector with Preview */}
+      {/* Poll Selector */}
       <div className="glass rounded-xl p-4">
         <label className="text-sm font-medium mb-2 block">Select a poll to analyze</label>
         <Select value={selectedPollId || undefined} onValueChange={(val) => setSelectedPollId(val)}>
@@ -434,6 +405,69 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
               const { percentA, percentB, winner } = getPercentages();
               return (
             <div className="space-y-4">
+
+              {/* ── DEMOGRAPHIC FILTER PANEL ── */}
+              <div className="glass rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-primary" />
+                    <h4 className="font-semibold text-sm">Demographic Filters</h4>
+                  </div>
+                  {hasActiveFilters && (
+                    <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => { setFilterGender('all'); setFilterAge('all'); setFilterCountry('all'); setFilterCity('all'); }}>
+                      Clear filters
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Gender</label>
+                    <Select value={filterGender} onValueChange={setFilterGender}>
+                      <SelectTrigger className="h-8 text-xs bg-secondary"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Genders</SelectItem>
+                        {filterOptions.genders.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Age Range</label>
+                    <Select value={filterAge} onValueChange={setFilterAge}>
+                      <SelectTrigger className="h-8 text-xs bg-secondary"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Ages</SelectItem>
+                        {filterOptions.ages.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Country</label>
+                    <Select value={filterCountry} onValueChange={setFilterCountry}>
+                      <SelectTrigger className="h-8 text-xs bg-secondary"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Countries</SelectItem>
+                        {filterOptions.countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">City</label>
+                    <Select value={filterCity} onValueChange={setFilterCity}>
+                      <SelectTrigger className="h-8 text-xs bg-secondary"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Cities</SelectItem>
+                        {filterOptions.cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                {hasActiveFilters && (
+                  <div className="text-xs text-primary font-medium">
+                    Showing {computed.totalVotes} of {analytics.rawVotes.length} votes
+                  </div>
+                )}
+              </div>
+
               {/* Poll Header with Images */}
               <div className="glass rounded-xl p-4 space-y-4">
                 <div className="flex items-start justify-between">
@@ -466,22 +500,17 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
                     <div className="relative">
                       {analytics.poll.image_a_url ? (
                         <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-option-a/30">
-                          <img 
-                            src={analytics.poll.image_a_url} 
-                            alt={analytics.poll.option_a}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={analytics.poll.image_a_url} alt={analytics.poll.option_a} className="w-full h-full object-cover" />
                           <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                             <p className="text-white text-sm font-medium truncate">{analytics.poll.option_a}</p>
                             <div className="flex items-center gap-1 mt-1">
                               <span className="text-2xl font-bold text-option-a">{percentA}%</span>
-                              <span className="text-xs text-white/70">({analytics.overallA} votes)</span>
+                              <span className="text-xs text-white/70">({computed.overallA} votes)</span>
                             </div>
                           </div>
                           {winner === 'A' && (
                             <div className="absolute top-2 right-2 bg-option-a text-option-a-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                              <TrendingUp className="h-3 w-3" />
-                              Winner
+                              <TrendingUp className="h-3 w-3" /> Winner
                             </div>
                           )}
                         </div>
@@ -497,22 +526,17 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
                     <div className="relative">
                       {analytics.poll.image_b_url ? (
                         <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-option-b/30">
-                          <img 
-                            src={analytics.poll.image_b_url} 
-                            alt={analytics.poll.option_b}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={analytics.poll.image_b_url} alt={analytics.poll.option_b} className="w-full h-full object-cover" />
                           <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                             <p className="text-white text-sm font-medium truncate">{analytics.poll.option_b}</p>
                             <div className="flex items-center gap-1 mt-1">
                               <span className="text-2xl font-bold text-option-b">{percentB}%</span>
-                              <span className="text-xs text-white/70">({analytics.overallB} votes)</span>
+                              <span className="text-xs text-white/70">({computed.overallB} votes)</span>
                             </div>
                           </div>
                           {winner === 'B' && (
                             <div className="absolute top-2 right-2 bg-option-b text-option-b-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                              <TrendingUp className="h-3 w-3" />
-                              Winner
+                              <TrendingUp className="h-3 w-3" /> Winner
                             </div>
                           )}
                         </div>
@@ -528,41 +552,31 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
                   </div>
                 )}
 
-                {/* Text-only poll results (no images) */}
+                {/* Text-only poll results */}
                 {!analytics.poll.image_a_url && !analytics.poll.image_b_url && (
                   <div className="space-y-3">
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
                         <span className="font-medium text-option-a flex items-center gap-2">
                           {analytics.poll.option_a}
-                          {winner === 'A' && (
-                            <span className="text-xs bg-option-a/20 px-2 py-0.5 rounded-full">Winner</span>
-                          )}
+                          {winner === 'A' && <span className="text-xs bg-option-a/20 px-2 py-0.5 rounded-full">Winner</span>}
                         </span>
-                        <span className="font-bold">{percentA}% ({analytics.overallA})</span>
+                        <span className="font-bold">{percentA}% ({computed.overallA})</span>
                       </div>
                       <div className="h-4 rounded-full bg-secondary overflow-hidden">
-                        <div 
-                          className="h-full bg-option-a rounded-full transition-all"
-                          style={{ width: `${percentA}%` }}
-                        />
+                        <div className="h-full bg-option-a rounded-full transition-all" style={{ width: `${percentA}%` }} />
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
                         <span className="font-medium text-option-b flex items-center gap-2">
                           {analytics.poll.option_b}
-                          {winner === 'B' && (
-                            <span className="text-xs bg-option-b/20 px-2 py-0.5 rounded-full">Winner</span>
-                          )}
+                          {winner === 'B' && <span className="text-xs bg-option-b/20 px-2 py-0.5 rounded-full">Winner</span>}
                         </span>
-                        <span className="font-bold">{percentB}% ({analytics.overallB})</span>
+                        <span className="font-bold">{percentB}% ({computed.overallB})</span>
                       </div>
                       <div className="h-4 rounded-full bg-secondary overflow-hidden">
-                        <div 
-                          className="h-full bg-option-b rounded-full transition-all"
-                          style={{ width: `${percentB}%` }}
-                        />
+                        <div className="h-full bg-option-b rounded-full transition-all" style={{ width: `${percentB}%` }} />
                       </div>
                     </div>
                   </div>
@@ -571,18 +585,18 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
                 {/* Stats Row */}
                 <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/50">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{analytics.totalVotes}</div>
+                    <div className="text-2xl font-bold text-primary">{computed.totalVotes}</div>
                     <div className="text-xs text-muted-foreground">Total Votes</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-primary">
-                      {analytics.totalVotes > 0 ? Math.abs(percentA - percentB) : 0}%
+                      {computed.totalVotes > 0 ? Math.abs(percentA - percentB) : 0}%
                     </div>
                     <div className="text-xs text-muted-foreground">Margin</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-primary">
-                      {analytics.byCountry.length}
+                      {computed.byCountry.length}
                     </div>
                     <div className="text-xs text-muted-foreground">Countries</div>
                   </div>
@@ -590,14 +604,14 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
               </div>
 
               {/* Recent Activity */}
-              {analytics.recentVotes.length > 0 && (
+              {computed.recentVotes.length > 0 && (
                 <div className="glass rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <Eye className="h-4 w-4 text-primary" />
                     <h4 className="font-semibold text-sm">Recent Activity</h4>
                   </div>
                   <div className="space-y-2">
-                    {analytics.recentVotes.slice(0, 5).map((vote, idx) => (
+                    {computed.recentVotes.slice(0, 5).map((vote, idx) => (
                       <div key={idx} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${vote.choice === 'A' ? 'bg-primary' : 'bg-accent'}`} />
@@ -613,29 +627,10 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
               )}
 
               {/* Demographic Breakdowns */}
-              <DemographicChart 
-                title="By Gender" 
-                icon={Users} 
-                data={analytics.byGender}
-                optionALabel={analytics.poll.option_a}
-                optionBLabel={analytics.poll.option_b}
-              />
-              
-              <DemographicChart 
-                title="By Age Range" 
-                icon={Calendar} 
-                data={analytics.byAgeRange}
-                optionALabel={analytics.poll.option_a}
-                optionBLabel={analytics.poll.option_b}
-              />
-              
-              <DemographicChart 
-                title="By Country" 
-                icon={Globe} 
-                data={analytics.byCountry}
-                optionALabel={analytics.poll.option_a}
-                optionBLabel={analytics.poll.option_b}
-              />
+              <DemographicChart title="By Gender" icon={Users} data={computed.byGender} optionALabel={analytics.poll.option_a} optionBLabel={analytics.poll.option_b} />
+              <DemographicChart title="By Age Range" icon={Calendar} data={computed.byAgeRange} optionALabel={analytics.poll.option_a} optionBLabel={analytics.poll.option_b} />
+              <DemographicChart title="By Country" icon={Globe} data={computed.byCountry} optionALabel={analytics.poll.option_a} optionBLabel={analytics.poll.option_b} />
+              <DemographicChart title="By City" icon={MapPin} data={computed.byCity} optionALabel={analytics.poll.option_a} optionBLabel={analytics.poll.option_b} />
             </div>
               );
             })()
