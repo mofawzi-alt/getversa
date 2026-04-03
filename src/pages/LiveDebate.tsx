@@ -137,6 +137,22 @@ export default function LiveDebate() {
         if (idx > 0) {
           const [t] = sorted.splice(idx, 1);
           sorted.unshift(t);
+        } else if (idx === -1) {
+          // Target poll not in initial batch — fetch it directly
+          const { data: targetPoll } = await supabase
+            .from('polls')
+            .select('id, question, option_a, option_b, category, image_a_url, image_b_url, starts_at, ends_at')
+            .eq('id', startPollId)
+            .eq('is_active', true)
+            .single();
+          if (targetPoll) {
+            sorted.unshift(targetPoll as Poll);
+            // Check if user already voted on it
+            if (user) {
+              const { data: existingVote } = await supabase.from('votes').select('choice').eq('poll_id', startPollId).eq('user_id', user.id).maybeSingle();
+              if (existingVote) votedChoices.set(startPollId, existingVote.choice);
+            }
+          }
         }
       }
 
