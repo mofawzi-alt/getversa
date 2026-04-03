@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame } from 'lucide-react';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
+import ShareImageCard from '@/components/poll/ShareImageCard';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
