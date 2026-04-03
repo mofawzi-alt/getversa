@@ -489,7 +489,7 @@ export default function Home() {
                   </div>
                   <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
                   <div className="w-1/2 h-full relative overflow-hidden">
-                    <img src={imgB} alt={firstUnvoted.option_b} className="w-full h-full object-contain bg-muted" />
+                    <img src={imgB} alt={firstUnvoted.option_b} className="w-full h-full object-contain bg-muted" onError={(e) => handlePollImageError(e, { option: firstUnvoted.option_b, question: firstUnvoted.question, side: 'B' })} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-3 right-3 text-right">
                       <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_b}</p>
