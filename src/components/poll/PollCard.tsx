@@ -2,6 +2,7 @@ import { useState, useRef, TouchEvent, MouseEvent, useCallback, useEffect } from
 import { Clock, Loader2 } from 'lucide-react';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import LiveIndicator from '@/components/poll/LiveIndicator';
+import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
 interface Poll {
   id: string;
