@@ -15,26 +15,7 @@ import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 
-import beachImg from '@/assets/polls/beach.jpg';
-import cityImg from '@/assets/polls/city.jpg';
-import mountainsImg from '@/assets/polls/mountains.jpg';
-import natureImg from '@/assets/polls/nature.jpg';
-import sunsetImg from '@/assets/polls/sunset.jpg';
-import sunriseImg from '@/assets/polls/sunrise.jpg';
-import coffeeImg from '@/assets/polls/coffee.jpg';
-import teaImg from '@/assets/polls/tea.jpg';
-import pizzaImg from '@/assets/polls/pizza.jpg';
-import sushiImg from '@/assets/polls/sushi.jpg';
-import catsImg from '@/assets/polls/cats.jpg';
-import dogsImg from '@/assets/polls/dogs.jpg';
-import summerImg from '@/assets/polls/summer.jpg';
-import winterImg from '@/assets/polls/winter.jpg';
-import sneakersImg from '@/assets/polls/sneakers.jpg';
-import bootsImg from '@/assets/polls/boots.jpg';
-import booksImg from '@/assets/polls/books.jpg';
-import moviesImg from '@/assets/polls/movies.jpg';
-import daySkyImg from '@/assets/polls/day-sky.jpg';
-import nightSkyImg from '@/assets/polls/night-sky.jpg';
+import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
 // FIX 4: Conversational category name mapping
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
@@ -85,18 +66,6 @@ const CATEGORY_META: Record<string, { emoji: string; color: string; bg: string }
 function getCategoryMeta(name: string): { emoji: string; color: string; bg: string } {
   const key = name.toLowerCase();
   return CATEGORY_META[key] || { emoji: '🔥', color: 'hsl(225, 73%, 45%)', bg: 'hsl(225, 73%, 93%)' };
-}
-
-const FALLBACK_IMAGES = [
-  beachImg, cityImg, mountainsImg, natureImg, sunsetImg, sunriseImg,
-  coffeeImg, teaImg, pizzaImg, sushiImg, catsImg, dogsImg,
-  summerImg, winterImg, sneakersImg, bootsImg, booksImg, moviesImg,
-  daySkyImg, nightSkyImg,
-];
-
-function getFallbackImage(seed: string, index: number): string {
-  const hash = seed.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return FALLBACK_IMAGES[(hash + index) % FALLBACK_IMAGES.length];
 }
 
 type PollCard = {
