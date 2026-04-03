@@ -481,7 +481,7 @@ export default function Home() {
                 {/* Images */}
                 <div className="flex h-[55vh] max-h-[420px] relative">
                   <div className="w-1/2 h-full relative overflow-hidden">
-                    <img src={imgA} alt={firstUnvoted.option_a} className="w-full h-full object-contain bg-muted" />
+                    <img src={imgA} alt={firstUnvoted.option_a} className="w-full h-full object-contain bg-muted" onError={(e) => handlePollImageError(e, { option: firstUnvoted.option_a, question: firstUnvoted.question, side: 'A' })} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-3 left-3">
                       <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_a}</p>
