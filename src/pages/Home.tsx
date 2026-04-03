@@ -379,8 +379,8 @@ export default function Home() {
     const hasVoted = votedPollIds?.has(poll.id);
     const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
     const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
-    if (!hasStarted || isExpired) return;
-    if (hasVoted) {
+    if (!hasStarted) return;
+    if (isExpired || hasVoted) {
       setModalPoll(poll);
     } else {
       navigate(`/vote?pollId=${poll.id}`);
