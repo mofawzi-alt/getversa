@@ -965,6 +965,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
   const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
   const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
   const isLive = (!poll.ends_at || new Date(poll.ends_at) >= new Date()) && (!poll.starts_at || new Date(poll.starts_at) <= new Date());
+  const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
 
   return (
     <motion.div
