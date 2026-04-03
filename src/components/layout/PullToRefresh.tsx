@@ -28,13 +28,18 @@ export default function PullToRefresh({ children, onRefresh }: PullToRefreshProp
     if (!el || !(el instanceof HTMLElement)) return false;
     const tag = el.tagName;
     if (['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT', 'LABEL'].includes(tag)) return true;
-    if (el.closest('button, a, [role="button"], input, textarea, select')) return true;
+    if (el.closest('button, a, [role="button"], input, textarea, select, [data-clickable]')) return true;
+    // Check if the element or any ancestor has cursor-pointer (i.e. is clickable)
+    if (el.closest('.cursor-pointer, [onclick]')) return true;
+    const style = window.getComputedStyle(el);
+    if (style.cursor === 'pointer') return true;
     return false;
   };
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (refreshing) return;
     activatedRef.current = false;
+    pullingRef.current = false;
     if (isInteractive(e.target)) return;
     if (canPull()) {
       startYRef.current = e.touches[0].clientY;
@@ -50,7 +55,6 @@ export default function PullToRefresh({ children, onRefresh }: PullToRefreshProp
     // Only activate pull if clearly vertical and downward, not horizontal
     if (!activatedRef.current) {
       if (dy < 10 || dx > dy) {
-        // Not a clear pull-down — abort
         pullingRef.current = false;
         return;
       }
@@ -78,7 +82,8 @@ export default function PullToRefresh({ children, onRefresh }: PullToRefreshProp
         setRefreshing(false);
         setPullY(0);
       }
-    } else {
+    } else if (pullY > 0) {
+      // Only update state if we actually pulled — avoids re-render on plain taps
       setPullY(0);
     }
   }, [pullY, onRefresh]);
