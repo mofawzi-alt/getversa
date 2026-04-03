@@ -910,8 +910,8 @@ export default function Home() {
           open={!!modalPoll}
           onOpenChange={(open) => !open && setModalPoll(null)}
           poll={modalPoll}
-          imageA={modalPoll ? (modalPoll.image_a_url || getFallbackImage(modalPoll.id, 0)) : ''}
-          imageB={modalPoll ? (modalPoll.image_b_url || getFallbackImage(modalPoll.id, 1)) : ''}
+          imageA={modalPoll ? getPollDisplayImageSrc({ imageUrl: modalPoll.image_a_url, option: modalPoll.option_a, question: modalPoll.question, side: 'A' }) : ''}
+          imageB={modalPoll ? getPollDisplayImageSrc({ imageUrl: modalPoll.image_b_url, option: modalPoll.option_b, question: modalPoll.question, side: 'B' }) : ''}
         />
       </div>
     </AppLayout>
