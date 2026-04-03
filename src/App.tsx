@@ -96,7 +96,7 @@ function AppInner() {
           <Route path="/vote" element={<DemographicsGuard><SwipeFeed /></DemographicsGuard>} />
           <Route path="/home" element={<DemographicsGuard><Home /></DemographicsGuard>} />
           <Route path="/explore" element={<DemographicsGuard><Explore /></DemographicsGuard>} />
-          <Route path="/live-debate" element={<LiveDebate />} />
+          <Route path="/live-debate" element={<DemographicsGuard><LiveDebate /></DemographicsGuard>} />
           <Route path="/seasonal/:slug" element={<SeasonalHub />} />
           <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
           <Route path="/archive" element={<PastPerspectives />} />
