@@ -586,7 +586,7 @@ function FullScreenCard({
         {/* Split images — full screen */}
         <div className="flex h-full w-full">
           <div className="w-1/2 h-full relative overflow-hidden">
-            <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted" draggable={false} />
+            <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted" draggable={false} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
             <div className="absolute bottom-24 left-4 right-1">
               <p className="text-white text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{poll.option_a}</p>
@@ -594,7 +594,7 @@ function FullScreenCard({
           </div>
           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
           <div className="w-1/2 h-full relative overflow-hidden">
-            <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted" draggable={false} />
+            <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover bg-muted" draggable={false} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
             <div className="absolute bottom-24 left-1 right-4 text-right">
               <p className="text-white text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{poll.option_b}</p>

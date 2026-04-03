@@ -481,7 +481,7 @@ export default function Home() {
                 {/* Images */}
                 <div className="flex h-[55vh] max-h-[420px] relative">
                   <div className="w-1/2 h-full relative overflow-hidden">
-                    <img src={imgA} alt={firstUnvoted.option_a} className="w-full h-full object-contain bg-muted" onError={(e) => handlePollImageError(e, { option: firstUnvoted.option_a, question: firstUnvoted.question, side: 'A' })} />
+                    <img src={imgA} alt={firstUnvoted.option_a} className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: firstUnvoted.option_a, question: firstUnvoted.question, side: 'A' })} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-3 left-3">
                       <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_a}</p>
@@ -489,7 +489,7 @@ export default function Home() {
                   </div>
                   <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
                   <div className="w-1/2 h-full relative overflow-hidden">
-                    <img src={imgB} alt={firstUnvoted.option_b} className="w-full h-full object-contain bg-muted" onError={(e) => handlePollImageError(e, { option: firstUnvoted.option_b, question: firstUnvoted.question, side: 'B' })} />
+                    <img src={imgB} alt={firstUnvoted.option_b} className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: firstUnvoted.option_b, question: firstUnvoted.question, side: 'B' })} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-3 right-3 text-right">
                       <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_b}</p>
@@ -575,12 +575,12 @@ export default function Home() {
                         {/* Images */}
                         <div className="flex h-[55vh] max-h-[420px] relative">
                           <div className="w-1/2 h-full relative overflow-hidden">
-                            <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
+                            <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                           </div>
                           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
                           <div className="w-1/2 h-full relative overflow-hidden">
-                            <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
+                            <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                           </div>
                         </div>
