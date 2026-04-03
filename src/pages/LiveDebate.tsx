@@ -196,7 +196,17 @@ export default function LiveDebate() {
   const voteMutation = useMutation({
     mutationFn: async ({ pollId, choice }: { pollId: string; choice: 'A' | 'B' }) => {
       if (!user) throw new Error('Not authenticated');
-      const { error } = await supabase.from('votes').insert({ poll_id: pollId, user_id: user.id, choice, voter_country: profile?.country || null } as any);
+      const currentPoll = polls?.find(p => p.id === pollId);
+      const { error } = await supabase.from('votes').insert({
+        poll_id: pollId,
+        user_id: user.id,
+        choice,
+        voter_country: profile?.country || null,
+        voter_age_range: profile?.age_range || null,
+        voter_gender: profile?.gender || null,
+        voter_city: profile?.city || null,
+        category: currentPoll?.category || null,
+      } as any);
       if (error) throw error;
       const { data: votes } = await supabase.from('votes').select('choice').eq('poll_id', pollId);
       const total = votes?.length || 0;
