@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, BarChart3, Users, Globe, Calendar, TrendingUp, Eye, Clock, Image as ImageIcon, Download } from 'lucide-react';
+import { Loader2, BarChart3, Users, Globe, Calendar, TrendingUp, Eye, Clock, Image as ImageIcon, Download, Filter, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { 
@@ -20,6 +20,15 @@ interface DemographicBreakdown {
   total: number;
 }
 
+interface RawVote {
+  choice: string;
+  created_at: string | null;
+  voter_gender: string | null;
+  voter_age_range: string | null;
+  voter_country: string | null;
+  voter_city: string | null;
+}
+
 interface PollAnalyticsData {
   poll: {
     id: string;
@@ -33,13 +42,7 @@ interface PollAnalyticsData {
     ends_at: string | null;
     is_active: boolean | null;
   };
-  totalVotes: number;
-  overallA: number;
-  overallB: number;
-  byGender: DemographicBreakdown[];
-  byAgeRange: DemographicBreakdown[];
-  byCountry: DemographicBreakdown[];
-  recentVotes: { created_at: string; choice: string }[];
+  rawVotes: RawVote[];
 }
 
 interface PollAnalyticsProps {
@@ -48,15 +51,25 @@ interface PollAnalyticsProps {
 
 export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
   const [selectedPollId, setSelectedPollId] = useState<string | null>(initialPollId || null);
+  const [filterGender, setFilterGender] = useState<string>('all');
+  const [filterAge, setFilterAge] = useState<string>('all');
+  const [filterCountry, setFilterCountry] = useState<string>('all');
+  const [filterCity, setFilterCity] = useState<string>('all');
 
-  // Sync with parent when initialPollId changes
   useEffect(() => {
     if (initialPollId) {
       setSelectedPollId(initialPollId);
     }
   }, [initialPollId]);
 
-  // Fetch all polls for dropdown
+  // Reset filters when poll changes
+  useEffect(() => {
+    setFilterGender('all');
+    setFilterAge('all');
+    setFilterCountry('all');
+    setFilterCity('all');
+  }, [selectedPollId]);
+
   const { data: polls, isLoading: pollsLoading } = useQuery({
     queryKey: ['analytics-polls'],
     queryFn: async () => {
@@ -69,13 +82,12 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
     },
   });
 
-  // Fetch analytics for selected poll
+  // Fetch raw votes with demographic fields directly from votes table
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['poll-analytics', selectedPollId],
     queryFn: async (): Promise<PollAnalyticsData | null> => {
       if (!selectedPollId) return null;
 
-      // Get poll details
       const { data: poll } = await supabase
         .from('polls')
         .select('id, question, option_a, option_b, category, image_a_url, image_b_url, created_at, ends_at, is_active')
@@ -84,111 +96,87 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
 
       if (!poll) return null;
 
-      // Get all votes with user demographics
+      // Use vote's own demographic fields instead of joining users
       const { data: votes } = await supabase
         .from('votes')
-        .select(`
-          choice,
-          user_id,
-          created_at,
-          users!inner(gender, age_range, country)
-        `)
+        .select('choice, created_at, voter_gender, voter_age_range, voter_country, voter_city')
         .eq('poll_id', selectedPollId)
         .order('created_at', { ascending: false });
 
-      if (!votes || votes.length === 0) {
-        return {
-          poll,
-          totalVotes: 0,
-          overallA: 0,
-          overallB: 0,
-          byGender: [],
-          byAgeRange: [],
-          byCountry: [],
-          recentVotes: [],
-        };
-      }
-
-      const totalVotes = votes.length;
-      const overallA = votes.filter(v => v.choice === 'A').length;
-      const overallB = totalVotes - overallA;
-
-      // Group by gender
-      const genderGroups = new Map<string, { a: number; b: number }>();
-      votes.forEach(vote => {
-        const gender = (vote.users as any)?.gender || 'Unknown';
-        const current = genderGroups.get(gender) || { a: 0, b: 0 };
-        if (vote.choice === 'A') current.a++;
-        else current.b++;
-        genderGroups.set(gender, current);
-      });
-
-      const byGender: DemographicBreakdown[] = Array.from(genderGroups.entries())
-        .map(([label, counts]) => ({
-          label: label || 'Unknown',
-          optionA: counts.a,
-          optionB: counts.b,
-          total: counts.a + counts.b,
-        }))
-        .sort((a, b) => b.total - a.total);
-
-      // Group by age range
-      const ageGroups = new Map<string, { a: number; b: number }>();
-      votes.forEach(vote => {
-        const ageRange = (vote.users as any)?.age_range || 'Unknown';
-        const current = ageGroups.get(ageRange) || { a: 0, b: 0 };
-        if (vote.choice === 'A') current.a++;
-        else current.b++;
-        ageGroups.set(ageRange, current);
-      });
-
-      const byAgeRange: DemographicBreakdown[] = Array.from(ageGroups.entries())
-        .map(([label, counts]) => ({
-          label: label || 'Unknown',
-          optionA: counts.a,
-          optionB: counts.b,
-          total: counts.a + counts.b,
-        }))
-        .sort((a, b) => b.total - a.total);
-
-      // Group by country
-      const countryGroups = new Map<string, { a: number; b: number }>();
-      votes.forEach(vote => {
-        const country = (vote.users as any)?.country || 'Unknown';
-        const current = countryGroups.get(country) || { a: 0, b: 0 };
-        if (vote.choice === 'A') current.a++;
-        else current.b++;
-        countryGroups.set(country, current);
-      });
-
-      const byCountry: DemographicBreakdown[] = Array.from(countryGroups.entries())
-        .map(([label, counts]) => ({
-          label: label || 'Unknown',
-          optionA: counts.a,
-          optionB: counts.b,
-          total: counts.a + counts.b,
-        }))
-        .sort((a, b) => b.total - a.total);
-
-      // Recent votes for activity feed
-      const recentVotes = votes.slice(0, 10).map(v => ({
-        created_at: v.created_at || '',
-        choice: v.choice,
-      }));
-
       return {
         poll,
-        totalVotes,
-        overallA,
-        overallB,
-        byGender,
-        byAgeRange,
-        byCountry,
-        recentVotes,
+        rawVotes: (votes || []) as RawVote[],
       };
     },
     enabled: !!selectedPollId,
   });
+
+  // Derive unique filter options from raw votes
+  const filterOptions = useMemo(() => {
+    if (!analytics) return { genders: [], ages: [], countries: [], cities: [] };
+    const genders = new Set<string>();
+    const ages = new Set<string>();
+    const countries = new Set<string>();
+    const cities = new Set<string>();
+    analytics.rawVotes.forEach(v => {
+      if (v.voter_gender) genders.add(v.voter_gender);
+      if (v.voter_age_range) ages.add(v.voter_age_range);
+      if (v.voter_country) countries.add(v.voter_country);
+      if (v.voter_city) cities.add(v.voter_city);
+    });
+    return {
+      genders: Array.from(genders).sort(),
+      ages: Array.from(ages).sort(),
+      countries: Array.from(countries).sort(),
+      cities: Array.from(cities).sort(),
+    };
+  }, [analytics]);
+
+  // Apply combined demographic filters
+  const filteredVotes = useMemo(() => {
+    if (!analytics) return [];
+    return analytics.rawVotes.filter(v => {
+      if (filterGender !== 'all' && (v.voter_gender || 'Unknown') !== filterGender) return false;
+      if (filterAge !== 'all' && (v.voter_age_range || 'Unknown') !== filterAge) return false;
+      if (filterCountry !== 'all' && (v.voter_country || 'Unknown') !== filterCountry) return false;
+      if (filterCity !== 'all' && (v.voter_city || 'Unknown') !== filterCity) return false;
+      return true;
+    });
+  }, [analytics, filterGender, filterAge, filterCountry, filterCity]);
+
+  // Compute breakdowns from filtered votes
+  const computed = useMemo(() => {
+    const votes = filteredVotes;
+    const totalVotes = votes.length;
+    const overallA = votes.filter(v => v.choice === 'A').length;
+    const overallB = totalVotes - overallA;
+
+    function groupBy(field: keyof RawVote): DemographicBreakdown[] {
+      const groups = new Map<string, { a: number; b: number }>();
+      votes.forEach(v => {
+        const label = (v[field] as string) || 'Unknown';
+        const cur = groups.get(label) || { a: 0, b: 0 };
+        if (v.choice === 'A') cur.a++; else cur.b++;
+        groups.set(label, cur);
+      });
+      return Array.from(groups.entries())
+        .map(([label, c]) => ({ label, optionA: c.a, optionB: c.b, total: c.a + c.b }))
+        .sort((a, b) => b.total - a.total);
+    }
+
+    return {
+      totalVotes,
+      overallA,
+      overallB,
+      byGender: groupBy('voter_gender'),
+      byAgeRange: groupBy('voter_age_range'),
+      byCountry: groupBy('voter_country'),
+      byCity: groupBy('voter_city'),
+      recentVotes: votes.slice(0, 10).map(v => ({ created_at: v.created_at || '', choice: v.choice })),
+    };
+  }, [filteredVotes]);
+
+  const hasActiveFilters = filterGender !== 'all' || filterAge !== 'all' || filterCountry !== 'all' || filterCity !== 'all';
 
   const DemographicChart = ({ 
     title, 
