@@ -131,6 +131,14 @@ function getPreferredLocalImage({ question, option, side }: PollImageParams) {
   );
 }
 
+// Deterministic generic fallback from local assets pool
+function getGenericFallback(seed?: string | null): string {
+  const allLocal = Object.values(localPollImages);
+  if (allLocal.length === 0) return '';
+  const hash = (seed || 'x').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return allLocal[hash % allLocal.length];
+}
+
 export function getPollImageFallbackSrc(params: PollImageParams) {
   const preferredLocal = getPreferredLocalImage(params);
   if (preferredLocal) return preferredLocal;
@@ -138,7 +146,7 @@ export function getPollImageFallbackSrc(params: PollImageParams) {
   const sourceLocal = getLocalImageByName(extractFilename(params.imageUrl));
   if (sourceLocal) return sourceLocal;
 
-  return params.genericFallback || '';
+  return params.genericFallback || getGenericFallback(params.option || params.question);
 }
 
 export function getPollDisplayImageSrc(params: PollImageParams) {

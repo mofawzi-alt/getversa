@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Input } from '@/components/ui/input';
+import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
 import beachImg from '@/assets/polls/beach.jpg';
 import cityImg from '@/assets/polls/city.jpg';

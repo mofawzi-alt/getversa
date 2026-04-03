@@ -888,9 +888,12 @@ export default function Home() {
                     className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer active:bg-muted/50 transition-colors ${i < topOptions.length - 1 ? 'border-b border-border/40' : ''}`}
                   >
                     <span className="text-xs font-bold text-muted-foreground/60 w-4 text-center shrink-0">{i + 1}</span>
-                    {opt.imageUrl ? (
-                      <img src={opt.imageUrl} alt={opt.name} className="w-7 h-7 rounded-lg object-cover shrink-0" />
-                    ) : null}
+                    {(() => {
+                      const resolvedImg = getPollDisplayImageSrc({ imageUrl: opt.imageUrl, option: opt.name, side: 'A' });
+                      return resolvedImg ? (
+                        <img src={resolvedImg} alt={opt.name} className="w-7 h-7 rounded-lg object-cover shrink-0" onError={(e) => handlePollImageError(e, { option: opt.name, side: 'A' })} />
+                      ) : null;
+                    })()}
                     <span className="text-xs font-bold text-foreground line-clamp-1 flex-1">
                       {opt.name}
                     </span>

@@ -21,10 +21,24 @@ export default function PullToRefresh({ children, onRefresh }: PullToRefreshProp
     return window.scrollY <= 0;
   };
 
+  const startXRef = useRef(0);
+  const activatedRef = useRef(false);
+
+  const isInteractive = (el: EventTarget | null): boolean => {
+    if (!el || !(el instanceof HTMLElement)) return false;
+    const tag = el.tagName;
+    if (['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT', 'LABEL'].includes(tag)) return true;
+    if (el.closest('button, a, [role="button"], input, textarea, select')) return true;
+    return false;
+  };
+
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (refreshing) return;
+    activatedRef.current = false;
+    if (isInteractive(e.target)) return;
     if (canPull()) {
       startYRef.current = e.touches[0].clientY;
+      startXRef.current = e.touches[0].clientX;
       pullingRef.current = true;
     }
   }, [refreshing]);
@@ -32,6 +46,16 @@ export default function PullToRefresh({ children, onRefresh }: PullToRefreshProp
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!pullingRef.current || refreshing) return;
     const dy = e.touches[0].clientY - startYRef.current;
+    const dx = Math.abs(e.touches[0].clientX - startXRef.current);
+    // Only activate pull if clearly vertical and downward, not horizontal
+    if (!activatedRef.current) {
+      if (dy < 10 || dx > dy) {
+        // Not a clear pull-down — abort
+        pullingRef.current = false;
+        return;
+      }
+      activatedRef.current = true;
+    }
     if (dy > 0 && canPull()) {
       const dampened = Math.min(dy * 0.5, MAX_PULL);
       setPullY(dampened);
