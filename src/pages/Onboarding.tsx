@@ -228,7 +228,7 @@ export default function Onboarding() {
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">How old are you?</h1>
-                <p className="text-foreground/60">Helps personalize your experience</p>
+                <p className="text-foreground/60">Help us show you better comparisons</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 {AGE_RANGES.map((range) => (
