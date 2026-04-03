@@ -575,7 +575,18 @@ function ImmersivePollCard({
                 You picked {result!.choice === 'A' ? poll.option_a : poll.option_b}
               </motion.span>
             </div>
-            {/* Row 2: Category link (centered) */}
+            {/* FIX 2: Prominent Share Button */}
+            <ShareImageCard
+              question={poll.question}
+              optionA={poll.option_a}
+              optionB={poll.option_b}
+              percentA={result!.percentA}
+              percentB={result!.percentB}
+              imageAUrl={poll.image_a_url}
+              imageBUrl={poll.image_b_url}
+              choice={result!.choice}
+            />
+            {/* Category link */}
             {poll.category && (
               <motion.div
                 initial={{ opacity: 0 }}
