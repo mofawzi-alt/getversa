@@ -690,22 +690,40 @@ export type Database = {
       }
       skipped_polls: {
         Row: {
+          category: string | null
           created_at: string
           id: string
           poll_id: string
+          session_duration_ms: number | null
           user_id: string
+          voter_age_range: string | null
+          voter_city: string | null
+          voter_country: string | null
+          voter_gender: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           id?: string
           poll_id: string
+          session_duration_ms?: number | null
           user_id: string
+          voter_age_range?: string | null
+          voter_city?: string | null
+          voter_country?: string | null
+          voter_gender?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           id?: string
           poll_id?: string
+          session_duration_ms?: number | null
           user_id?: string
+          voter_age_range?: string | null
+          voter_city?: string | null
+          voter_country?: string | null
+          voter_gender?: string | null
         }
         Relationships: [
           {
@@ -1138,28 +1156,43 @@ export type Database = {
       }
       votes: {
         Row: {
+          category: string | null
           choice: string
           created_at: string | null
           id: string
           poll_id: string
+          session_duration_ms: number | null
           user_id: string
+          voter_age_range: string | null
+          voter_city: string | null
           voter_country: string | null
+          voter_gender: string | null
         }
         Insert: {
+          category?: string | null
           choice: string
           created_at?: string | null
           id?: string
           poll_id: string
+          session_duration_ms?: number | null
           user_id: string
+          voter_age_range?: string | null
+          voter_city?: string | null
           voter_country?: string | null
+          voter_gender?: string | null
         }
         Update: {
+          category?: string | null
           choice?: string
           created_at?: string | null
           id?: string
           poll_id?: string
+          session_duration_ms?: number | null
           user_id?: string
+          voter_age_range?: string | null
+          voter_city?: string | null
           voter_country?: string | null
+          voter_gender?: string | null
         }
         Relationships: [
           {
