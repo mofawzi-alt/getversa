@@ -396,7 +396,7 @@ function DemoTrialScreen({ onComplete }: { onComplete: () => void }) {
             </motion.div>
           )}
 
-          {!showResult && <p className="text-xs text-muted-foreground animate-pulse">Swipe or tap to vote</p>}
+          {!showResult && <p className="text-xs text-muted-foreground animate-pulse">Swipe left or right to vote</p>}
         </>
       )}
 

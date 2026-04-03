@@ -631,9 +631,7 @@ export default function Home() {
                                 <span className="text-2xl font-bold text-option-a drop-shadow-lg">
                                   <AnimatedNumber value={poll.percentA} />%
                                 </span>
-                              ) : (
-                                <span className="text-xs font-bold text-primary drop-shadow-lg animate-pulse">Tap to vote</span>
-                              )}
+                              ) : null}
                             </div>
                             <div className="flex-1 text-center">
                               <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_b}</p>
@@ -641,9 +639,7 @@ export default function Home() {
                                 <span className="text-2xl font-bold text-option-b drop-shadow-lg">
                                   <AnimatedNumber value={poll.percentB} />%
                                 </span>
-                              ) : (
-                                <span className="text-xs font-bold text-primary drop-shadow-lg animate-pulse">Tap to vote</span>
-                              )}
+                              ) : null}
                             </div>
                           </div>
                           {/* Percentage bar - split colors */}
