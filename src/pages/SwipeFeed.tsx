@@ -829,7 +829,21 @@ export default function SwipeFeed() {
 
       if (targetPollId) {
         const idx = allPolls.findIndex(p => p.id === targetPollId);
-        if (idx > 0) { const [t] = allPolls.splice(idx, 1); allPolls.unshift(t); }
+        if (idx > 0) {
+          const [t] = allPolls.splice(idx, 1);
+          allPolls.unshift(t);
+        } else if (idx === -1) {
+          // Target poll wasn't in the batch — fetch it directly
+          const { data: targetPoll } = await supabase
+            .from('polls')
+            .select('*')
+            .eq('id', targetPollId)
+            .eq('is_active', true)
+            .single();
+          if (targetPoll) {
+            allPolls.unshift(targetPoll);
+          }
+        }
       }
       return allPolls;
     },
