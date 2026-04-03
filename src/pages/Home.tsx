@@ -379,8 +379,8 @@ export default function Home() {
     const hasVoted = votedPollIds?.has(poll.id);
     const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
     const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
-    if (!hasStarted || isExpired) return;
-    if (hasVoted) {
+    if (!hasStarted) return;
+    if (isExpired || hasVoted) {
       setModalPoll(poll);
     } else {
       navigate(`/vote?pollId=${poll.id}`);
@@ -965,6 +965,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
   const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
   const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
   const isLive = (!poll.ends_at || new Date(poll.ends_at) >= new Date()) && (!poll.starts_at || new Date(poll.starts_at) <= new Date());
+  const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
 
   return (
     <motion.div
@@ -981,7 +982,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 left-1.5">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_a}</p>
-            {hasVoted && <span className="text-[10px] font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>}
+            {(hasVoted || isExpired) && <span className="text-[10px] font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>}
           </div>
         </div>
         <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
@@ -990,7 +991,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 right-1.5 text-right">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_b}</p>
-            {hasVoted && <span className="text-[10px] font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>}
+            {(hasVoted || isExpired) && <span className="text-[10px] font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>}
           </div>
         </div>
         {/* Live glow overlay */}
@@ -1003,7 +1004,11 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
         )}
       </div>
       <div className="px-2 py-1.5 bg-card flex items-center gap-1">
-        {isLive && <LiveIndicator variant="inline" />}
+        {isExpired ? (
+          <span className="text-[8px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full shrink-0">Ended</span>
+        ) : isLive ? (
+          <LiveIndicator variant="inline" />
+        ) : null}
         <p className="text-[9px] font-bold text-foreground truncate flex-1">{poll.question}</p>
       </div>
       <div className="px-2 pb-1.5 bg-card flex items-center justify-between">
@@ -1020,8 +1025,11 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
             </span>
           )}
         </div>
-        {!hasVoted && (
+        {!hasVoted && !isExpired && (
           <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Vote</span>
+        )}
+        {isExpired && (
+          <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-bold">Results</span>
         )}
       </div>
     </motion.div>
