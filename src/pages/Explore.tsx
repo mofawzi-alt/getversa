@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Input } from '@/components/ui/input';
+import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
 import beachImg from '@/assets/polls/beach.jpg';
 import cityImg from '@/assets/polls/city.jpg';
@@ -215,8 +216,8 @@ export default function Explore() {
           {/* Poll list */}
           <div className="px-3 space-y-2.5">
             {categoryPolls.map((poll, i) => {
-              const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
-              const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+              const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' }) || getFallbackImage(poll.id, 0);
+              const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' }) || getFallbackImage(poll.id, 1);
               const recentVotes = votes24hMap.get(poll.id) || 0;
 
               return (
@@ -231,7 +232,7 @@ export default function Explore() {
                 >
                   <div className="flex h-32 relative">
                     <div className="w-1/2 h-full relative overflow-hidden">
-                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted transition-transform duration-300 group-hover:scale-105" />
+                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted transition-transform duration-300 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                       <div className="absolute bottom-2 left-2">
                         <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_a}</p>
@@ -240,7 +241,7 @@ export default function Explore() {
                     </div>
                     <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
                     <div className="w-1/2 h-full relative overflow-hidden">
-                      <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted transition-transform duration-300 group-hover:scale-105" />
+                      <img src={imgB} alt={poll.option_b} className="w-full h-full object-contain bg-muted transition-transform duration-300 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                       <div className="absolute bottom-2 right-2 text-right">
                         <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_b}</p>

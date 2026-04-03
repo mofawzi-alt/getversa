@@ -61,6 +61,64 @@ const OPTION_ALIASES: Record<string, string> = {
   suit: 'suit.jpg',
   read: 'books.jpg',
   watch: 'movies.jpg',
+  // Additional aliases for broader coverage
+  arabic: 'arabic.jpg',
+  english: 'english.jpg',
+  'live there': 'city.jpg',
+  'visit only': 'dubai-visit.jpg',
+  cairo: 'cairo.jpg',
+  iphone: 'iphone.jpg',
+  samsung: 'samsung.jpg',
+  android: 'samsung.jpg',
+  tea: 'tea.jpg',
+  coffee: 'coffee.jpg',
+  pizza: 'pizza.jpg',
+  sushi: 'sushi.jpg',
+  cats: 'cats.jpg',
+  dogs: 'dogs.jpg',
+  cat: 'cats.jpg',
+  dog: 'dogs.jpg',
+  beach: 'beach.jpg',
+  mountain: 'mountains.jpg',
+  mountains: 'mountains.jpg',
+  summer: 'summer.jpg',
+  winter: 'winter.jpg',
+  sneakers: 'sneakers.jpg',
+  boots: 'boots.jpg',
+  books: 'books.jpg',
+  sunrise: 'sunrise.jpg',
+  sunset: 'sunset.jpg',
+  city: 'city.jpg',
+  nature: 'nature.jpg',
+  careem: 'careem.jpg',
+  'brand store': 'brand-store.jpg',
+  'online shop': 'online-shop.jpg',
+  home: 'home-dinner.jpg',
+  'local market': 'local-brand.jpg',
+  'buy in bulk': 'bulk.jpg',
+  'pick fresh': 'fresh.jpg',
+  gold: 'gold.jpg',
+  cash: 'cash.jpg',
+  rooftop: 'rooftop.jpg',
+  'nile cruise': 'nile.jpg',
+  budget: 'budget.jpg',
+  luxury: 'luxury.jpg',
+  traditional: 'traditional.jpg',
+  modern: 'modern.jpg',
+  'gift card': 'gift.jpg',
+  'picked gift': 'gift.jpg',
+  gym: 'gym.jpg',
+  'home workout': 'home-workout.jpg',
+  freelance: 'freelance.jpg',
+  '9 to 5': 'suit.jpg',
+  netflix: 'netflix.jpg',
+  youtube: 'youtube.jpg',
+  spotify: 'spotify.jpg',
+  'apple music': 'apple-music.jpg',
+  morning: 'sunrise.jpg',
+  night: 'night.jpg',
+  'night owl': 'night-sky.jpg',
+  'early bird': 'day-sky.jpg',
 };
 
 interface PollImageParams {
@@ -131,6 +189,14 @@ function getPreferredLocalImage({ question, option, side }: PollImageParams) {
   );
 }
 
+// Deterministic generic fallback from local assets pool
+function getGenericFallback(seed?: string | null): string {
+  const allLocal = Object.values(localPollImages);
+  if (allLocal.length === 0) return '';
+  const hash = (seed || 'x').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return allLocal[hash % allLocal.length];
+}
+
 export function getPollImageFallbackSrc(params: PollImageParams) {
   const preferredLocal = getPreferredLocalImage(params);
   if (preferredLocal) return preferredLocal;
@@ -138,7 +204,7 @@ export function getPollImageFallbackSrc(params: PollImageParams) {
   const sourceLocal = getLocalImageByName(extractFilename(params.imageUrl));
   if (sourceLocal) return sourceLocal;
 
-  return params.genericFallback || '';
+  return params.genericFallback || getGenericFallback(params.option || params.question);
 }
 
 export function getPollDisplayImageSrc(params: PollImageParams) {
