@@ -255,18 +255,18 @@ export default function Onboarding() {
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">What's your gender?</h1>
                 <p className="text-foreground/60">Help us show you better comparisons</p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3">
                 {GENDERS.map((g) => (
                   <button
                     key={g}
                     onClick={() => setGender(g)}
-                    className={`flex-1 p-4 rounded-xl border-2 transition-all font-medium text-center ${
+                    className={`p-4 rounded-xl border-2 transition-all font-medium text-center ${
                       gender === g
                         ? 'border-primary bg-primary/10 text-primary scale-[1.02]'
                         : 'border-border bg-card text-foreground hover:border-primary/50'
                     }`}
                   >
-                    {g === 'Male' ? '👨' : '👩'} {g}
+                    {g === 'Male' ? '👨' : g === 'Female' ? '👩' : '🙂'} {g}
                   </button>
                 ))}
               </div>
