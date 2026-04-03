@@ -922,8 +922,8 @@ export default function Home() {
 function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategoryTap }: {
   poll: PollCard; index: number; hasVoted: boolean; onTap: (p: PollCard) => void; badge: string; hot?: boolean; onCategoryTap?: (cat: string) => void;
 }) {
-  const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
-  const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+  const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
+  const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
   const isLive = (!poll.ends_at || new Date(poll.ends_at) >= new Date()) && (!poll.starts_at || new Date(poll.starts_at) <= new Date());
   const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
 
