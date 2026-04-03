@@ -215,8 +215,8 @@ export default function Explore() {
           {/* Poll list */}
           <div className="px-3 space-y-2.5">
             {categoryPolls.map((poll, i) => {
-              const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
-              const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+              const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' }) || getFallbackImage(poll.id, 0);
+              const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' }) || getFallbackImage(poll.id, 1);
               const recentVotes = votes24hMap.get(poll.id) || 0;
 
               return (
