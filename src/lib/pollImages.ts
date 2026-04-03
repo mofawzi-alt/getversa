@@ -128,7 +128,6 @@ const OPTION_ALIASES: Record<string, string> = {
   'abu dhabi': 'abu-dhabi.jpg',
   riyadh: 'abu-dhabi.jpg',
   jeddah: 'dubai-visit.jpg',
-  kunafa: 'kunafa.jpg',
   basbousa: 'kunafa.jpg',
   'egyptian': 'egyptian-series.jpg',
   khaleeji: 'dubai-visit.jpg',
