@@ -152,7 +152,7 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
                 <div className="flex h-40 relative">
                   <div className="w-1/2 h-full relative overflow-hidden">
                     {insight.image_a_url ? (
-                      <img src={insight.image_a_url} alt={insight.option_a} className="w-full h-full object-contain bg-muted" />
+                      <img src={insight.image_a_url} alt={insight.option_a} className="w-full h-full object-cover bg-muted" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-muted to-muted/60 flex items-center justify-center">
                         <span className="text-xs text-muted-foreground font-medium">{insight.option_a}</span>
@@ -172,7 +172,7 @@ export default function CaughtUpInsights({ onRefresh }: { onRefresh: () => void 
                   <div className="absolute inset-y-0 left-1/2 w-px bg-background/15 z-10" />
                   <div className="w-1/2 h-full relative overflow-hidden">
                     {insight.image_b_url ? (
-                      <img src={insight.image_b_url} alt={insight.option_b} className="w-full h-full object-contain bg-muted" />
+                      <img src={insight.image_b_url} alt={insight.option_b} className="w-full h-full object-cover bg-muted" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-muted to-muted/60 flex items-center justify-center">
                         <span className="text-xs text-muted-foreground font-medium">{insight.option_b}</span>
