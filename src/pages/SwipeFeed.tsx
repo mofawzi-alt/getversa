@@ -139,8 +139,8 @@ function ImmersivePollCard({
   const startX = useRef(0);
   const startY = useRef(0);
   const hasResult = !!result;
-  const imgA = poll.image_a_url || getFallbackImage(poll.id, 0);
-  const imgB = poll.image_b_url || getFallbackImage(poll.id, 1);
+  const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
+  const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
   const winnerIsA = result ? result.percentA >= result.percentB : true;
   const THRESHOLD = 80;
 
