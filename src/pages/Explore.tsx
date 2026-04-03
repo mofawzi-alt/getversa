@@ -231,7 +231,7 @@ export default function Explore() {
                 >
                   <div className="flex h-32 relative">
                     <div className="w-1/2 h-full relative overflow-hidden">
-                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted transition-transform duration-300 group-hover:scale-105" />
+                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-contain bg-muted transition-transform duration-300 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                       <div className="absolute bottom-2 left-2">
                         <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_a}</p>
