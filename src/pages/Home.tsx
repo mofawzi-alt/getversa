@@ -533,15 +533,10 @@ export default function Home() {
                   <h2 className="text-white text-xl font-display font-bold drop-shadow-lg text-center leading-snug">{firstUnvoted.question}</h2>
                 </div>
 
-                {/* Bottom CTA */}
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 to-transparent pt-10 pb-4 px-4 z-10 flex items-center justify-center">
-                  <motion.span
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="px-5 py-2 rounded-full bg-primary text-primary-foreground font-display font-bold text-sm"
-                  >
-                    Tap to Vote
-                  </motion.span>
+                {/* Bottom gradient */}
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 to-transparent pt-10 pb-4 px-4 z-10 flex items-end justify-between">
+                  <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_a}</p>
+                  <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_b}</p>
                 </div>
               </motion.div>
 
@@ -636,9 +631,7 @@ export default function Home() {
                                 <span className="text-2xl font-bold text-option-a drop-shadow-lg">
                                   <AnimatedNumber value={poll.percentA} />%
                                 </span>
-                              ) : (
-                                <span className="text-xs font-bold text-primary drop-shadow-lg animate-pulse">Tap to vote</span>
-                              )}
+                              ) : null}
                             </div>
                             <div className="flex-1 text-center">
                               <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_b}</p>
@@ -646,9 +639,7 @@ export default function Home() {
                                 <span className="text-2xl font-bold text-option-b drop-shadow-lg">
                                   <AnimatedNumber value={poll.percentB} />%
                                 </span>
-                              ) : (
-                                <span className="text-xs font-bold text-primary drop-shadow-lg animate-pulse">Tap to vote</span>
-                              )}
+                              ) : null}
                             </div>
                           </div>
                           {/* Percentage bar - split colors */}
