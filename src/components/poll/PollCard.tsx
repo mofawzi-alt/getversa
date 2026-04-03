@@ -158,28 +158,32 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           }}
         >
           <div className="h-full overflow-hidden relative">
-            {poll.image_a_url ? (
-              <>
-                {!imageALoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/20">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  </div>
-                )}
-                <img
-                  key={`${poll.id}-a`}
-                  src={poll.image_a_url}
-                  alt={poll.option_a}
-                  className={`w-full h-full object-contain bg-muted transition-all duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`}
-                  draggable={false}
-                  onLoad={() => setImageALoaded(true)}
-                  loading="eager"
-                />
-              </>
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-option-a to-option-a/80 flex items-center justify-center p-4">
-                <span className="text-option-a-foreground text-center font-bold text-xl leading-tight">{poll.option_a}</span>
-              </div>
-            )}
+            {(() => {
+              const imgSrc = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
+              return imgSrc ? (
+                <>
+                  {!imageALoaded && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/20">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                  <img
+                    key={`${poll.id}-a`}
+                    src={imgSrc}
+                    alt={poll.option_a}
+                    className={`w-full h-full object-contain bg-muted transition-all duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`}
+                    draggable={false}
+                    onLoad={() => setImageALoaded(true)}
+                    onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })}
+                    loading="eager"
+                  />
+                </>
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-option-a to-option-a/80 flex items-center justify-center p-4">
+                  <span className="text-option-a-foreground text-center font-bold text-xl leading-tight">{poll.option_a}</span>
+                </div>
+              );
+            })()}
 
             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
             <div className="absolute inset-y-0 right-0 w-3 bg-gradient-to-l from-black/20 to-transparent pointer-events-none" />
