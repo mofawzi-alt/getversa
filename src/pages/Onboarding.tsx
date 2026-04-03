@@ -9,8 +9,8 @@ import { toast } from 'sonner';
 import { Loader2, ArrowRight, Check, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const AGE_RANGES = ['13-17', '18-24', '25-34', '35-44', '45-54', '55+'];
-const GENDERS = ['Male', 'Female'];
+const AGE_RANGES = ['Under 18', '18-24', '25-34', '35-44', '45+'];
+const GENDERS = ['Male', 'Female', 'Prefer not to say'];
 const COUNTRIES = [
   'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
   'Jordan', 'Lebanon', 'Syria', 'Iraq', 'Palestine', 'Yemen', 'Egypt'
