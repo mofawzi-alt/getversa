@@ -1004,7 +1004,11 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
         )}
       </div>
       <div className="px-2 py-1.5 bg-card flex items-center gap-1">
-        {isLive && <LiveIndicator variant="inline" />}
+        {isExpired ? (
+          <span className="text-[8px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full shrink-0">Ended</span>
+        ) : isLive ? (
+          <LiveIndicator variant="inline" />
+        ) : null}
         <p className="text-[9px] font-bold text-foreground truncate flex-1">{poll.question}</p>
       </div>
       <div className="px-2 pb-1.5 bg-card flex items-center justify-between">
