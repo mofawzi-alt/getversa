@@ -1249,6 +1249,17 @@ export type Database = {
           trend_change: number
         }[]
       }
+      get_demographic_poll_result: {
+        Args: { p_age_range?: string; p_city?: string; p_poll_id: string }
+        Returns: {
+          demo_percent_a: number
+          demo_percent_b: number
+          demo_total: number
+          percent_a: number
+          percent_b: number
+          total_votes: number
+        }[]
+      }
       get_friend_votes: {
         Args: { p_poll_id: string; p_user_id: string }
         Returns: {
