@@ -169,10 +169,16 @@ export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`relative rounded-2xl overflow-hidden border border-border/60 shadow-xl ${result ? '' : 'cursor-grab active:cursor-grabbing'}`}
+        className={`relative rounded-2xl overflow-hidden border border-border/60 shadow-xl ${!result && !flyDirection ? 'cursor-grab active:cursor-grabbing' : ''}`}
         style={{
-          transform: result ? 'none' : `translateX(${dragX}px) rotate(${rotation}deg)`,
-          transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          transform: flyDirection === 'left'
+            ? 'translateX(-120%) rotate(-15deg)'
+            : flyDirection === 'right'
+            ? 'translateX(120%) rotate(15deg)'
+            : result ? 'none'
+            : `translateX(${dragX}px) rotate(${rotation}deg)`,
+          opacity: flyDirection ? 0 : 1,
+          transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease-out',
         }}
         onTouchStart={(e) => handleStart(e.touches[0].clientX)}
         onTouchMove={(e) => { handleMove(e.touches[0].clientX); if (Math.abs(dragX) > 10) e.preventDefault(); }}
