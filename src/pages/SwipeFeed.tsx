@@ -772,9 +772,9 @@ export default function SwipeFeed() {
           return true;
         });
       }
-      if (categoryFilter) {
-        allPolls = allPolls.filter(p => p.category === categoryFilter);
-      }
+      if (categoryFilter && !query) {
+        // Already filtered in query above, skip
+      } else if (categoryFilter) {
       if (searchFilter) {
         const s = searchFilter.toLowerCase();
         allPolls = allPolls.filter(p => 
