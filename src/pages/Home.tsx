@@ -14,6 +14,7 @@ import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboar
 import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator';
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
+import HeroVoteCard from '@/components/home/HeroVoteCard';
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
@@ -470,69 +471,44 @@ export default function Home() {
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
-        {/* ═══ FIX 1: INLINE VOTE CARD — first thing users see ═══ */}
+        {/* ═══ FIX 1: SWIPEABLE HERO VOTE CARD ═══ */}
         {(() => {
           const firstUnvoted = newPolls[0];
-          if (!firstUnvoted) return null;
-          const imgA = getPollDisplayImageSrc({ imageUrl: firstUnvoted.image_a_url, option: firstUnvoted.option_a, question: firstUnvoted.question, side: 'A' });
-          const imgB = getPollDisplayImageSrc({ imageUrl: firstUnvoted.image_b_url, option: firstUnvoted.option_b, question: firstUnvoted.question, side: 'B' });
+          if (!firstUnvoted) {
+            // All caught up state
+            return (
+              <HeroVoteCard
+                poll={allPolls[0] || { id: '', question: '', option_a: '', option_b: '', image_a_url: null, image_b_url: null, category: null, totalVotes: 0, percentA: 50, percentB: 50 }}
+                unseenCount={0}
+                hasVoted={true}
+                onVoted={() => queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] })}
+              />
+            );
+          }
           return (
-            <section className="px-3 pt-4 pb-2">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(`/vote?pollId=${firstUnvoted.id}`)}
-                className="relative rounded-2xl overflow-hidden cursor-pointer border border-border/60 shadow-xl"
-              >
-                {/* Images */}
-                <div className="flex h-[55vh] max-h-[420px] relative">
-                  <div className="w-1/2 h-full relative overflow-hidden">
-                    <img src={imgA} alt={firstUnvoted.option_a} className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: firstUnvoted.option_a, question: firstUnvoted.question, side: 'A' })} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute bottom-3 left-3">
-                      <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_a}</p>
-                    </div>
-                  </div>
-                  <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
-                  <div className="w-1/2 h-full relative overflow-hidden">
-                    <img src={imgB} alt={firstUnvoted.option_b} className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: firstUnvoted.option_b, question: firstUnvoted.question, side: 'B' })} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute bottom-3 right-3 text-right">
-                      <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_b}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Question overlay */}
-                <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-10 bg-gradient-to-b from-black/70 to-transparent z-10">
-                  <h2 className="text-white text-xl font-display font-bold drop-shadow-lg text-center leading-snug">{firstUnvoted.question}</h2>
-                </div>
-
-                {/* Bottom gradient */}
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 to-transparent pt-10 pb-4 px-4 z-10 flex items-end justify-between">
-                  <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_a}</p>
-                  <p className="text-white text-lg font-extrabold drop-shadow-lg">{firstUnvoted.option_b}</p>
-                </div>
-              </motion.div>
-
-              {/* Live activity strip */}
-              <div className="flex items-center justify-center gap-3 mt-2">
-                <LiveIndicator variant="badge" />
-                {totalLiveVoters > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    <AnimatedNumber value={totalLiveVoters} className="font-bold text-foreground" /> voting now
-                  </span>
-                )}
-                {(votes24h || 0) > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    <AnimatedNumber value={votes24h!} className="font-bold text-foreground" /> today
-                  </span>
-                )}
-              </div>
-            </section>
+            <HeroVoteCard
+              poll={firstUnvoted}
+              unseenCount={unseenCount || 0}
+              hasVoted={false}
+              onVoted={() => queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] })}
+            />
           );
         })()}
+
+        {/* Live activity strip */}
+        <div className="flex items-center justify-center gap-3 px-3 mb-1">
+          <LiveIndicator variant="badge" />
+          {totalLiveVoters > 0 && (
+            <span className="text-xs text-muted-foreground">
+              <AnimatedNumber value={totalLiveVoters} className="font-bold text-foreground" /> voting now
+            </span>
+          )}
+          {(votes24h || 0) > 0 && (
+            <span className="text-xs text-muted-foreground">
+              <AnimatedNumber value={votes24h!} className="font-bold text-foreground" /> today
+            </span>
+          )}
+        </div>
 
 
         {/* ═══ 🔴 LIVE NOW ═══ */}
