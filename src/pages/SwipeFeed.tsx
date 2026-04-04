@@ -1272,6 +1272,11 @@ export default function SwipeFeed() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* First-time swipe overlay */}
+      <AnimatePresence>
+        {showSwipeOverlay && <SwipeOverlay onDismiss={() => setShowSwipeOverlay(false)} />}
+      </AnimatePresence>
     </div>
   );
 }
