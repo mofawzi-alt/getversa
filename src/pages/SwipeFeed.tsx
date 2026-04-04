@@ -1169,12 +1169,12 @@ export default function SwipeFeed() {
               <div
                 key={poll.id}
                 ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
-                className="w-full"
+                className="w-full relative"
               >
                 <ImmersivePollCard
                   poll={poll}
                   result={result}
-                  onVote={handleVote}
+                  onVote={(pollId, choice) => { setShowSwipeHint(false); handleVote(pollId, choice); }}
                   onSkip={handleSkip}
                   disabled={voteMutation.isPending}
                   showFeedback={feedbackPollId === poll.id}
@@ -1183,6 +1183,8 @@ export default function SwipeFeed() {
                   userCountry={profile?.country}
                   sessionVoteCount={sessionVoteCount}
                 />
+                {/* Swipe hint on very first card only */}
+                {idx === 0 && showSwipeHint && !result && <SwipeHint />}
               </div>
             );
           })
