@@ -893,6 +893,11 @@ export default function SwipeFeed() {
         setTimeout(() => triggerMicroFeedback(), 2000);
       }
 
+      // Show Add to Home Screen banner on first vote of the session
+      if (newCount === 1) {
+        setShowA2HS(true);
+      }
+
       // Value message — show once at threshold
       if (newCount === VALUE_MSG_VOTE_THRESHOLD && !showValueMsg) {
         setTimeout(() => {
