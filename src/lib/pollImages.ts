@@ -115,7 +115,7 @@ const QUESTION_SIDE_ALIASES: Record<string, Partial<Record<PollImageSide, string
   'osn or netflix': { A: 'shahid.jpg', B: 'netflix.jpg' },
   'jumia or noon': { A: 'shopping.jpg', B: 'noon-brand.jpg' },
   'instashop or breadfast': { A: 'instashop.png', B: 'breadfast.png' },
-  'dell or hp laptop': { A: 'wfh.jpg', B: 'linkedin.jpg' },
+  'dell or hp laptop': { A: 'dell-laptop.jpg', B: 'windows-laptop.jpg' },
   'apple or samsung ecosystem': { A: 'iphone.jpg', B: 'samsung.jpg' },
   // Brands - ensure distinct sides
   'canon or sony camera': { A: 'camping.jpg', B: 'bose.jpg' },
