@@ -1042,6 +1042,11 @@ export function getPollImageFallbackSrc(params: PollImageParams) {
 }
 
 export function getPollDisplayImageSrc(params: PollImageParams) {
+  // Storage URLs (uploaded images) always take priority — they are intentionally chosen
+  if (isStoragePollImageUrl(params.imageUrl)) {
+    return params.imageUrl;
+  }
+
   const preferredLocal = getPreferredLocalImage(params);
   if (preferredLocal) return preferredLocal;
 
