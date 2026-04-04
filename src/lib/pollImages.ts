@@ -415,7 +415,7 @@ const OPTION_ALIASES: Record<string, string> = {
   canon: 'phone-camera.jpg',
   "domino's": 'pizza.jpg',
   'local pizza': 'pizza.jpg',
-  dyson: 'home-dinner.jpg',
+  dyson: 'ikea.jpg',
   'local brand': 'local-brand.jpg',
   weber: 'grilled.jpg',
   'local grill': 'grilled.jpg',
