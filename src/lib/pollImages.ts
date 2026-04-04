@@ -122,7 +122,7 @@ const QUESTION_SIDE_ALIASES: Record<string, Partial<Record<PollImageSide, string
   'costa coffee or tim hortons': { A: 'coffee.jpg', B: 'starbucks.jpg' },
   'domino s or local pizza': { A: 'pizza.jpg', B: 'falafel.jpg' },
   'dyson or local brand': { A: 'ikea.jpg', B: 'local-brand.jpg' },
-  'gopro or phone camera': { A: 'camping.jpg', B: 'phone-camera.jpg' },
+  'gopro or phone camera': { A: 'action-camera.jpg', B: 'phone-camera.jpg' },
   'lego or local toys': { A: 'playstation.jpg', B: 'local-brand.jpg' },
   'moleskine or any notebook': { A: 'books.jpg', B: 'wfh.jpg' },
   'ray ban or oakley': { A: 'ray-ban.jpg', B: 'aviator.jpg' },
