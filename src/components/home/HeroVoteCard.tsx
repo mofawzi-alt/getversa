@@ -62,17 +62,16 @@ export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
     setResult({ choice, percentA: poll.percentA, percentB: poll.percentB, total: poll.totalVotes });
 
     if (user) {
-      const votePayload: Record<string, string> = {
+      const votePayload = {
         poll_id: poll.id,
         user_id: user.id,
         choice,
+        ...(poll.category ? { category: poll.category } : {}),
+        ...(profile?.gender ? { voter_gender: profile.gender } : {}),
+        ...(profile?.age_range ? { voter_age_range: profile.age_range } : {}),
+        ...(profile?.country ? { voter_country: profile.country } : {}),
+        ...(profile?.city ? { voter_city: profile.city } : {}),
       };
-
-      if (poll.category) votePayload.category = poll.category;
-      if (profile?.gender) votePayload.voter_gender = profile.gender;
-      if (profile?.age_range) votePayload.voter_age_range = profile.age_range;
-      if (profile?.country) votePayload.voter_country = profile.country;
-      if (profile?.city) votePayload.voter_city = profile.city;
 
       const { error } = await supabase.from('votes').insert(votePayload);
       if (error && error.code !== '23505') {
