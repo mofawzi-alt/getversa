@@ -155,7 +155,7 @@ const OPTION_ALIASES: Record<string, string> = {
   lebanese: 'hummus.jpg',
   vegan: 'falafel.jpg',
   'meat lover': 'grilled.jpg',
-  'ice cream': 'chocolate.jpg',
+  'ice cream': 'ice-cream.jpg',
   brunch: 'croissant.jpg',
   'skip to lunch': 'grilled.jpg',
   'food market': 'falafel.jpg',
