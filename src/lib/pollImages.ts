@@ -623,8 +623,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'mental notes': 'iphone.jpg',
   meditation: 'nature.jpg',
   'more sleep': 'night-sky.jpg',
-  alarm: 'sunrise.jpg',
-  'body clock': 'sunrise.jpg',
+  // alarm and body clock already defined above
   drive: 'city.jpg',
   'be driven': 'uber.png',
   cook: 'home-dinner.jpg',
