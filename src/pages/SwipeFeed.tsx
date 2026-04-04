@@ -788,19 +788,10 @@ export default function SwipeFeed() {
       }
 
       // ── Sorting: unvoted first, then personalized by category affinity ──
-      // Collect all known voted poll ids (from preloaded results + server votes already fetched above)
-      const allVotedIds = new Set<string>(votedResults.keys());
-      // votedPollSet was built above for authenticated users — merge it in via category affinity keys
-      categoryAffinity.forEach((_, cat) => {
-        allPolls.forEach(p => {
-          if (p.category === cat && votedResults.has(p.id)) allVotedIds.add(p.id);
-        });
-      });
-
       allPolls.sort((a, b) => {
         // Unvoted polls always come first
-        const aVoted = allVotedIds.has(a.id) ? 1 : 0;
-        const bVoted = allVotedIds.has(b.id) ? 1 : 0;
+        const aVoted = votedPollSet.has(a.id) ? 1 : 0;
+        const bVoted = votedPollSet.has(b.id) ? 1 : 0;
         if (aVoted !== bVoted) return aVoted - bVoted;
 
         // Daily polls first among unvoted
