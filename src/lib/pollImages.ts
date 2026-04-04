@@ -424,7 +424,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'north face': 'mountains.jpg',
   lego: 'playstation.jpg',
   'local toys': 'playstation.jpg',
-  'baskin-robbins': 'chocolate.jpg',
+  'baskin-robbins': 'ice-cream.jpg',
   'local gelato': 'kunafa.jpg',
   'red bull': 'red-bull.jpg',
   monster: 'red-bull.jpg',
