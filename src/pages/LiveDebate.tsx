@@ -587,7 +587,7 @@ function FullScreenCard({
         {/* Split images — full screen */}
         <div className="flex h-full w-full">
           <div className="w-1/2 h-full relative overflow-hidden">
-            <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted" draggable={false} />
+            <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
             <div className="absolute bottom-24 left-4 right-1">
               <p className="text-white text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{poll.option_a}</p>
