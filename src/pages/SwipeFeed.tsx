@@ -772,9 +772,7 @@ export default function SwipeFeed() {
           return true;
         });
       }
-      if (categoryFilter && !query) {
-        // Already filtered in query above, skip
-      } else if (categoryFilter) {
+      // Category filter already applied in query when categoryFilter is set
       if (searchFilter) {
         const s = searchFilter.toLowerCase();
         allPolls = allPolls.filter(p => 
