@@ -639,8 +639,7 @@ const OPTION_ALIASES: Record<string, string> = {
   penthouse: 'city-apartment.jpg',
   'road trip': 'city.jpg',
   fly: 'fly.jpg',
-  'hire maid': 'home-dinner.jpg',
-  'do it yourself': 'home-dinner.jpg',
+  // hire maid and do it yourself already defined above
 
   // Style
   nike: 'nike.jpg',
