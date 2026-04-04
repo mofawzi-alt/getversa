@@ -388,7 +388,7 @@ const OPTION_ALIASES: Record<string, string> = {
   radio: 'radio.jpg',
   notion: 'notion.jpg',
   'google docs': 'google-docs.jpg',
-  'e-book': 'books.jpg',
+  'e-book': 'ebook.jpg',
   'physical book': 'books.jpg',
   'online courses': 'linkedin.jpg',
   university: 'books.jpg',
