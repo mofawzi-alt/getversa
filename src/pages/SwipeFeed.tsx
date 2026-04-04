@@ -24,6 +24,7 @@ import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PWAInstallPrompt, { markFirstVote } from '@/components/PWAInstallPrompt';
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
 import SwipeHint, { isSwipeHintDone } from '@/components/onboarding/SwipeHint';
+import StreakMilestoneCelebration, { checkStreakMilestone } from '@/components/streak/StreakMilestoneCelebration';
 
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
@@ -658,6 +659,7 @@ export default function SwipeFeed() {
   const [showSwipeOverlay, setShowSwipeOverlay] = useState(!isSwipeOverlayDone());
   const [showSwipeHint, setShowSwipeHint] = useState(!isSwipeHintDone());
   const [totalUserVotes, setTotalUserVotes] = useState<number | null>(null);
+  const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
   const NEW_USER_VOTE_THRESHOLD = 5;
 
   useEffect(() => {
@@ -936,6 +938,23 @@ export default function SwipeFeed() {
           setMilestoneMsg({ message: msg, type: milestone.type });
           setTimeout(() => setMilestoneMsg(null), milestone.duration);
         }, 2500);
+      }
+
+      // Streak milestone check — refresh profile to get updated streak, then check
+      if (user) {
+        setTimeout(async () => {
+          const { data: freshUser } = await supabase
+            .from('users')
+            .select('current_streak')
+            .eq('id', user.id)
+            .single();
+          if (freshUser?.current_streak) {
+            const milestone = checkStreakMilestone(freshUser.current_streak);
+            if (milestone) {
+              setStreakMilestone(milestone);
+            }
+          }
+        }, 2000);
       }
 
       // Onboarding: check if user hit 3 votes
@@ -1281,6 +1300,13 @@ export default function SwipeFeed() {
       <AnimatePresence>
         {showSwipeOverlay && <SwipeOverlay onDismiss={() => setShowSwipeOverlay(false)} />}
       </AnimatePresence>
+
+      {/* Streak milestone celebration */}
+      <StreakMilestoneCelebration
+        streakDays={streakMilestone || 3}
+        open={!!streakMilestone}
+        onClose={() => setStreakMilestone(null)}
+      />
     </div>
   );
 }
