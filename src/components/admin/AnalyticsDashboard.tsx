@@ -18,6 +18,13 @@ const CHART_COLORS = [
   'hsl(160, 60%, 45%)',
 ];
 
+const GENDER_COLORS: Record<string, string> = {
+  'Male': 'hsl(210, 80%, 55%)',
+  'Female': 'hsl(340, 75%, 55%)',
+  'Prefer not to say': 'hsl(var(--muted-foreground))',
+  'Unknown': 'hsl(var(--muted-foreground) / 0.5)',
+};
+
 const tooltipStyle = {
   backgroundColor: 'hsl(var(--card))',
   border: '1px solid hsl(var(--border))',
