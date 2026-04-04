@@ -1096,9 +1096,11 @@ export default function SwipeFeed() {
           </div>
         )}
 
-        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm text-foreground shadow-sm flex items-center gap-1">
-          <Zap className="h-3 w-3 text-accent" /> {unvotedCount > 0 ? `${unvotedCount} new` : `${polls?.length || 0} polls`}
-        </span>
+        {unvotedCount > 0 && (
+          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm text-foreground shadow-sm flex items-center gap-1">
+            <Zap className="h-3 w-3 text-accent" /> New polls
+          </span>
+        )}
       </div>
 
       {/* Streak urgency message */}

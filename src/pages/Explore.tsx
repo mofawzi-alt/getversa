@@ -179,9 +179,7 @@ export default function Explore() {
               <span className="text-xs font-medium">Back</span>
             </button>
             <h1 className="text-xl font-display font-bold text-foreground">{selectedCategory}</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {categoryPolls.length} active poll{categoryPolls.length !== 1 ? 's' : ''}
-            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">Browse & vote</p>
           </div>
 
           {/* Poll list */}
@@ -315,13 +313,11 @@ export default function Explore() {
                       {cat.growthPercent > 0 ? `+${cat.growthPercent}%` : `${cat.growthPercent}%`} today
                     </span>
                   </div>
-                  {user ? (
-                    <div className="mt-1">
-                      <span className="text-[9px] text-muted-foreground">{cat.votedPolls}/{cat.activePolls} voted</span>
-                      <Progress value={cat.activePolls > 0 ? (cat.votedPolls / cat.activePolls) * 100 : 0} className="h-1 mt-0.5" />
+                  {cat.momentum === 'rising' && (
+                    <div className="flex items-center gap-0.5 mt-1">
+                      <ArrowUp className="h-2.5 w-2.5 text-success" />
+                      <span className="text-[9px] font-bold text-success">Trending</span>
                     </div>
-                  ) : (
-                    <p className="text-[9px] text-muted-foreground mt-0.5">{cat.activePolls} active polls</p>
                   )}
                 </motion.div>
               ))}
@@ -354,23 +350,8 @@ export default function Explore() {
                   )}
                 </div>
                 {/* Progress bar: voted / total */}
-                {user && (
-                  <div className="mt-1.5">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-[9px] text-muted-foreground">
-                        {cat.votedPolls}/{cat.activePolls} voted
-                      </span>
-                      {cat.votedPolls >= cat.activePolls && cat.activePolls > 0 && (
-                        <span className="flex items-center gap-0.5 text-[8px] font-bold text-success">
-                          <CheckCircle2 className="h-2.5 w-2.5" /> Complete!
-                        </span>
-                      )}
-                    </div>
-                    <Progress value={cat.activePolls > 0 ? (cat.votedPolls / cat.activePolls) * 100 : 0} className="h-1.5" />
-                  </div>
-                )}
-                {!user && (
-                  <p className="text-[10px] text-muted-foreground mt-1">{cat.activePolls} active poll{cat.activePolls !== 1 ? 's' : ''}</p>
+                {cat.hasLive && !cat.momentum && (
+                  <p className="text-[10px] text-muted-foreground mt-1">Active now</p>
                 )}
                 {cat.momentum === 'rising' && (
                   <div className="flex items-center gap-0.5 mt-1">

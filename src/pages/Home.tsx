@@ -678,7 +678,7 @@ export default function Home() {
               </motion.div>
               <div className="flex-1">
                 <p className="text-xs font-display font-bold text-foreground">
-                  {unseenCount} poll{unseenCount !== 1 ? 's' : ''} waiting for your vote
+                  New polls waiting for your vote
                 </p>
                 <p className="text-[10px] text-muted-foreground">Every vote shapes the insights</p>
               </div>
@@ -800,10 +800,9 @@ export default function Home() {
                           <span className="text-xs font-display font-bold text-foreground">{displayName}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-muted-foreground">{info.count} polls</span>
                           {info.unseen > 0 ? (
                             <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
-                              {info.unseen} new today
+                              New polls today
                             </span>
                           ) : (
                             <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
