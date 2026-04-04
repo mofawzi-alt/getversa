@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Shield } from 'lucide-react';
+import { Shield, Clock } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
 
 export default function AppHeader() {
@@ -19,7 +19,16 @@ export default function AppHeader() {
         </button>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {user && (
+            <button
+              onClick={() => navigate('/history')}
+              className="p-2 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all"
+              aria-label="My Votes"
+            >
+              <Clock className="h-5 w-5" />
+            </button>
+          )}
           {isAdmin && (
             <button
               onClick={() => navigate('/admin')}
