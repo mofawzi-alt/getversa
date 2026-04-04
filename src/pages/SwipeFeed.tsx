@@ -21,6 +21,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import PWAInstallPrompt, { markFirstVote } from '@/components/PWAInstallPrompt';
 
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
