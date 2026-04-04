@@ -40,7 +40,7 @@ const QUESTION_SIDE_ALIASES: Record<string, Partial<Record<PollImageSide, string
   'rolex or casio': { A: 'rolex.jpg', B: 'casio.jpg' },
   'louis vuitton or gucci': { A: 'louis-vuitton.jpg', B: 'gucci.jpg' },
   'mcdonald s or burger king': { A: 'mcdonalds.jpg', B: 'burger-king.jpg' },
-  'noon or amazon': { A: 'noon-brand.jpg', B: 'amazon.jpg' },
+  'noon or amazon': { A: 'noon-brand.jpg', B: 'amazon-v2.jpg' },
   'starbucks or local coffee': { A: 'starbucks.jpg', B: 'turkish-coffee.jpg' },
   'costa or starbucks': { A: 'coffee.jpg', B: 'starbucks.jpg' },
   'tiktok or instagram': { A: 'tiktok.jpg', B: 'instagram.jpg' },
