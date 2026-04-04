@@ -161,7 +161,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'food market': 'falafel.jpg',
   supermarket: 'shopping.jpg',
   nuts: 'dates.jpg',
-  chips: 'chocolate.jpg',
+  chips: 'chips.jpg',
   spicy: 'grilled.jpg',
   mild: 'hummus.jpg',
   'protein shake': 'gym.jpg',
