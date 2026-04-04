@@ -902,6 +902,13 @@ export default function SwipeFeed() {
       // Track session votes and trigger micro-feedback every 5
       const newCount = sessionVoteCount + 1;
       setSessionVoteCount(newCount);
+
+      // New user: after 5 total votes, redirect to home
+      const newTotal = (totalUserVotes ?? 0) + newCount;
+      if (totalUserVotes !== null && totalUserVotes < NEW_USER_VOTE_THRESHOLD && newTotal >= NEW_USER_VOTE_THRESHOLD) {
+        setTimeout(() => navigate('/home', { replace: true }), 2000);
+      }
+
       if (newCount % MICRO_FEEDBACK_INTERVAL === 0 && user) {
         setTimeout(() => triggerMicroFeedback(), 2000);
       }
