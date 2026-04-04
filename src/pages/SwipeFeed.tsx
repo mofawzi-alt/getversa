@@ -659,6 +659,7 @@ export default function SwipeFeed() {
   const [showSwipeOverlay, setShowSwipeOverlay] = useState(!isSwipeOverlayDone());
   const [showSwipeHint, setShowSwipeHint] = useState(!isSwipeHintDone());
   const [totalUserVotes, setTotalUserVotes] = useState<number | null>(null);
+  const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
   const NEW_USER_VOTE_THRESHOLD = 5;
 
   useEffect(() => {
