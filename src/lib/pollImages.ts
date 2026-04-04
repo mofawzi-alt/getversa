@@ -359,7 +359,7 @@ const OPTION_ALIASES: Record<string, string> = {
   ounass: 'branded.jpg',
   farfetch: 'branded.jpg',
   converse: 'converse.jpg',
-  vans: 'sneakers.jpg',
+  vans: 'vans.jpg',
   'designer sunglasses': 'designer.jpg',
   'local designer': 'local-brand.jpg',
   'international brand': 'international-brand.jpg',
