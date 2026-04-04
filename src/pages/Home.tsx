@@ -468,24 +468,20 @@ export default function Home() {
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
-        {/* ═══ FIX 1: SWIPEABLE HERO VOTE CARD ═══ */}
-        {(() => {
-          const firstUnvoted = newPolls[0];
-          if (!firstUnvoted) {
-            return (
-              <HeroVoteCard
-                poll={null}
-                unseenCount={0}
-              />
-            );
-          }
-          return (
-            <HeroVoteCard
-              poll={firstUnvoted}
-              unseenCount={unseenCount || 0}
-            />
-          );
-        })()}
+        {/* ═══ INFINITE HERO VOTE CARD ═══ */}
+        <div ref={heroRef}>
+          <HeroVoteCard
+            poll={newPolls[heroPollIndex] || null}
+            unseenCount={Math.max(0, (unseenCount || 0) - heroPollIndex)}
+            onVoteComplete={() => {
+              setHeroPollIndex(prev => prev + 1);
+              queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
+              queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
+              queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
+              queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+            }}
+          />
+        </div>
 
         {/* Live activity strip */}
         <div className="flex items-center justify-center gap-3 px-3 mb-1">
