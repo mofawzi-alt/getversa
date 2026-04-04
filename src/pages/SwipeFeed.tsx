@@ -1127,7 +1127,8 @@ export default function SwipeFeed() {
       {/* Scrollable feed */}
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-3 pt-4 pb-3 space-y-4"
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-2 pt-3 pb-3 space-y-3 snap-y snap-mandatory"
+        style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
       >
         {hasPolls ? (
           polls.map((poll, idx) => {
