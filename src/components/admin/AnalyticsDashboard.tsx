@@ -306,7 +306,7 @@ export default function AnalyticsDashboard() {
 
       {/* Demographics Row */}
       <div className="grid md:grid-cols-3 gap-4">
-        <DemoPieChart title="Gender" icon={Users} data={data.genderBreakdown} />
+        <DemoPieChart title="Gender" icon={Users} data={data.genderBreakdown} colorMap={GENDER_COLORS} />
         <DemoPieChart title="Age Range" icon={Calendar} data={data.ageBreakdown} />
         <DemoPieChart title="Country" icon={Globe} data={data.countryBreakdown} />
       </div>
