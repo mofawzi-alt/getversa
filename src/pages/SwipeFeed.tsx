@@ -1300,6 +1300,13 @@ export default function SwipeFeed() {
       <AnimatePresence>
         {showSwipeOverlay && <SwipeOverlay onDismiss={() => setShowSwipeOverlay(false)} />}
       </AnimatePresence>
+
+      {/* Streak milestone celebration */}
+      <StreakMilestoneCelebration
+        streakDays={streakMilestone || 3}
+        open={!!streakMilestone}
+        onClose={() => setStreakMilestone(null)}
+      />
     </div>
   );
 }
