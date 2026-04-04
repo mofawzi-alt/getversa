@@ -1,13 +1,10 @@
 type PollImageSide = 'A' | 'B';
 
-const pollImageModules = import.meta.glob('../assets/polls/*.{png,jpg,jpeg,webp,avif}', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
+const POLL_IMAGE_BASE_PATH = '/polls';
 
-const localPollImages = Object.fromEntries(
-  Object.entries(pollImageModules).map(([path, url]) => [path.split('/').pop()!.toLowerCase(), url])
-);
+function toPublicPollImageUrl(fileName: string) {
+  return `${POLL_IMAGE_BASE_PATH}/${encodeURIComponent(fileName.toLowerCase())}`;
+}
 
 const QUESTION_SIDE_ALIASES: Record<string, Partial<Record<PollImageSide, string>>> = {
   'cairo or dubai': { A: 'cairo.jpg', B: 'dubai-visit.jpg' },
@@ -941,6 +938,29 @@ const OPTION_ALIASES: Record<string, string> = {
   'home dinner': 'home-dinner.jpg',
 };
 
+const GENERIC_FALLBACK_IMAGE_FILES = [
+  'beach.jpg',
+  'city.jpg',
+  'nature.jpg',
+  'coffee.jpg',
+  'books.jpg',
+  'pizza.jpg',
+  'dogs.jpg',
+  'sunrise.jpg',
+  'sneakers.jpg',
+  'summer.jpg',
+];
+
+const KNOWN_LOCAL_IMAGE_FILES = new Set(
+  [
+    ...Object.values(OPTION_ALIASES),
+    ...Object.values(QUESTION_SIDE_ALIASES).flatMap((sides) => Object.values(sides)),
+    ...GENERIC_FALLBACK_IMAGE_FILES,
+  ]
+    .filter((fileName): fileName is string => Boolean(fileName))
+    .map((fileName) => fileName.toLowerCase())
+);
+
 interface PollImageParams {
   genericFallback?: string;
   imageUrl?: string | null;
@@ -959,7 +979,10 @@ function slugify(value?: string | null) {
 
 function getLocalImageByName(fileName?: string | null) {
   if (!fileName) return undefined;
-  return localPollImages[fileName.toLowerCase()];
+  const normalizedFileName = fileName.toLowerCase();
+  return KNOWN_LOCAL_IMAGE_FILES.has(normalizedFileName)
+    ? toPublicPollImageUrl(normalizedFileName)
+    : undefined;
 }
 
 function getLocalImageBySlug(value?: string | null) {
@@ -1011,10 +1034,9 @@ function getPreferredLocalImage({ question, option, side }: PollImageParams) {
 
 // Deterministic generic fallback from local assets pool
 function getGenericFallback(seed?: string | null): string {
-  const allLocal = Object.values(localPollImages);
-  if (allLocal.length === 0) return '';
+  if (GENERIC_FALLBACK_IMAGE_FILES.length === 0) return '';
   const hash = (seed || 'x').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return allLocal[hash % allLocal.length];
+  return getLocalImageByName(GENERIC_FALLBACK_IMAGE_FILES[hash % GENERIC_FALLBACK_IMAGE_FILES.length]) || '';
 }
 
 export function getPollImageFallbackSrc(params: PollImageParams) {
