@@ -631,7 +631,7 @@ const OPTION_ALIASES: Record<string, string> = {
   couple: 'gym.jpg',
   'news junkie': 'news-junkie.jpg',
   'news detox': 'nature.jpg',
-  cater: 'fancy-restaurant.jpg',
+  // cater already defined above
   walk: 'nature.jpg',
   camping: 'camping.jpg',
   hotel: 'hotel.jpg',
