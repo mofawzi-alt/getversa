@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/dialog';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PWAInstallPrompt, { markFirstVote } from '@/components/PWAInstallPrompt';
+import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
+import SwipeHint, { isSwipeHintDone } from '@/components/onboarding/SwipeHint';
 
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
