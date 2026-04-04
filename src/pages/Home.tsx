@@ -475,13 +475,10 @@ export default function Home() {
         {(() => {
           const firstUnvoted = newPolls[0];
           if (!firstUnvoted) {
-            // All caught up state
             return (
               <HeroVoteCard
-                poll={allPolls[0] || { id: '', question: '', option_a: '', option_b: '', image_a_url: null, image_b_url: null, category: null, totalVotes: 0, percentA: 50, percentB: 50 }}
+                poll={null}
                 unseenCount={0}
-                hasVoted={true}
-                onVoted={() => queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] })}
               />
             );
           }
@@ -489,8 +486,6 @@ export default function Home() {
             <HeroVoteCard
               poll={firstUnvoted}
               unseenCount={unseenCount || 0}
-              hasVoted={false}
-              onVoted={() => queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] })}
             />
           );
         })()}
