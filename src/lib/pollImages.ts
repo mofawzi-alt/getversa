@@ -323,7 +323,7 @@ const OPTION_ALIASES: Record<string, string> = {
   whatsapp: 'whatsapp.jpg',
   telegram: 'telegram.jpg',
   tiktok: 'tiktok.jpg',
-  instagram: 'instagram.jpg',
+  instagram: 'instagram-v2.jpg',
   'ig stories': 'instagram.jpg',
   snapchat: 'snapchat.jpg',
   spotify: 'spotify.jpg',
