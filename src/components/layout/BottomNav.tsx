@@ -33,11 +33,17 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
 
         {/* Vote - center, highlighted */}
         <button
-          onClick={() => navigate('/vote')}
+          onClick={() => {
+            if (location.pathname === '/home') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+              navigate('/home');
+            }
+          }}
           className="flex flex-col items-center gap-0.5 -mt-5"
         >
           <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
-              location.pathname === '/' || location.pathname === '/vote'
+            location.pathname === '/home'
                 ? 'bg-primary shadow-[0_0_18px_hsl(var(--primary)/0.35)]'
                 : 'bg-primary/90 hover:bg-primary shadow-[0_0_14px_hsl(var(--primary)/0.25)]'
             }`}>
@@ -46,7 +52,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
               </svg>
             </div>
           <span className={`text-[10px] font-semibold ${
-            location.pathname === '/' || location.pathname === '/vote' ? 'text-primary' : 'text-card-foreground/70'
+            location.pathname === '/home' ? 'text-primary' : 'text-card-foreground/70'
           }`}>Vote</span>
         </button>
 

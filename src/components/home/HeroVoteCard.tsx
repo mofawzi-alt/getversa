@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
@@ -25,16 +25,16 @@ interface HeroPoll {
 interface HeroVoteCardProps {
   poll: HeroPoll | null;
   unseenCount: number;
+  onVoteComplete?: () => void;
 }
 
 const SWIPE_THRESHOLD = 70;
 const SWIPE_OUT_MS = 400;
 const RESULT_MS = 1500;
 
-export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
+export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: HeroVoteCardProps) {
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [result, setResult] = useState<{ choice: 'A' | 'B'; percentA: number; percentB: number; total: number } | null>(null);
@@ -99,9 +99,12 @@ export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
     queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
 
     setTimeout(() => {
-      navigate(`/vote?excludeHero=${poll.id}`);
+      setResult(null);
+      setFlyDirection(null);
+      setShowHint(true);
+      onVoteComplete?.();
     }, RESULT_MS);
-  }, [navigate, poll, profile, queryClient, result, user]);
+  }, [onVoteComplete, poll, profile, queryClient, result, user]);
 
   if (!poll) {
     return (
