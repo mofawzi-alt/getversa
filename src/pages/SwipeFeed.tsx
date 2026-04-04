@@ -1147,7 +1147,7 @@ export default function SwipeFeed() {
               <div
                 key={poll.id}
                 ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
-                className="w-full"
+                className="w-full snap-start"
               >
                 <ImmersivePollCard
                   poll={poll}
