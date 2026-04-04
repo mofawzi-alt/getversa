@@ -1007,7 +1007,7 @@ export default function SwipeFeed() {
       <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
         <button
           onClick={() => navigate('/home')}
-          className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
+          className="w-11 h-11 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 active:scale-95 transition-all shadow-sm"
         >
           <Home className="h-5 w-5" />
         </button>
