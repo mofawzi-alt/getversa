@@ -312,8 +312,8 @@ export default function LiveDebate() {
     );
   }
 
-  const imgA = currentPoll.image_a_url || getFallbackImage(currentPoll.id, 0);
-  const imgB = currentPoll.image_b_url || getFallbackImage(currentPoll.id, 1);
+  const imgA = getPollDisplayImageSrc({ imageUrl: currentPoll.image_a_url, option: currentPoll.option_a, question: currentPoll.question, side: 'A' });
+  const imgB = getPollDisplayImageSrc({ imageUrl: currentPoll.image_b_url, option: currentPoll.option_b, question: currentPoll.question, side: 'B' });
   const campaignLabel = getCampaignLabel(currentPoll.category);
   const showResult = phase === 'result' && result;
 
