@@ -207,7 +207,7 @@ const OPTION_ALIASES: Record<string, string> = {
   hot: 'turkish-coffee.jpg',
   takeaway: 'noon.jpg',
   'eat in': 'fancy-restaurant.jpg',
-  seafood: 'sushi.jpg',
+  seafood: 'seafood.jpg',
   'red meat': 'grilled.jpg',
   'food truck': 'falafel.jpg',
   restaurant: 'fancy-restaurant.jpg',
