@@ -106,6 +106,13 @@ interface VoteResult {
   percentA: number;
   percentB: number;
   totalVotes: number;
+  demoData?: {
+    demoPercentA: number;
+    demoPercentB: number;
+    demoTotal: number;
+    ageRange: string | null;
+    city: string | null;
+  } | null;
 }
 
 // ── Full-Screen Immersive Poll Card ──
@@ -414,6 +421,7 @@ function ImmersivePollCard({
               choice={result!.choice}
               visible={showFeedback}
               userCountry={userCountry}
+              demoData={result!.demoData}
             />
           )}
         </div>
@@ -878,12 +886,29 @@ export default function SwipeFeed() {
         voter_city: profile?.city || null,
       } as any);
       if (voteError) throw voteError;
-      // Use RPC for results instead of fetching all individual votes
-      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: [pollId] });
-      const r = results?.[0];
+      // Fetch global results and demographic breakdown in parallel
+      const [globalRes, demoRes] = await Promise.all([
+        supabase.rpc('get_poll_results', { poll_ids: [pollId] }),
+        (profile?.age_range || profile?.city)
+          ? supabase.rpc('get_demographic_poll_result', {
+              p_poll_id: pollId,
+              p_age_range: profile?.age_range || null,
+              p_city: profile?.city || null,
+            })
+          : Promise.resolve({ data: null }),
+      ]);
+      const r = globalRes.data?.[0];
       const totalVotes = r?.total_votes || 1;
       const percentA = r?.percent_a || 0;
-      return { pollId, choice, percentA, percentB: 100 - percentA, totalVotes };
+      const d = demoRes.data?.[0];
+      const demoData = d && d.demo_total > 0 ? {
+        demoPercentA: d.demo_percent_a,
+        demoPercentB: d.demo_percent_b,
+        demoTotal: Number(d.demo_total),
+        ageRange: profile?.age_range || null,
+        city: profile?.city || null,
+      } : null;
+      return { pollId, choice, percentA, percentB: 100 - percentA, totalVotes, demoData };
     },
     onSuccess: (data) => {
       // Result sound plays after suspense delay (when animation begins)
