@@ -106,6 +106,13 @@ interface VoteResult {
   percentA: number;
   percentB: number;
   totalVotes: number;
+  demoData?: {
+    demoPercentA: number;
+    demoPercentB: number;
+    demoTotal: number;
+    ageRange: string | null;
+    city: string | null;
+  } | null;
 }
 
 // ── Full-Screen Immersive Poll Card ──
