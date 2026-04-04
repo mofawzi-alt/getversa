@@ -186,7 +186,7 @@ const QUESTION_SIDE_ALIASES: Record<string, Partial<Record<PollImageSide, string
   'food truck or restaurant': { A: 'falafel.jpg', B: 'fancy-restaurant.jpg' },
   'foul or eggs for breakfast': { A: 'foul.jpg', B: 'eggs.jpg' },
   'grilled or fried chicken': { A: 'grilled.jpg', B: 'fried.jpg' },
-  'hardee s or mcdonald s': { A: 'burger-king.jpg', B: 'mcdonalds.jpg' },
+  'hardee s or mcdonald s': { A: 'hardees.jpg', B: 'mcdonalds.jpg' },
   'homemade juice or bottled': { A: 'dates.jpg', B: 'pepsi.jpg' },
   'hot chocolate or matcha': { A: 'chocolate.jpg', B: 'matcha.jpg' },
   'ice cream or kunafa': { A: 'ice-cream.jpg', B: 'kunafa.jpg' },
