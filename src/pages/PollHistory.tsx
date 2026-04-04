@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useRef, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, ArrowLeft, Users, ChevronDown } from 'lucide-react';
@@ -121,9 +121,6 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
           <span className="text-[10px] text-muted-foreground">
             {formatDistanceToNow(new Date(vote.votedAt), { addSuffix: true })}
           </span>
-          <span className="text-[10px] text-muted-foreground/50">
-            {index + 1} / {total}
-          </span>
         </div>
         {index < total - 1 && (
           <div className="flex justify-center pt-1 animate-bounce">
@@ -139,6 +136,7 @@ export default function PollHistory() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
@@ -180,6 +178,17 @@ export default function PollHistory() {
     enabled: !!user,
   });
 
+  // Realtime: refresh results when new votes come in
+  useEffect(() => {
+    const channel = supabase
+      .channel('history-votes-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'votes' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['my-votes', user?.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient, user?.id]);
+
   // Deep-link: scroll to targeted poll
   useEffect(() => {
     if (!targetPollId || !voteHistory || !scrollRef.current) return;
@@ -209,7 +218,7 @@ export default function PollHistory() {
         </button>
         <div>
           <h1 className="text-lg font-display font-bold text-foreground">My Votes</h1>
-          <p className="text-[10px] text-muted-foreground">{voteHistory?.length || 0} votes · swipe up & down</p>
+          <p className="text-[10px] text-muted-foreground">Results update in real time</p>
         </div>
       </div>
 
