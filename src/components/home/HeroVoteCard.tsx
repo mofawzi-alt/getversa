@@ -32,10 +32,9 @@ const SWIPE_THRESHOLD = 70;
 const SWIPE_OUT_MS = 400;
 const RESULT_MS = 1500;
 
-export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
+export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: HeroVoteCardProps) {
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [result, setResult] = useState<{ choice: 'A' | 'B'; percentA: number; percentB: number; total: number } | null>(null);
