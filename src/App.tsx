@@ -11,7 +11,7 @@ import SplashScreen from "@/components/SplashScreen";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Home from "./pages/Home";
-import SwipeFeed from "./pages/SwipeFeed";
+
 import PollHistory from "./pages/PollHistory";
 import PastPerspectives from "./pages/PastPerspectives";
 import Profile from "./pages/Profile";
