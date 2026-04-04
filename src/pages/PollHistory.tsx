@@ -121,9 +121,6 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
           <span className="text-[10px] text-muted-foreground">
             {formatDistanceToNow(new Date(vote.votedAt), { addSuffix: true })}
           </span>
-          <span className="text-[10px] text-muted-foreground/50">
-            {index + 1} / {total}
-          </span>
         </div>
         {index < total - 1 && (
           <div className="flex justify-center pt-1 animate-bounce">
