@@ -696,7 +696,7 @@ const OPTION_ALIASES: Record<string, string> = {
   marriott: 'hotel.jpg',
   airbnb: 'airbnb.jpg',
   'uber eats': 'uber-eats.jpg',
-  gopro: 'camping.jpg',
+  gopro: 'action-camera.jpg',
   wework: 'linkedin.jpg',
   'home office': 'wfh.jpg',
   uniqlo: 'zara.jpg',
