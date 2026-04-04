@@ -119,7 +119,7 @@ export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
   }
 
   const handleStart = (clientX: number) => {
-    if (result) return;
+    if (result || flyDirection) return;
     setIsDragging(true);
     startX.current = clientX;
     setShowHint(false);
@@ -132,11 +132,15 @@ export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
     if (!isDragging) return;
     setIsDragging(false);
     if (dragX < -SWIPE_THRESHOLD) {
-      submitVote('A');
+      setFlyDirection('left');
+      setTimeout(() => submitVote('A'), 300);
     } else if (dragX > SWIPE_THRESHOLD) {
-      submitVote('B');
+      setFlyDirection('right');
+      setTimeout(() => submitVote('B'), 300);
     }
-    setDragX(0);
+    if (Math.abs(dragX) <= SWIPE_THRESHOLD) {
+      setDragX(0);
+    }
   };
 
   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
