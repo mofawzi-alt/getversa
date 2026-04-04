@@ -136,6 +136,7 @@ export default function PollHistory() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
@@ -176,6 +177,17 @@ export default function PollHistory() {
     },
     enabled: !!user,
   });
+
+  // Realtime: refresh results when new votes come in
+  useEffect(() => {
+    const channel = supabase
+      .channel('history-votes-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'votes' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['my-votes', user?.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient, user?.id]);
 
   // Deep-link: scroll to targeted poll
   useEffect(() => {
