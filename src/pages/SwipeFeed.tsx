@@ -1002,7 +1002,7 @@ export default function SwipeFeed() {
   const unvotedCount = polls?.filter(p => !votedResults.has(p.id)).length || 0;
 
   return (
-    <div className="h-dvh w-full flex flex-col bg-secondary/50 overflow-hidden">
+    <div className="h-dvh w-full flex flex-col bg-secondary/50 overflow-hidden" style={{ height: '100dvh' }}>
       {/* Top bar with home + streak + info */}
       <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
         <button
