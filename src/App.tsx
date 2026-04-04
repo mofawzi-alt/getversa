@@ -87,7 +87,7 @@ function AppInner() {
       {showSplash && <SplashScreen />}
       <Toaster />
       <Sonner />
-      <PWAInstallPrompt />
+      
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<SmartLanding />} />

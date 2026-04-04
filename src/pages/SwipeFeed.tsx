@@ -956,6 +956,7 @@ export default function SwipeFeed() {
     if (votedResults.has(pollId)) return;
     if (!user && getGuestVoteCount() >= GUEST_VOTE_LIMIT) { setShowSignupModal(true); return; }
     playSwipeSound();
+    markFirstVote();
     voteMutation.mutate({ pollId, choice });
   }, [voteMutation, user, votedResults]);
 
