@@ -702,8 +702,13 @@ export default function SwipeFeed() {
       const now = new Date().toISOString();
       let query = supabase.from('polls').select('*').eq('is_active', true).neq('is_archived', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
-        .order('is_daily_poll', { ascending: false }).order('created_at', { ascending: false })
-        .limit(60);
+        .order('is_daily_poll', { ascending: false }).order('created_at', { ascending: false });
+      // When filtering by category, fetch all polls in that category; otherwise limit for performance
+      if (categoryFilter) {
+        query = query.eq('category', categoryFilter).limit(500);
+      } else {
+        query = query.limit(60);
+      }
       const { data: fetchedPolls, error } = await query;
       if (error) throw error;
       let allPolls = fetchedPolls || [];
@@ -767,9 +772,7 @@ export default function SwipeFeed() {
           return true;
         });
       }
-      if (categoryFilter) {
-        allPolls = allPolls.filter(p => p.category === categoryFilter);
-      }
+      // Category filter already applied in query when categoryFilter is set
       if (searchFilter) {
         const s = searchFilter.toLowerCase();
         allPolls = allPolls.filter(p => 
