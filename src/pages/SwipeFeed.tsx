@@ -305,7 +305,7 @@ function ImmersivePollCard({
 
         {/* The card itself with 3D tilt */}
         <div
-          className={`w-full max-w-sm mx-auto rounded-2xl overflow-hidden z-10 ${isHighStakes ? 'shadow-[0_0_30px_hsl(var(--destructive)/0.2)] ring-1 ring-destructive/20' : 'shadow-2xl'} ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''} ${hasResult ? selectedGlow : ''}`}
+          className={`w-full mx-auto rounded-2xl overflow-hidden z-10 ${isHighStakes ? 'shadow-[0_0_30px_hsl(var(--destructive)/0.2)] ring-1 ring-destructive/20' : 'shadow-2xl'} ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''} ${hasResult ? selectedGlow : ''}`}
           style={{
             transform: hasResult
               ? 'none'
