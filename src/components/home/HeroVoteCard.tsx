@@ -25,6 +25,7 @@ interface HeroPoll {
 interface HeroVoteCardProps {
   poll: HeroPoll | null;
   unseenCount: number;
+  onVoteComplete?: () => void;
 }
 
 const SWIPE_THRESHOLD = 70;
