@@ -33,7 +33,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
 
         {/* Vote - center, highlighted */}
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/vote')}
           className="flex flex-col items-center gap-0.5 -mt-5"
         >
           <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
