@@ -436,8 +436,10 @@ const OPTION_ALIASES: Record<string, string> = {
   pampers: 'home-dinner.jpg',
   lipton: 'tea.jpg',
   'ahmad tea': 'tea.jpg',
-  nutella: 'chocolate.jpg',
+  nutella: 'nutella.jpg',
   'local chocolate spread': 'chocolate.jpg',
+  oud: 'oud.jpg',
+  fresh: 'fresh-perfume.jpg',
 
   // Shopping
   'online shop': 'shopping.jpg',
