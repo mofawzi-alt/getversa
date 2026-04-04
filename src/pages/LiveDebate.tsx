@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { X, Flame, Users } from 'lucide-react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { playSwipeSound, playResultSound, playMinoritySound } from '@/lib/sounds';
+import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 
 import beachImg from '@/assets/polls/beach.jpg';
