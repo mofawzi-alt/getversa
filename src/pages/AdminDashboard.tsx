@@ -120,6 +120,10 @@ export default function AdminDashboard() {
             <TabsContent value="export">
               <AdminAnalyticsExport />
             </TabsContent>
+            
+            <TabsContent value="insights-report">
+              <InsightsReport />
+            </TabsContent>
           </Tabs>
         </TabsContent>
 
