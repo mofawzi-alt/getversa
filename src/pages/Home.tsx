@@ -296,18 +296,22 @@ export default function Home() {
         });
       }
 
-      const pollIds = filteredPolls.map(p => p.id);
+      // Only process top 50 polls to reduce DB load on mobile
+      const topPolls = filteredPolls.slice(0, 50);
+      const pollIds = topPolls.map(p => p.id);
       if (pollIds.length === 0) return [];
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
 
-      // Get recent votes (last 5 minutes) per poll for "voting now" count
+      // Get recent votes (last 5 minutes) — only for top 20 polls to keep it fast
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const recentPollIds = pollIds.slice(0, 20);
       const { data: recentVotesData } = await supabase
         .from('votes')
         .select('poll_id, user_id')
-        .in('poll_id', pollIds)
-        .gte('created_at', fiveMinAgo);
+        .in('poll_id', recentPollIds)
+        .gte('created_at', fiveMinAgo)
+        .limit(200);
       // Count unique users per poll
       const recentVotesMap = new Map<string, Set<string>>();
       recentVotesData?.forEach(v => {
