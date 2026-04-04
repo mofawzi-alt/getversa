@@ -322,7 +322,7 @@ export default function Home() {
       const allRecentVoters = new Set<string>();
       recentVotesData?.forEach(v => allRecentVoters.add(v.user_id));
 
-      return filteredPolls.map(p => {
+      return topPolls.map(p => {
         const r = resultsMap.get(p.id) as any;
         const total = (r?.total_votes as number) || 0;
         const votesA = (r?.votes_a as number) || 0;
