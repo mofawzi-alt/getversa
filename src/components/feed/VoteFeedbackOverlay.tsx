@@ -7,6 +7,7 @@ interface DemoData {
   demoTotal: number;
   ageRange: string | null;
   city: string | null;
+  gender?: string | null;
 }
 
 function pickFeedbackMessage(percentA: number, percentB: number, choice: 'A' | 'B'): string {
@@ -120,7 +121,16 @@ export default function VoteFeedbackOverlay({ percentA, percentB, choice, visibl
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.4, delay: 0.4 }}
-              className="px-5 py-2.5 rounded-2xl bg-black/70 backdrop-blur-md border border-white/15 shadow-md"
+              className="px-5 py-2.5 rounded-2xl bg-black/70 backdrop-blur-md shadow-md"
+              style={{
+                borderWidth: 1,
+                borderStyle: 'solid',
+                borderColor: demoData?.gender === 'Male'
+                  ? 'hsl(210, 80%, 55%)'
+                  : demoData?.gender === 'Female'
+                    ? 'hsl(340, 75%, 55%)'
+                    : 'hsla(0, 0%, 100%, 0.15)',
+              }}
             >
               <p className="text-white text-sm font-semibold text-center leading-snug">
                 📊 {demoLine}
