@@ -462,7 +462,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'duty free': 'duty-free.jpg',
   'return': 'shopping.jpg',
   'keep it': 'branded.jpg',
-  'read reviews': 'phone-camera.jpg',
+  'read reviews': 'iphone.jpg',
   'trust instinct': 'branded.jpg',
   'cash on delivery': 'shopping.jpg',
   prepay: 'phone-camera.jpg',
