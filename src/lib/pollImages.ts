@@ -1049,8 +1049,8 @@ export function getPollDisplayImageSrc(params: PollImageParams) {
     const sourceLocal = getLocalImageByName(extractFilename(params.imageUrl));
     if (sourceLocal) return sourceLocal;
 
-    // Return any external URL (Unsplash, etc.) — storage URLs are unreliable so skip them
-    if (!isStoragePollImageUrl(params.imageUrl)) return params.imageUrl;
+    // Return any valid URL (external, storage, etc.)
+    return params.imageUrl;
   }
 
   return params.genericFallback || getGenericFallback(params.option || params.question);
