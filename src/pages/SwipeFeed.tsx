@@ -1255,6 +1255,9 @@ export default function SwipeFeed() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Add to Home Screen banner — shows after first vote */}
+      <AddToHomeScreenBanner visible={showA2HS} />
     </div>
   );
 }
