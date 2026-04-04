@@ -37,6 +37,7 @@ export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [result, setResult] = useState<{ choice: 'A' | 'B'; percentA: number; percentB: number; total: number } | null>(null);
+  const [flyDirection, setFlyDirection] = useState<'left' | 'right' | null>(null);
   const [showHint, setShowHint] = useState(true);
   const startX = useRef(0);
 
