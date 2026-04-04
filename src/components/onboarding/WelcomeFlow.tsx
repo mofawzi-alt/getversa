@@ -4,16 +4,17 @@ import { ArrowRight, Flame, Zap, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
+import { getPublicPollImageUrl } from '@/lib/pollImages';
 import VersaLogo from '@/components/VersaLogo';
 
-import coffeeImg from '@/assets/polls/coffee.jpg';
-import teaImg from '@/assets/polls/tea.jpg';
-import dogsImg from '@/assets/polls/dogs.jpg';
-import catsImg from '@/assets/polls/cats.jpg';
-import pizzaImg from '@/assets/polls/pizza.jpg';
-import sushiImg from '@/assets/polls/sushi.jpg';
-import sunriseImg from '@/assets/polls/sunrise.jpg';
-import sunsetImg from '@/assets/polls/sunset.jpg';
+const coffeeImg = getPublicPollImageUrl('coffee.jpg');
+const teaImg = getPublicPollImageUrl('tea.jpg');
+const dogsImg = getPublicPollImageUrl('dogs.jpg');
+const catsImg = getPublicPollImageUrl('cats.jpg');
+const pizzaImg = getPublicPollImageUrl('pizza.jpg');
+const sushiImg = getPublicPollImageUrl('sushi.jpg');
+const sunriseImg = getPublicPollImageUrl('sunrise.jpg');
+const sunsetImg = getPublicPollImageUrl('sunset.jpg');
 
 const WELCOME_KEY = 'versa_welcome_done';
 

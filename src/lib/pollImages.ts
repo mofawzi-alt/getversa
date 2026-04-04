@@ -2,7 +2,7 @@ type PollImageSide = 'A' | 'B';
 
 const POLL_IMAGE_BASE_PATH = '/polls';
 
-function toPublicPollImageUrl(fileName: string) {
+export function getPublicPollImageUrl(fileName: string) {
   return `${POLL_IMAGE_BASE_PATH}/${encodeURIComponent(fileName.toLowerCase())}`;
 }
 
@@ -951,15 +951,13 @@ const GENERIC_FALLBACK_IMAGE_FILES = [
   'summer.jpg',
 ];
 
-const KNOWN_LOCAL_IMAGE_FILES = new Set(
-  [
-    ...Object.values(OPTION_ALIASES),
-    ...Object.values(QUESTION_SIDE_ALIASES).flatMap((sides) => Object.values(sides)),
-    ...GENERIC_FALLBACK_IMAGE_FILES,
-  ]
-    .filter((fileName): fileName is string => Boolean(fileName))
-    .map((fileName) => fileName.toLowerCase())
-);
+export function getStablePollFallbackImage(seed?: string | null, index = 0): string {
+  if (GENERIC_FALLBACK_IMAGE_FILES.length === 0) return '';
+  const hash = (seed || 'x').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return getPublicPollImageUrl(
+    GENERIC_FALLBACK_IMAGE_FILES[(hash + index) % GENERIC_FALLBACK_IMAGE_FILES.length]
+  );
+}
 
 interface PollImageParams {
   genericFallback?: string;
@@ -980,8 +978,8 @@ function slugify(value?: string | null) {
 function getLocalImageByName(fileName?: string | null) {
   if (!fileName) return undefined;
   const normalizedFileName = fileName.toLowerCase();
-  return KNOWN_LOCAL_IMAGE_FILES.has(normalizedFileName)
-    ? toPublicPollImageUrl(normalizedFileName)
+  return /\.(png|jpe?g|webp|avif)$/i.test(normalizedFileName)
+    ? getPublicPollImageUrl(normalizedFileName)
     : undefined;
 }
 
@@ -1034,9 +1032,7 @@ function getPreferredLocalImage({ question, option, side }: PollImageParams) {
 
 // Deterministic generic fallback from local assets pool
 function getGenericFallback(seed?: string | null): string {
-  if (GENERIC_FALLBACK_IMAGE_FILES.length === 0) return '';
-  const hash = (seed || 'x').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return getLocalImageByName(GENERIC_FALLBACK_IMAGE_FILES[hash % GENERIC_FALLBACK_IMAGE_FILES.length]) || '';
+  return getStablePollFallbackImage(seed);
 }
 
 export function getPollImageFallbackSrc(params: PollImageParams) {
@@ -1075,7 +1071,10 @@ export function handlePollImageError(
   const target = e.currentTarget;
   if (target.dataset.fallbackApplied) return; // prevent infinite loop
   target.dataset.fallbackApplied = 'true';
-  const fallback = getPollImageFallbackSrc({ ...params, imageUrl: target.src });
+  const currentSrc = target.getAttribute('src') || target.src;
+  const fallback = currentSrc.includes(`${POLL_IMAGE_BASE_PATH}/`)
+    ? params.genericFallback || getStablePollFallbackImage(params.option || params.question)
+    : getPollImageFallbackSrc({ ...params, imageUrl: currentSrc });
   if (fallback) {
     target.src = fallback;
   }
