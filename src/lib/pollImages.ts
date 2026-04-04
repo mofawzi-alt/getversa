@@ -101,7 +101,7 @@ const QUESTION_SIDE_ALIASES: Record<string, Partial<Record<PollImageSide, string
   'smart tv or projector': { A: 'cinema.jpg', B: 'netflix.jpg' },
   'tablet or laptop for travel': { A: 'iphone.jpg', B: 'wfh.jpg' },
   'two phones or one': { A: 'samsung.jpg', B: 'iphone.jpg' },
-  'stc or zain': { A: 'vodafone.jpg', B: 'etisalat.jpg' },
+  'stc or zain': { A: 'stc.jpg', B: 'zain.jpg' },
   'electric car or petrol': { A: 'bmw.jpg', B: 'toyota.jpg' },
   'face id or fingerprint': { A: 'iphone.jpg', B: 'samsung.jpg' },
   'drone or action camera': { A: 'chatgpt.jpg', B: 'camping.jpg' },
