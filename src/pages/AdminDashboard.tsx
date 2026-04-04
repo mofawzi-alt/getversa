@@ -24,6 +24,7 @@ import CampaignAnalytics from '@/components/admin/CampaignAnalytics';
 import CategoryAnalytics from '@/components/admin/CategoryAnalytics';
 import BrandRankingReport from '@/components/admin/BrandRankingReport';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
+import InsightsReport from '@/components/admin/InsightsReport';
 
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
@@ -86,6 +87,7 @@ export default function AdminDashboard() {
               <TabsTrigger value="timing" className="text-xs px-3 py-1.5">Timing</TabsTrigger>
               <TabsTrigger value="retention" className="text-xs px-3 py-1.5">Retention</TabsTrigger>
               <TabsTrigger value="export" className="text-xs px-3 py-1.5">Export</TabsTrigger>
+              <TabsTrigger value="insights-report" className="text-xs px-3 py-1.5">Insights</TabsTrigger>
             </TabsList>
             
             <TabsContent value="dashboard">
@@ -117,6 +119,10 @@ export default function AdminDashboard() {
             
             <TabsContent value="export">
               <AdminAnalyticsExport />
+            </TabsContent>
+            
+            <TabsContent value="insights-report">
+              <InsightsReport />
             </TabsContent>
           </Tabs>
         </TabsContent>
