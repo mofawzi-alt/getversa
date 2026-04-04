@@ -104,7 +104,7 @@ const QUESTION_SIDE_ALIASES: Record<string, Partial<Record<PollImageSide, string
   'stc or zain': { A: 'stc.jpg', B: 'zain.jpg' },
   'electric car or petrol': { A: 'bmw.jpg', B: 'toyota.jpg' },
   'face id or fingerprint': { A: 'iphone.jpg', B: 'samsung.jpg' },
-  'drone or action camera': { A: 'chatgpt.jpg', B: 'camping.jpg' },
+  'drone or action camera': { A: 'drone.jpg', B: 'action-camera.jpg' },
   'qr code payment or cash': { A: 'iphone.jpg', B: 'financial-freedom.jpg' },
   'paypal or apple pay': { A: 'financial-freedom.jpg', B: 'iphone.jpg' },
   'linkedin or networking events': { A: 'linkedin.jpg', B: 'going-out.png' },
