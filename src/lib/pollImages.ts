@@ -344,7 +344,7 @@ const OPTION_ALIASES: Record<string, string> = {
   nike: 'nike.jpg',
   adidas: 'adidas.jpg',
   zara: 'zara.jpg',
-  'h&m': 'zara.jpg',
+  'h&m': 'hm.jpg',
   sneakers: 'sneakers.jpg',
   boots: 'boots.jpg',
   'formal shoes': 'suit.jpg',
