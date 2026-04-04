@@ -25,6 +25,7 @@ import Explore from "./pages/Explore";
 import LiveDebate from "./pages/LiveDebate";
 import SeasonalHub from "./pages/SeasonalHub";
 import NotFound from "./pages/NotFound";
+import TasteProfile from "./pages/TasteProfile";
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
