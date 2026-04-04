@@ -191,12 +191,9 @@ export default function Home() {
   const isNewUser = voteCount < EXPLORE_THRESHOLD;
   const hasUnlockedExplore = !isNewUser;
 
-  // New authenticated users with 0 votes → send straight to vote feed
-  useEffect(() => {
-    if (!loading && user && profileComplete && userVoteCount === 0) {
-      navigate('/vote', { replace: true });
-    }
-  }, [loading, user, profileComplete, userVoteCount, navigate]);
+  // Track which hero poll index to show for infinite voting
+  const [heroPollIndex, setHeroPollIndex] = useState(0);
+  const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (hasUnlockedExplore && !isExploreUnlocked()) {
