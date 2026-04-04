@@ -25,6 +25,7 @@ import Explore from "./pages/Explore";
 import LiveDebate from "./pages/LiveDebate";
 import SeasonalHub from "./pages/SeasonalHub";
 import NotFound from "./pages/NotFound";
+import TasteProfile from "./pages/TasteProfile";
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
@@ -106,6 +107,7 @@ function AppInner() {
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
           <Route path="/insights" element={<ProtectedRoute><InsightProfile /></ProtectedRoute>} />
+          <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

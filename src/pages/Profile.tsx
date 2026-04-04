@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { LogOut, ChevronRight, User, Bell, Shield, Flame, History } from 'lucide-react';
+import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import ProfileDimensionsSection from '@/components/profile/ProfileDimensionsSection';
 import VotingInsights from '@/components/profile/VotingInsights';
@@ -39,6 +39,7 @@ export default function Profile() {
   };
 
   const menuItems = [
+    { icon: Sparkles, label: 'Taste Profile', path: '/taste-profile', color: 'text-primary', highlight: true },
     { icon: History, label: 'My Votes', path: '/history', color: 'text-primary' },
     { icon: User, label: 'Edit Profile', path: '/profile/edit', color: 'text-muted-foreground' },
     { icon: Bell, label: 'Notification Settings', path: '/profile/notifications', color: 'text-muted-foreground' },
@@ -92,14 +93,19 @@ export default function Profile() {
 
         {/* Menu Items */}
         <div className="glass rounded-2xl divide-y divide-border">
-          {menuItems.map(({ icon: Icon, label, path, color }) => (
+          {menuItems.map(({ icon: Icon, label, path, color, highlight }: any) => (
             <button
               key={path}
               onClick={() => navigate(path)}
-              className="w-full flex items-center gap-4 p-4 hover:bg-secondary/50 transition-colors first:rounded-t-2xl last:rounded-b-2xl"
+              className={`w-full flex items-center gap-4 p-4 hover:bg-secondary/50 transition-colors first:rounded-t-2xl last:rounded-b-2xl ${
+                highlight ? 'bg-primary/5' : ''
+              }`}
             >
               <Icon className={`h-5 w-5 ${color || 'text-card-foreground/70'}`} />
               <span className="flex-1 text-left font-medium">{label}</span>
+              {highlight && (
+                <span className="text-[9px] font-bold text-primary-foreground bg-primary px-2 py-0.5 rounded-full uppercase">New</span>
+              )}
               <ChevronRight className="h-5 w-5 text-card-foreground/70" />
             </button>
           ))}
