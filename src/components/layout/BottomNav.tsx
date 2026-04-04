@@ -43,7 +43,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           className="flex flex-col items-center gap-0.5 -mt-5"
         >
           <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
-              location.pathname === '/' || location.pathname === '/vote'
+            location.pathname === '/home'
                 ? 'bg-primary shadow-[0_0_18px_hsl(var(--primary)/0.35)]'
                 : 'bg-primary/90 hover:bg-primary shadow-[0_0_14px_hsl(var(--primary)/0.25)]'
             }`}>
