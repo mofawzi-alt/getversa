@@ -353,7 +353,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'silver jewelry': 'casio.jpg',
   balenciaga: 'branded.jpg',
   'off-white': 'sneakers.jpg',
-  thobe: 'suit.jpg',
+  thobe: 'thobe.jpg',
   'hijab fashion': 'hijab-fashion.jpg',
   'abaya style': 'hijab-fashion.jpg',
   ounass: 'branded.jpg',
