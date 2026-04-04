@@ -750,7 +750,7 @@ const OPTION_ALIASES: Record<string, string> = {
   shopping: 'shopping.jpg',
   'window shop': 'window-shop.jpg',
   'buy immediately': 'shopping.jpg',
-  'gift cards': 'pick-gift.jpg',
+  // gift cards already defined above
   'cash gifts': 'financial-freedom.jpg',
   'gift card': 'pick-gift.jpg',
   'picked gift': 'pick-gift.jpg',
