@@ -465,7 +465,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'read reviews': 'iphone.jpg',
   'trust instinct': 'branded.jpg',
   'cash on delivery': 'shopping.jpg',
-  prepay: 'phone-camera.jpg',
+  prepay: 'iphone.jpg',
   'try first': 'mall.jpg',
   'trust online': 'phone-camera.jpg',
   mall: 'mall.jpg',
