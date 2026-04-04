@@ -327,8 +327,8 @@ export default function Home() {
         return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: recentVotesMap.get(p.id)?.size || 0, _recentVoterIds: Array.from(recentVotesMap.get(p.id) || []) };
       });
     },
-    staleTime: 1000 * 10,
-    refetchInterval: 1000 * 10,
+    staleTime: 1000 * 30,
+    refetchInterval: 1000 * 60,
   });
 
   const [modalPoll, setModalPoll] = useState<PollCard | null>(null);
