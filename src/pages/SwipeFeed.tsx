@@ -698,6 +698,7 @@ export default function SwipeFeed() {
   const categoryFilter = searchParams.get('category');
   const searchFilter = searchParams.get('search');
   const liveOnlyFilter = searchParams.get('live') === 'true';
+  const excludeHeroPollId = searchParams.get('excludeHero');
 
   // Streak data
   const streakData = profile ? {
