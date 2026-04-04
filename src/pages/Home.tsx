@@ -236,8 +236,8 @@ export default function Home() {
       const { count } = await supabase.from('votes').select('id', { count: 'exact', head: true }).gte('created_at', since);
       return count || 0;
     },
-    staleTime: 1000 * 10,
-    refetchInterval: 1000 * 10,
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 60,
   });
 
   // User weekly vote count
