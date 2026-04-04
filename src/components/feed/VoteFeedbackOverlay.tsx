@@ -7,6 +7,7 @@ interface DemoData {
   demoTotal: number;
   ageRange: string | null;
   city: string | null;
+  gender?: string | null;
 }
 
 function pickFeedbackMessage(percentA: number, percentB: number, choice: 'A' | 'B'): string {
