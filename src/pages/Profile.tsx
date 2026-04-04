@@ -39,6 +39,7 @@ export default function Profile() {
   };
 
   const menuItems = [
+    { icon: Sparkles, label: 'Taste Profile', path: '/taste-profile', color: 'text-primary', highlight: true },
     { icon: History, label: 'My Votes', path: '/history', color: 'text-primary' },
     { icon: User, label: 'Edit Profile', path: '/profile/edit', color: 'text-muted-foreground' },
     { icon: Bell, label: 'Notification Settings', path: '/profile/notifications', color: 'text-muted-foreground' },
