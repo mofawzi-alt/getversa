@@ -91,7 +91,7 @@ const QUESTION_SIDE_ALIASES: Record<string, Partial<Record<PollImageSide, string
   'cloud storage or hard drive': { A: 'chatgpt.jpg', B: 'wfh.jpg' },
   'dark mode or light mode': { A: 'chatgpt.jpg', B: 'iphone.jpg' },
   'e book or physical book': { A: 'iphone.jpg', B: 'books.jpg' },
-  'fawry or instapay': { A: 'financial-freedom.jpg', B: 'iphone.jpg' },
+  'fawry or instapay': { A: 'fawry.jpg', B: 'instapay.jpg' },
   'gaming console or gaming pc': { A: 'playstation.jpg', B: 'wfh.jpg' },
   'ipad or samsung tab': { A: 'iphone.jpg', B: 'samsung.jpg' },
   'macbook or windows laptop': { A: 'iphone.jpg', B: 'wfh.jpg' },
