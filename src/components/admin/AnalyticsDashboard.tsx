@@ -440,11 +440,14 @@ function MetricCard({ icon: Icon, label, value, color, subtitle }: {
   );
 }
 
-function DemoPieChart({ title, icon: Icon, data }: {
-  title: string; icon: any; data: { name: string; value: number }[];
+function DemoPieChart({ title, icon: Icon, data, colorMap }: {
+  title: string; icon: any; data: { name: string; value: number }[]; colorMap?: Record<string, string>;
 }) {
   if (data.length === 0) return null;
-  
+
+  const getColor = (name: string, index: number) =>
+    colorMap?.[name] || CHART_COLORS[index % CHART_COLORS.length];
+
   return (
     <Card>
       <CardHeader className="pb-1">
@@ -466,8 +469,8 @@ function DemoPieChart({ title, icon: Icon, data }: {
                 paddingAngle={3}
                 dataKey="value"
               >
-                {data.map((_, i) => (
-                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                {data.map((entry, i) => (
+                  <Cell key={i} fill={getColor(entry.name, i)} />
                 ))}
               </Pie>
               <Tooltip contentStyle={tooltipStyle} />
@@ -477,7 +480,7 @@ function DemoPieChart({ title, icon: Icon, data }: {
         <div className="flex flex-wrap gap-1 mt-1">
           {data.slice(0, 5).map((d, i) => (
             <div key={d.name} className="flex items-center gap-1 text-[10px]">
-              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
+              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getColor(d.name, i) }} />
               <span className="text-muted-foreground truncate max-w-[60px]">{d.name}</span>
             </div>
           ))}
