@@ -726,13 +726,15 @@ export default function SwipeFeed() {
       // Build category affinity map from user's past votes for personalization
       const categoryAffinity = new Map<string, number>();
       let votedPollSet = new Set<string>();
+      // If coming from hero card vote, treat that poll as already voted
+      if (excludeHeroPollId) votedPollSet.add(excludeHeroPollId);
 
       if (user) {
         // Only fetch poll_ids to mark as voted — don't fetch results for all of them
         const { data: userVotes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
         if (userVotes && userVotes.length > 0) {
           const votedPollIds = userVotes.map(v => v.poll_id);
-          votedPollSet = new Set(votedPollIds);
+          votedPollSet = new Set([...votedPollSet, ...votedPollIds]);
 
           // Build category affinity from current batch only
           allPolls.forEach(p => {
