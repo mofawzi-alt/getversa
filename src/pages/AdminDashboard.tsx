@@ -24,6 +24,7 @@ import CampaignAnalytics from '@/components/admin/CampaignAnalytics';
 import CategoryAnalytics from '@/components/admin/CategoryAnalytics';
 import BrandRankingReport from '@/components/admin/BrandRankingReport';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
+import InsightsReport from '@/components/admin/InsightsReport';
 
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
