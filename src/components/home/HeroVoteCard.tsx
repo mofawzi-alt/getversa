@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';

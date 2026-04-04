@@ -52,7 +52,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
               </svg>
             </div>
           <span className={`text-[10px] font-semibold ${
-            location.pathname === '/' || location.pathname === '/vote' ? 'text-primary' : 'text-card-foreground/70'
+            location.pathname === '/home' ? 'text-primary' : 'text-card-foreground/70'
           }`}>Vote</span>
         </button>
 
