@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { LogOut, ChevronRight, User, Bell, Shield, Flame, History } from 'lucide-react';
+import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import ProfileDimensionsSection from '@/components/profile/ProfileDimensionsSection';
 import VotingInsights from '@/components/profile/VotingInsights';
