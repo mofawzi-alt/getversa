@@ -21,6 +21,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import AddToHomeScreenBanner from '@/components/pwa/AddToHomeScreenBanner';
 
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
@@ -643,6 +644,7 @@ export default function SwipeFeed() {
   const [dailySwipeCount, setDailySwipeCount] = useState(0);
   const [milestoneMsg, setMilestoneMsg] = useState<{ message: string; type: 'banner' | 'modal' | 'badge' } | null>(null);
   const [showValueMsg, setShowValueMsg] = useState(false);
+  const [showA2HS, setShowA2HS] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -889,6 +891,11 @@ export default function SwipeFeed() {
       setSessionVoteCount(newCount);
       if (newCount % MICRO_FEEDBACK_INTERVAL === 0 && user) {
         setTimeout(() => triggerMicroFeedback(), 2000);
+      }
+
+      // Show Add to Home Screen banner on first vote of the session
+      if (newCount === 1) {
+        setShowA2HS(true);
       }
 
       // Value message — show once at threshold
@@ -1248,6 +1255,9 @@ export default function SwipeFeed() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Add to Home Screen banner — shows after first vote */}
+      <AddToHomeScreenBanner visible={showA2HS} />
     </div>
   );
 }
