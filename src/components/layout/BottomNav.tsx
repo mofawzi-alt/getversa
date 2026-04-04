@@ -73,12 +73,12 @@ function NavButton({ icon: Icon, label, active, onClick }: {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center gap-1 px-4 py-2 min-h-[48px] min-w-[48px] transition-all active:scale-95 ${
+      className={`flex flex-col items-center gap-1 px-3 py-2 transition-all ${
         active ? 'text-primary' : 'text-card-foreground/70 hover:text-card-foreground'
       }`}
     >
       <Icon className={`h-5 w-5 ${active ? 'scale-110' : ''} transition-transform`} />
-      <span className="text-[11px] font-medium">{label}</span>
+      <span className="text-[10px] font-medium">{label}</span>
     </button>
   );
 }

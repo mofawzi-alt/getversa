@@ -23,7 +23,7 @@ export default function AppHeader() {
           {isAdmin && (
             <button
               onClick={() => navigate('/admin')}
-              className="p-2.5 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all"
             >
               <Shield className="h-5 w-5" />
             </button>

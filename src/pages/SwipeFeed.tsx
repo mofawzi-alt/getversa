@@ -21,7 +21,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
-import AddToHomeScreenBanner from '@/components/pwa/AddToHomeScreenBanner';
 
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
@@ -257,7 +256,7 @@ function ImmersivePollCard({
   const showResults = hasResult && !showSuspense;
 
   return (
-    <div className={`w-full relative flex flex-col select-none ${isHighStakes ? 'scale-[1.02]' : ''}`} style={{ touchAction: 'none' }}>
+    <div className={`w-full relative flex flex-col ${isHighStakes ? 'scale-[1.02]' : ''}`}>
       {/* Campaign label */}
       <div className="flex justify-center mb-1.5 gap-2">
         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${isHighStakes ? 'bg-destructive/15 text-destructive animate-pulse' : 'bg-primary/10 text-primary'}`}>
@@ -306,7 +305,7 @@ function ImmersivePollCard({
 
         {/* The card itself with 3D tilt */}
         <div
-          className={`w-full mx-auto rounded-2xl overflow-hidden z-10 ${isHighStakes ? 'shadow-[0_0_30px_hsl(var(--destructive)/0.2)] ring-1 ring-destructive/20' : 'shadow-2xl'} ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''} ${hasResult ? selectedGlow : ''}`}
+          className={`w-full max-w-sm mx-auto rounded-2xl overflow-hidden z-10 ${isHighStakes ? 'shadow-[0_0_30px_hsl(var(--destructive)/0.2)] ring-1 ring-destructive/20' : 'shadow-2xl'} ${!hasResult && !disabled ? 'cursor-grab active:cursor-grabbing' : ''} ${hasResult ? selectedGlow : ''}`}
           style={{
             transform: hasResult
               ? 'none'
@@ -325,7 +324,7 @@ function ImmersivePollCard({
           onMouseLeave={() => isDragging && handleEnd()}
         >
           {/* Split images */}
-          <div className="flex aspect-[3/4] sm:aspect-[4/3] w-full">
+          <div className="flex aspect-[4/3] w-full">
             <div className="w-1/2 h-full relative overflow-hidden">
               <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
@@ -347,8 +346,8 @@ function ImmersivePollCard({
                   className="absolute inset-0 border-3 border-option-a rounded-l-2xl pointer-events-none"
                 />
               )}
-              <div className="absolute bottom-3 left-3 right-1">
-                <p className="text-white text-lg font-extrabold drop-shadow-lg leading-tight">{poll.option_a}</p>
+              <div className="absolute bottom-2 left-2 right-1">
+                <p className="text-white text-base font-extrabold drop-shadow-lg">{poll.option_a}</p>
               </div>
             </div>
 
@@ -375,15 +374,15 @@ function ImmersivePollCard({
                   className="absolute inset-0 border-3 border-option-b rounded-r-2xl pointer-events-none"
                 />
               )}
-              <div className="absolute bottom-3 left-1 right-3 text-right">
-                <p className="text-white text-lg font-extrabold drop-shadow-lg leading-tight">{poll.option_b}</p>
+              <div className="absolute bottom-2 left-1 right-2 text-right">
+                <p className="text-white text-base font-extrabold drop-shadow-lg">{poll.option_b}</p>
               </div>
             </div>
           </div>
 
           {/* Question overlay */}
-          <div className="absolute top-0 inset-x-0 px-5 pt-4 pb-10 bg-gradient-to-b from-black/70 to-transparent z-20 pointer-events-none">
-            <p className="text-white text-lg sm:text-base font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
+          <div className="absolute top-0 inset-x-0 px-4 pt-3 pb-8 bg-gradient-to-b from-black/70 to-transparent z-20 pointer-events-none">
+            <p className="text-white text-base font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
           </div>
 
           {/* Suspense loading pulse */}
@@ -584,8 +583,7 @@ function ImmersivePollCard({
               {/* Subtle skip hint */}
               <button
                 onClick={(e) => { e.stopPropagation(); onSkip(poll.id); }}
-                className="text-[10px] text-muted-foreground/40 mt-0.5 hover:text-muted-foreground/60 transition-colors min-h-[44px] flex items-center justify-center"
-                data-no-min-tap
+                className="text-[9px] text-muted-foreground/40 mt-0.5 hover:text-muted-foreground/60 transition-colors"
               >
                 or swipe ↑ to skip
               </button>
@@ -644,7 +642,6 @@ export default function SwipeFeed() {
   const [dailySwipeCount, setDailySwipeCount] = useState(0);
   const [milestoneMsg, setMilestoneMsg] = useState<{ message: string; type: 'banner' | 'modal' | 'badge' } | null>(null);
   const [showValueMsg, setShowValueMsg] = useState(false);
-  const [showA2HS, setShowA2HS] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -893,11 +890,6 @@ export default function SwipeFeed() {
         setTimeout(() => triggerMicroFeedback(), 2000);
       }
 
-      // Show Add to Home Screen banner on first vote of the session
-      if (newCount === 1) {
-        setShowA2HS(true);
-      }
-
       // Value message — show once at threshold
       if (newCount === VALUE_MSG_VOTE_THRESHOLD && !showValueMsg) {
         setTimeout(() => {
@@ -1009,12 +1001,12 @@ export default function SwipeFeed() {
   const unvotedCount = polls?.filter(p => !votedResults.has(p.id)).length || 0;
 
   return (
-    <div className="h-dvh w-full flex flex-col bg-secondary/50 overflow-hidden" style={{ height: '100dvh' }}>
+    <div className="h-dvh w-full flex flex-col bg-secondary/50 overflow-hidden">
       {/* Top bar with home + streak + info */}
       <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
         <button
           onClick={() => navigate('/home')}
-          className="w-11 h-11 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 active:scale-95 transition-all shadow-sm"
+          className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
         >
           <Home className="h-5 w-5" />
         </button>
@@ -1134,8 +1126,7 @@ export default function SwipeFeed() {
       {/* Scrollable feed */}
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-2 pt-3 pb-3 space-y-3 snap-y snap-mandatory"
-        style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-3 pt-4 pb-3 space-y-4"
       >
         {hasPolls ? (
           polls.map((poll, idx) => {
@@ -1154,7 +1145,7 @@ export default function SwipeFeed() {
               <div
                 key={poll.id}
                 ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
-                className="w-full snap-start"
+                className="w-full"
               >
                 <ImmersivePollCard
                   poll={poll}
@@ -1255,9 +1246,6 @@ export default function SwipeFeed() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Add to Home Screen banner — shows after first vote */}
-      <AddToHomeScreenBanner visible={showA2HS} />
     </div>
   );
 }

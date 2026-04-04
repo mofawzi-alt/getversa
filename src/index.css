@@ -252,37 +252,10 @@
 }
 
 /* Mobile-first touch optimizations */
-html {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-body {
-  touch-action: manipulation;
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Ensure all interactive elements meet 44px minimum tap target */
-button, a, [role="button"], input, select, textarea {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Exception for inline/icon-only elements that are already wrapped */
-.min-tap-none, [data-no-min-tap] {
-  min-height: unset;
-  min-width: unset;
-}
-
-/* Scrollbar hide utility */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+@media (hover: none) {
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
 }
 
 /* Safe area for mobile devices */
@@ -292,15 +265,4 @@ button, a, [role="button"], input, select, textarea {
 
 .safe-area-top {
   padding-top: env(safe-area-inset-top);
-}
-
-/* Full dynamic viewport height */
-.h-dvh {
-  height: 100dvh;
-}
-
-/* Prevent text selection on swipeable cards */
-.select-none {
-  -webkit-user-select: none;
-  user-select: none;
 }
