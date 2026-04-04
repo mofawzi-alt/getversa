@@ -295,7 +295,7 @@ const QUESTION_SIDE_ALIASES: Record<string, Partial<Record<PollImageSide, string
   'finance a car or pay cash': { A: 'bmw.jpg', B: 'financial-freedom.jpg' },
   'financial advisor or self taught': { A: 'linkedin.jpg', B: 'books.jpg' },
   // Style
-  'balenciaga or off white': { A: 'branded.jpg', B: 'sneakers.jpg' },
+  'balenciaga or off white': { A: 'balenciaga.jpg', B: 'off-white.jpg' },
   'black outfit or colors': { A: 'monochrome.jpg', B: 'thrift.jpg' },
   'branded gym wear or plain': { A: 'nike.jpg', B: 'gym.jpg' },
   'buy original or inspired': { A: 'branded.jpg', B: 'thrift.jpg' },
