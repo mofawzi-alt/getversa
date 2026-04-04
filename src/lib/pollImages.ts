@@ -317,7 +317,7 @@ const OPTION_ALIASES: Record<string, string> = {
   routine: 'suit.jpg',
   spontaneous: 'fly.jpg',
   journal: 'books.jpg',
-  'mental notes': 'phone-camera.jpg',
+  'mental notes': 'iphone.jpg',
   meditation: 'nature.jpg',
   'more sleep': 'night-sky.jpg',
   alarm: 'sunrise.jpg',
