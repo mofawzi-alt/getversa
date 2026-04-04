@@ -873,11 +873,12 @@ export default function SwipeFeed() {
         voter_city: profile?.city || null,
       } as any);
       if (voteError) throw voteError;
-      const { data: votes } = await supabase.from('votes').select('choice').eq('poll_id', pollId);
-      const totalVotes = votes?.length || 0;
-      const aVotes = votes?.filter(v => v.choice === 'A').length || 0;
-      const percentA = totalVotes > 0 ? Math.round((aVotes / totalVotes) * 100) : 0;
-      return { pollId, choice, percentA, percentB: totalVotes > 0 ? 100 - percentA : 0, totalVotes };
+      // Use RPC for results instead of fetching all individual votes
+      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: [pollId] });
+      const r = results?.[0];
+      const totalVotes = r?.total_votes || 1;
+      const percentA = r?.percent_a || 0;
+      return { pollId, choice, percentA, percentB: 100 - percentA, totalVotes };
     },
     onSuccess: (data) => {
       // Result sound plays after suspense delay (when animation begins)
