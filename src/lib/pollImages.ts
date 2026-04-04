@@ -911,7 +911,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'just buy': 'shopping.jpg',
   'reviews first': 'iphone.jpg',
   'wait for sale': 'shopping.jpg',
-  'souq deals': 'shopping.jpg',
+  // souq deals already defined above
   'free shipping': 'noon-brand.jpg',
   'same day': 'talabat.jpg',
   'return often': 'shopping.jpg',
