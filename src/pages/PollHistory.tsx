@@ -7,38 +7,10 @@ import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp as TrendUp } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
-
-import beachImg from '@/assets/polls/beach.jpg';
-import cityImg from '@/assets/polls/city.jpg';
-import mountainsImg from '@/assets/polls/mountains.jpg';
-import natureImg from '@/assets/polls/nature.jpg';
-import sunsetImg from '@/assets/polls/sunset.jpg';
-import sunriseImg from '@/assets/polls/sunrise.jpg';
-import coffeeImg from '@/assets/polls/coffee.jpg';
-import teaImg from '@/assets/polls/tea.jpg';
-import pizzaImg from '@/assets/polls/pizza.jpg';
-import sushiImg from '@/assets/polls/sushi.jpg';
-import catsImg from '@/assets/polls/cats.jpg';
-import dogsImg from '@/assets/polls/dogs.jpg';
-import summerImg from '@/assets/polls/summer.jpg';
-import winterImg from '@/assets/polls/winter.jpg';
-import sneakersImg from '@/assets/polls/sneakers.jpg';
-import bootsImg from '@/assets/polls/boots.jpg';
-import booksImg from '@/assets/polls/books.jpg';
-import moviesImg from '@/assets/polls/movies.jpg';
-import daySkyImg from '@/assets/polls/day-sky.jpg';
-import nightSkyImg from '@/assets/polls/night-sky.jpg';
-
-const FALLBACK_IMAGES = [
-  beachImg, cityImg, mountainsImg, natureImg, sunsetImg, sunriseImg,
-  coffeeImg, teaImg, pizzaImg, sushiImg, catsImg, dogsImg,
-  summerImg, winterImg, sneakersImg, bootsImg, booksImg, moviesImg,
-  daySkyImg, nightSkyImg,
-];
+import { getStablePollFallbackImage } from '@/lib/pollImages';
 
 function getFallbackImage(seed: string, index: number): string {
-  const hash = seed.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return FALLBACK_IMAGES[(hash + index) % FALLBACK_IMAGES.length];
+  return getStablePollFallbackImage(seed, index);
 }
 
 interface VoteHistoryItem {
