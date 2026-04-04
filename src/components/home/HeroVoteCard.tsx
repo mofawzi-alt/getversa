@@ -99,7 +99,7 @@ export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
     queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
 
     setTimeout(() => {
-      navigate('/vote');
+      navigate(`/vote?excludeHero=${poll.id}`);
     }, RESULT_MS);
   }, [navigate, poll, profile, queryClient, result, user]);
 
