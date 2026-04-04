@@ -333,39 +333,9 @@ export default function Home() {
 
   const [modalPoll, setModalPoll] = useState<PollCard | null>(null);
 
-  if (showWelcome) {
-    return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); setShowTutorial(true); }} />;
-  }
-
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
-      </AppLayout>
-    );
-  }
-
   const allPolls = polls || [];
   const hasUnseen = (unseenCount || 0) > 0;
   const newPolls = useMemo(() => allPolls.filter(p => !votedPollIds?.has(p.id)), [allPolls, votedPollIds]);
-
-  const handlePollTap = (poll: PollCard) => {
-    const hasVoted = votedPollIds?.has(poll.id);
-    const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
-    const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
-    if (!hasStarted) return;
-    if (isExpired || hasVoted) {
-      setModalPoll(poll);
-    } else {
-      navigate(`/vote?pollId=${poll.id}`);
-    }
-  };
-
-  const handleLivePollTap = (poll: PollCard) => {
-    navigate(`/live-debate?pollId=${poll.id}`);
-  };
 
   // ── Memoized expensive computations ──
   const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
