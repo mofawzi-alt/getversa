@@ -381,8 +381,8 @@ function ImmersivePollCard({
           </div>
 
           {/* Question overlay */}
-          <div className="absolute top-0 inset-x-0 px-4 pt-3 pb-8 bg-gradient-to-b from-black/70 to-transparent z-20 pointer-events-none">
-            <p className="text-white text-base font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
+          <div className="absolute top-0 inset-x-0 px-5 pt-4 pb-10 bg-gradient-to-b from-black/70 to-transparent z-20 pointer-events-none">
+            <p className="text-white text-lg sm:text-base font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
           </div>
 
           {/* Suspense loading pulse */}
