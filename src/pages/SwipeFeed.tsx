@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/dialog';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PWAInstallPrompt, { markFirstVote } from '@/components/PWAInstallPrompt';
+import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
+import SwipeHint, { isSwipeHintDone } from '@/components/onboarding/SwipeHint';
 
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
@@ -653,6 +655,10 @@ export default function SwipeFeed() {
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
   // Track guest votes for insight preview in signup modal
   const [guestChoices, setGuestChoices] = useState<string[]>([]);
+  const [showSwipeOverlay, setShowSwipeOverlay] = useState(!isSwipeOverlayDone());
+  const [showSwipeHint, setShowSwipeHint] = useState(!isSwipeHintDone());
+  const [totalUserVotes, setTotalUserVotes] = useState<number | null>(null);
+  const NEW_USER_VOTE_THRESHOLD = 5;
 
   useEffect(() => {
     if (loading) return;
@@ -670,6 +676,13 @@ export default function SwipeFeed() {
       setDailySwipeCount(parseInt(localStorage.getItem(key) || '0', 10));
     } catch { /* ignore */ }
   }, []);
+
+  // Fetch total user vote count for new-user redirect logic
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('votes').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
+      .then(({ count }) => setTotalUserVotes(count ?? 0));
+  }, [user]);
 
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
@@ -889,6 +902,13 @@ export default function SwipeFeed() {
       // Track session votes and trigger micro-feedback every 5
       const newCount = sessionVoteCount + 1;
       setSessionVoteCount(newCount);
+
+      // New user: after 5 total votes, redirect to home
+      const newTotal = (totalUserVotes ?? 0) + newCount;
+      if (totalUserVotes !== null && totalUserVotes < NEW_USER_VOTE_THRESHOLD && newTotal >= NEW_USER_VOTE_THRESHOLD) {
+        setTimeout(() => navigate('/home', { replace: true }), 2000);
+      }
+
       if (newCount % MICRO_FEEDBACK_INTERVAL === 0 && user) {
         setTimeout(() => triggerMicroFeedback(), 2000);
       }
@@ -1149,12 +1169,12 @@ export default function SwipeFeed() {
               <div
                 key={poll.id}
                 ref={(el) => { if (el) cardRefs.current.set(poll.id, el); }}
-                className="w-full"
+                className="w-full relative"
               >
                 <ImmersivePollCard
                   poll={poll}
                   result={result}
-                  onVote={handleVote}
+                  onVote={(pollId, choice) => { setShowSwipeHint(false); handleVote(pollId, choice); }}
                   onSkip={handleSkip}
                   disabled={voteMutation.isPending}
                   showFeedback={feedbackPollId === poll.id}
@@ -1163,6 +1183,8 @@ export default function SwipeFeed() {
                   userCountry={profile?.country}
                   sessionVoteCount={sessionVoteCount}
                 />
+                {/* Swipe hint on very first card only */}
+                {idx === 0 && showSwipeHint && !result && <SwipeHint />}
               </div>
             );
           })
@@ -1250,6 +1272,11 @@ export default function SwipeFeed() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* First-time swipe overlay */}
+      <AnimatePresence>
+        {showSwipeOverlay && <SwipeOverlay onDismiss={() => setShowSwipeOverlay(false)} />}
+      </AnimatePresence>
     </div>
   );
 }

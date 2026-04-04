@@ -190,6 +190,13 @@ export default function Home() {
   const isNewUser = voteCount < EXPLORE_THRESHOLD;
   const hasUnlockedExplore = !isNewUser;
 
+  // New authenticated users with 0 votes → send straight to vote feed
+  useEffect(() => {
+    if (!loading && user && profileComplete && userVoteCount === 0) {
+      navigate('/vote', { replace: true });
+    }
+  }, [loading, user, profileComplete, userVoteCount, navigate]);
+
   useEffect(() => {
     if (hasUnlockedExplore && !isExploreUnlocked()) {
       markExploreUnlocked();
