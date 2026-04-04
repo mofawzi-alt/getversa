@@ -710,13 +710,14 @@ export default function SwipeFeed() {
 
       // Build category affinity map from user's past votes for personalization
       const categoryAffinity = new Map<string, number>();
+      let votedPollSet = new Set<string>();
 
       if (user) {
         // Only fetch poll_ids to mark as voted — don't fetch results for all of them
         const { data: userVotes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
         if (userVotes && userVotes.length > 0) {
           const votedPollIds = userVotes.map(v => v.poll_id);
-          const votedPollSet = new Set(votedPollIds);
+          votedPollSet = new Set(votedPollIds);
 
           // Build category affinity from current batch only
           allPolls.forEach(p => {
@@ -786,24 +787,29 @@ export default function SwipeFeed() {
         });
       }
 
-      // ── Personalized sorting: prioritize categories user engages with most ──
-      if (categoryAffinity.size > 0 && !categoryFilter && !searchFilter) {
-        const maxAffinity = Math.max(...categoryAffinity.values());
-        allPolls.sort((a, b) => {
-          // Daily polls always first
-          if (a.is_daily_poll !== b.is_daily_poll) return a.is_daily_poll ? -1 : 1;
-          // Weight score priority
-          const wA = Number(a.weight_score) || 1;
-          const wB = Number(b.weight_score) || 1;
-          if (wA !== wB) return wB - wA;
-          // Category affinity score (0-1), with a baseline of 0.3 for new categories to ensure diversity
+      // ── Sorting: unvoted first, then personalized by category affinity ──
+      allPolls.sort((a, b) => {
+        // Unvoted polls always come first
+        const aVoted = votedPollSet.has(a.id) ? 1 : 0;
+        const bVoted = votedPollSet.has(b.id) ? 1 : 0;
+        if (aVoted !== bVoted) return aVoted - bVoted;
+
+        // Daily polls first among unvoted
+        if (a.is_daily_poll !== b.is_daily_poll) return a.is_daily_poll ? -1 : 1;
+        // Weight score priority
+        const wA = Number(a.weight_score) || 1;
+        const wB = Number(b.weight_score) || 1;
+        if (wA !== wB) return wB - wA;
+        // Category affinity
+        if (categoryAffinity.size > 0 && !categoryFilter && !searchFilter) {
+          const maxAffinity = Math.max(...categoryAffinity.values());
           const affinityA = a.category ? (categoryAffinity.get(a.category) || 0) / maxAffinity : 0.3;
           const affinityB = b.category ? (categoryAffinity.get(b.category) || 0) / maxAffinity : 0.3;
           if (Math.abs(affinityA - affinityB) > 0.1) return affinityB - affinityA;
-          // Fallback: newer first
-          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-        });
-      }
+        }
+        // Fallback: newer first
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      });
 
       if (targetPollId) {
         const idx = allPolls.findIndex(p => p.id === targetPollId);
