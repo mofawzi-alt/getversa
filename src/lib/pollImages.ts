@@ -118,7 +118,7 @@ const QUESTION_SIDE_ALIASES: Record<string, Partial<Record<PollImageSide, string
   'dell or hp laptop': { A: 'dell-laptop.jpg', B: 'windows-laptop.jpg' },
   'apple or samsung ecosystem': { A: 'iphone.jpg', B: 'samsung.jpg' },
   // Brands - ensure distinct sides
-  'canon or sony camera': { A: 'camping.jpg', B: 'bose.jpg' },
+  'canon or sony camera': { A: 'canon-camera.jpg', B: 'sony-camera.jpg' },
   'costa coffee or tim hortons': { A: 'coffee.jpg', B: 'starbucks.jpg' },
   'domino s or local pizza': { A: 'pizza.jpg', B: 'falafel.jpg' },
   'dyson or local brand': { A: 'ikea.jpg', B: 'local-brand.jpg' },
