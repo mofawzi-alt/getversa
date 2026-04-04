@@ -421,6 +421,7 @@ function ImmersivePollCard({
               choice={result!.choice}
               visible={showFeedback}
               userCountry={userCountry}
+              demoData={result!.demoData}
             />
           )}
         </div>
