@@ -218,7 +218,7 @@ export default function PollHistory() {
         </button>
         <div>
           <h1 className="text-lg font-display font-bold text-foreground">My Votes</h1>
-          <p className="text-[10px] text-muted-foreground">{voteHistory?.length || 0} votes · swipe up & down</p>
+          <p className="text-[10px] text-muted-foreground">Results update in real time</p>
         </div>
       </div>
 
