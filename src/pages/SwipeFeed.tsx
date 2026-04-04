@@ -940,6 +940,23 @@ export default function SwipeFeed() {
         }, 2500);
       }
 
+      // Streak milestone check — refresh profile to get updated streak, then check
+      if (user) {
+        setTimeout(async () => {
+          const { data: freshUser } = await supabase
+            .from('users')
+            .select('current_streak')
+            .eq('id', user.id)
+            .single();
+          if (freshUser?.current_streak) {
+            const milestone = checkStreakMilestone(freshUser.current_streak);
+            if (milestone) {
+              setStreakMilestone(milestone);
+            }
+          }
+        }, 2000);
+      }
+
       // Onboarding: check if user hit 3 votes
       if (!user) {
         const guestCount = getGuestVoteCount();
