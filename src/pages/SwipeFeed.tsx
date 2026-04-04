@@ -655,6 +655,10 @@ export default function SwipeFeed() {
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
   // Track guest votes for insight preview in signup modal
   const [guestChoices, setGuestChoices] = useState<string[]>([]);
+  const [showSwipeOverlay, setShowSwipeOverlay] = useState(!isSwipeOverlayDone());
+  const [showSwipeHint, setShowSwipeHint] = useState(!isSwipeHintDone());
+  const [totalUserVotes, setTotalUserVotes] = useState<number | null>(null);
+  const NEW_USER_VOTE_THRESHOLD = 5;
 
   useEffect(() => {
     if (loading) return;
