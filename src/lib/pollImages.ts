@@ -428,7 +428,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'tim hortons': 'starbucks.jpg',
   "mcdonald's": 'mcdonalds.jpg',
   'burger king': 'burger-king.jpg',
-  "hardee's": 'burger-king.jpg',
+  "hardee's": 'hardees.jpg',
   tea: 'tea.jpg',
   coffee: 'coffee.jpg',
   pizza: 'pizza.jpg',
