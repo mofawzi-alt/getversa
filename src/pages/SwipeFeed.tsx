@@ -324,7 +324,7 @@ function ImmersivePollCard({
           onMouseLeave={() => isDragging && handleEnd()}
         >
           {/* Split images */}
-          <div className="flex aspect-[4/3] w-full">
+          <div className="flex aspect-[3/4] sm:aspect-[4/3] w-full">
             <div className="w-1/2 h-full relative overflow-hidden">
               <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
