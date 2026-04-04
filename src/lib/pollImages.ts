@@ -655,7 +655,7 @@ const OPTION_ALIASES: Record<string, string> = {
   balenciaga: 'branded.jpg',
   'off-white': 'sneakers.jpg',
   thobe: 'thobe.jpg',
-  'hijab fashion': 'hijab-fashion.jpg',
+  'hijab fashion': 'hijab-fashion-v2.jpg',
   // abaya style already defined above
   ounass: 'branded.jpg',
   farfetch: 'branded.jpg',
