@@ -678,7 +678,7 @@ export default function Home() {
               </motion.div>
               <div className="flex-1">
                 <p className="text-xs font-display font-bold text-foreground">
-                  {unseenCount} poll{unseenCount !== 1 ? 's' : ''} waiting for your vote
+                  New polls waiting for your vote
                 </p>
                 <p className="text-[10px] text-muted-foreground">Every vote shapes the insights</p>
               </div>

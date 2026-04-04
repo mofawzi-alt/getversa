@@ -350,23 +350,8 @@ export default function Explore() {
                   )}
                 </div>
                 {/* Progress bar: voted / total */}
-                {user && (
-                  <div className="mt-1.5">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-[9px] text-muted-foreground">
-                        {cat.votedPolls}/{cat.activePolls} voted
-                      </span>
-                      {cat.votedPolls >= cat.activePolls && cat.activePolls > 0 && (
-                        <span className="flex items-center gap-0.5 text-[8px] font-bold text-success">
-                          <CheckCircle2 className="h-2.5 w-2.5" /> Complete!
-                        </span>
-                      )}
-                    </div>
-                    <Progress value={cat.activePolls > 0 ? (cat.votedPolls / cat.activePolls) * 100 : 0} className="h-1.5" />
-                  </div>
-                )}
-                {!user && (
-                  <p className="text-[10px] text-muted-foreground mt-1">{cat.activePolls} active poll{cat.activePolls !== 1 ? 's' : ''}</p>
+                {cat.hasLive && !cat.momentum && (
+                  <p className="text-[10px] text-muted-foreground mt-1">Active now</p>
                 )}
                 {cat.momentum === 'rising' && (
                   <div className="flex items-center gap-0.5 mt-1">
