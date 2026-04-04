@@ -331,7 +331,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'news detox': 'nature.jpg',
   cater: 'fancy-restaurant.jpg',
   walk: 'nature.jpg',
-  camping: 'mountains.jpg',
+  camping: 'camping.jpg',
   hotel: 'hotel.jpg',
   garden: 'compound.jpg',
   penthouse: 'city-apartment.jpg',
