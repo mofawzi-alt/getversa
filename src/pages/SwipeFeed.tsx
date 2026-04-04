@@ -256,7 +256,7 @@ function ImmersivePollCard({
   const showResults = hasResult && !showSuspense;
 
   return (
-    <div className={`w-full relative flex flex-col ${isHighStakes ? 'scale-[1.02]' : ''}`}>
+    <div className={`w-full relative flex flex-col select-none ${isHighStakes ? 'scale-[1.02]' : ''}`} style={{ touchAction: 'none' }}>
       {/* Campaign label */}
       <div className="flex justify-center mb-1.5 gap-2">
         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${isHighStakes ? 'bg-destructive/15 text-destructive animate-pulse' : 'bg-primary/10 text-primary'}`}>
