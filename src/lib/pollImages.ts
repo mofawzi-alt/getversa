@@ -413,7 +413,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'one phone': 'iphone.jpg',
   crypto: 'crypto.jpg',
   bank: 'financial-freedom.jpg',
-  canon: 'camping.jpg',
+  canon: 'canon-camera.jpg',
   'phone camera': 'phone-camera.jpg',
   dell: 'wfh.jpg',
   hp: 'wfh.jpg',
