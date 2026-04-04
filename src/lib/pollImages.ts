@@ -415,8 +415,8 @@ const OPTION_ALIASES: Record<string, string> = {
   bank: 'financial-freedom.jpg',
   canon: 'canon-camera.jpg',
   'phone camera': 'phone-camera.jpg',
-  dell: 'wfh.jpg',
-  hp: 'wfh.jpg',
+  dell: 'dell-laptop.jpg',
+  hp: 'windows-laptop.jpg',
   'gadget lover': 'iphone.jpg',
 
   // Eat & Drink
