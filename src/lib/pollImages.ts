@@ -399,7 +399,7 @@ const OPTION_ALIASES: Record<string, string> = {
   electric: 'bmw.jpg',
   petrol: 'toyota.jpg',
   console: 'playstation.jpg',
-  pc: 'wfh.jpg',
+  pc: 'gaming-pc.jpg',
   'qr code': 'iphone.jpg',
   tablet: 'iphone.jpg',
   laptop: 'wfh.jpg',
