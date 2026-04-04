@@ -712,49 +712,43 @@ export default function SwipeFeed() {
       const categoryAffinity = new Map<string, number>();
 
       if (user) {
+        // Only fetch poll_ids to mark as voted — don't fetch results for all of them
         const { data: userVotes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
         if (userVotes && userVotes.length > 0) {
           const votedPollIds = userVotes.map(v => v.poll_id);
-
-          // Build category affinity from voted polls
           const votedPollSet = new Set(votedPollIds);
+
+          // Build category affinity from current batch only
           allPolls.forEach(p => {
             if (votedPollSet.has(p.id) && p.category) {
               categoryAffinity.set(p.category, (categoryAffinity.get(p.category) || 0) + 1);
             }
           });
-          // Also count categories from polls not in current batch
-          const { data: votedPollCategories } = await supabase
-            .from('polls')
-            .select('category')
-            .in('id', votedPollIds.slice(0, 500))
-            .not('category', 'is', null);
-          votedPollCategories?.forEach(p => {
-            if (p.category) {
-              categoryAffinity.set(p.category, (categoryAffinity.get(p.category) || 0) + 1);
-            }
-          });
 
-          const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: votedPollIds });
-          const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
-          const preloadedResults = new Map<string, VoteResult>();
-          userVotes.forEach(v => {
-            const r = resultsMap.get(v.poll_id);
-            if (r) {
-              preloadedResults.set(v.poll_id, {
-                pollId: v.poll_id,
-                choice: v.choice as 'A' | 'B',
-                percentA: r.percent_a || 0,
-                percentB: r.percent_b || 0,
-                totalVotes: r.total_votes || 0,
-              });
-            }
-          });
-          setVotedResults(prev => {
-            const merged = new Map(preloadedResults);
-            prev.forEach((v, k) => merged.set(k, v));
-            return merged;
-          });
+          // Only fetch results for polls in the current batch that were voted on
+          const batchVotedIds = allPolls.filter(p => votedPollSet.has(p.id)).map(p => p.id);
+          if (batchVotedIds.length > 0) {
+            const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: batchVotedIds });
+            const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
+            const preloadedResults = new Map<string, VoteResult>();
+            userVotes.filter(v => batchVotedIds.includes(v.poll_id)).forEach(v => {
+              const r = resultsMap.get(v.poll_id);
+              if (r) {
+                preloadedResults.set(v.poll_id, {
+                  pollId: v.poll_id,
+                  choice: v.choice as 'A' | 'B',
+                  percentA: r.percent_a || 0,
+                  percentB: r.percent_b || 0,
+                  totalVotes: r.total_votes || 0,
+                });
+              }
+            });
+            setVotedResults(prev => {
+              const merged = new Map(preloadedResults);
+              prev.forEach((v, k) => merged.set(k, v));
+              return merged;
+            });
+          }
         }
       }
 
