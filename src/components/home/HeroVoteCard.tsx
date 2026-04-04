@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
+import { Sparkles } from 'lucide-react';
 
 interface HeroPoll {
   id: string;
@@ -21,29 +23,24 @@ interface HeroPoll {
 }
 
 interface HeroVoteCardProps {
-  poll: HeroPoll;
+  poll: HeroPoll | null;
   unseenCount: number;
-  hasVoted: boolean;
-  onVoted?: () => void;
 }
 
 const SWIPE_THRESHOLD = 70;
-const RESULT_MS = 2000;
+const RESULT_MS = 1500;
 
-export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted, onVoted }: HeroVoteCardProps) {
+export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [result, setResult] = useState<{ choice: 'A' | 'B'; percentA: number; percentB: number; total: number } | null>(null);
-  const [voted, setVoted] = useState(alreadyVoted);
   const [showHint, setShowHint] = useState(true);
   const startX = useRef(0);
-  const cardRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setVoted(alreadyVoted); }, [alreadyVoted]);
-
-  // Hide hint after 4s or on first drag
+  // Hide hint after 4s
   useEffect(() => {
     if (!showHint) return;
     const t = setTimeout(() => setShowHint(false), 4000);
@@ -51,7 +48,7 @@ export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted
   }, [showHint]);
 
   const submitVote = useCallback(async (choice: 'A' | 'B') => {
-    if (voted || result) return;
+    if (!poll || result) return;
     playSwipeSound();
 
     // Optimistic result
@@ -70,14 +67,10 @@ export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted
       if (profile?.city) votePayload.voter_city = profile.city;
 
       const { error } = await supabase.from('votes').insert(votePayload);
-      if (error) {
-        if (error.code === '23505') {
-          // Already voted
-        } else {
-          toast.error('Vote failed');
-          setResult(null);
-          return;
-        }
+      if (error && error.code !== '23505') {
+        toast.error('Vote failed');
+        setResult(null);
+        return;
       }
 
       // Get real results
@@ -93,7 +86,6 @@ export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted
     }
 
     playResultSound();
-    setVoted(true);
 
     // Invalidate queries
     queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
@@ -101,14 +93,32 @@ export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted
     queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
     queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
 
+    // After showing result, navigate to full swipe feed
     setTimeout(() => {
-      setResult(null);
-      onVoted?.();
+      navigate('/vote');
     }, RESULT_MS);
-  }, [voted, result, poll, user, profile, queryClient, onVoted]);
+  }, [poll, result, user, profile, queryClient, navigate]);
+
+  // No unvoted poll — show caught-up state
+  if (!poll) {
+    return (
+      <section className="px-3 pt-4 pb-2">
+        <div className="flex justify-center mb-2">
+          <span className="text-xs px-3 py-1 rounded-full bg-muted text-muted-foreground font-medium">
+            All caught up — check back tomorrow 🔥
+          </span>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card px-6 py-12 text-center shadow-sm">
+          <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm font-display font-bold text-foreground">You've voted on everything!</p>
+          <p className="text-xs text-muted-foreground mt-1">New polls drop daily — come back tomorrow</p>
+        </div>
+      </section>
+    );
+  }
 
   const handleStart = (clientX: number) => {
-    if (voted || result) return;
+    if (result) return;
     setIsDragging(true);
     startX.current = clientX;
     setShowHint(false);
@@ -135,17 +145,11 @@ export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted
   const highlightA = !result && dragX < -30 ? Math.min(Math.abs(dragX) / SWIPE_THRESHOLD, 1) : 0;
   const highlightB = !result && dragX > 30 ? Math.min(dragX / SWIPE_THRESHOLD, 1) : 0;
 
-  const caughtUp = unseenCount === 0 && voted;
-
   return (
     <section className="px-3 pt-4 pb-2">
       {/* Badge: unseen count */}
       <div className="flex justify-center mb-2">
-        {caughtUp ? (
-          <span className="text-xs px-3 py-1 rounded-full bg-muted text-muted-foreground font-medium">
-            All caught up — check back tomorrow 🔥
-          </span>
-        ) : unseenCount > 0 ? (
+        {unseenCount > 0 ? (
           <motion.span
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -158,7 +162,6 @@ export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted
 
       {/* Swipeable card */}
       <motion.div
-        ref={cardRef}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className={`relative rounded-2xl overflow-hidden border border-border/60 shadow-xl ${result ? '' : 'cursor-grab active:cursor-grabbing'}`}
@@ -192,11 +195,7 @@ export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted
             <div className="absolute bottom-3 left-3">
               <p className="text-white text-lg font-extrabold drop-shadow-lg">{poll.option_a}</p>
               {result && (
-                <motion.span
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-2xl font-bold text-option-a drop-shadow-lg block"
-                >
+                <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-2xl font-bold text-option-a drop-shadow-lg block">
                   {result.percentA}%
                 </motion.span>
               )}
@@ -221,11 +220,7 @@ export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted
             <div className="absolute bottom-3 right-3 text-right">
               <p className="text-white text-lg font-extrabold drop-shadow-lg">{poll.option_b}</p>
               {result && (
-                <motion.span
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-2xl font-bold text-option-b drop-shadow-lg block"
-                >
+                <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-2xl font-bold text-option-b drop-shadow-lg block">
                   {result.percentB}%
                 </motion.span>
               )}
@@ -251,25 +246,16 @@ export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted
                 <motion.div className="h-full bg-option-a rounded-l-full" initial={{ width: '50%' }} animate={{ width: `${result.percentA}%` }} transition={{ duration: 0.7 }} />
                 <motion.div className="h-full bg-option-b rounded-r-full" initial={{ width: '50%' }} animate={{ width: `${result.percentB}%` }} transition={{ duration: 0.7 }} />
               </div>
-              <p className="text-[10px] text-white/60 text-center">{result.total.toLocaleString()} perspectives · {result.choice === 'A' ? poll.option_a : poll.option_b} picked</p>
+              <p className="text-[10px] text-white/60 text-center">{result.total.toLocaleString()} perspectives · Keep going →</p>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Animated swipe hint overlay */}
+        {/* Animated swipe hint */}
         <AnimatePresence>
-          {!result && !voted && showHint && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
-            >
-              <motion.div
-                animate={{ x: [-20, 20, -20] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                className="flex items-center gap-1"
-              >
+          {!result && showHint && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+              <motion.div animate={{ x: [-20, 20, -20] }} transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}>
                 <span className="text-3xl drop-shadow-lg">👆</span>
               </motion.div>
             </motion.div>
@@ -277,12 +263,9 @@ export default function HeroVoteCard({ poll, unseenCount, hasVoted: alreadyVoted
         </AnimatePresence>
       </motion.div>
 
-      {/* Swipe hint text below card */}
-      {!result && !voted && (
+      {/* Swipe hint text */}
+      {!result && (
         <p className="text-center text-xs text-muted-foreground mt-2">← Swipe to vote →</p>
-      )}
-      {voted && !result && (
-        <p className="text-center text-[10px] text-muted-foreground/60 mt-2">Swipe to vote · Tap for more</p>
       )}
     </section>
   );
