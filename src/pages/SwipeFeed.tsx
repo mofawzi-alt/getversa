@@ -906,6 +906,7 @@ export default function SwipeFeed() {
         demoTotal: Number(d.demo_total),
         ageRange: profile?.age_range || null,
         city: profile?.city || null,
+        gender: profile?.gender || null,
       } : null;
       return { pollId, choice, percentA, percentB: 100 - percentA, totalVotes, demoData };
     },
