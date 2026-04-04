@@ -23,7 +23,7 @@ export default function AppHeader() {
           {user && (
             <button
               onClick={() => navigate('/history')}
-              className="p-2 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all"
+              className="p-2 rounded-lg text-primary hover:bg-primary/10 transition-all"
               aria-label="My Votes"
             >
               <Clock className="h-5 w-5" />
