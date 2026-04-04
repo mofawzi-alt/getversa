@@ -236,8 +236,8 @@ export default function Home() {
       const { count } = await supabase.from('votes').select('id', { count: 'exact', head: true }).gte('created_at', since);
       return count || 0;
     },
-    staleTime: 1000 * 10,
-    refetchInterval: 1000 * 10,
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 60,
   });
 
   // User weekly vote count
@@ -276,7 +276,7 @@ export default function Home() {
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
-        .limit(200);
+        .limit(80);
       if (!rawPolls || rawPolls.length === 0) return [];
 
       // Filter by user demographics
@@ -296,18 +296,22 @@ export default function Home() {
         });
       }
 
-      const pollIds = filteredPolls.map(p => p.id);
+      // Only process top 50 polls to reduce DB load on mobile
+      const topPolls = filteredPolls.slice(0, 50);
+      const pollIds = topPolls.map(p => p.id);
       if (pollIds.length === 0) return [];
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
 
-      // Get recent votes (last 5 minutes) per poll for "voting now" count
+      // Get recent votes (last 5 minutes) — only for top 20 polls to keep it fast
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const recentPollIds = pollIds.slice(0, 20);
       const { data: recentVotesData } = await supabase
         .from('votes')
         .select('poll_id, user_id')
-        .in('poll_id', pollIds)
-        .gte('created_at', fiveMinAgo);
+        .in('poll_id', recentPollIds)
+        .gte('created_at', fiveMinAgo)
+        .limit(200);
       // Count unique users per poll
       const recentVotesMap = new Map<string, Set<string>>();
       recentVotesData?.forEach(v => {
@@ -318,7 +322,7 @@ export default function Home() {
       const allRecentVoters = new Set<string>();
       recentVotesData?.forEach(v => allRecentVoters.add(v.user_id));
 
-      return filteredPolls.map(p => {
+      return topPolls.map(p => {
         const r = resultsMap.get(p.id) as any;
         const total = (r?.total_votes as number) || 0;
         const votesA = (r?.votes_a as number) || 0;
@@ -327,11 +331,105 @@ export default function Home() {
         return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: recentVotesMap.get(p.id)?.size || 0, _recentVoterIds: Array.from(recentVotesMap.get(p.id) || []) };
       });
     },
-    staleTime: 1000 * 10,
-    refetchInterval: 1000 * 10,
+    staleTime: 1000 * 30,
+    refetchInterval: 1000 * 60,
   });
 
   const [modalPoll, setModalPoll] = useState<PollCard | null>(null);
+
+  const allPolls = polls || [];
+  const hasUnseen = (unseenCount || 0) > 0;
+  const newPolls = useMemo(() => allPolls.filter(p => !votedPollIds?.has(p.id)), [allPolls, votedPollIds]);
+
+  // ── Memoized expensive computations ──
+  const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
+    const now = new Date();
+    const livePollsRaw = allPolls.filter(p => {
+      const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
+      const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
+      return hasStarted && !isExpired;
+    }).sort((a, b) => ((b as any).weight_score || 1) - ((a as any).weight_score || 1) || b.totalVotes - a.totalVotes);
+
+    // Diversify live polls by category (round-robin pick)
+    const diversifiedLive = (() => {
+      const byCategory = new Map<string, PollCard[]>();
+      livePollsRaw.forEach(p => {
+        const cat = p.category || 'Other';
+        if (!byCategory.has(cat)) byCategory.set(cat, []);
+        byCategory.get(cat)!.push(p);
+      });
+      const cats = Array.from(byCategory.values());
+      const result: PollCard[] = [];
+      const usedIds = new Set<string>();
+      let round = 0;
+      while (result.length < livePollsRaw.length) {
+        let added = false;
+        for (const catPolls of cats) {
+          if (round < catPolls.length && !usedIds.has(catPolls[round].id)) {
+            usedIds.add(catPolls[round].id);
+            result.push(catPolls[round]);
+            added = true;
+          }
+        }
+        if (!added) break;
+        round++;
+      }
+      return result;
+    })();
+
+    // Trending
+    const trending: (PollCard & { trendBadge: string; trendHot?: boolean })[] = [];
+    const seenIds = new Set<string>();
+    const seenTrendingCategories = new Set<string>();
+
+    const tryAddTrending = (p: PollCard, badge: string, hot?: boolean) => {
+      if (seenIds.has(p.id)) return;
+      const cat = p.category || 'Other';
+      if (seenTrendingCategories.has(cat) && trending.length < 9) return;
+      seenIds.add(p.id);
+      seenTrendingCategories.add(cat);
+      trending.push({ ...p, trendBadge: badge, trendHot: hot });
+    };
+
+    [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).forEach(p => {
+      if (trending.length >= 9) return;
+      tryAddTrending(p, `🔥 ${p.totalVotes} votes`);
+    });
+
+    [...allPolls].filter(p => p.totalVotes > 0).sort((a, b) => Math.abs(a.percentA - 50) - Math.abs(b.percentA - 50)).forEach(p => {
+      if (trending.length >= 9) return;
+      const spread = Math.abs(p.percentA - 50);
+      tryAddTrending(p, `⚡ ${spread}% gap`, spread <= 5);
+    });
+
+    [...allPolls].sort((a, b) => {
+      const aAge = (Date.now() - new Date(a.created_at).getTime()) / (1000 * 60 * 60);
+      const bAge = (Date.now() - new Date(b.created_at).getTime()) / (1000 * 60 * 60);
+      return (bAge > 0 ? b.totalVotes / bAge : b.totalVotes) - (aAge > 0 ? a.totalVotes / aAge : a.totalVotes);
+    }).forEach(p => {
+      if (trending.length >= 9) return;
+      const ageHours = Math.max(1, (Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60));
+      const rate = Math.round(p.totalVotes / ageHours);
+      tryAddTrending(p, `🚀 ${rate}/hr`);
+    });
+
+    if (trending.length < 9) {
+      [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).forEach(p => {
+        if (trending.length >= 9 || seenIds.has(p.id)) return;
+        seenIds.add(p.id);
+        trending.push({ ...p, trendBadge: `🔥 ${p.totalVotes} votes` });
+      });
+    }
+
+    const totalVoters = (() => {
+      if (!diversifiedLive.length) return 0;
+      const uniqueIds = new Set<string>();
+      diversifiedLive.forEach((p: any) => p._recentVoterIds?.forEach((id: string) => uniqueIds.add(id)));
+      return uniqueIds.size;
+    })();
+
+    return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
+  }, [allPolls]);
 
   if (showWelcome) {
     return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); setShowTutorial(true); }} />;
@@ -346,10 +444,6 @@ export default function Home() {
       </AppLayout>
     );
   }
-
-  const allPolls = polls || [];
-  const hasUnseen = (unseenCount || 0) > 0;
-  const newPolls = allPolls.filter(p => !votedPollIds?.has(p.id));
 
   const handlePollTap = (poll: PollCard) => {
     const hasVoted = votedPollIds?.has(poll.id);
@@ -366,100 +460,6 @@ export default function Home() {
   const handleLivePollTap = (poll: PollCard) => {
     navigate(`/live-debate?pollId=${poll.id}`);
   };
-
-   // ── FULL HOME ──
-  const now = new Date();
-  const livePollsRaw = allPolls.filter(p => {
-    const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
-    const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
-    return hasStarted && !isExpired;
-  }).sort((a, b) => ((b as any).weight_score || 1) - ((a as any).weight_score || 1) || b.totalVotes - a.totalVotes);
-
-  // Diversify live polls by category (round-robin pick)
-  const livePolls = (() => {
-    const byCategory = new Map<string, PollCard[]>();
-    livePollsRaw.forEach(p => {
-      const cat = p.category || 'Other';
-      if (!byCategory.has(cat)) byCategory.set(cat, []);
-      byCategory.get(cat)!.push(p);
-    });
-    const cats = Array.from(byCategory.values());
-    const result: PollCard[] = [];
-    const usedIds = new Set<string>();
-    let round = 0;
-    while (result.length < livePollsRaw.length) {
-      let added = false;
-      for (const catPolls of cats) {
-        if (round < catPolls.length && !usedIds.has(catPolls[round].id)) {
-          usedIds.add(catPolls[round].id);
-          result.push(catPolls[round]);
-          added = true;
-        }
-      }
-      if (!added) break;
-      round++;
-    }
-    return result;
-  })();
-
-  // (Featured poll removed — replaced by LIVE NOW carousel)
-
-  // Trending: build unified list with badges, diversified by category
-  const trendingPolls: (PollCard & { trendBadge: string; trendHot?: boolean })[] = [];
-  const seenIds = new Set<string>();
-  const seenTrendingCategories = new Set<string>();
-
-  const tryAddTrending = (p: PollCard, badge: string, hot?: boolean) => {
-    if (seenIds.has(p.id)) return;
-    const cat = p.category || 'Other';
-    // Prefer unseen categories first, but allow repeats if we have <6 unique cats
-    if (seenTrendingCategories.has(cat) && trendingPolls.length < 9) return;
-    seenIds.add(p.id);
-    seenTrendingCategories.add(cat);
-    trendingPolls.push({ ...p, trendBadge: badge, trendHot: hot });
-  };
-
-  // Pass 1: one per category from each ranking
-  // Most Voted
-  [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).forEach(p => {
-    if (trendingPolls.length >= 9) return;
-    tryAddTrending(p, `🔥 ${p.totalVotes} votes`);
-  });
-
-  // Most Contested
-  [...allPolls].filter(p => p.totalVotes > 0).sort((a, b) => Math.abs(a.percentA - 50) - Math.abs(b.percentA - 50)).forEach(p => {
-    if (trendingPolls.length >= 9) return;
-    const spread = Math.abs(p.percentA - 50);
-    tryAddTrending(p, `⚡ ${spread}% gap`, spread <= 5);
-  });
-
-  // Fastest Rising
-  [...allPolls].sort((a, b) => {
-    const aAge = (Date.now() - new Date(a.created_at).getTime()) / (1000 * 60 * 60);
-    const bAge = (Date.now() - new Date(b.created_at).getTime()) / (1000 * 60 * 60);
-    return (bAge > 0 ? b.totalVotes / bAge : b.totalVotes) - (aAge > 0 ? a.totalVotes / aAge : a.totalVotes);
-  }).forEach(p => {
-    if (trendingPolls.length >= 9) return;
-    const ageHours = Math.max(1, (Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60));
-    const rate = Math.round(p.totalVotes / ageHours);
-    tryAddTrending(p, `🚀 ${rate}/hr`);
-  });
-
-  // Pass 2: fill remaining slots allowing category repeats
-  if (trendingPolls.length < 9) {
-    [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).forEach(p => {
-      if (trendingPolls.length >= 9 || seenIds.has(p.id)) return;
-      seenIds.add(p.id);
-      trendingPolls.push({ ...p, trendBadge: `🔥 ${p.totalVotes} votes` });
-    });
-  }
-
-  const totalLiveVoters = (() => {
-    if (!livePolls.length) return 0;
-    const uniqueIds = new Set<string>();
-    livePolls.forEach((p: any) => p._recentVoterIds?.forEach((id: string) => uniqueIds.add(id)));
-    return uniqueIds.size;
-  })();
 
   return (
     <AppLayout>
