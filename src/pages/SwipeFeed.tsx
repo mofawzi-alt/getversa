@@ -572,6 +572,8 @@ function ImmersivePollCard({
                 </button>
               </motion.div>
             )}
+            {/* PWA Install prompt after first vote */}
+            <PWAInstallPrompt />
           </div>
         ) : (
           <div className="flex items-center justify-between">
