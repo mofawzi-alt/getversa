@@ -583,7 +583,8 @@ function ImmersivePollCard({
               {/* Subtle skip hint */}
               <button
                 onClick={(e) => { e.stopPropagation(); onSkip(poll.id); }}
-                className="text-[9px] text-muted-foreground/40 mt-0.5 hover:text-muted-foreground/60 transition-colors"
+                className="text-[10px] text-muted-foreground/40 mt-0.5 hover:text-muted-foreground/60 transition-colors min-h-[44px] flex items-center justify-center"
+                data-no-min-tap
               >
                 or swipe ↑ to skip
               </button>
