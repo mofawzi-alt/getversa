@@ -451,7 +451,12 @@ export default function Home() {
     if (isExpired || hasVoted) {
       setModalPoll(poll);
     } else {
-      navigate(`/vote?pollId=${poll.id}`);
+      // Find the poll index in newPolls and jump to it in the hero card
+      const idx = newPolls.findIndex(p => p.id === poll.id);
+      if (idx >= 0) {
+        setHeroPollIndex(idx);
+        heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 

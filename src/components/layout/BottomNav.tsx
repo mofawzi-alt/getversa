@@ -33,7 +33,13 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
 
         {/* Vote - center, highlighted */}
         <button
-          onClick={() => navigate('/vote')}
+          onClick={() => {
+            if (location.pathname === '/home') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+              navigate('/home');
+            }
+          }}
           className="flex flex-col items-center gap-0.5 -mt-5"
         >
           <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${

@@ -99,9 +99,12 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
     queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
 
     setTimeout(() => {
-      navigate(`/vote?excludeHero=${poll.id}`);
+      setResult(null);
+      setFlyDirection(null);
+      setShowHint(true);
+      onVoteComplete?.();
     }, RESULT_MS);
-  }, [navigate, poll, profile, queryClient, result, user]);
+  }, [onVoteComplete, poll, profile, queryClient, result, user]);
 
   if (!poll) {
     return (
