@@ -14,6 +14,7 @@ import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboar
 import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator';
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
+import HeroVoteCard from '@/components/home/HeroVoteCard';
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
