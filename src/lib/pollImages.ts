@@ -679,7 +679,7 @@ const OPTION_ALIASES: Record<string, string> = {
   rolex: 'rolex.jpg',
   casio: 'casio.jpg',
   apple: 'iphone.jpg',
-  sony: 'bose.jpg',
+  sony: 'sony-camera.jpg',
   bose: 'bose.jpg',
   kfc: 'kfc.jpg',
   popeyes: 'popeyes.jpg',
