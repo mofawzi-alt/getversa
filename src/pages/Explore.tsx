@@ -179,9 +179,7 @@ export default function Explore() {
               <span className="text-xs font-medium">Back</span>
             </button>
             <h1 className="text-xl font-display font-bold text-foreground">{selectedCategory}</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {categoryPolls.length} active poll{categoryPolls.length !== 1 ? 's' : ''}
-            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">Browse & vote</p>
           </div>
 
           {/* Poll list */}
