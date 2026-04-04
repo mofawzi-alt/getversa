@@ -82,8 +82,8 @@ export default function PullToRefresh({ children, onRefresh }: PullToRefreshProp
         setRefreshing(false);
         setPullY(0);
       }
-    } else if (pullY > 0) {
-      // Only update state if we actually pulled — avoids re-render on plain taps
+    } else if (activatedRef.current && pullY > 0) {
+      // Only update state if pull was actually activated — avoids re-render on plain taps
       setPullY(0);
     }
   }, [pullY, onRefresh]);

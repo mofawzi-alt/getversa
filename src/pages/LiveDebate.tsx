@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { X, Flame, Users } from 'lucide-react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { playSwipeSound, playResultSound, playMinoritySound } from '@/lib/sounds';
+import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 
 import beachImg from '@/assets/polls/beach.jpg';
@@ -186,8 +187,8 @@ export default function LiveDebate() {
     for (let i = 1; i <= 3; i++) {
       const p = polls[currentIndex + i];
       if (!p) break;
-      const imgA = p.image_a_url || getFallbackImage(p.id, 0);
-      const imgB = p.image_b_url || getFallbackImage(p.id, 1);
+      const imgA = getPollDisplayImageSrc({ imageUrl: p.image_a_url, option: p.option_a, question: p.question, side: 'A' });
+      const imgB = getPollDisplayImageSrc({ imageUrl: p.image_b_url, option: p.option_b, question: p.question, side: 'B' });
       const a = new Image(); a.src = imgA;
       const b = new Image(); b.src = imgB;
     }
@@ -312,8 +313,8 @@ export default function LiveDebate() {
     );
   }
 
-  const imgA = currentPoll.image_a_url || getFallbackImage(currentPoll.id, 0);
-  const imgB = currentPoll.image_b_url || getFallbackImage(currentPoll.id, 1);
+  const imgA = getPollDisplayImageSrc({ imageUrl: currentPoll.image_a_url, option: currentPoll.option_a, question: currentPoll.question, side: 'A' });
+  const imgB = getPollDisplayImageSrc({ imageUrl: currentPoll.image_b_url, option: currentPoll.option_b, question: currentPoll.question, side: 'B' });
   const campaignLabel = getCampaignLabel(currentPoll.category);
   const showResult = phase === 'result' && result;
 
@@ -586,7 +587,7 @@ function FullScreenCard({
         {/* Split images — full screen */}
         <div className="flex h-full w-full">
           <div className="w-1/2 h-full relative overflow-hidden">
-            <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted" draggable={false} />
+            <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
             <div className="absolute bottom-24 left-4 right-1">
               <p className="text-white text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{poll.option_a}</p>
@@ -594,7 +595,7 @@ function FullScreenCard({
           </div>
           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
           <div className="w-1/2 h-full relative overflow-hidden">
-            <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover bg-muted" draggable={false} />
+            <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
             <div className="absolute bottom-24 left-1 right-4 text-right">
               <p className="text-white text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{poll.option_b}</p>

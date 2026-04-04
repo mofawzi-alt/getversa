@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fix iOS Safari 300ms tap delay */
+* {
+  touch-action: manipulation;
+}
+
 @layer base {
   :root {
     /* VERSA Brand Colors - Clean White Base */
