@@ -677,6 +677,13 @@ export default function SwipeFeed() {
     } catch { /* ignore */ }
   }, []);
 
+  // Fetch total user vote count for new-user redirect logic
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('votes').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
+      .then(({ count }) => setTotalUserVotes(count ?? 0));
+  }, [user]);
+
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
   const categoryFilter = searchParams.get('category');
