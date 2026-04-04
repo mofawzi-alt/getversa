@@ -21,6 +21,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import PWAInstallPrompt, { markFirstVote } from '@/components/PWAInstallPrompt';
 
 const GUEST_VOTE_LIMIT = 3;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
@@ -571,6 +572,8 @@ function ImmersivePollCard({
                 </button>
               </motion.div>
             )}
+            {/* PWA Install prompt after first vote */}
+            <PWAInstallPrompt />
           </div>
         ) : (
           <div className="flex items-center justify-between">
@@ -955,6 +958,7 @@ export default function SwipeFeed() {
     if (votedResults.has(pollId)) return;
     if (!user && getGuestVoteCount() >= GUEST_VOTE_LIMIT) { setShowSignupModal(true); return; }
     playSwipeSound();
+    markFirstVote();
     voteMutation.mutate({ pollId, choice });
   }, [voteMutation, user, votedResults]);
 

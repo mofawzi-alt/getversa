@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-route
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SplashScreen from "@/components/SplashScreen";
-import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Home from "./pages/Home";
@@ -87,7 +87,7 @@ function AppInner() {
       {showSplash && <SplashScreen />}
       <Toaster />
       <Sonner />
-      <PWAInstallPrompt />
+      
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<SmartLanding />} />
