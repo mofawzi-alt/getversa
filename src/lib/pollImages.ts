@@ -493,8 +493,7 @@ const OPTION_ALIASES: Record<string, string> = {
   matcha: 'matcha.jpg',
   foul: 'foul.jpg',
   eggs: 'eggs.jpg',
-  buffet: 'fancy-restaurant.jpg',
-  'à la carte': 'grilled.jpg',
+  // buffet and à la carte already defined above
   'follow recipe': 'books.jpg',
   improvise: 'home-dinner.jpg',
   'all you can eat': 'grilled.jpg',
