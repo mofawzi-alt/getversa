@@ -945,7 +945,6 @@ const GENERIC_FALLBACK_IMAGE_FILES = [
   'coffee.jpg',
   'books.jpg',
   'pizza.jpg',
-  'dogs.jpg',
   'sunrise.jpg',
   'sneakers.jpg',
   'summer.jpg',
@@ -983,18 +982,6 @@ function getLocalImageByName(fileName?: string | null) {
     : undefined;
 }
 
-function getLocalImageBySlug(value?: string | null) {
-  const slug = slugify(value);
-  if (!slug) return undefined;
-
-  for (const ext of ['jpg', 'png', 'jpeg', 'webp', 'avif']) {
-    const match = getLocalImageByName(`${slug}.${ext}`);
-    if (match) return match;
-  }
-
-  return undefined;
-}
-
 function getQuestionAliasImage(question?: string | null, side?: PollImageSide) {
   const aliasFile = QUESTION_SIDE_ALIASES[normalize(question)]?.[side ?? 'A'];
   return getLocalImageByName(aliasFile);
@@ -1025,7 +1012,6 @@ function isStoragePollImageUrl(url?: string | null) {
 function getPreferredLocalImage({ question, option, side }: PollImageParams) {
   return (
     getQuestionAliasImage(question, side) ||
-    getLocalImageBySlug(option) ||
     getOptionAliasImage(option)
   );
 }
@@ -1053,11 +1039,8 @@ export function getPollDisplayImageSrc(params: PollImageParams) {
     const sourceLocal = getLocalImageByName(extractFilename(params.imageUrl));
     if (sourceLocal) return sourceLocal;
 
-    // Only return the raw URL if it's NOT a storage URL (e.g. Unsplash works fine)
-    if (!isStoragePollImageUrl(params.imageUrl)) {
-      return params.imageUrl;
-    }
-    // Storage URLs are known to be broken — fall through to generic fallback
+    // Return any external URL (Unsplash, etc.) — storage URLs are unreliable so skip them
+    if (!isStoragePollImageUrl(params.imageUrl)) return params.imageUrl;
   }
 
   return params.genericFallback || getGenericFallback(params.option || params.question);
@@ -1071,10 +1054,8 @@ export function handlePollImageError(
   const target = e.currentTarget;
   if (target.dataset.fallbackApplied) return; // prevent infinite loop
   target.dataset.fallbackApplied = 'true';
-  const currentSrc = target.getAttribute('src') || target.src;
-  const fallback = currentSrc.includes(`${POLL_IMAGE_BASE_PATH}/`)
-    ? params.genericFallback || getStablePollFallbackImage(params.option || params.question)
-    : getPollImageFallbackSrc({ ...params, imageUrl: currentSrc });
+  // When a local /polls/ image fails, use a neutral generic fallback (never dogs/random)
+  const fallback = params.genericFallback || getStablePollFallbackImage(params.option || params.question);
   if (fallback) {
     target.src = fallback;
   }
