@@ -87,6 +87,7 @@ export default function AdminDashboard() {
               <TabsTrigger value="timing" className="text-xs px-3 py-1.5">Timing</TabsTrigger>
               <TabsTrigger value="retention" className="text-xs px-3 py-1.5">Retention</TabsTrigger>
               <TabsTrigger value="export" className="text-xs px-3 py-1.5">Export</TabsTrigger>
+              <TabsTrigger value="insights-report" className="text-xs px-3 py-1.5">Insights</TabsTrigger>
             </TabsList>
             
             <TabsContent value="dashboard">
