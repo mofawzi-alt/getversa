@@ -479,7 +479,9 @@ export default function Home() {
             poll={newPolls[heroPollIndex] || null}
             unseenCount={Math.max(0, (unseenCount || 0) - heroPollIndex)}
             onVoteComplete={() => {
-              setHeroPollIndex(prev => prev + 1);
+              // Don't increment heroPollIndex — the voted poll will be removed
+              // from newPolls when votedPollIds updates, so the same index
+              // will naturally point to the next unvoted poll
               queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
               queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
               queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
