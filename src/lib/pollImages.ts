@@ -337,7 +337,7 @@ const OPTION_ALIASES: Record<string, string> = {
   instashop: 'instashop.png',
   breadfast: 'breadfast.png',
   noon: 'noon-brand.jpg',
-  amazon: 'amazon.jpg',
+  amazon: 'amazon-v2.jpg',
   jumia: 'noon-brand.jpg',
   'google maps': 'google-maps.jpg',
   waze: 'waze.jpg',
