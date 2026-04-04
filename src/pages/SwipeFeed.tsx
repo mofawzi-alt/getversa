@@ -787,19 +787,19 @@ export default function SwipeFeed() {
       }
 
       // ── Sorting: unvoted first, then personalized by category affinity ──
-      const votedSet = new Set(allPolls.filter(p => votedResults.has(p.id)).map(p => p.id));
-      // Merge with server-side voted ids
-      const serverVotedSet = new Set<string>();
-      if (user) {
-        const { data: uv } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
-        uv?.forEach(v => serverVotedSet.add(v.poll_id));
-      }
-      const isVoted = (id: string) => votedSet.has(id) || serverVotedSet.has(id);
+      // Collect all known voted poll ids (from preloaded results + server votes already fetched above)
+      const allVotedIds = new Set<string>(votedResults.keys());
+      // votedPollSet was built above for authenticated users — merge it in via category affinity keys
+      categoryAffinity.forEach((_, cat) => {
+        allPolls.forEach(p => {
+          if (p.category === cat && votedResults.has(p.id)) allVotedIds.add(p.id);
+        });
+      });
 
       allPolls.sort((a, b) => {
         // Unvoted polls always come first
-        const aVoted = isVoted(a.id) ? 1 : 0;
-        const bVoted = isVoted(b.id) ? 1 : 0;
+        const aVoted = allVotedIds.has(a.id) ? 1 : 0;
+        const bVoted = allVotedIds.has(b.id) ? 1 : 0;
         if (aVoted !== bVoted) return aVoted - bVoted;
 
         // Daily polls first among unvoted
