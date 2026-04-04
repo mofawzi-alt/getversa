@@ -95,6 +95,7 @@ export default function PullToRefresh({ children, onRefresh }: PullToRefreshProp
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      style={{ touchAction: 'pan-y' }}
     >
       {/* Pull indicator */}
       <div
