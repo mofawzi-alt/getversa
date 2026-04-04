@@ -313,7 +313,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'large group': 'going-out.png',
   'small circle': 'coffee.jpg',
   paper: 'books.jpg',
-  digital: 'phone-camera.jpg',
+  digital: 'iphone.jpg',
   routine: 'suit.jpg',
   spontaneous: 'fly.jpg',
   journal: 'books.jpg',
