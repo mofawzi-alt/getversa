@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, X, Share } from 'lucide-react';
-import VersaLogo from '@/components/VersaLogo';
-
+import { Download, X, Share, Smartphone } from 'lucide-react';
 
 const DISMISS_KEY = 'versa_pwa_dismissed';
+const FIRST_VOTE_KEY = 'versa_first_vote_done';
 const DISMISS_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 function isStandalone() {
@@ -20,32 +19,51 @@ function isDismissed(): boolean {
   } catch { return false; }
 }
 
+export function markFirstVote() {
+  try { localStorage.setItem(FIRST_VOTE_KEY, '1'); } catch {}
+}
+
+export function hasFirstVote(): boolean {
+  try { return localStorage.getItem(FIRST_VOTE_KEY) === '1'; } catch { return false; }
+}
+
+/** Inline banner shown inside the vote results screen after first vote */
 export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [show, setShow] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    if (isStandalone() || isDismissed()) return;
+    if (isStandalone() || isDismissed() || !hasFirstVote()) return;
 
     const ua = navigator.userAgent;
     const ios = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
     setIsIOS(ios);
 
     if (ios) {
-      // Show after a short delay on iOS
-      const t = setTimeout(() => setShow(true), 3000);
-      return () => clearTimeout(t);
+      setShow(true);
+      return;
     }
 
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setTimeout(() => setShow(true), 2000);
+      setShow(true);
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
+
+  // Re-check when component re-renders (after a vote)
+  useEffect(() => {
+    if (isStandalone() || isDismissed()) return;
+    if (hasFirstVote() && !show) {
+      const ua = navigator.userAgent;
+      const ios = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+      setIsIOS(ios);
+      if (ios) setShow(true);
+    }
+  });
 
   const handleInstall = async () => {
     if (deferredPrompt) {
@@ -66,39 +84,42 @@ export default function PWAInstallPrompt() {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: 80 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 80 }}
-        className="fixed bottom-24 left-3 right-3 z-[100] max-w-sm mx-auto"
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.3 }}
+        className="w-full mt-2"
       >
-        <div className="bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl p-4 shadow-xl">
-          <button onClick={handleDismiss} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground">
-            <X className="h-4 w-4" />
+        <div className="bg-secondary/80 backdrop-blur-md border border-border/40 rounded-xl px-3 py-2.5 flex items-center gap-2.5 relative">
+          <button
+            onClick={handleDismiss}
+            className="absolute top-1.5 right-1.5 text-muted-foreground hover:text-foreground p-0.5"
+          >
+            <X className="h-3.5 w-3.5" />
           </button>
 
-          <div className="flex items-center gap-3 mb-3">
-            <VersaLogo size="sm" />
-            <div>
-              <h3 className="font-display font-bold text-sm text-foreground">Add to Home Screen</h3>
-              <p className="text-xs text-muted-foreground">Get the full app experience</p>
-            </div>
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Smartphone className="h-4 w-4 text-primary" />
           </div>
 
-          {isIOS ? (
-            <div className="bg-secondary/60 rounded-xl p-3 text-xs text-muted-foreground space-y-1.5">
-              <p className="font-semibold text-foreground flex items-center gap-1.5">
-                <Share className="h-3.5 w-3.5" /> Tap the Share button below
+          <div className="flex-1 min-w-0 pr-5">
+            <p className="text-xs font-bold text-foreground leading-tight">
+              Add Versa to your home screen for daily battles 🔥
+            </p>
+
+            {isIOS ? (
+              <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
+                Tap <Share className="inline h-3 w-3 -mt-0.5" /> then <span className="font-semibold text-foreground">"Add to Home Screen"</span>
               </p>
-              <p>Then scroll down and tap <span className="font-semibold text-foreground">"Add to Home Screen"</span></p>
-            </div>
-          ) : (
-            <button
-              onClick={handleInstall}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-bold transition-all hover:scale-[1.02]"
-            >
-              <Download className="h-4 w-4" /> Install App
-            </button>
-          )}
+            ) : (
+              <button
+                onClick={handleInstall}
+                className="mt-1 flex items-center gap-1 text-[10px] font-bold text-primary hover:text-primary/80 transition-colors"
+              >
+                <Download className="h-3 w-3" /> Install App
+              </button>
+            )}
+          </div>
         </div>
       </motion.div>
     </AnimatePresence>
