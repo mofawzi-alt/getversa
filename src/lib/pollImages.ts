@@ -467,7 +467,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'cash on delivery': 'shopping.jpg',
   prepay: 'iphone.jpg',
   'try first': 'mall.jpg',
-  'trust online': 'phone-camera.jpg',
+  'trust online': 'iphone.jpg',
   mall: 'mall.jpg',
   'in-store': 'mall.jpg',
 
