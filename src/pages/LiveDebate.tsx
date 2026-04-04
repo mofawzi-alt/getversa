@@ -187,8 +187,8 @@ export default function LiveDebate() {
     for (let i = 1; i <= 3; i++) {
       const p = polls[currentIndex + i];
       if (!p) break;
-      const imgA = p.image_a_url || getFallbackImage(p.id, 0);
-      const imgB = p.image_b_url || getFallbackImage(p.id, 1);
+      const imgA = getPollDisplayImageSrc({ imageUrl: p.image_a_url, option: p.option_a, question: p.question, side: 'A' });
+      const imgB = getPollDisplayImageSrc({ imageUrl: p.image_b_url, option: p.option_b, question: p.question, side: 'B' });
       const a = new Image(); a.src = imgA;
       const b = new Image(); b.src = imgB;
     }
