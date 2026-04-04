@@ -382,7 +382,7 @@ const OPTION_ALIASES: Record<string, string> = {
   bose: 'bose.jpg',
   kfc: 'kfc.jpg',
   popeyes: 'kfc.jpg',
-  ikea: 'home-dinner.jpg',
+  ikea: 'ikea.jpg',
   'louis vuitton': 'louis-vuitton.jpg',
   gucci: 'gucci.jpg',
   versace: 'versace.jpg',
