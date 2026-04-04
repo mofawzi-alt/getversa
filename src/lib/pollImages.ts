@@ -42,7 +42,7 @@ const OPTION_ALIASES: Record<string, string> = {
   netflix: 'netflix.jpg',
   shahid: 'netflix.jpg',
   osn: 'netflix.jpg',
-  youtube: 'movies.jpg',
+  youtube: 'youtube.jpg',
   talabat: 'noon.jpg',
   elmenus: 'noon.jpg',
   instashop: 'instashop.png',
