@@ -186,7 +186,7 @@ const OPTION_ALIASES: Record<string, string> = {
   bottled: 'pepsi.jpg',
   sahlab: 'turkish-coffee.jpg',
   'hot chocolate': 'chocolate.jpg',
-  matcha: 'starbucks.jpg',
+  matcha: 'matcha.jpg',
   foul: 'foul.jpg',
   eggs: 'eggs.jpg',
   buffet: 'fancy-restaurant.jpg',
