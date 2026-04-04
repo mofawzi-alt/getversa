@@ -745,8 +745,7 @@ const OPTION_ALIASES: Record<string, string> = {
   unbranded: 'shopping.jpg',
   alone: 'alone-shopping.jpg',
   'with friends': 'going-out.png',
-  'black friday': 'shopping.jpg',
-  'souq friday': 'shopping.jpg',
+  // black friday and souq friday already defined above
   'normal prices': 'mall.jpg',
   shopping: 'shopping.jpg',
   'window shop': 'window-shop.jpg',
