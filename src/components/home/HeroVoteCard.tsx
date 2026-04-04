@@ -49,8 +49,12 @@ export default function HeroVoteCard({ poll, unseenCount }: HeroVoteCardProps) {
   }, [showHint]);
 
   const submitVote = useCallback(async (choice: 'A' | 'B') => {
-    if (!poll || result) return;
+    if (!poll || result || flyDirection) return;
     playSwipeSound();
+
+    // Reset fly state and show result
+    setFlyDirection(null);
+    setDragX(0);
 
     // Optimistic result
     setResult({ choice, percentA: poll.percentA, percentB: poll.percentB, total: poll.totalVotes });
