@@ -373,7 +373,7 @@ const OPTION_ALIASES: Record<string, string> = {
   'coca-cola': 'coca-cola.jpg',
   bmw: 'bmw.jpg',
   mercedes: 'mercedes.jpg',
-  audi: 'mercedes.jpg',
+  audi: 'audi.jpg',
   toyota: 'toyota.jpg',
   rolex: 'rolex.jpg',
   casio: 'casio.jpg',
