@@ -313,13 +313,11 @@ export default function Explore() {
                       {cat.growthPercent > 0 ? `+${cat.growthPercent}%` : `${cat.growthPercent}%`} today
                     </span>
                   </div>
-                  {user ? (
-                    <div className="mt-1">
-                      <span className="text-[9px] text-muted-foreground">{cat.votedPolls}/{cat.activePolls} voted</span>
-                      <Progress value={cat.activePolls > 0 ? (cat.votedPolls / cat.activePolls) * 100 : 0} className="h-1 mt-0.5" />
+                  {cat.momentum === 'rising' && (
+                    <div className="flex items-center gap-0.5 mt-1">
+                      <ArrowUp className="h-2.5 w-2.5 text-success" />
+                      <span className="text-[9px] font-bold text-success">Trending</span>
                     </div>
-                  ) : (
-                    <p className="text-[9px] text-muted-foreground mt-0.5">{cat.activePolls} active polls</p>
                   )}
                 </motion.div>
               ))}
