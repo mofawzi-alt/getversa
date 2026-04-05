@@ -27,10 +27,10 @@ interface HeroVoteCardProps {
   onVoteComplete?: () => void;
 }
 
-const SWIPE_THRESHOLD = 70;
-const SWIPE_UP_THRESHOLD = 60;
+const SWIPE_THRESHOLD = 50;
+const SWIPE_UP_THRESHOLD = 50;
 const RESULT_MS = 1500;
-const TAP_MOVE_TOLERANCE = 10;
+const TAP_MOVE_TOLERANCE = 12;
 
 export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: HeroVoteCardProps) {
   const { user, profile } = useAuth();
@@ -50,7 +50,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
 
   const startX = useRef(0);
   const startY = useRef(0);
+  const currentDragX = useRef(0);
+  const currentDragY = useRef(0);
   const hasMoved = useRef(false);
+  const isDraggingRef = useRef(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -172,41 +175,50 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
   const handleStart = (clientX: number, clientY: number) => {
     if (result || isVoting) return;
     setIsDragging(true);
+    isDraggingRef.current = true;
     startX.current = clientX;
     startY.current = clientY;
+    currentDragX.current = 0;
+    currentDragY.current = 0;
     hasMoved.current = false;
     setShowHint(false);
   };
 
   const handleMove = (clientX: number, clientY: number) => {
-    if (!isDragging || result || isVoting) return;
+    if (!isDraggingRef.current || result || isVoting) return;
     const dx = clientX - startX.current;
     const dy = clientY - startY.current;
     if (Math.abs(dx) > TAP_MOVE_TOLERANCE || Math.abs(dy) > TAP_MOVE_TOLERANCE) {
       hasMoved.current = true;
     }
+    currentDragX.current = dx;
+    currentDragY.current = dy;
     setDragX(dx);
     setDragY(dy);
   };
 
   const handleEnd = (clientX: number) => {
-    if (!isDragging || result || isVoting) return;
+    if (!isDraggingRef.current || result || isVoting) return;
+    isDraggingRef.current = false;
     setIsDragging(false);
 
+    const finalDragX = currentDragX.current;
+    const finalDragY = currentDragY.current;
+
     // Swipe up = skip
-    if (dragY < -SWIPE_UP_THRESHOLD && Math.abs(dragX) < SWIPE_THRESHOLD) {
+    if (finalDragY < -SWIPE_UP_THRESHOLD && Math.abs(finalDragX) < SWIPE_THRESHOLD) {
       submitSkip();
       return;
     }
 
     // Swipe left = vote A
-    if (dragX < -SWIPE_THRESHOLD) {
+    if (finalDragX < -SWIPE_THRESHOLD) {
       submitVote('A');
       return;
     }
 
     // Swipe right = vote B
-    if (dragX > SWIPE_THRESHOLD) {
+    if (finalDragX > SWIPE_THRESHOLD) {
       submitVote('B');
       return;
     }
@@ -260,6 +272,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
           !result && !isVoting ? 'cursor-pointer' : ''
         }`}
         style={{
+          touchAction: result || isVoting ? 'auto' : 'none',
           transform: result || isVoting
             ? 'none'
             : `translateX(${dragX}px) translateY(${Math.min(dragY, 0)}px) rotate(${rotation}deg)`,
@@ -269,13 +282,12 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
         onTouchStart={(e) => handleStart(e.touches[0].clientX, e.touches[0].clientY)}
         onTouchMove={(e) => {
           handleMove(e.touches[0].clientX, e.touches[0].clientY);
-          if (Math.abs(dragX) > 10 || dragY < -10) e.preventDefault();
         }}
         onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
         onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX, e.clientY); }}
         onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
         onMouseUp={(e) => handleEnd(e.clientX)}
-        onMouseLeave={() => { if (isDragging) { setIsDragging(false); setDragX(0); setDragY(0); } }}
+        onMouseLeave={() => { if (isDraggingRef.current) { isDraggingRef.current = false; setIsDragging(false); setDragX(0); setDragY(0); } }}
       >
         {/* Two-image split */}
         <div className="flex h-[55vh] max-h-[420px] relative">
