@@ -272,6 +272,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
           !result && !isVoting ? 'cursor-pointer' : ''
         }`}
         style={{
+          touchAction: result || isVoting ? 'auto' : 'none',
           transform: result || isVoting
             ? 'none'
             : `translateX(${dragX}px) translateY(${Math.min(dragY, 0)}px) rotate(${rotation}deg)`,
@@ -281,13 +282,12 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
         onTouchStart={(e) => handleStart(e.touches[0].clientX, e.touches[0].clientY)}
         onTouchMove={(e) => {
           handleMove(e.touches[0].clientX, e.touches[0].clientY);
-          if (Math.abs(dragX) > 10 || dragY < -10) e.preventDefault();
         }}
         onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
         onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX, e.clientY); }}
         onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
         onMouseUp={(e) => handleEnd(e.clientX)}
-        onMouseLeave={() => { if (isDragging) { setIsDragging(false); setDragX(0); setDragY(0); } }}
+        onMouseLeave={() => { if (isDraggingRef.current) { isDraggingRef.current = false; setIsDragging(false); setDragX(0); setDragY(0); } }}
       >
         {/* Two-image split */}
         <div className="flex h-[55vh] max-h-[420px] relative">
