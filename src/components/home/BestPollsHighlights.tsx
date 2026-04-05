@@ -274,14 +274,16 @@ export default function BestPollsHighlights() {
                     </div>
                   </div>); })()}
 
-                  {/* Option B */}
-                  <div className="relative overflow-hidden rounded-xl border border-option-b/30 bg-option-b/10">
+                  {(() => { const p = getPollImageProps({ imageUrl: activeData.poll.image_b_url, option: activeData.poll.option_b, side: 'B' }); return (
+                  <div className={`relative overflow-hidden rounded-xl border border-option-b/30 ${p.isBrand ? '' : 'bg-option-b/10'}`}>
                     {activeData.poll.image_b_url ? (
-                      <img 
-                        src={activeData.poll.image_b_url} 
-                        alt={activeData.poll.option_b}
-                        className="w-full aspect-square object-cover"
-                      />
+                      p.isBrand ? (
+                        <div className="w-full aspect-square flex items-center justify-center" style={p.containerStyle}>
+                          <img src={activeData.poll.image_b_url} alt={activeData.poll.option_b} className="max-w-[50%] max-h-[50%] object-contain" />
+                        </div>
+                      ) : (
+                        <img src={activeData.poll.image_b_url} alt={activeData.poll.option_b} className="w-full aspect-square object-cover" />
+                      )
                     ) : (
                       <div className="w-full aspect-square flex items-center justify-center p-3 bg-option-b/5">
                         <span className="text-sm text-center text-foreground/80">{activeData.poll.option_b}</span>
@@ -299,7 +301,7 @@ export default function BestPollsHighlights() {
                         />
                       </div>
                     </div>
-                  </div>
+                  </div>); })()}
                 </div>
 
                 {/* Winner indicator */}
