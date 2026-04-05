@@ -187,8 +187,9 @@ export default function LiveDebate() {
       const percentA = total > 0 ? Math.round((aVotes / total) * 100) : 0;
       return { choice, percentA, percentB: 100 - percentA, totalVotes: total };
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       setResult(data);
+      setLocalVotedIds(prev => new Set(prev).add(variables.pollId));
       // Suspense phase
       setPhase('suspense');
       setTimeout(() => {
@@ -201,17 +202,6 @@ export default function LiveDebate() {
           triggerHaptic('medium');
         }
       }, SUSPENSE_MS);
-
-      // Auto-advance after result display (or auto-return home if last poll)
-      setTimeout(() => {
-        if (hasMore) {
-          setCurrentIndex(prev => prev + 1);
-          setResult(null);
-          setPhase('swipe');
-        } else {
-          navigate('/home');
-        }
-      }, SUSPENSE_MS + RESULT_MS);
 
       queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
       queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
