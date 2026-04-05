@@ -6,7 +6,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
-import { Sparkles, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
+import HeroCaughtUp from './HeroCaughtUp';
 
 interface HeroPoll {
   id: string;
