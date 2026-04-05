@@ -175,41 +175,50 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
   const handleStart = (clientX: number, clientY: number) => {
     if (result || isVoting) return;
     setIsDragging(true);
+    isDraggingRef.current = true;
     startX.current = clientX;
     startY.current = clientY;
+    currentDragX.current = 0;
+    currentDragY.current = 0;
     hasMoved.current = false;
     setShowHint(false);
   };
 
   const handleMove = (clientX: number, clientY: number) => {
-    if (!isDragging || result || isVoting) return;
+    if (!isDraggingRef.current || result || isVoting) return;
     const dx = clientX - startX.current;
     const dy = clientY - startY.current;
     if (Math.abs(dx) > TAP_MOVE_TOLERANCE || Math.abs(dy) > TAP_MOVE_TOLERANCE) {
       hasMoved.current = true;
     }
+    currentDragX.current = dx;
+    currentDragY.current = dy;
     setDragX(dx);
     setDragY(dy);
   };
 
   const handleEnd = (clientX: number) => {
-    if (!isDragging || result || isVoting) return;
+    if (!isDraggingRef.current || result || isVoting) return;
+    isDraggingRef.current = false;
     setIsDragging(false);
 
+    const finalDragX = currentDragX.current;
+    const finalDragY = currentDragY.current;
+
     // Swipe up = skip
-    if (dragY < -SWIPE_UP_THRESHOLD && Math.abs(dragX) < SWIPE_THRESHOLD) {
+    if (finalDragY < -SWIPE_UP_THRESHOLD && Math.abs(finalDragX) < SWIPE_THRESHOLD) {
       submitSkip();
       return;
     }
 
     // Swipe left = vote A
-    if (dragX < -SWIPE_THRESHOLD) {
+    if (finalDragX < -SWIPE_THRESHOLD) {
       submitVote('A');
       return;
     }
 
     // Swipe right = vote B
-    if (dragX > SWIPE_THRESHOLD) {
+    if (finalDragX > SWIPE_THRESHOLD) {
       submitVote('B');
       return;
     }
