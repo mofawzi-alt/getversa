@@ -8,7 +8,7 @@ import { Flame, Crown, TrendingUp, Clock, Compass, Zap, ArrowRight } from 'lucid
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { Button } from '@/components/ui/button';
 
-export default function HeroCaughtUp() {
+export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) => void }) {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -218,7 +218,7 @@ export default function HeroCaughtUp() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + i * 0.08 }}
-                  onClick={() => navigate(`/browse`)}
+                  onClick={() => onPollTap ? onPollTap(poll) : navigate(`/browse`)}
                   className="flex items-center gap-3 bg-card rounded-xl border border-border/60 p-2.5 cursor-pointer hover:bg-accent/5 transition-colors"
                 >
                   <img
