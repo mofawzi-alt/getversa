@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Share2, Flame, Check, ChevronUp } from 'lucide-react';
+import { Share2, Flame, Check, ChevronUp, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
