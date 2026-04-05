@@ -377,14 +377,41 @@ export default function LiveDebate() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center gap-1"
+            className="flex flex-col items-center gap-2"
           >
-            <span className="text-white/30 text-[9px] font-medium">
-              ← {currentPoll.option_a.slice(0, 10)}{currentPoll.option_a.length > 10 ? '…' : ''} · {currentPoll.option_b.slice(0, 10)}{currentPoll.option_b.length > 10 ? '…' : ''} →
-            </span>
-            <span className="text-white/20 text-[8px]">
-              {polls.length - currentIndex - 1} more debates
-            </span>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-white/30 text-[9px] font-medium">
+                ← {currentPoll.option_a.slice(0, 10)}{currentPoll.option_a.length > 10 ? '…' : ''} · {currentPoll.option_b.slice(0, 10)}{currentPoll.option_b.length > 10 ? '…' : ''} →
+              </span>
+              <span className="text-white/20 text-[8px]">
+                {polls.length - currentIndex - 1} more debates
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {currentIndex > 0 && (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { setCurrentIndex(prev => prev - 1); setResult(null); setPhase('swipe'); }}
+                  className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
+                >
+                  ← Previous
+                </motion.button>
+              )}
+              {hasMore ? (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe'); }}
+                  className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
+                >
+                  Next Debate →
+                </motion.button>
+              ) : (
+                <button onClick={handleExit} className="px-5 py-2 rounded-full bg-white/15 text-white text-xs font-bold backdrop-blur-md">
+                  Back to Home
+                </button>
+              )}
+            </div>
           </motion.div>
         )}
 
