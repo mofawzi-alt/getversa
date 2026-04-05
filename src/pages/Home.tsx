@@ -292,7 +292,7 @@ export default function Home() {
     }
   }, [voteCount]);
 
-
+  const { data: polls, isLoading } = useQuery({
     queryKey: ['visual-feed-home', profile?.gender, profile?.age_range, profile?.country],
     queryFn: async () => {
       const now = new Date().toISOString();
