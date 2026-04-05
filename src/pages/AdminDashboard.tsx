@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, Plus, Loader2, BarChart3, Gift, 
   Users, Bell, Sparkles, X, Check, Upload, Image, Trash2, Target,
-  Clock, RefreshCcw, Download, TrendingUp, Flame, Pencil
+  Clock, RefreshCcw, Download, TrendingUp, Flame, Pencil, Pin, PinOff
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PollAnalytics from '@/components/admin/PollAnalytics';

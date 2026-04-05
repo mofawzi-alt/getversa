@@ -271,3 +271,11 @@
 .safe-area-top {
   padding-top: env(safe-area-inset-top);
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
