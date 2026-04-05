@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Share2, Flame, Check, ChevronUp } from 'lucide-react';
+import { Share2, Flame, Check, ChevronUp, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
@@ -194,6 +194,7 @@ function BrowseCard({
   poll,
   userChoice,
   isActive,
+  isSignedIn,
   onVote,
   onShare,
   onReact,
@@ -202,6 +203,7 @@ function BrowseCard({
   poll: BrowsePoll;
   userChoice: string | null;
   isActive: boolean;
+  isSignedIn: boolean;
   onVote: () => void;
   onShare: () => void;
   onReact: () => void;
@@ -209,6 +211,7 @@ function BrowseCard({
 }) {
   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
   const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
+  const isCloseResult = !isSignedIn && poll.totalVotes >= 5 && poll.percentA >= 45 && poll.percentA <= 55;
 
   return (
     <div className="h-full w-full flex flex-col relative bg-background">
@@ -236,21 +239,9 @@ function BrowseCard({
       <div className="flex-1 flex relative mt-16 mb-0">
         {/* Option A */}
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img
-            src={imgA}
-            alt={poll.option_a}
-            loading="lazy"
-            className="w-full h-full object-cover bg-muted"
-            onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })}
-          />
+          <img src={imgA} alt={poll.option_a} loading="lazy" className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-
-          {/* Winner highlight */}
-          {poll.winner === 'A' && (
-            <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />
-          )}
-
-          {/* Label + percentage */}
+          {poll.winner === 'A' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
             <div className="flex items-center gap-1.5">
               {userChoice === 'A' && (
@@ -271,19 +262,9 @@ function BrowseCard({
 
         {/* Option B */}
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img
-            src={imgB}
-            alt={poll.option_b}
-            loading="lazy"
-            className="w-full h-full object-cover bg-muted"
-            onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })}
-          />
+          <img src={imgB} alt={poll.option_b} loading="lazy" className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-
-          {poll.winner === 'B' && (
-            <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />
-          )}
-
+          {poll.winner === 'B' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
             <div className="flex items-center gap-1.5">
               {userChoice === 'B' && (
@@ -302,7 +283,6 @@ function BrowseCard({
 
       {/* Bottom info bar */}
       <div className="bg-background border-t border-border/30 px-4 py-3 pb-20 space-y-2">
-        {/* Vote count + insight */}
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</span>
           {poll.demographicInsight && (
@@ -315,6 +295,13 @@ function BrowseCard({
           <div className="bg-primary h-full transition-all duration-500" style={{ width: `${poll.percentA}%` }} />
           <div className="bg-accent h-full transition-all duration-500" style={{ width: `${poll.percentB}%` }} />
         </div>
+
+        {/* Nudge 3: Close result trigger for non-signed-in users */}
+        {isCloseResult && (
+          <button onClick={onVote} className="w-full text-center text-xs text-primary/80 hover:text-primary transition-colors py-0.5">
+            ⚡ Too close to call — add your vote
+          </button>
+        )}
 
         {/* Add your vote CTA (only for unvoted polls) */}
         {!userChoice && (
@@ -339,6 +326,8 @@ export default function Browse() {
   const [reactedPolls, setReactedPolls] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const showSignupBanner = !user && activeIndex >= 10 && !bannerDismissed;
 
   // Fetch all polls with results — no auth required
   const { data: feedPolls, isLoading } = useQuery({
@@ -357,7 +346,6 @@ export default function Browse() {
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
 
-      // Fetch demographic votes for insights (sample first 30 polls)
       const sampleIds = pollIds.slice(0, 30);
       const { data: demoVotes } = await supabase
         .from('votes')
@@ -394,7 +382,6 @@ export default function Browse() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Fetch user's votes
   const { data: userVotes } = useQuery({
     queryKey: ['browse-user-votes', user?.id],
     queryFn: async () => {
@@ -408,14 +395,12 @@ export default function Browse() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Feed algorithm: mix of most voted, most debated, recent, with category diversity
   const sortedFeed = useMemo(() => {
     if (!feedPolls || feedPolls.length === 0) return [];
 
     const now = Date.now();
     const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
 
-    // Score each poll
     const scored = feedPolls.map(p => {
       const createdAt = new Date(p.created_at).getTime();
       const isRecent = createdAt > weekAgo;
@@ -425,10 +410,8 @@ export default function Browse() {
       return { ...p, score: recencyScore + voteScore + debateScore };
     });
 
-    // Sort by score
     scored.sort((a, b) => b.score - a.score);
 
-    // Category diversity: never show 2 from same category in a row
     const result: typeof scored = [];
     const remaining = [...scored];
     let lastCategory: string | null = null;
@@ -443,7 +426,6 @@ export default function Browse() {
     return result;
   }, [feedPolls]);
 
-  // Snap scroll handling
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -458,7 +440,6 @@ export default function Browse() {
       navigate('/auth');
       return;
     }
-    // Navigate home and scroll to this poll
     navigate('/home');
   }, [user, navigate]);
 
@@ -505,6 +486,7 @@ export default function Browse() {
               poll={poll}
               userChoice={userVotes?.get(poll.id) || null}
               isActive={i === activeIndex}
+              isSignedIn={!!user}
               onVote={() => handleVote(poll.id)}
               onShare={() => share(poll)}
               onReact={() => handleReact(poll.id)}
@@ -528,6 +510,36 @@ export default function Browse() {
           <span className="text-[10px] text-muted-foreground font-medium">Scroll for more</span>
         </motion.div>
       )}
+
+      {/* Nudge 2: Sticky sign-up banner after 10 cards */}
+      <AnimatePresence>
+        {showSignupBanner && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed bottom-20 left-3 right-3 z-40 rounded-2xl bg-card/95 backdrop-blur-lg border border-border/60 shadow-lg px-4 py-3 flex items-center gap-3"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-foreground leading-tight">Sign up free to add your vote to any battle</p>
+              <p className="text-[10px] text-muted-foreground">30 seconds — no spam, ever</p>
+            </div>
+            <button
+              onClick={() => navigate('/auth')}
+              className="shrink-0 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
+            >
+              Sign Up
+            </button>
+            <button
+              onClick={() => setBannerDismissed(true)}
+              className="shrink-0 p-1.5 rounded-full hover:bg-muted/50 text-muted-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <BottomNav />
     </div>
