@@ -31,6 +31,7 @@ const SWIPE_THRESHOLD = 50;
 const SWIPE_UP_THRESHOLD = 50;
 const RESULT_MS = 1500;
 const TAP_MOVE_TOLERANCE = 12;
+const DRAG_DEAD_ZONE = 15;
 
 export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: HeroVoteCardProps) {
   const { user, profile } = useAuth();
