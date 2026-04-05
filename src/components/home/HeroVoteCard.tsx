@@ -26,6 +26,7 @@ interface HeroVoteCardProps {
   poll: HeroPoll | null;
   unseenCount: number;
   onVoteComplete?: () => void;
+  onPollTap?: (poll: any) => void;
 }
 
 const SWIPE_THRESHOLD = 50;
@@ -34,7 +35,7 @@ const RESULT_MS = 1500;
 const TAP_MOVE_TOLERANCE = 12;
 const DRAG_DEAD_ZONE = 15;
 
-export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: HeroVoteCardProps) {
+export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPollTap }: HeroVoteCardProps) {
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
 
@@ -187,7 +188,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
   }, [poll, result, isVoting, user, profile, queryClient, onVoteComplete]);
 
   if (!poll) {
-    return <HeroCaughtUp />;
+    return <HeroCaughtUp onPollTap={onPollTap} />;
   }
 
   const handleStart = (clientX: number, clientY: number) => {
