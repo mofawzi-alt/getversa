@@ -1,6 +1,5 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Users } from 'lucide-react';
-import { getPollImageProps } from '@/lib/pollImageProps';
 
 interface HomeResultsModalProps {
   open: boolean;
@@ -24,24 +23,22 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
   if (!poll) return null;
 
   const isWinnerA = poll.percentA >= poll.percentB;
-  const pA = getPollImageProps({ imageUrl: poll.image_a_url, option: poll.option_a, side: 'A' });
-  const pB = getPollImageProps({ imageUrl: poll.image_b_url, option: poll.option_b, side: 'B' });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 rounded-2xl overflow-hidden max-w-sm border-border/30 bg-card">
         {/* Split images */}
         <div className="flex h-44 relative">
-          <div className={`w-1/2 h-full relative overflow-hidden ${pA.containerClassName}`} style={pA.containerStyle}>
-            <img src={poll.image_a_url || imageA} alt={poll.option_a} className={`${pA.imgClassName} bg-muted`} />
+          <div className="w-1/2 h-full relative overflow-hidden">
+            <img src={poll.image_a_url || imageA} alt={poll.option_a} className="w-full h-full object-cover bg-muted" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute bottom-2 left-2 right-1">
               <p className="text-white text-xs font-bold drop-shadow-lg truncate">{poll.option_a}</p>
             </div>
           </div>
           <div className="absolute inset-y-0 left-1/2 w-px bg-background/15 z-10" />
-          <div className={`w-1/2 h-full relative overflow-hidden ${pB.containerClassName}`} style={pB.containerStyle}>
-            <img src={poll.image_b_url || imageB} alt={poll.option_b} className={`${pB.imgClassName} bg-muted`} />
+          <div className="w-1/2 h-full relative overflow-hidden">
+            <img src={poll.image_b_url || imageB} alt={poll.option_b} className="w-full h-full object-cover bg-muted" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute bottom-2 left-1 right-2 text-right">
               <p className="text-white text-xs font-bold drop-shadow-lg truncate">{poll.option_b}</p>

@@ -7,7 +7,6 @@ import { Share2, Flame, Check, ChevronUp, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
-import { getPollImageProps } from '@/lib/pollImageProps';
 import BottomNav from '@/components/layout/BottomNav';
 
 interface BrowsePoll {
@@ -212,8 +211,6 @@ function BrowseCard({
 }) {
   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
   const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
-  const propsA = getPollImageProps({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
-  const propsB = getPollImageProps({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
   const isCloseResult = !isSignedIn && poll.totalVotes >= 5 && poll.percentA >= 45 && poll.percentA <= 55;
 
   return (
@@ -241,8 +238,8 @@ function BrowseCard({
       {/* Images — filling available space */}
       <div className="flex-1 flex relative min-h-0">
         {/* Option A */}
-        <div className={`w-1/2 h-full relative overflow-hidden ${propsA.containerClassName}`} style={propsA.containerStyle}>
-          <img src={imgA} alt={poll.option_a} loading="lazy" className={`${propsA.imgClassName} bg-muted pointer-events-none`} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
+        <div className="w-1/2 h-full relative overflow-hidden">
+          <img src={imgA} alt={poll.option_a} loading="lazy" className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
           {poll.winner === 'A' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
@@ -264,8 +261,8 @@ function BrowseCard({
         <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
 
         {/* Option B */}
-        <div className={`w-1/2 h-full relative overflow-hidden ${propsB.containerClassName}`} style={propsB.containerStyle}>
-          <img src={imgB} alt={poll.option_b} loading="lazy" className={`${propsB.imgClassName} bg-muted pointer-events-none`} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
+        <div className="w-1/2 h-full relative overflow-hidden">
+          <img src={imgB} alt={poll.option_b} loading="lazy" className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
           {poll.winner === 'B' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">

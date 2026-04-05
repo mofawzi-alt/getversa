@@ -21,7 +21,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
-import { getPollImageProps } from '@/lib/pollImageProps';
 import PWAInstallPrompt, { markFirstVote } from '@/components/PWAInstallPrompt';
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
 import SwipeHint, { isSwipeHintDone } from '@/components/onboarding/SwipeHint';
@@ -153,8 +152,6 @@ function ImmersivePollCard({
   const hasResult = !!result;
   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
   const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
-  const propsA = getPollImageProps({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
-  const propsB = getPollImageProps({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
   const winnerIsA = result ? result.percentA >= result.percentB : true;
   const THRESHOLD = 80;
 
@@ -356,8 +353,8 @@ function ImmersivePollCard({
         >
           {/* Split images */}
           <div className="flex aspect-[4/3] w-full">
-            <div className={`w-1/2 h-full relative overflow-hidden ${propsA.containerClassName}`} style={propsA.containerStyle}>
-              <img src={imgA} alt={poll.option_a} className={`${propsA.imgClassName} bg-muted`} draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
+            <div className="w-1/2 h-full relative overflow-hidden">
+              <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
               {showResults && winnerIsA && (
                 <motion.div
@@ -384,8 +381,8 @@ function ImmersivePollCard({
 
             <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/15 z-10" />
 
-            <div className={`w-1/2 h-full relative overflow-hidden ${propsB.containerClassName}`} style={propsB.containerStyle}>
-              <img src={imgB} alt={poll.option_b} className={`${propsB.imgClassName} bg-muted`} draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
+            <div className="w-1/2 h-full relative overflow-hidden">
+              <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
               {showResults && !winnerIsA && (
                 <motion.div
