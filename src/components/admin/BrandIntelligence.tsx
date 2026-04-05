@@ -191,6 +191,9 @@ export default function BrandIntelligence() {
         brandPercent,
         competitorPercent,
         won: brandPercent > competitorPercent,
+        expiryType: (poll as any).expiry_type || 'evergreen',
+        startsAt: (poll as any).starts_at || null,
+        endsAt: (poll as any).ends_at || null,
         demographics,
       };
     });
