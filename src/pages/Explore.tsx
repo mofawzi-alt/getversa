@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -56,8 +56,17 @@ function getTimeLeft(endsAt: string): string {
 export default function Explore() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Read initial category from URL params (e.g., /explore?category=Food)
+  useEffect(() => {
+    const catParam = searchParams.get('category');
+    if (catParam) {
+      setSelectedCategory(catParam);
+    }
+  }, [searchParams]);
 
   // Fetch user's voted poll IDs
   const { data: votedPollIds } = useQuery({

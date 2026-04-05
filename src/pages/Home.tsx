@@ -744,7 +744,7 @@ export default function Home() {
             </div>
             <div className="flex gap-2.5 overflow-x-auto px-3 scrollbar-hide snap-x pb-1">
               {trendingPolls.map((poll, i) => (
-                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={poll.trendBadge} hot={poll.trendHot} onCategoryTap={(cat) => navigate(`/vote?category=${encodeURIComponent(cat)}`)} />
+                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={poll.trendBadge} hot={poll.trendHot} onCategoryTap={(cat) => navigate(`/explore?category=${encodeURIComponent(cat)}`)} />
               ))}
             </div>
           </section>
@@ -785,7 +785,7 @@ export default function Home() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                       whileTap={{ scale: 0.96 }}
-                      onClick={() => navigate(`/vote?category=${encodeURIComponent(catName)}`)}
+                      onClick={() => navigate(`/explore?category=${encodeURIComponent(catName)}`)}
                       className="relative rounded-xl overflow-hidden cursor-pointer group border border-border/60 shadow-card h-24"
                     >
                       {info.thumbnail ? (
@@ -861,7 +861,7 @@ export default function Home() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.04 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => navigate(`/vote?search=${encodeURIComponent(opt.name)}`)}
+                    onClick={() => navigate(`/explore?category=${encodeURIComponent(opt.name)}`)}
                     className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer active:bg-muted/50 transition-colors ${i < topOptions.length - 1 ? 'border-b border-border/40' : ''}`}
                   >
                     <span className="text-xs font-bold text-muted-foreground/60 w-4 text-center shrink-0">{i + 1}</span>
