@@ -194,6 +194,9 @@ export default function Home() {
   // Track which hero poll index to show for infinite voting
   const [heroPollIndex, setHeroPollIndex] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
+  
+  // Category filter for hero card
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   useEffect(() => {
     if (hasUnlockedExplore && !isExploreUnlocked()) {
@@ -337,7 +340,16 @@ export default function Home() {
 
   const allPolls = polls || [];
   const hasUnseen = (unseenCount || 0) > 0;
-  const newPolls = useMemo(() => allPolls.filter(p => !votedPollIds?.has(p.id)), [allPolls, votedPollIds]);
+  const allNewPolls = useMemo(() => allPolls.filter(p => !votedPollIds?.has(p.id)), [allPolls, votedPollIds]);
+  const newPolls = useMemo(() => {
+    if (!categoryFilter) return allNewPolls;
+    return allNewPolls.filter(p => (p.category || 'Other') === categoryFilter);
+  }, [allNewPolls, categoryFilter]);
+
+  // Reset hero index when category filter changes
+  useEffect(() => {
+    setHeroPollIndex(0);
+  }, [categoryFilter]);
 
   // ── Memoized expensive computations ──
   const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
@@ -443,6 +455,19 @@ export default function Home() {
     );
   }
 
+  // Smart category tap: unvoted → filter hero, all voted → explore with results
+  const handleCategoryTap = (catName: string) => {
+    const catPolls = allPolls.filter(p => (p.category || 'Other') === catName);
+    const hasUnvoted = catPolls.some(p => !votedPollIds?.has(p.id));
+    if (hasUnvoted) {
+      setCategoryFilter(catName);
+      setHeroPollIndex(0);
+      heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate(`/explore?category=${encodeURIComponent(catName)}`);
+    }
+  };
+
   const handlePollTap = (poll: PollCard) => {
     const hasVoted = votedPollIds?.has(poll.id);
     const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
@@ -473,11 +498,28 @@ export default function Home() {
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
+        {/* Category filter banner */}
+        {categoryFilter && (
+          <div className="px-3 mb-1">
+            <div className="flex items-center gap-2 bg-primary/10 rounded-xl px-3 py-2">
+              <span className="text-xs font-bold text-primary flex-1">
+                {getCategoryMeta(categoryFilter).emoji} Showing: {getDisplayCategoryName(categoryFilter)}
+              </span>
+              <button
+                onClick={() => setCategoryFilter(null)}
+                className="text-[10px] font-bold text-primary/70 hover:text-primary px-2 py-0.5 rounded-full bg-primary/10"
+              >
+                ✕ Clear
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ═══ INFINITE HERO VOTE CARD ═══ */}
         <div ref={heroRef}>
           <HeroVoteCard
             poll={newPolls[heroPollIndex] || null}
-            unseenCount={Math.max(0, (unseenCount || 0) - heroPollIndex)}
+            unseenCount={categoryFilter ? newPolls.length : Math.max(0, (unseenCount || 0) - heroPollIndex)}
             onVoteComplete={() => {
               // Don't increment heroPollIndex — the voted poll will be removed
               // from newPolls when votedPollIds updates, so the same index
@@ -718,7 +760,7 @@ export default function Home() {
             </div>
             <div className="flex gap-2.5 overflow-x-auto px-3 scrollbar-hide snap-x pb-1">
               {trendingPolls.map((poll, i) => (
-                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={poll.trendBadge} hot={poll.trendHot} onCategoryTap={(cat) => navigate(`/explore?category=${encodeURIComponent(cat)}`)} />
+                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={poll.trendBadge} hot={poll.trendHot} onCategoryTap={(cat) => handleCategoryTap(cat)} />
               ))}
             </div>
           </section>
@@ -759,7 +801,7 @@ export default function Home() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                       whileTap={{ scale: 0.96 }}
-                      onClick={() => navigate(`/explore?category=${encodeURIComponent(catName)}`)}
+                      onClick={() => handleCategoryTap(catName)}
                       className="relative rounded-xl overflow-hidden cursor-pointer group border border-border/60 shadow-card h-24"
                     >
                       {info.thumbnail ? (
