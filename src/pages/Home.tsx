@@ -197,6 +197,7 @@ export default function Home() {
   
   // Category filter for hero card
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const savedHeroIndex = useRef<number>(0);
 
   useEffect(() => {
     if (hasUnlockedExplore && !isExploreUnlocked()) {
