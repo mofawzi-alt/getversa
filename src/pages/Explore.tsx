@@ -207,7 +207,7 @@ export default function Explore() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate(`/vote?pollId=${poll.id}`)}
+                  onClick={() => setModalPoll(poll)}
                   className="relative rounded-xl overflow-hidden cursor-pointer group shadow-card"
                 >
                   <div className="flex h-32 relative">
