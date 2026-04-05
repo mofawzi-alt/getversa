@@ -309,24 +309,30 @@ export default function Home() {
       if (!rawPolls || rawPolls.length === 0) return [];
 
       // Filter by user demographics
-      let filteredPolls = rawPolls;
+      // Separate polls into matching and non-matching based on demographics
+      // Matching polls appear first (prioritized), non-matching still shown after
+      let prioritized = rawPolls;
       if (profile) {
-        filteredPolls = rawPolls.filter(p => {
-          if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) return false;
-          if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range && p.target_age_range !== profile.age_range) return false;
-          // Multi-country targeting
+        const matching: typeof rawPolls = [];
+        const rest: typeof rawPolls = [];
+        rawPolls.forEach(p => {
+          let isMatch = true;
+          if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) isMatch = false;
+          if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range && p.target_age_range !== profile.age_range) isMatch = false;
           const countries = (p as any).target_countries as string[] | null;
           if (countries && countries.length > 0) {
-            if (profile.country && !countries.includes(profile.country)) return false;
+            if (profile.country && !countries.includes(profile.country)) isMatch = false;
           } else if (p.target_country && p.target_country !== 'All' && profile.country && p.target_country !== profile.country) {
-            return false;
+            isMatch = false;
           }
-          return true;
+          if (isMatch) matching.push(p);
+          else rest.push(p);
         });
+        prioritized = [...matching, ...rest];
       }
 
-      // Only process top 50 polls to reduce DB load on mobile
-      const topPolls = filteredPolls.slice(0, 50);
+      // Process top 100 polls
+      const topPolls = prioritized.slice(0, 100);
       const pollIds = topPolls.map(p => p.id);
       if (pollIds.length === 0) return [];
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
