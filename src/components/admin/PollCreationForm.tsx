@@ -157,6 +157,7 @@ export default function PollCreationForm({
            intent_tag: intentTag || null,
            option_a_tag: tagA || null,
            option_b_tag: tagB || null,
+           weight_score: weightScore,
          } as any)
         .select()
         .single();
