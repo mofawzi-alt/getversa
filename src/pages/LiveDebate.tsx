@@ -71,6 +71,7 @@ export default function LiveDebate() {
   const [phase, setPhase] = useState<'swipe' | 'suspense' | 'result'>('swipe');
   const [exitDragY, setExitDragY] = useState(0);
   const [isDraggingExit, setIsDraggingExit] = useState(false);
+  const [localVotedIds, setLocalVotedIds] = useState<Set<string>>(new Set());
 
   const streakData = profile ? {
     current: (profile as any).current_streak as number || 0,
