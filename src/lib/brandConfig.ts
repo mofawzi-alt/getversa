@@ -13,25 +13,25 @@ interface BrandStyle {
 const BRAND_MAP: Record<string, BrandStyle> = {
   careem:        { bg: '#1DBF73' },
   uber:          { bg: '#000000' },
-  indrive:       { bg: '#1A1A2E' },
+  indrive:       { bg: '#1A1A1A' },
   vodafone:      { bg: '#E60000' },
   orange:        { bg: '#FF6600' },
-  'e&':          { bg: '#00B3A4' },
-  etisalat:      { bg: '#00B3A4' },
-  'we':          { bg: '#1B2A4A' },
-  'we telecom':  { bg: '#1B2A4A' },
-  instapay:      { bg: '#F5F5F5' },
+  'e&':          { bg: '#00625F' },
+  etisalat:      { bg: '#00625F' },
+  'we':          { bg: '#003087' },
+  'we telecom':  { bg: '#003087' },
+  instapay:      { bg: '#4B0082' },
   instashop:     { bg: '#FFFFFF' },
-  breadfast:     { bg: '#FFFFFF' },
+  breadfast:     { bg: '#FF4500' },
   valu:          { bg: '#1A1A2E' },
-  halan:         { bg: '#1A1A2E' },
+  halan:         { bg: '#00A86B' },
   seven:         { bg: '#1A1A2E' },
   tru:           { bg: '#FFFFFF' },
-  noon:          { bg: '#FFEE00' },
-  amazon:        { bg: '#FFFFFF' },
-  spotify:       { bg: '#000000' },
-  netflix:       { bg: '#000000' },
-  whatsapp:      { bg: '#075E54' },
+  noon:          { bg: '#FEEE00' },
+  amazon:        { bg: '#FF9900' },
+  spotify:       { bg: '#1DB954' },
+  netflix:       { bg: '#E50914' },
+  whatsapp:      { bg: '#25D366' },
   fawry:         { bg: '#F5A623' },
   swvl:          { bg: '#E74C3C' },
   shahry:        { bg: '#1A1A2E' },
@@ -189,4 +189,14 @@ export function getBrandFallback(optionName: string): { letter: string; bg: stri
   const letter = name.charAt(0).toUpperCase();
   const bg = getBrandBgColor(optionName);
   return { letter, bg };
+}
+
+/**
+ * Determine if text should be dark on a light brand background.
+ */
+export function shouldUseDarkText(optionName: string): boolean {
+  const bg = getBrandBgColor(optionName);
+  // Light backgrounds that need dark text
+  const lightBgs = ['#FFFFFF', '#FEEE00', '#FFEE00', '#FFFC00', '#FFC72C', '#FF9900', '#F5F5F5', '#F5A623'];
+  return lightBgs.includes(bg.toUpperCase());
 }
