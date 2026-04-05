@@ -68,6 +68,10 @@ export default function Explore() {
     if (catParam) {
       setSelectedCategory(catParam);
     }
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearch(searchParam);
+    }
   }, [searchParams]);
 
   // Fetch user's voted poll IDs
