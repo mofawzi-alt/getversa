@@ -3,6 +3,7 @@ import { Clock, Loader2 } from 'lucide-react';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import { getPollImageProps } from '@/lib/pollImageProps';
 
 interface Poll {
   id: string;
@@ -160,6 +161,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           <div className="h-full overflow-hidden relative">
             {(() => {
               const imgSrc = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
+              const ip = getPollImageProps({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
               return imgSrc ? (
                 <>
                   {!imageALoaded && (
@@ -167,16 +169,13 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     </div>
                   )}
-                  <img
-                    key={`${poll.id}-a`}
-                    src={imgSrc}
-                    alt={poll.option_a}
-                    className={`w-full h-full object-cover bg-muted transition-all duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`}
-                    draggable={false}
-                    onLoad={() => setImageALoaded(true)}
-                    onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })}
-                    loading="eager"
-                  />
+                  {ip.isBrand ? (
+                    <div className="w-full h-full flex items-center justify-center" style={ip.containerStyle}>
+                      <img key={`${poll.id}-a`} src={imgSrc} alt={poll.option_a} className={`max-w-[50%] max-h-[50%] object-contain transition-all duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`} draggable={false} onLoad={() => setImageALoaded(true)} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} loading="eager" />
+                    </div>
+                  ) : (
+                    <img key={`${poll.id}-a`} src={imgSrc} alt={poll.option_a} className={`w-full h-full object-cover bg-muted transition-all duration-300 ${imageALoaded ? 'opacity-100' : 'opacity-0'}`} draggable={false} onLoad={() => setImageALoaded(true)} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} loading="eager" />
+                  )}
                 </>
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-option-a to-option-a/80 flex items-center justify-center p-4">
@@ -214,6 +213,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           <div className="h-full overflow-hidden relative">
             {(() => {
               const imgSrc = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
+              const ip = getPollImageProps({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
               return imgSrc ? (
                 <>
                   {!imageBLoaded && (
@@ -221,16 +221,13 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     </div>
                   )}
-                  <img
-                    key={`${poll.id}-b`}
-                    src={imgSrc}
-                    alt={poll.option_b}
-                    className={`w-full h-full object-cover bg-muted transition-all duration-300 ${imageBLoaded ? 'opacity-100' : 'opacity-0'}`}
-                    draggable={false}
-                    onLoad={() => setImageBLoaded(true)}
-                    onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })}
-                    loading="eager"
-                  />
+                  {ip.isBrand ? (
+                    <div className="w-full h-full flex items-center justify-center" style={ip.containerStyle}>
+                      <img key={`${poll.id}-b`} src={imgSrc} alt={poll.option_b} className={`max-w-[50%] max-h-[50%] object-contain transition-all duration-300 ${imageBLoaded ? 'opacity-100' : 'opacity-0'}`} draggable={false} onLoad={() => setImageBLoaded(true)} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} loading="eager" />
+                    </div>
+                  ) : (
+                    <img key={`${poll.id}-b`} src={imgSrc} alt={poll.option_b} className={`w-full h-full object-cover bg-muted transition-all duration-300 ${imageBLoaded ? 'opacity-100' : 'opacity-0'}`} draggable={false} onLoad={() => setImageBLoaded(true)} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} loading="eager" />
+                  )}
                 </>
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-option-b to-option-b/80 flex items-center justify-center p-4">

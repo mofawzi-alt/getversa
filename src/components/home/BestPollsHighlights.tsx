@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Trophy, Calendar, TrendingUp, X } from 'lucide-react';
+import { getPollImageProps } from '@/lib/pollImageProps';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
@@ -244,14 +245,16 @@ export default function BestPollsHighlights() {
 
                 {/* Options with results */}
                 <div className="grid grid-cols-2 gap-3">
-                  {/* Option A */}
-                  <div className="relative overflow-hidden rounded-xl border border-option-a/30 bg-option-a/10">
+                  {(() => { const p = getPollImageProps({ imageUrl: activeData.poll.image_a_url, option: activeData.poll.option_a, side: 'A' }); return (
+                  <div className={`relative overflow-hidden rounded-xl border border-option-a/30 ${p.isBrand ? '' : 'bg-option-a/10'}`}>
                     {activeData.poll.image_a_url ? (
-                      <img 
-                        src={activeData.poll.image_a_url} 
-                        alt={activeData.poll.option_a}
-                        className="w-full aspect-square object-cover"
-                      />
+                      p.isBrand ? (
+                        <div className="w-full aspect-square flex items-center justify-center" style={p.containerStyle}>
+                          <img src={activeData.poll.image_a_url} alt={activeData.poll.option_a} className="max-w-[50%] max-h-[50%] object-contain" />
+                        </div>
+                      ) : (
+                        <img src={activeData.poll.image_a_url} alt={activeData.poll.option_a} className="w-full aspect-square object-cover" />
+                      )
                     ) : (
                       <div className="w-full aspect-square flex items-center justify-center p-3 bg-option-a/5">
                         <span className="text-sm text-center text-foreground/80">{activeData.poll.option_a}</span>
@@ -269,16 +272,18 @@ export default function BestPollsHighlights() {
                         />
                       </div>
                     </div>
-                  </div>
+                  </div>); })()}
 
-                  {/* Option B */}
-                  <div className="relative overflow-hidden rounded-xl border border-option-b/30 bg-option-b/10">
+                  {(() => { const p = getPollImageProps({ imageUrl: activeData.poll.image_b_url, option: activeData.poll.option_b, side: 'B' }); return (
+                  <div className={`relative overflow-hidden rounded-xl border border-option-b/30 ${p.isBrand ? '' : 'bg-option-b/10'}`}>
                     {activeData.poll.image_b_url ? (
-                      <img 
-                        src={activeData.poll.image_b_url} 
-                        alt={activeData.poll.option_b}
-                        className="w-full aspect-square object-cover"
-                      />
+                      p.isBrand ? (
+                        <div className="w-full aspect-square flex items-center justify-center" style={p.containerStyle}>
+                          <img src={activeData.poll.image_b_url} alt={activeData.poll.option_b} className="max-w-[50%] max-h-[50%] object-contain" />
+                        </div>
+                      ) : (
+                        <img src={activeData.poll.image_b_url} alt={activeData.poll.option_b} className="w-full aspect-square object-cover" />
+                      )
                     ) : (
                       <div className="w-full aspect-square flex items-center justify-center p-3 bg-option-b/5">
                         <span className="text-sm text-center text-foreground/80">{activeData.poll.option_b}</span>
@@ -296,7 +301,7 @@ export default function BestPollsHighlights() {
                         />
                       </div>
                     </div>
-                  </div>
+                  </div>); })()}
                 </div>
 
                 {/* Winner indicator */}
