@@ -744,7 +744,7 @@ export default function Home() {
             </div>
             <div className="flex gap-2.5 overflow-x-auto px-3 scrollbar-hide snap-x pb-1">
               {trendingPolls.map((poll, i) => (
-                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={poll.trendBadge} hot={poll.trendHot} onCategoryTap={(cat) => navigate(`/vote?category=${encodeURIComponent(cat)}`)} />
+                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={poll.trendBadge} hot={poll.trendHot} onCategoryTap={(cat) => navigate(`/explore?category=${encodeURIComponent(cat)}`)} />
               ))}
             </div>
           </section>

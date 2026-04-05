@@ -56,8 +56,17 @@ function getTimeLeft(endsAt: string): string {
 export default function Explore() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Read initial category from URL params (e.g., /explore?category=Food)
+  useEffect(() => {
+    const catParam = searchParams.get('category');
+    if (catParam) {
+      setSelectedCategory(catParam);
+    }
+  }, [searchParams]);
 
   // Fetch user's voted poll IDs
   const { data: votedPollIds } = useQuery({
