@@ -200,6 +200,23 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
 
+  const { featurePoll, unfeaturePoll } = useAdminFeaturePoll();
+  const { data: currentFeatured } = useQuery({
+    queryKey: ['admin-featured-poll'],
+    queryFn: async () => {
+      const now = new Date().toISOString();
+      const { data } = await supabase
+        .from('featured_polls' as any)
+        .select('*')
+        .gte('expires_at', now)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+  });
+  const featuredPollId = (currentFeatured as any)?.poll_id as string | null;
+
   // Fetch categories from database
   const { data: categories, refetch: refetchCategories } = useQuery({
     queryKey: ['poll-categories'],
