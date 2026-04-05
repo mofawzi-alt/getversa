@@ -38,11 +38,11 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           onClick={() => navigate('/browse')}
         />
         <NavButton
-          path="/poll-history"
+          path="/history"
           icon={Clock}
           label="History"
-          active={location.pathname === '/poll-history'}
-          onClick={() => navigate('/poll-history')}
+          active={location.pathname === '/history'}
+          onClick={() => navigate('/history')}
         />
         <NavButton
           path="/profile"
