@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, LogIn, Compass } from 'lucide-react';
+import { Home, User, LogIn, Compass, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
@@ -23,7 +23,6 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   return (
     <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-nav border-t border-border/40 safe-area-bottom z-50">
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
-        {/* Home */}
         <NavButton
           path="/home"
           icon={Home}
@@ -31,33 +30,6 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           active={location.pathname === '/home'}
           onClick={() => navigate('/home')}
         />
-
-        {/* Vote - center, highlighted */}
-        <button
-          onClick={() => {
-            if (location.pathname === '/home') {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else {
-              navigate('/home');
-            }
-          }}
-          className="flex flex-col items-center gap-0.5 -mt-5"
-        >
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
-            location.pathname === '/home'
-                ? 'bg-primary shadow-[0_0_18px_hsl(var(--primary)/0.35)]'
-                : 'bg-primary/90 hover:bg-primary shadow-[0_0_14px_hsl(var(--primary)/0.25)]'
-            }`}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary-foreground">
-                <path d="M3 12h4l3 9 4-18 3 9h4" />
-              </svg>
-            </div>
-          <span className={`text-[10px] font-semibold ${
-            location.pathname === '/home' ? 'text-primary' : 'text-card-foreground/70'
-          }`}>Vote</span>
-        </button>
-
-        {/* Browse */}
         <NavButton
           path="/browse"
           icon={Compass}
@@ -65,8 +37,13 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           active={location.pathname === '/browse'}
           onClick={() => navigate('/browse')}
         />
-
-        {/* Profile */}
+        <NavButton
+          path="/poll-history"
+          icon={Clock}
+          label="History"
+          active={location.pathname === '/poll-history'}
+          onClick={() => navigate('/poll-history')}
+        />
         <NavButton
           path="/profile"
           icon={User}
