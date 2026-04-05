@@ -349,8 +349,18 @@ export default function Home() {
 
   // Reset hero index when category filter changes
   useEffect(() => {
-    setHeroPollIndex(0);
+    if (categoryFilter) {
+      setHeroPollIndex(0);
+    }
   }, [categoryFilter]);
+
+  // Auto-clear category filter when all category polls are voted
+  useEffect(() => {
+    if (categoryFilter && newPolls.length === 0) {
+      setCategoryFilter(null);
+      setHeroPollIndex(savedHeroIndex.current);
+    }
+  }, [categoryFilter, newPolls.length]);
 
   // ── Memoized expensive computations ──
   const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
