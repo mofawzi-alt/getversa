@@ -652,7 +652,7 @@ export default function Home() {
           </div>
 
           {livePolls.length > 0 ? (
-            <Carousel opts={{ align: 'start', loop: false }} className="px-3">
+            <Carousel opts={{ align: 'start', loop: true }} setApi={setLiveCarouselApi} className="px-3">
               <CarouselContent className="-ml-2.5">
                 {livePolls.map((poll, i) => {
                   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
