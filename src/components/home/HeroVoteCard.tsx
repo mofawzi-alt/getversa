@@ -50,7 +50,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
 
   const startX = useRef(0);
   const startY = useRef(0);
+  const currentDragX = useRef(0);
+  const currentDragY = useRef(0);
   const hasMoved = useRef(false);
+  const isDraggingRef = useRef(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
