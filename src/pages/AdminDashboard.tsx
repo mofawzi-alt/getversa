@@ -338,9 +338,19 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
         if (uploadedUrl) finalImageBUrl = uploadedUrl;
       }
       
-      // Set 24-hour window for daily polls
+      // Set time windows based on expiry type
       const startsAt = new Date();
-      const endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      let endsAt: Date | null = null;
+      
+      if (expiryType === 'trending') {
+        endsAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
+      } else if (expiryType === 'brand_battle') {
+        // End of current month
+        endsAt = new Date(startsAt.getFullYear(), startsAt.getMonth() + 1, 0, 23, 59, 59);
+      } else if (isDailyPoll) {
+        endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      }
+      // Evergreen: no ends_at
       
       const { error } = await supabase
         .from('polls')
@@ -354,17 +364,18 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
           created_by: userId,
           is_daily_poll: isDailyPoll,
           starts_at: startsAt.toISOString(),
-          ends_at: endsAt.toISOString(),
+          ends_at: endsAt ? endsAt.toISOString() : null,
           target_gender: targetGender || null,
           target_age_range: targetAgeRange || null,
           target_country: targetCountry || null,
           intent_tag: intentTag || null,
+          expiry_type: expiryType,
         });
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-polls'] });
-      toast.success('Poll created with 24-hour window!');
+      toast.success(`Poll created (${expiryType === 'evergreen' ? 'Evergreen' : expiryType === 'trending' ? '48h Trending' : '30-day Brand Battle'})!`);
       setShowForm(false);
       setQuestion('');
       setOptionA('');
@@ -377,6 +388,7 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
       setImageBPreview('');
       setCategory('');
       setIsDailyPoll(true);
+      setExpiryType('evergreen');
       setIsUploading(false);
       setTargetGender('');
       setTargetAgeRange('');
