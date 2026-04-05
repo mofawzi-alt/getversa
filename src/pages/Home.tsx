@@ -521,7 +521,7 @@ export default function Home() {
                 {getCategoryMeta(categoryFilter).emoji} Showing: {getDisplayCategoryName(categoryFilter)}
               </span>
               <button
-                onClick={() => setCategoryFilter(null)}
+                onClick={() => { setCategoryFilter(null); setHeroPollIndex(savedHeroIndex.current); }}
                 className="text-[10px] font-bold text-primary/70 hover:text-primary px-2 py-0.5 rounded-full bg-primary/10"
               >
                 ✕ Clear
