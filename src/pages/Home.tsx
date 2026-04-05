@@ -660,32 +660,6 @@ export default function Home() {
 
         
 
-        {/* ═══ POLLS WAITING NUDGE ═══ */}
-        {user && (unseenCount || 0) > 0 && (
-          <section className="px-3 mb-3">
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate('/vote')}
-              className="rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 px-4 py-3 flex items-center gap-3 cursor-pointer"
-            >
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <Target className="h-5 w-5 text-primary" />
-              </motion.div>
-              <div className="flex-1">
-                <p className="text-xs font-display font-bold text-foreground">
-                  New polls waiting for your vote
-                </p>
-                <p className="text-[10px] text-muted-foreground">Every vote shapes the insights</p>
-              </div>
-              <ArrowRight className="h-4 w-4 text-primary" />
-            </motion.div>
-          </section>
-        )}
 
         {/* ═══ GAMIFICATION STRIP ═══ */}
         {user && (
