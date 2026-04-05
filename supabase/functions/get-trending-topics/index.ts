@@ -89,24 +89,49 @@ Make them diverse and engaging for an Egyptian Gen Z / Millennial audience. Use 
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
-    const aiData = await response.json();
+    const rawText = await response.text();
+    let aiData;
+    try {
+      aiData = JSON.parse(rawText);
+    } catch {
+      console.error('Failed to parse AI gateway response:', rawText.substring(0, 500));
+      throw new Error('Invalid response from AI gateway');
+    }
+
     const content = aiData.choices?.[0]?.message?.content;
-    
     if (!content) {
       throw new Error('No content in AI response');
     }
 
-    // Parse the JSON from the response
+    // Robust JSON extraction
     let trendingData;
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        trendingData = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('No JSON found');
+      let cleaned = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      const jsonStart = cleaned.search(/[\{\[]/);
+      const jsonEnd = cleaned.lastIndexOf(jsonStart !== -1 && cleaned[jsonStart] === '[' ? ']' : '}');
+      if (jsonStart === -1 || jsonEnd === -1) throw new Error('No JSON found');
+      cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+
+      try {
+        trendingData = JSON.parse(cleaned);
+      } catch {
+        cleaned = cleaned.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']').replace(/[\x00-\x1F\x7F]/g, '');
+        try {
+          trendingData = JSON.parse(cleaned);
+        } catch {
+          let braces = 0, brackets = 0;
+          for (const c of cleaned) {
+            if (c === '{') braces++; if (c === '}') braces--;
+            if (c === '[') brackets++; if (c === ']') brackets--;
+          }
+          let repaired = cleaned;
+          while (brackets > 0) { repaired += ']'; brackets--; }
+          while (braces > 0) { repaired += '}'; braces--; }
+          trendingData = JSON.parse(repaired);
+        }
       }
     } catch (parseError) {
-      console.error('Failed to parse:', content);
+      console.error('Failed to parse trending content:', content.substring(0, 500));
       throw new Error('Failed to parse trending topics');
     }
 
