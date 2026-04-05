@@ -614,6 +614,9 @@ export default function Home() {
           </div>
         )}
 
+        {/* ═══ PINNED POLL BANNER ═══ */}
+        <PinnedPollBanner />
+
         {/* ═══ INFINITE HERO VOTE CARD ═══ */}
         <div ref={heroRef}>
           <HeroVoteCard
