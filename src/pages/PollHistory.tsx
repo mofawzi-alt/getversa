@@ -6,12 +6,7 @@ import { Loader2, ArrowLeft, Users, ChevronDown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp as TrendUp } from 'lucide-react';
-import LiveIndicator from '@/components/poll/LiveIndicator';
-import { getStablePollFallbackImage } from '@/lib/pollImages';
-
-function getFallbackImage(seed: string, index: number): string {
-  return getStablePollFallbackImage(seed, index);
-}
+import PollOptionImage from '@/components/poll/PollOptionImage';
 
 interface VoteHistoryItem {
   pollId: string;
@@ -31,25 +26,31 @@ interface VoteHistoryItem {
 }
 
 function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; index: number; total: number }) {
-  const imgA = vote.imageAUrl || getFallbackImage(vote.pollId, 0);
-  const imgB = vote.imageBUrl || getFallbackImage(vote.pollId, 1);
   const winnerIsA = vote.percentA >= vote.percentB;
-  const userPercent = vote.userChoice === 'A' ? vote.percentA : vote.percentB;
 
   return (
     <div className="w-full flex flex-col">
       {/* Question */}
       <div className="px-4 pt-3 pb-2 shrink-0 flex items-start justify-between gap-2">
         <p className="text-sm font-bold text-foreground leading-snug">{vote.question}</p>
-        {vote.isLive && <LiveIndicator variant="badge" className="shrink-0 mt-0.5" />}
+        {vote.isLive && (
+          <span className="shrink-0 mt-0.5 px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[9px] font-bold">LIVE</span>
+        )}
       </div>
 
-      {/* Split images — proportional aspect ratio */}
+      {/* Split images */}
       <div className="flex relative mx-4 rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
         {/* Option A */}
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgA} alt={vote.optionA} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+          <PollOptionImage
+            imageUrl={vote.imageAUrl}
+            option={vote.optionA}
+            question={vote.question}
+            side="A"
+            maxLogoSize="45%"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
           {winnerIsA && (
             <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-option-a/90 text-option-a-foreground text-[9px] font-bold">
               <TrendUp className="h-2.5 w-2.5" /> Winner
@@ -58,7 +59,7 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
           {vote.userChoice === 'A' && (
             <div className="absolute inset-0 border-2 border-option-a pointer-events-none" />
           )}
-          <div className="absolute bottom-0 left-0 right-0 p-2.5 pt-5">
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 pt-5 pointer-events-none">
             <p className="text-white text-xs font-bold drop-shadow-lg truncate">{vote.optionA}</p>
           </div>
         </div>
@@ -68,8 +69,15 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
 
         {/* Option B */}
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgB} alt={vote.optionB} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+          <PollOptionImage
+            imageUrl={vote.imageBUrl}
+            option={vote.optionB}
+            question={vote.question}
+            side="B"
+            maxLogoSize="45%"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
           {!winnerIsA && (
             <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-option-b/90 text-option-b-foreground text-[9px] font-bold">
               <TrendUp className="h-2.5 w-2.5" /> Winner
@@ -78,7 +86,7 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
           {vote.userChoice === 'B' && (
             <div className="absolute inset-0 border-2 border-option-b pointer-events-none" />
           )}
-          <div className="absolute bottom-0 left-0 right-0 p-2.5 pt-5">
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 pt-5 pointer-events-none">
             <p className="text-white text-xs font-bold drop-shadow-lg truncate">{vote.optionB}</p>
           </div>
         </div>
