@@ -138,6 +138,8 @@ export default function Home() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
+  const [voteMilestone, setVoteMilestone] = useState<{ count: number; message: string } | null>(null);
 
   // Show tutorial for new visitors who completed welcome but haven't seen tutorial
   useEffect(() => {
