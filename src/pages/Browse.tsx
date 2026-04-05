@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Share2, Flame, Check, ChevronUp, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import PollOptionImage from '@/components/poll/PollOptionImage';
 import BottomNav from '@/components/layout/BottomNav';
 
 interface BrowsePoll {
@@ -209,8 +209,7 @@ function BrowseCard({
   onReact: () => void;
   reacted: boolean;
 }) {
-  const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
-  const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
+  // Images handled by PollOptionImage component
   const isCloseResult = !isSignedIn && poll.totalVotes >= 5 && poll.percentA >= 45 && poll.percentA <= 55;
 
   return (
@@ -239,7 +238,7 @@ function BrowseCard({
       <div className="flex-1 flex relative min-h-0">
         {/* Option A */}
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgA} alt={poll.option_a} loading="lazy" className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
+          <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="40%" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
           {poll.winner === 'A' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
@@ -262,7 +261,7 @@ function BrowseCard({
 
         {/* Option B */}
         <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgB} alt={poll.option_b} loading="lazy" className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
+          <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="40%" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
           {poll.winner === 'B' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">

@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
-import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
+import PollOptionImage from '@/components/poll/PollOptionImage';
 import { toast } from 'sonner';
 import { Check } from 'lucide-react';
 import HeroCaughtUp from './HeroCaughtUp';
@@ -258,8 +258,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
     setDragY(0);
   };
 
-  const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
-  const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
+  // Images handled by PollOptionImage component
 
   // Apply dead zone to visual offset — card doesn't move until drag exceeds threshold
   const visualDragX = Math.abs(dragX) > DRAG_DEAD_ZONE ? dragX - Math.sign(dragX) * DRAG_DEAD_ZONE : 0;
@@ -325,12 +324,12 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
                 : 'none',
             }}
           >
-            <img
-              src={imgA}
-              alt={poll.option_a}
-              className="w-full h-full object-cover bg-muted pointer-events-none"
-              onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })}
-              draggable={false}
+            <PollOptionImage
+              imageUrl={poll.image_a_url}
+              option={poll.option_a}
+              question={poll.question}
+              side="A"
+              maxLogoSize="50%"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -395,12 +394,12 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
                 : 'none',
             }}
           >
-            <img
-              src={imgB}
-              alt={poll.option_b}
-              className="w-full h-full object-cover bg-muted pointer-events-none"
-              onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })}
-              draggable={false}
+            <PollOptionImage
+              imageUrl={poll.image_b_url}
+              option={poll.option_b}
+              question={poll.question}
+              side="B"
+              maxLogoSize="50%"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
