@@ -875,14 +875,15 @@ export default function Home() {
         {(() => {
           const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
           for (const p of allPolls) {
-            const cat = p.category || 'Other';
-            const existing = categoryMap.get(cat) || { count: 0, unseen: 0, thumbnail: null };
+            const rawCat = p.category || 'Other';
+            const displayCat = getDisplayCategoryName(rawCat);
+            const existing = categoryMap.get(displayCat) || { count: 0, unseen: 0, thumbnail: null };
             existing.count++;
             if (!votedPollIds?.has(p.id)) existing.unseen++;
              if (!existing.thumbnail) {
                existing.thumbnail = getPollDisplayImageSrc({ imageUrl: p.image_a_url, option: p.option_a, question: p.question, side: 'A' });
              }
-            categoryMap.set(cat, existing);
+            categoryMap.set(displayCat, existing);
           }
           const categories = Array.from(categoryMap.entries())
             .sort((a, b) => b[1].count - a[1].count);
