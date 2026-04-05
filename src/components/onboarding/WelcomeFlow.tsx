@@ -412,14 +412,20 @@ function DemoTrialScreen({ onComplete }: { onComplete: () => void }) {
           >
             <div className="text-5xl">🎉</div>
             <h2 className="text-xl font-display font-bold text-foreground">Nice taste!</h2>
-            <p className="text-sm text-muted-foreground">Let's explore what VERSA has to offer.</p>
+            <p className="text-sm text-muted-foreground">Create an account to save your votes, track your insights, and unlock all features.</p>
             <Button
-              onClick={() => { setShowUnlock(false); setUnlockDismissed(true); onComplete(); }}
+              onClick={() => { setShowUnlock(false); setUnlockDismissed(true); window.location.href = '/auth?mode=signup'; }}
               className="w-full h-12 bg-gradient-primary hover:opacity-90 font-display font-bold rounded-2xl"
             >
               <Sparkles className="mr-2 h-4 w-4" />
-              Explore the App
+              Create Account
             </Button>
+            <button
+              onClick={() => { setShowUnlock(false); setUnlockDismissed(true); onComplete(); }}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Browse first →
+            </button>
           </motion.div>
         </DialogContent>
       </Dialog>
