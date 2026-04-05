@@ -27,10 +27,10 @@ interface HeroVoteCardProps {
   onVoteComplete?: () => void;
 }
 
-const SWIPE_THRESHOLD = 70;
-const SWIPE_UP_THRESHOLD = 60;
+const SWIPE_THRESHOLD = 50;
+const SWIPE_UP_THRESHOLD = 50;
 const RESULT_MS = 1500;
-const TAP_MOVE_TOLERANCE = 10;
+const TAP_MOVE_TOLERANCE = 12;
 
 export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: HeroVoteCardProps) {
   const { user, profile } = useAuth();
