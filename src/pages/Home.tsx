@@ -8,7 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3 } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import PinButton from '@/components/poll/PinButton';
+import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
@@ -203,8 +204,7 @@ export default function Home() {
   const [heroPollIndex, setHeroPollIndex] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
 
-  // Live debates auto-rotate
-  const [liveCarouselApi, setLiveCarouselApi] = useState<any>(null);
+  // (carousel API removed — static scroll now)
   
   // Category filter for hero card
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
@@ -510,18 +510,7 @@ export default function Home() {
     return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
   }, [allPolls, votedPollIds]);
 
-  // Auto-rotate live debates carousel every 5 seconds
-  useEffect(() => {
-    if (!liveCarouselApi || livePolls.length <= 1) return;
-    const interval = setInterval(() => {
-      if (liveCarouselApi.canScrollNext()) {
-        liveCarouselApi.scrollNext();
-      } else {
-        liveCarouselApi.scrollTo(0);
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [liveCarouselApi, livePolls.length]);
+  // (auto-rotate removed — static horizontal scroll)
 
   if (showWelcome) {
     return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); setShowTutorial(true); }} />;
@@ -625,6 +614,9 @@ export default function Home() {
           </div>
         )}
 
+        {/* ═══ PINNED POLL BANNER ═══ */}
+        <PinnedPollBanner />
+
         {/* ═══ INFINITE HERO VOTE CARD ═══ */}
         <div ref={heroRef}>
           <HeroVoteCard
@@ -723,143 +715,94 @@ export default function Home() {
           </div>
 
           {livePolls.length > 0 ? (
-            <Carousel opts={{ align: 'start', loop: true }} setApi={setLiveCarouselApi} className="px-3">
-              <CarouselContent className="-ml-2.5">
+            <div className="px-3 overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2.5" style={{ width: 'max-content' }}>
                 {livePolls.map((poll, i) => {
-                  const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
-                  const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
                   const hasVoted = votedPollIds?.has(poll.id);
                   return (
-                    <CarouselItem key={poll.id} className="pl-2.5 basis-[92%]">
-                      <motion.div
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.06 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => handleLivePollTap(poll)}
-                        className="relative rounded-2xl overflow-hidden cursor-pointer group border border-border/60 shadow-card"
-                      >
-                        {/* Pulse glow ring */}
-                        <motion.div
-                          animate={{
-                            boxShadow: [
-                              '0 0 0px hsl(var(--destructive) / 0)',
-                              '0 0 20px hsl(var(--destructive) / 0.2)',
-                              '0 0 0px hsl(var(--destructive) / 0)',
-                            ],
-                          }}
-                          transition={{ duration: 2.5, repeat: Infinity }}
-                          className="absolute inset-0 rounded-2xl z-20 pointer-events-none"
-                        />
+                    <motion.div
+                      key={poll.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.06 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleLivePollTap(poll)}
+                      className="relative rounded-2xl overflow-hidden cursor-pointer group border border-border/60 shadow-card shrink-0"
+                      style={{ width: 'calc((100vw - 36px) / 2.3)' }}
+                    >
+                      {/* Pin button */}
+                      <div className="absolute top-2 right-2 z-30">
+                        <PinButton pollId={poll.id} />
+                      </div>
 
-                        {/* Images */}
-                        <div className="flex h-[55vh] max-h-[420px] relative">
-                          <div className="w-1/2 h-full relative overflow-hidden">
-                            <PollOptionImage
-                              imageUrl={poll.image_a_url}
-                              option={poll.option_a}
-                              question={poll.question}
-                              side="A"
-                              maxLogoSize="65%"
-                              loading="lazy"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                          </div>
-                          <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
-                          <div className="w-1/2 h-full relative overflow-hidden">
-                            <PollOptionImage
-                              imageUrl={poll.image_b_url}
-                              option={poll.option_b}
-                              question={poll.question}
-                              side="B"
-                              maxLogoSize="65%"
-                              loading="lazy"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                          </div>
+                      {/* Images */}
+                      <div className="flex h-40 relative">
+                        <div className="w-1/2 h-full relative overflow-hidden">
+                          <PollOptionImage
+                            imageUrl={poll.image_a_url}
+                            option={poll.option_a}
+                            question={poll.question}
+                            side="A"
+                            maxLogoSize="65%"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                         </div>
+                        <div className="absolute inset-y-0 left-1/2 w-[1px] bg-white/20 z-10" />
+                        <div className="w-1/2 h-full relative overflow-hidden">
+                          <PollOptionImage
+                            imageUrl={poll.image_b_url}
+                            option={poll.option_b}
+                            question={poll.question}
+                            side="B"
+                            maxLogoSize="65%"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        </div>
+                      </div>
 
-                        {/* Question overlay */}
-                        <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/70 to-transparent z-10">
-                          <h3 className="text-white text-base font-bold drop-shadow-lg leading-tight text-center">{poll.question}</h3>
+                      {/* Content overlay */}
+                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-6 pb-2 px-2.5 z-10">
+                        <p className="text-white text-[11px] font-bold drop-shadow-lg leading-tight mb-1.5 line-clamp-2">{poll.question}</p>
+                        {/* Percentage bar */}
+                        <div className="h-1 bg-white/15 rounded-full overflow-hidden mb-1.5 flex">
+                          <motion.div
+                            className="h-full bg-option-a"
+                            animate={{ width: hasVoted ? `${poll.percentA}%` : '50%' }}
+                            transition={{ duration: 0.7 }}
+                          />
+                          <motion.div
+                            className="h-full bg-option-b"
+                            animate={{ width: hasVoted ? `${poll.percentB}%` : '50%' }}
+                            transition={{ duration: 0.7 }}
+                          />
                         </div>
-
-                        {/* Bottom info bar */}
-                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-8 pb-3 px-4 z-10">
-                          {/* Option labels + percentages or tap to vote */}
-                          <div className="flex items-end justify-between mb-2">
-                            <div className="flex-1 text-center">
-                              <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_a}</p>
-                              {hasVoted ? (
-                                <span className="text-2xl font-bold text-option-a drop-shadow-lg">
-                                  <AnimatedNumber value={poll.percentA} />%
-                                </span>
-                              ) : null}
-                            </div>
-                            <div className="flex-1 text-center">
-                              <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_b}</p>
-                              {hasVoted ? (
-                                <span className="text-2xl font-bold text-option-b drop-shadow-lg">
-                                  <AnimatedNumber value={poll.percentB} />%
-                                </span>
-                              ) : null}
-                            </div>
+                        {hasVoted && (
+                          <div className="flex justify-between mb-1">
+                            <span className="text-[10px] font-bold text-option-a">{poll.percentA}%</span>
+                            <span className="text-[10px] font-bold text-option-b">{poll.percentB}%</span>
                           </div>
-                          {/* Percentage bar - split colors */}
-                          <div className="h-1.5 bg-white/15 rounded-full overflow-hidden mb-2 flex">
-                            <motion.div
-                              className="h-full bg-option-a"
-                              initial={{ width: '50%' }}
-                              animate={{ width: hasVoted ? `${poll.percentA}%` : '50%' }}
-                              transition={{ duration: 0.7, ease: 'easeOut' }}
-                            />
-                            <motion.div
-                              className="h-full bg-option-b"
-                              initial={{ width: '50%' }}
-                              animate={{ width: hasVoted ? `${poll.percentB}%` : '50%' }}
-                              transition={{ duration: 0.7, ease: 'easeOut' }}
-                            />
+                        )}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <LiveIndicator variant="overlay" />
+                            <span className="text-[9px] text-white/70 font-medium">
+                              {poll.totalVotes} votes
+                            </span>
                           </div>
-                          {/* Meta row */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                              <LiveIndicator variant="overlay" />
-                              {poll.category && (
-                                <span
-                                  onClick={(e) => { e.stopPropagation(); navigate(`/vote?category=${encodeURIComponent(poll.category!)}`); }}
-                                  className="text-[9px] px-2 py-0.5 rounded-full font-bold bg-white/20 text-white backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors drop-shadow-lg"
-                                >
-                                  {getCategoryMeta(poll.category).emoji} {poll.category}
-                                </span>
-                              )}
-                              <span className="text-[10px] text-white/70 flex items-center gap-0.5 drop-shadow-lg font-medium">
-                                <Users className="h-3 w-3" /> {poll.recentVotes > 0 ? <><AnimatedNumber value={poll.recentVotes} /> voting now</> : <><AnimatedNumber value={poll.totalVotes} /> votes</>}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {poll.ends_at && (
-                                <span className="text-[9px] text-white/60 flex items-center gap-0.5 drop-shadow-lg">
-                                  <Timer className="h-2.5 w-2.5" /> {getTimeLeft(poll.ends_at)}
-                                </span>
-                              )}
-                              {!hasVoted && (
-                                <motion.span
-                                  animate={{ scale: [1, 1.05, 1] }}
-                                  transition={{ duration: 1.5, repeat: Infinity }}
-                                  className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold"
-                                >
-                                  Swipe to Vote
-                                </motion.span>
-                              )}
-                            </div>
-                          </div>
+                          {!hasVoted && (
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-bold">
+                              Vote
+                            </span>
+                          )}
                         </div>
-                      </motion.div>
-                    </CarouselItem>
+                      </div>
+                    </motion.div>
                   );
                 })}
-              </CarouselContent>
-            </Carousel>
+              </div>
+            </div>
           ) : (
             <div className="mx-3 rounded-2xl border border-border/60 bg-card px-4 py-8 text-center">
               <motion.div

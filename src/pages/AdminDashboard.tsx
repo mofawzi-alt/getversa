@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, Plus, Loader2, BarChart3, Gift, 
   Users, Bell, Sparkles, X, Check, Upload, Image, Trash2, Target,
-  Clock, RefreshCcw, Download, TrendingUp, Flame, Pencil
+  Clock, RefreshCcw, Download, TrendingUp, Flame, Pencil, Pin, PinOff
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PollAnalytics from '@/components/admin/PollAnalytics';
@@ -28,7 +28,7 @@ import InsightsReport from '@/components/admin/InsightsReport';
 import BrandIntelligence from '@/components/admin/BrandIntelligence';
 import IndustryReport from '@/components/admin/IndustryReport';
 import MonthlyLeaderboard from '@/components/admin/MonthlyLeaderboard';
-
+import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
@@ -199,6 +199,23 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
+
+  const { featurePoll, unfeaturePoll } = useAdminFeaturePoll();
+  const { data: currentFeatured } = useQuery({
+    queryKey: ['admin-featured-poll'],
+    queryFn: async () => {
+      const now = new Date().toISOString();
+      const { data } = await supabase
+        .from('featured_polls' as any)
+        .select('*')
+        .gte('expires_at', now)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+  });
+  const featuredPollId = (currentFeatured as any)?.poll_id as string | null;
 
   // Fetch categories from database
   const { data: categories, refetch: refetchCategories } = useQuery({
@@ -1237,6 +1254,26 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const isFeatured = featuredPollId === poll.id;
+                        if (isFeatured) {
+                          unfeaturePoll.mutate(undefined, {
+                            onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-featured-poll'] }); toast.success('Unfeatured'); },
+                          });
+                        } else {
+                          featurePoll.mutate(poll.id, {
+                            onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-featured-poll'] }); toast.success('Featured for all users until midnight!'); },
+                          });
+                        }
+                      }}
+                      className={featuredPollId === poll.id ? 'text-warning hover:text-warning hover:bg-warning/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}
+                      title={featuredPollId === poll.id ? 'Unfeature poll' : 'Feature poll for all users'}
+                    >
+                      {featuredPollId === poll.id ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
