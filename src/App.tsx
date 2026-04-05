@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-route
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SplashScreen from "@/components/SplashScreen";
+import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/components/onboarding/SwipeOverlay";
 
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -28,27 +29,40 @@ import SeasonalHub from "./pages/SeasonalHub";
 import NotFound from "./pages/NotFound";
 import TasteProfile from "./pages/TasteProfile";
 import WeeklyTopResults from "./pages/WeeklyTopResults";
-import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
+import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
 
-// Smart landing: new visitors see WelcomeFlow, returning users go to /home
+// Smart landing: first-time visitors see SwipeOverlay, returning users go to /home
 function SmartLanding() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showOverlay, setShowOverlay] = useState(false);
 
-  // If user is logged in or has completed welcome, go to home
-  if (user || isWelcomeDone()) {
+  useEffect(() => {
+    // If user is logged in or has seen overlay, go home
+    if (user || isSwipeOverlayDone()) return;
+    // First-time visitor: show overlay
+    setShowOverlay(true);
+  }, [user]);
+
+  // Logged in or returning user
+  if (user || isSwipeOverlayDone()) {
     return <Navigate to="/home" replace />;
   }
 
-  // First-time visitor: show WelcomeFlow with 3 demo polls, then go to home with tutorial
-  return (
-    <WelcomeFlow onComplete={() => {
-      markWelcomeDone();
-      navigate('/home', { replace: true });
-    }} />
-  );
+  // First time visitor: show SwipeOverlay, then go to signup
+  if (showOverlay) {
+    return (
+      <SwipeOverlay onDismiss={() => {
+        markSwipeOverlayDone();
+        markWelcomeDone(); // Also mark welcome as done
+        navigate('/auth?mode=signup', { replace: true });
+      }} />
+    );
+  }
+
+  return null;
 }
 
 // Checks if a logged-in user has incomplete demographics and redirects to onboarding
