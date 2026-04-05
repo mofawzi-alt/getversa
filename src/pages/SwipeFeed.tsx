@@ -264,6 +264,18 @@ function ImmersivePollCard({
 
   const campaignLabel = getCampaignLabel(poll.category);
 
+  // Countdown for trending polls
+  const trendingCountdown = useMemo(() => {
+    if ((poll as any).expiry_type !== 'trending' || !poll.ends_at) return null;
+    const diff = new Date(poll.ends_at).getTime() - Date.now();
+    if (diff <= 0) return null;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (hours >= 24) return `Closes in ${hours}h`;
+    if (hours >= 1) return `Closes in ${hours}h`;
+    const mins = Math.floor(diff / (1000 * 60));
+    return `Closes in ${mins}m`;
+  }, [poll]);
+
   const showResults = hasResult && !showSuspense;
 
   return (
@@ -273,6 +285,11 @@ function ImmersivePollCard({
         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${isHighStakes ? 'bg-destructive/15 text-destructive animate-pulse' : 'bg-primary/10 text-primary'}`}>
           <span>{isHighStakes ? '🔥' : campaignLabel.emoji}</span> {isHighStakes ? 'Trending' : campaignLabel.label}
         </span>
+        {trendingCountdown && (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-500/15 text-orange-500 text-[10px] font-bold">
+            ⏱️ {trendingCountdown}
+          </span>
+        )}
         {rareEvent && (
           <motion.span
             initial={{ opacity: 0, scale: 0.8 }}
