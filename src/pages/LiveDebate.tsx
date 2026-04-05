@@ -239,14 +239,14 @@ export default function LiveDebate() {
     }
   }, [handleExit]);
 
-  // Horizontal swipe navigation (result phase only)
+  // Horizontal swipe navigation (result phase — works for both pre-voted and just-voted)
   const navSwipeRef = useRef(0);
   const handleNavSwipeStart = useCallback((clientX: number) => {
-    if (phase !== 'result' || !currentPollIsVoted) return;
+    if (phase !== 'result') return;
     navSwipeRef.current = clientX;
-  }, [phase, currentPollIsVoted]);
+  }, [phase]);
   const handleNavSwipeEnd = useCallback((clientX: number) => {
-    if (phase !== 'result' || !currentPollIsVoted) return;
+    if (phase !== 'result') return;
     const delta = clientX - navSwipeRef.current;
     const SWIPE_THRESHOLD = 80;
     if (delta < -SWIPE_THRESHOLD && hasMore) {
@@ -257,7 +257,7 @@ export default function LiveDebate() {
       setCurrentIndex(prev => prev - 1); setResult(null); setPhase('swipe');
     }
     navSwipeRef.current = 0;
-  }, [phase, currentPollIsVoted, hasMore, currentIndex]);
+  }, [phase, hasMore, currentIndex]);
 
   if (isLoading) {
     return (
