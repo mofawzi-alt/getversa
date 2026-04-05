@@ -44,6 +44,7 @@ export default function PollCreationForm({
   const [category, setCategory] = useState('');
   const [tags, setTags] = useState('');
   const [isDailyPoll, setIsDailyPoll] = useState(true);
+  const [weightScore, setWeightScore] = useState(500);
   const [targetGender, setTargetGender] = useState('');
   const [targetAgeRange, setTargetAgeRange] = useState('');
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
