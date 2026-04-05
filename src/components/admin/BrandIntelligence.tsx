@@ -748,6 +748,51 @@ export default function BrandIntelligence() {
               ))}
             </CardContent>
           </Card>
+
+          {/* Brand Battle Cycle History */}
+          {pollCycles && pollCycles.length > 0 && (
+            <Card className="border-primary/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  Brand Battle History
+                </CardTitle>
+                <CardDescription>Monthly cycle data for {activeBrand} brand battle polls</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {pollCycles.map((cycle: any) => {
+                  const poll = allPolls?.find(p => p.id === cycle.poll_id);
+                  if (!poll) return null;
+                  const isA = poll.option_a.toLowerCase().includes(activeBrand.toLowerCase());
+                  const brandPercent = isA ? cycle.percent_a : cycle.percent_b;
+                  const compPercent = isA ? cycle.percent_b : cycle.percent_a;
+                  const competitor = isA ? poll.option_b : poll.option_a;
+                  const start = new Date(cycle.cycle_start).toLocaleDateString();
+                  const end = new Date(cycle.cycle_end).toLocaleDateString();
+
+                  return (
+                    <div key={cycle.id} className="p-3 rounded-xl border border-border/50 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{activeBrand} vs {competitor}</span>
+                        <Badge variant="outline" className="text-xs">Cycle {cycle.cycle_number}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{start} — {end} · {cycle.total_votes} votes</p>
+                      <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`absolute top-0 left-0 h-full rounded-full ${brandPercent >= 50 ? 'bg-gradient-to-r from-primary to-green-500' : 'bg-gradient-to-r from-orange-500 to-red-500'}`}
+                          style={{ width: `${brandPercent}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{activeBrand} {brandPercent}%</span>
+                        <span>{competitor} {compPercent}%</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>
