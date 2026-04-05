@@ -462,7 +462,20 @@ export default function Home() {
     })();
 
     return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
-  }, [allPolls]);
+  }, [allPolls, votedPollIds]);
+
+  // Auto-rotate live debates carousel every 5 seconds
+  useEffect(() => {
+    if (!liveCarouselApi || livePolls.length <= 1) return;
+    const interval = setInterval(() => {
+      if (liveCarouselApi.canScrollNext()) {
+        liveCarouselApi.scrollNext();
+      } else {
+        liveCarouselApi.scrollTo(0);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [liveCarouselApi, livePolls.length]);
 
   if (showWelcome) {
     return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); setShowTutorial(true); }} />;
