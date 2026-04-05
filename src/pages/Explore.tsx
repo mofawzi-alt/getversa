@@ -170,6 +170,19 @@ export default function Explore() {
     ? categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
     : categories;
 
+  // Search polls by option name / question when search is active
+  const searchResults = useMemo(() => {
+    if (!search || search.length < 2) return [];
+    const q = search.toLowerCase();
+    return polls
+      .filter(p =>
+        p.option_a.toLowerCase().includes(q) ||
+        p.option_b.toLowerCase().includes(q) ||
+        p.question.toLowerCase().includes(q)
+      )
+      .sort((a, b) => b.totalVotes - a.totalVotes);
+  }, [search, polls]);
+
   // Category detail polls
   const categoryPolls = useMemo(() => {
     if (!selectedCategory) return [];
@@ -291,7 +304,7 @@ export default function Explore() {
             <span className="text-xs font-medium">Back</span>
           </button>
           <h1 className="text-xl font-display font-bold text-foreground">Explore</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Browse polls by category</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Browse polls by category or search</p>
         </div>
 
         {/* Search */}
@@ -299,7 +312,7 @@ export default function Explore() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search polls…"
+              placeholder="Search brands, options, polls…"
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="pl-9 bg-card border-border/60 rounded-xl text-sm h-10"
@@ -307,7 +320,79 @@ export default function Explore() {
           </div>
         </div>
 
-        {/* Trending Categories (horizontal) */}
+        {/* Search results — show polls matching search */}
+        {search && search.length >= 2 && searchResults.length > 0 && (
+          <section className="px-3 mb-4">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Search className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">
+                {searchResults.length} poll{searchResults.length !== 1 ? 's' : ''} matching "{search}"
+              </span>
+            </div>
+            <div className="space-y-2.5">
+              {searchResults.map((poll, i) => {
+                const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' }) || getFallbackImage(poll.id, 0);
+                const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' }) || getFallbackImage(poll.id, 1);
+                const recentVotes = votes24hMap.get(poll.id) || 0;
+                return (
+                  <motion.div
+                    key={poll.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setModalPoll(poll)}
+                    className="relative rounded-xl overflow-hidden cursor-pointer group shadow-card"
+                  >
+                    <div className="flex h-32 relative">
+                      <div className="w-1/2 h-full relative overflow-hidden">
+                        <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted transition-transform duration-300 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                        <div className="absolute bottom-2 left-2">
+                          <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_a}</p>
+                          <span className="text-xs font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>
+                        </div>
+                      </div>
+                      <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
+                      <div className="w-1/2 h-full relative overflow-hidden">
+                        <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover bg-muted transition-transform duration-300 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                        <div className="absolute bottom-2 right-2 text-right">
+                          <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_b}</p>
+                          <span className="text-xs font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-4 bg-gradient-to-b from-black/60 to-transparent">
+                      <h3 className="text-white text-[11px] font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
+                    </div>
+                    <div className="absolute bottom-1.5 inset-x-2 flex items-center justify-between z-10">
+                      <div className="flex items-center gap-1.5">
+                        {poll.isLive && <LiveIndicator variant="overlay" />}
+                        <span className="text-[8px] text-white/60 flex items-center gap-0.5">
+                          <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
+                        </span>
+                      </div>
+                      {poll.ends_at && (
+                        <span className="text-[8px] text-white/50 flex items-center gap-0.5">
+                          <Timer className="h-2.5 w-2.5" /> {getTimeLeft(poll.ends_at)}
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {search && search.length >= 2 && searchResults.length === 0 && (
+          <div className="text-center py-12 px-4">
+            <p className="text-muted-foreground text-sm">No polls found for "{search}"</p>
+          </div>
+        )}
+
+        {/* Trending Categories (horizontal) — hide when searching */}
         {!search && trendingCategories.length > 0 && (
           <section className="mb-4">
             <div className="px-4 flex items-center gap-1.5 mb-2">
