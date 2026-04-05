@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useNavigate } from 'react-router-dom';
 import { Share2, Flame, Check, ChevronUp, X } from 'lucide-react';
+import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import PollOptionImage from '@/components/poll/PollOptionImage';
@@ -327,6 +328,7 @@ export default function Browse() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [feedNudgeDismissed, setFeedNudgeDismissed] = useState(false);
   const showSignupBanner = !user && activeIndex >= 10 && !bannerDismissed;
 
   // Fetch all polls with results — no auth required
@@ -482,21 +484,31 @@ export default function Browse() {
         style={{ scrollSnapType: 'y mandatory' }}
       >
         {sortedFeed.map((poll, i) => (
-          <div
-            key={poll.id}
-            className="snap-start snap-always"
-            style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 4rem)' }}
-          >
-            <BrowseCard
-              poll={poll}
-              userChoice={userVotes?.get(poll.id) || null}
-              isActive={i === activeIndex}
-              isSignedIn={!!user}
-              onVote={() => handleVote(poll.id)}
-              onShare={() => share(poll)}
-              onReact={() => handleReact(poll.id)}
-              reacted={reactedPolls.has(poll.id)}
-            />
+          <div key={poll.id}>
+            {/* NUDGE 2: Insert signup card after 5th card for guests */}
+            {i === 5 && !user && !feedNudgeDismissed && (
+              <div
+                className="snap-start snap-always"
+                style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 4rem)' }}
+              >
+                <BrowseFeedNudgeCard onDismiss={() => setFeedNudgeDismissed(true)} />
+              </div>
+            )}
+            <div
+              className="snap-start snap-always"
+              style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 4rem)' }}
+            >
+              <BrowseCard
+                poll={poll}
+                userChoice={userVotes?.get(poll.id) || null}
+                isActive={i === activeIndex}
+                isSignedIn={!!user}
+                onVote={() => handleVote(poll.id)}
+                onShare={() => share(poll)}
+                onReact={() => handleReact(poll.id)}
+                reacted={reactedPolls.has(poll.id)}
+              />
+            </div>
           </div>
         ))}
       </div>

@@ -18,6 +18,7 @@ const authSchema = z.object({
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const isSignupMode = searchParams.get('mode') === 'signup';
+  const isVoteIntent = searchParams.get('reason') === 'vote';
   const [isLogin, setIsLogin] = useState(!isSignupMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -87,7 +88,11 @@ export default function Auth() {
 
         <div className="text-center flex flex-col items-center">
           <VersaLogo size="lg" />
-          <p className="text-muted-foreground mt-2">Your opinion. Structured.</p>
+          {isVoteIntent && !isLogin ? (
+            <p className="text-foreground font-display font-bold mt-2 text-sm">Sign up free to add your vote 🔥<br /><span className="text-muted-foreground font-normal text-xs">Takes 30 seconds</span></p>
+          ) : (
+            <p className="text-muted-foreground mt-2">Your opinion. Structured.</p>
+          )}
         </div>
 
         {/* Auth Form */}
