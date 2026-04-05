@@ -1258,6 +1258,26 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
                       variant="ghost"
                       size="sm"
                       onClick={() => {
+                        const isFeatured = featuredPollId === poll.id;
+                        if (isFeatured) {
+                          unfeaturePoll.mutate(undefined, {
+                            onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-featured-poll'] }); toast.success('Unfeatured'); },
+                          });
+                        } else {
+                          featurePoll.mutate(poll.id, {
+                            onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-featured-poll'] }); toast.success('Featured for all users until midnight!'); },
+                          });
+                        }
+                      }}
+                      className={featuredPollId === poll.id ? 'text-warning hover:text-warning hover:bg-warning/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}
+                      title={featuredPollId === poll.id ? 'Unfeature poll' : 'Feature poll for all users'}
+                    >
+                      {featuredPollId === poll.id ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
                         setEditingPoll(poll);
                         setShowEditDialog(true);
                       }}
