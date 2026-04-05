@@ -223,8 +223,13 @@ export default function Home() {
     queryKey: ['user-voted-ids', user?.id],
     queryFn: async () => {
       if (!user) return new Set<string>();
-      const { data: votes } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
-      return new Set(votes?.map(v => v.poll_id) || []);
+      const [{ data: votes }, { data: skipped }] = await Promise.all([
+        supabase.from('votes').select('poll_id').eq('user_id', user.id),
+        supabase.from('skipped_polls').select('poll_id').eq('user_id', user.id),
+      ]);
+      const ids = new Set(votes?.map(v => v.poll_id) || []);
+      skipped?.forEach(s => ids.add(s.poll_id));
+      return ids;
     },
     staleTime: 1000 * 60 * 2,
   });
