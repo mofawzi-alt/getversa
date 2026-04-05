@@ -6,6 +6,18 @@
 
 // Each segment's priority list — matched by question substring (case-insensitive)
 const SEGMENT_18_24 = [
+  // University-specific polls (top priority for 18-24)
+  'AUC or GUC',
+  'Study abroad or stay in Egypt',
+  'Internship or freelance',
+  'Campus cafe or Starbucks',
+  'Morning classes or afternoon',
+  'Egyptian startup or multinational',
+  'Live with family or apartment',
+  'Group project or solo',
+  'Arabic or English degree',
+  'Uber or walk to campus',
+  // General 18-24 priority polls
   'iPhone or Samsung',
   'Careem or Uber',
   'Netflix or cinema',
