@@ -216,10 +216,10 @@ function BrowseCard({
   return (
     <div className="h-full w-full flex flex-col relative bg-background">
       {/* Question overlay at top */}
-      <div className="absolute top-0 left-0 right-0 z-20 p-4 pt-3 bg-gradient-to-b from-background via-background/90 to-transparent">
-        <p className="font-display font-bold text-base leading-tight pr-12">{poll.question}</p>
+      <div className="shrink-0 px-4 py-2.5 bg-gradient-to-b from-background via-background/90 to-transparent z-20">
+        <p className="font-display font-bold text-sm leading-tight pr-10">{poll.question}</p>
         {poll.category && (
-          <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium">
+          <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium">
             {poll.category}
           </span>
         )}
@@ -235,8 +235,8 @@ function BrowseCard({
         </button>
       </div>
 
-      {/* Images — filling the screen */}
-      <div className="flex-1 flex relative mt-16 mb-0">
+      {/* Images — filling available space */}
+      <div className="flex-1 flex relative min-h-0">
         {/* Option A */}
         <div className="w-1/2 h-full relative overflow-hidden">
           <img src={imgA} alt={poll.option_a} loading="lazy" className="w-full h-full object-cover bg-muted" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
@@ -281,8 +281,8 @@ function BrowseCard({
         </div>
       </div>
 
-      {/* Bottom info bar */}
-      <div className="bg-background border-t border-border/30 px-4 py-3 pb-20 space-y-2">
+      {/* Bottom info bar — compact, no extra padding */}
+      <div className="shrink-0 bg-background border-t border-border/30 px-4 py-2 space-y-1.5">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</span>
           {poll.demographicInsight && (
@@ -291,7 +291,7 @@ function BrowseCard({
         </div>
 
         {/* Result bar */}
-        <div className="h-2 rounded-full bg-muted overflow-hidden flex">
+        <div className="h-1.5 rounded-full bg-muted overflow-hidden flex">
           <div className="bg-primary h-full transition-all duration-500" style={{ width: `${poll.percentA}%` }} />
           <div className="bg-accent h-full transition-all duration-500" style={{ width: `${poll.percentB}%` }} />
         </div>
@@ -309,7 +309,7 @@ function BrowseCard({
             onClick={onVote}
             animate={{ scale: [1, 1.02, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-display font-bold text-sm"
+            className="w-full py-2 rounded-xl bg-primary text-primary-foreground font-display font-bold text-sm"
           >
             Add Your Vote
           </motion.button>
