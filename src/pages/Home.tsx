@@ -8,7 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3 } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import PinButton from '@/components/poll/PinButton';
+import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
@@ -203,8 +204,7 @@ export default function Home() {
   const [heroPollIndex, setHeroPollIndex] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
 
-  // Live debates auto-rotate
-  const [liveCarouselApi, setLiveCarouselApi] = useState<any>(null);
+  // (carousel API removed — static scroll now)
   
   // Category filter for hero card
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
@@ -510,18 +510,7 @@ export default function Home() {
     return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
   }, [allPolls, votedPollIds]);
 
-  // Auto-rotate live debates carousel every 5 seconds
-  useEffect(() => {
-    if (!liveCarouselApi || livePolls.length <= 1) return;
-    const interval = setInterval(() => {
-      if (liveCarouselApi.canScrollNext()) {
-        liveCarouselApi.scrollNext();
-      } else {
-        liveCarouselApi.scrollTo(0);
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [liveCarouselApi, livePolls.length]);
+  // (auto-rotate removed — static horizontal scroll)
 
   if (showWelcome) {
     return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); setShowTutorial(true); }} />;
