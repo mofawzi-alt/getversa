@@ -71,6 +71,7 @@ export default function LiveDebate() {
   const [phase, setPhase] = useState<'swipe' | 'suspense' | 'result'>('swipe');
   const [exitDragY, setExitDragY] = useState(0);
   const [isDraggingExit, setIsDraggingExit] = useState(false);
+  const [localVotedIds, setLocalVotedIds] = useState<Set<string>>(new Set());
 
   const streakData = profile ? {
     current: (profile as any).current_streak as number || 0,
@@ -136,7 +137,7 @@ export default function LiveDebate() {
   const votedChoices = livePolls?.votedChoices || new Map<string, string>();
   const currentPoll = polls[currentIndex];
   const hasMore = currentIndex < polls.length - 1;
-  const currentPollIsVoted = currentPoll ? votedChoices.has(currentPoll.id) : false;
+  const currentPollIsVoted = currentPoll ? (votedChoices.has(currentPoll.id) || localVotedIds.has(currentPoll.id)) : false;
 
   // If the current poll was already voted on, show results immediately (no swipe)
   useEffect(() => {
@@ -186,8 +187,9 @@ export default function LiveDebate() {
       const percentA = total > 0 ? Math.round((aVotes / total) * 100) : 0;
       return { choice, percentA, percentB: 100 - percentA, totalVotes: total };
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       setResult(data);
+      setLocalVotedIds(prev => new Set(prev).add(variables.pollId));
       // Suspense phase
       setPhase('suspense');
       setTimeout(() => {
@@ -200,17 +202,6 @@ export default function LiveDebate() {
           triggerHaptic('medium');
         }
       }, SUSPENSE_MS);
-
-      // Auto-advance after result display (or auto-return home if last poll)
-      setTimeout(() => {
-        if (hasMore) {
-          setCurrentIndex(prev => prev + 1);
-          setResult(null);
-          setPhase('swipe');
-        } else {
-          navigate('/home');
-        }
-      }, SUSPENSE_MS + RESULT_MS);
 
       queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
       queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
@@ -238,14 +229,14 @@ export default function LiveDebate() {
     }
   }, [handleExit]);
 
-  // Horizontal swipe navigation (result phase only)
+  // Horizontal swipe navigation (result phase — works for both pre-voted and just-voted)
   const navSwipeRef = useRef(0);
   const handleNavSwipeStart = useCallback((clientX: number) => {
-    if (phase !== 'result' || !currentPollIsVoted) return;
+    if (phase !== 'result') return;
     navSwipeRef.current = clientX;
-  }, [phase, currentPollIsVoted]);
+  }, [phase]);
   const handleNavSwipeEnd = useCallback((clientX: number) => {
-    if (phase !== 'result' || !currentPollIsVoted) return;
+    if (phase !== 'result') return;
     const delta = clientX - navSwipeRef.current;
     const SWIPE_THRESHOLD = 80;
     if (delta < -SWIPE_THRESHOLD && hasMore) {
@@ -256,7 +247,7 @@ export default function LiveDebate() {
       setCurrentIndex(prev => prev - 1); setResult(null); setPhase('swipe');
     }
     navSwipeRef.current = 0;
-  }, [phase, currentPollIsVoted, hasMore, currentIndex]);
+  }, [phase, hasMore, currentIndex]);
 
   if (isLoading) {
     return (
@@ -372,7 +363,7 @@ export default function LiveDebate() {
         )}
 
         {/* For voted polls in result view — show Next/Exit buttons */}
-        {phase === 'result' && currentPollIsVoted && (
+        {phase === 'result' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -411,7 +402,7 @@ export default function LiveDebate() {
 
       {/* All caught up — only for freshly voted polls */}
       <AnimatePresence>
-        {phase === 'result' && !hasMore && !currentPollIsVoted && (
+        {phase === 'result' && !hasMore && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
