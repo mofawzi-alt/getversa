@@ -615,6 +615,7 @@ export default function Home() {
               queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
               queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
             }}
+            onPollTap={(poll) => setModalPoll(poll)}
           />
         </div>
 
