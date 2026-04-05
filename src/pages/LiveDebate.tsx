@@ -605,7 +605,14 @@ function FullScreenCard({
         {/* Split images — full screen */}
         <div className="flex h-full w-full">
           <div className="w-1/2 h-full relative overflow-hidden">
-            <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
+            <PollOptionImage
+              imageUrl={poll.image_a_url}
+              option={poll.option_a}
+              question={poll.question}
+              side="A"
+              maxLogoSize="45%"
+              draggable={false}
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
             <div className="absolute bottom-24 left-4 right-1">
               <p className="text-white text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{poll.option_a}</p>
@@ -613,7 +620,14 @@ function FullScreenCard({
           </div>
           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
           <div className="w-1/2 h-full relative overflow-hidden">
-            <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover bg-muted" draggable={false} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
+            <PollOptionImage
+              imageUrl={poll.image_b_url}
+              option={poll.option_b}
+              question={poll.question}
+              side="B"
+              maxLogoSize="45%"
+              draggable={false}
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
             <div className="absolute bottom-24 left-1 right-4 text-right">
               <p className="text-white text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{poll.option_b}</p>
