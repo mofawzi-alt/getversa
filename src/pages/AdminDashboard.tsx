@@ -993,6 +993,35 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
                 Daily Poll (24-hour visibility)
               </Label>
             </div>
+
+            {/* Expiry Type */}
+            <div className="border-t border-border pt-4 mt-2">
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="h-4 w-4 text-primary" />
+                <Label className="font-semibold">Expiry Type</Label>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'evergreen', label: '♾️ Evergreen', desc: 'Runs forever' },
+                  { value: 'trending', label: '⚡ Trending', desc: '48 hours' },
+                  { value: 'brand_battle', label: '🏆 Brand Battle', desc: '30-day cycles' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setExpiryType(opt.value)}
+                    className={`p-2 rounded-lg border text-center transition-colors ${
+                      expiryType === opt.value
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-secondary text-muted-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    <span className="text-sm font-medium block">{opt.label}</span>
+                    <span className="text-[10px] block mt-0.5">{opt.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
             
             {/* Demographic Targeting */}
             <div className="border-t border-border pt-4 mt-4">
