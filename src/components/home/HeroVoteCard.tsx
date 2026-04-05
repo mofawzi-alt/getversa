@@ -465,6 +465,34 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
               exit={{ opacity: 0 }}
               className="absolute bottom-0 inset-x-0 z-20 px-4 pb-3 pt-8 bg-gradient-to-t from-black/90 to-transparent"
             >
+              {/* Minority moment badge */}
+              {isMinority && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="mb-2 px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-center"
+                >
+                  <p className="text-[11px] font-bold text-amber-300">
+                    You're in the bold minority 💡 Only {result.choice === 'A' ? result.percentA : result.percentB}% chose this
+                  </p>
+                </motion.div>
+              )}
+
+              {/* First vote of the day */}
+              {isFirstVoteOfDay && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="mb-2 text-center"
+                >
+                  <p className="text-[11px] font-medium text-emerald-300">
+                    First vote of the day ✅ Keep the streak alive
+                  </p>
+                </motion.div>
+              )}
+
               <div className="h-2 bg-white/15 rounded-full overflow-hidden flex mb-1.5">
                 <motion.div
                   className="h-full bg-option-a rounded-l-full"
