@@ -549,9 +549,9 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           <p className="text-center text-xs text-muted-foreground">← Tap or swipe to vote →</p>
           <button
             onClick={submitSkip}
-            className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+            className="text-sm font-medium text-muted-foreground/80 hover:text-muted-foreground active:scale-95 transition-all px-4 py-1.5 rounded-full border border-border/40"
           >
-            Skip this one ↑
+            Skip ↑
           </button>
         </div>
       )}
