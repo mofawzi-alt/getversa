@@ -22,6 +22,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Privacy from "./pages/Privacy";
 import InsightProfile from "./pages/InsightProfile";
 import Explore from "./pages/Explore";
+import Browse from "./pages/Browse";
 import LiveDebate from "./pages/LiveDebate";
 import SeasonalHub from "./pages/SeasonalHub";
 import NotFound from "./pages/NotFound";
@@ -98,6 +99,7 @@ function AppInner() {
           <Route path="/vote" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<DemographicsGuard><Home /></DemographicsGuard>} />
           <Route path="/explore" element={<DemographicsGuard><Explore /></DemographicsGuard>} />
+          <Route path="/browse" element={<Browse />} />
           <Route path="/live-debate" element={<DemographicsGuard><LiveDebate /></DemographicsGuard>} />
           <Route path="/seasonal/:slug" element={<SeasonalHub />} />
           <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
