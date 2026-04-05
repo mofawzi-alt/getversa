@@ -60,6 +60,7 @@ export default function Explore() {
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [modalPoll, setModalPoll] = useState<PollItem | null>(null);
 
   // Read initial category from URL params (e.g., /explore?category=Food)
   useEffect(() => {
