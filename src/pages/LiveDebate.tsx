@@ -8,6 +8,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { playSwipeSound, playResultSound, playMinoritySound } from '@/lib/sounds';
 import { getPollDisplayImageSrc, getStablePollFallbackImage, handlePollImageError } from '@/lib/pollImages';
 import { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
+import PollOptionImage from '@/components/poll/PollOptionImage';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
