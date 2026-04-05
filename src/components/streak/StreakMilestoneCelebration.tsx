@@ -213,12 +213,12 @@ export default function StreakMilestoneCelebration({ streakDays, open, onClose }
               <p className="text-xl font-display font-semibold mb-1">Day Streak!</p>
               <p className="text-sm opacity-70 mb-6">
                 {streakDays >= 30
-                  ? "You're a Versa legend! 👑"
+                  ? "Legendary 👑 30 days on Versa — less than 1% of users reach this"
                   : streakDays >= 14
-                  ? "Two weeks of daily insights! 💪"
+                  ? "Two weeks 🏆 You're one of Versa's most loyal voters"
                   : streakDays >= 7
-                  ? "A full week of voting! 🎯"
-                  : "You're building a habit! 🚀"}
+                  ? "One week strong 💪 You're in the top 10% of Versa voters"
+                  : "You're on a 3-day streak 🔥 You're just getting started"}
               </p>
 
               {/* Share button */}
