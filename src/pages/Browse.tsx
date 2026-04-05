@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useNavigate } from 'react-router-dom';
 import { Share2, Flame, Check, ChevronUp, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -319,7 +320,7 @@ function BrowseCard({
 }
 
 export default function Browse() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { share } = useShareImage();
   const [reactedPolls, setReactedPolls] = useState<Set<string>>(new Set());
@@ -411,8 +412,13 @@ export default function Browse() {
 
     scored.sort((a, b) => b.score - a.score);
 
-    const result: typeof scored = [];
-    const remaining = [...scored];
+    // Apply age-based sequencing first
+    const votedIds = userVotes ? new Set(Array.from(userVotes.keys())) : undefined;
+    const ageSequenced = applyAgeSequencing(scored, profile?.age_range, votedIds);
+
+    // Then diversify by category
+    const result: typeof ageSequenced = [];
+    const remaining = [...ageSequenced];
     let lastCategory: string | null = null;
 
     while (remaining.length > 0) {
@@ -423,7 +429,7 @@ export default function Browse() {
     }
 
     return result;
-  }, [feedPolls]);
+  }, [feedPolls, profile?.age_range, userVotes]);
 
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
