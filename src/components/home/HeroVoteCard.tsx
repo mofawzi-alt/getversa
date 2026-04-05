@@ -280,7 +280,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
           touchAction: result || isVoting ? 'auto' : 'none',
           transform: result || isVoting
             ? 'none'
-            : `translateX(${dragX}px) translateY(${Math.min(dragY, 0)}px) rotate(${rotation}deg)`,
+            : `translateX(${visualDragX}px) translateY(${Math.min(visualDragY, 0)}px) rotate(${rotation}deg)`,
           transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
           willChange: isDragging ? 'transform' : 'auto',
         }}
