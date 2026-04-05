@@ -199,12 +199,10 @@ export function getImageTreatment(
   // If the image is explicitly in the brands storage folder, it's a logo
   if (isStorageBrandLogo(imageUrl)) return 'logo';
   
-  // If the option matches a known brand AND doesn't have a photo-type URL
+  // If the option matches a known brand, treat as logo regardless of image source
+  // This ensures manually uploaded brand images are never stretched
   const brandColor = getBrandColor(option);
-  if (brandColor && !imageUrl) return 'logo';
-  
-  // For storage brand logos with brand color match
-  if (brandColor && imageUrl && isStorageBrandLogo(imageUrl)) return 'logo';
+  if (brandColor) return 'logo';
   
   return 'photo';
 }
