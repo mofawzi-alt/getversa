@@ -1071,28 +1071,26 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
       onClick={() => onTap(poll)}
       className="shrink-0 w-44 rounded-xl overflow-hidden cursor-pointer snap-start group shadow-card"
     >
-      {(() => {
-        const pA = getPollImageProps({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
-        const pB = getPollImageProps({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
-        return (
       <div className="flex h-24 relative">
-        <div className={`w-1/2 h-full relative overflow-hidden ${pA.containerClassName}`} style={pA.containerStyle}>
-          <img src={imgA} alt={poll.option_a} className={`${pA.imgClassName} ${pA.isBrand ? '' : 'object-top'} transition-transform duration-300 group-hover:scale-105 pointer-events-none`} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
+        {(() => { const p = getPollImageProps({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' }); return (
+        <div className={`w-1/2 h-full relative overflow-hidden ${p.containerClassName}`} style={p.containerStyle}>
+          <img src={imgA} alt={poll.option_a} className={`${p.imgClassName} ${p.isBrand ? '' : 'object-top'} transition-transform duration-300 group-hover:scale-105 pointer-events-none`} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 left-1.5">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_a}</p>
             {(hasVoted || isExpired) && <span className="text-[10px] font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>}
           </div>
-        </div>
+        </div>); })()}
         <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
-        <div className={`w-1/2 h-full relative overflow-hidden ${pB.containerClassName}`} style={pB.containerStyle}>
-          <img src={imgB} alt={poll.option_b} className={`${pB.imgClassName} ${pB.isBrand ? '' : 'object-top'} transition-transform duration-300 group-hover:scale-105 pointer-events-none`} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
+        {(() => { const p = getPollImageProps({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' }); return (
+        <div className={`w-1/2 h-full relative overflow-hidden ${p.containerClassName}`} style={p.containerStyle}>
+          <img src={imgB} alt={poll.option_b} className={`${p.imgClassName} ${p.isBrand ? '' : 'object-top'} transition-transform duration-300 group-hover:scale-105 pointer-events-none`} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 right-1.5 text-right">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_b}</p>
             {(hasVoted || isExpired) && <span className="text-[10px] font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>}
           </div>
-        </div>
+        </div>); })()}
         {/* Live glow overlay */}
         {isLive && (
           <motion.div
