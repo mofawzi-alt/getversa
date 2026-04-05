@@ -28,7 +28,7 @@ import InsightsReport from '@/components/admin/InsightsReport';
 import BrandIntelligence from '@/components/admin/BrandIntelligence';
 import IndustryReport from '@/components/admin/IndustryReport';
 import MonthlyLeaderboard from '@/components/admin/MonthlyLeaderboard';
-
+import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
