@@ -303,7 +303,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           !result && !isVoting ? 'cursor-pointer' : ''
         }`}
         style={{
-          touchAction: result || isVoting ? 'auto' : 'none',
+          touchAction: result || isVoting ? 'auto' : 'pan-y',
           transform: result || isVoting
             ? 'none'
             : `translateX(${visualDragX}px) translateY(${Math.min(visualDragY, 0)}px) rotate(${rotation}deg)`,
