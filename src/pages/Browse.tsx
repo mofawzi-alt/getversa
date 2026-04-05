@@ -469,18 +469,18 @@ export default function Browse() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="fixed inset-0 flex flex-col bg-background">
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-scroll snap-y snap-mandatory"
+        className="flex-1 overflow-y-scroll snap-y snap-mandatory pb-16"
         style={{ scrollSnapType: 'y mandatory' }}
       >
         {sortedFeed.map((poll, i) => (
           <div
             key={poll.id}
-            className="h-screen snap-start snap-always"
-            style={{ scrollSnapAlign: 'start' }}
+            className="snap-start snap-always"
+            style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 4rem)' }}
           >
             <BrowseCard
               poll={poll}
