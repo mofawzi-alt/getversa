@@ -194,6 +194,9 @@ export default function Home() {
   // Track which hero poll index to show for infinite voting
   const [heroPollIndex, setHeroPollIndex] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
+  
+  // Category filter for hero card
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   useEffect(() => {
     if (hasUnlockedExplore && !isExploreUnlocked()) {
