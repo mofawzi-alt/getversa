@@ -137,7 +137,7 @@ export default function LiveDebate() {
   const votedChoices = livePolls?.votedChoices || new Map<string, string>();
   const currentPoll = polls[currentIndex];
   const hasMore = currentIndex < polls.length - 1;
-  const currentPollIsVoted = currentPoll ? votedChoices.has(currentPoll.id) : false;
+  const currentPollIsVoted = currentPoll ? (votedChoices.has(currentPoll.id) || localVotedIds.has(currentPoll.id)) : false;
 
   // If the current poll was already voted on, show results immediately (no swipe)
   useEffect(() => {
