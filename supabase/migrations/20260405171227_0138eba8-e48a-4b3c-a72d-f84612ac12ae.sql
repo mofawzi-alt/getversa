@@ -1,0 +1,1 @@
+UPDATE polls SET weight_score = 500 WHERE id = '896f091f-dd06-41bb-8d2a-7248dbfd8fd5';
