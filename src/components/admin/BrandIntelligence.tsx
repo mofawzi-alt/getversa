@@ -58,11 +58,33 @@ export default function BrandIntelligence() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, category, created_at')
+        .select('id, question, option_a, option_b, category, created_at, ends_at, starts_at, expiry_type')
         .eq('is_active', true);
       if (error) throw error;
       return data || [];
     },
+  });
+
+  // Fetch poll cycles for brand battle history
+  const { data: pollCycles } = useQuery({
+    queryKey: ['brand-intel-cycles', activeBrand],
+    queryFn: async () => {
+      if (!activeBrand || !allPolls) return [];
+      const brandPolls = allPolls.filter(p =>
+        p.option_a.toLowerCase().includes(activeBrand.toLowerCase()) ||
+        p.option_b.toLowerCase().includes(activeBrand.toLowerCase())
+      );
+      const battlePollIds = brandPolls.filter((p: any) => p.expiry_type === 'brand_battle').map(p => p.id);
+      if (!battlePollIds.length) return [];
+      const { data, error } = await supabase
+        .from('poll_cycles')
+        .select('*')
+        .in('poll_id', battlePollIds)
+        .order('cycle_end', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!activeBrand && !!allPolls,
   });
 
   // Fetch all votes when a brand is active
