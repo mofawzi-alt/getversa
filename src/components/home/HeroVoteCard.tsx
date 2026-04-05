@@ -308,7 +308,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
             {/* Vote confirmation: highlight + checkmark */}
             {result?.choice === 'A' && (
               <>
-                <div className="absolute inset-0 border-3 border-emerald-400 pointer-events-none" />
+                <div className="absolute inset-0 border-3 border-primary pointer-events-none" />
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -382,8 +382,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
                   animate={{ scale: 1, opacity: 1 }}
                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
                 >
-                  <div className="w-14 h-14 rounded-full bg-emerald-500/90 flex items-center justify-center shadow-lg">
-                    <Check className="w-8 h-8 text-white" strokeWidth={3} />
+                  <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg">
+                    <Check className="w-8 h-8 text-primary-foreground" strokeWidth={3} />
                   </div>
                 </motion.div>
               </>
@@ -404,7 +404,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
                     <motion.span
                       initial={{ opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-[10px] text-emerald-300 font-semibold"
+                      className="text-[10px] text-primary-foreground font-semibold"
                     >
                       Your choice ✓
                     </motion.span>
