@@ -1,0 +1,1 @@
+UPDATE polls SET weight_score = 500 WHERE weight_score = 1.0 AND is_daily_poll = true;
