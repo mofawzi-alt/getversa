@@ -36,8 +36,8 @@ function triggerHaptic(intensity: 'light' | 'medium' = 'light') {
   navigator.vibrate(intensity === 'light' ? 15 : 40);
 }
 
-const SUSPENSE_MS = 500;
-const RESULT_MS = 1500;
+const SUSPENSE_MS = 900;
+const RESULT_MS = 2500;
 const THRESHOLD = 90;
 
 interface Poll {
