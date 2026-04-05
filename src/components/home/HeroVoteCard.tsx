@@ -329,7 +329,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
               option={poll.option_a}
               question={poll.question}
               side="A"
-              maxLogoSize="50%"
+              maxLogoSize="65%"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -399,7 +399,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
               option={poll.option_b}
               question={poll.question}
               side="B"
-              maxLogoSize="50%"
+              maxLogoSize="65%"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 

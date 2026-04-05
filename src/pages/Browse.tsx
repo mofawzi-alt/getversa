@@ -238,7 +238,7 @@ function BrowseCard({
       <div className="flex-1 flex relative min-h-0">
         {/* Option A */}
         <div className="w-1/2 h-full relative overflow-hidden">
-          <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="40%" loading="lazy" />
+          <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
           {poll.winner === 'A' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
@@ -261,7 +261,7 @@ function BrowseCard({
 
         {/* Option B */}
         <div className="w-1/2 h-full relative overflow-hidden">
-          <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="40%" loading="lazy" />
+          <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
           {poll.winner === 'B' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">

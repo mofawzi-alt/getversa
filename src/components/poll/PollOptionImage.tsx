@@ -30,7 +30,7 @@ export default function PollOptionImage({
   question,
   side,
   className = '',
-  maxLogoSize = '50%',
+  maxLogoSize = '65%',
   showLoader = false,
   draggable = false,
   loading = 'eager',
