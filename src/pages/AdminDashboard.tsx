@@ -306,8 +306,7 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
       const { data, error } = await supabase
         .from('polls')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
