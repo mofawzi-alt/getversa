@@ -471,6 +471,10 @@ export default function Home() {
     const catPolls = allPolls.filter(p => (p.category || 'Other') === catName);
     const hasUnvoted = catPolls.some(p => !votedPollIds?.has(p.id));
     if (hasUnvoted) {
+      // Save current position before filtering
+      if (!categoryFilter) {
+        savedHeroIndex.current = heroPollIndex;
+      }
       setCategoryFilter(catName);
       setHeroPollIndex(0);
       heroRef.current?.scrollIntoView({ behavior: 'smooth' });
