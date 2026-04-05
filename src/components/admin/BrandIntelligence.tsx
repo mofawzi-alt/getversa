@@ -29,6 +29,9 @@ interface BrandPoll {
   brandPercent: number;
   competitorPercent: number;
   won: boolean;
+  expiryType: string;
+  startsAt: string | null;
+  endsAt: string | null;
   demographics: {
     gender: Record<string, { brand: number; total: number }>;
     age: Record<string, { brand: number; total: number }>;
@@ -58,11 +61,33 @@ export default function BrandIntelligence() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, category, created_at')
+        .select('id, question, option_a, option_b, category, created_at, ends_at, starts_at, expiry_type')
         .eq('is_active', true);
       if (error) throw error;
       return data || [];
     },
+  });
+
+  // Fetch poll cycles for brand battle history
+  const { data: pollCycles } = useQuery({
+    queryKey: ['brand-intel-cycles', activeBrand],
+    queryFn: async () => {
+      if (!activeBrand || !allPolls) return [];
+      const brandPolls = allPolls.filter(p =>
+        p.option_a.toLowerCase().includes(activeBrand.toLowerCase()) ||
+        p.option_b.toLowerCase().includes(activeBrand.toLowerCase())
+      );
+      const battlePollIds = brandPolls.filter((p: any) => p.expiry_type === 'brand_battle').map(p => p.id);
+      if (!battlePollIds.length) return [];
+      const { data, error } = await supabase
+        .from('poll_cycles')
+        .select('*')
+        .in('poll_id', battlePollIds)
+        .order('cycle_end', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!activeBrand && !!allPolls,
   });
 
   // Fetch all votes when a brand is active
@@ -166,6 +191,9 @@ export default function BrandIntelligence() {
         brandPercent,
         competitorPercent,
         won: brandPercent > competitorPercent,
+        expiryType: (poll as any).expiry_type || 'evergreen',
+        startsAt: (poll as any).starts_at || null,
+        endsAt: (poll as any).ends_at || null,
         demographics,
       };
     });
@@ -644,7 +672,17 @@ export default function BrandIntelligence() {
                           <Badge className="text-[10px] px-1.5 py-0 bg-red-500/20 text-red-500 border-0">LOSS</Badge>
                         )}
                         <span className="text-xs text-muted-foreground">{poll.totalVotes} votes</span>
+                        {poll.expiryType !== 'evergreen' && (
+                          <Badge className={`text-[10px] px-1.5 py-0 border-0 ${poll.expiryType === 'trending' ? 'bg-orange-500/20 text-orange-500' : 'bg-primary/20 text-primary'}`}>
+                            {poll.expiryType === 'trending' ? '⚡ 48h' : '🏆 Monthly'}
+                          </Badge>
+                        )}
                       </div>
+                      {poll.startsAt && poll.endsAt && (
+                        <p className="text-[10px] text-muted-foreground">
+                          {new Date(poll.startsAt).toLocaleDateString()} — {new Date(poll.endsAt).toLocaleDateString()}
+                        </p>
+                      )}
                       <p className="text-sm font-medium truncate">{poll.question}</p>
                       <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
                         <span className="font-semibold text-primary">{activeBrand} {poll.brandPercent}%</span>
@@ -726,6 +764,51 @@ export default function BrandIntelligence() {
               ))}
             </CardContent>
           </Card>
+
+          {/* Brand Battle Cycle History */}
+          {pollCycles && pollCycles.length > 0 && (
+            <Card className="border-primary/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  Brand Battle History
+                </CardTitle>
+                <CardDescription>Monthly cycle data for {activeBrand} brand battle polls</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {pollCycles.map((cycle: any) => {
+                  const poll = allPolls?.find(p => p.id === cycle.poll_id);
+                  if (!poll) return null;
+                  const isA = poll.option_a.toLowerCase().includes(activeBrand.toLowerCase());
+                  const brandPercent = isA ? cycle.percent_a : cycle.percent_b;
+                  const compPercent = isA ? cycle.percent_b : cycle.percent_a;
+                  const competitor = isA ? poll.option_b : poll.option_a;
+                  const start = new Date(cycle.cycle_start).toLocaleDateString();
+                  const end = new Date(cycle.cycle_end).toLocaleDateString();
+
+                  return (
+                    <div key={cycle.id} className="p-3 rounded-xl border border-border/50 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{activeBrand} vs {competitor}</span>
+                        <Badge variant="outline" className="text-xs">Cycle {cycle.cycle_number}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{start} — {end} · {cycle.total_votes} votes</p>
+                      <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`absolute top-0 left-0 h-full rounded-full ${brandPercent >= 50 ? 'bg-gradient-to-r from-primary to-green-500' : 'bg-gradient-to-r from-orange-500 to-red-500'}`}
+                          style={{ width: `${brandPercent}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{activeBrand} {brandPercent}%</span>
+                        <span>{competitor} {compPercent}%</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>

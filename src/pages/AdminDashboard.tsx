@@ -170,6 +170,7 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
   const [isUploading, setIsUploading] = useState(false);
   const [category, setCategory] = useState('');
   const [isDailyPoll, setIsDailyPoll] = useState(true);
+  const [expiryType, setExpiryType] = useState('evergreen');
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiCategory, setAiCategory] = useState('');
   const [aiPollCount, setAiPollCount] = useState(1);
@@ -337,9 +338,19 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
         if (uploadedUrl) finalImageBUrl = uploadedUrl;
       }
       
-      // Set 24-hour window for daily polls
+      // Set time windows based on expiry type
       const startsAt = new Date();
-      const endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      let endsAt: Date | null = null;
+      
+      if (expiryType === 'trending') {
+        endsAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
+      } else if (expiryType === 'brand_battle') {
+        // End of current month
+        endsAt = new Date(startsAt.getFullYear(), startsAt.getMonth() + 1, 0, 23, 59, 59);
+      } else if (isDailyPoll) {
+        endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      }
+      // Evergreen: no ends_at
       
       const { error } = await supabase
         .from('polls')
@@ -353,17 +364,18 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
           created_by: userId,
           is_daily_poll: isDailyPoll,
           starts_at: startsAt.toISOString(),
-          ends_at: endsAt.toISOString(),
+          ends_at: endsAt ? endsAt.toISOString() : null,
           target_gender: targetGender || null,
           target_age_range: targetAgeRange || null,
           target_country: targetCountry || null,
           intent_tag: intentTag || null,
+          expiry_type: expiryType,
         });
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-polls'] });
-      toast.success('Poll created with 24-hour window!');
+      toast.success(`Poll created (${expiryType === 'evergreen' ? 'Evergreen' : expiryType === 'trending' ? '48h Trending' : '30-day Brand Battle'})!`);
       setShowForm(false);
       setQuestion('');
       setOptionA('');
@@ -376,6 +388,7 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
       setImageBPreview('');
       setCategory('');
       setIsDailyPoll(true);
+      setExpiryType('evergreen');
       setIsUploading(false);
       setTargetGender('');
       setTargetAgeRange('');
@@ -980,6 +993,35 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
                 Daily Poll (24-hour visibility)
               </Label>
             </div>
+
+            {/* Expiry Type */}
+            <div className="border-t border-border pt-4 mt-2">
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="h-4 w-4 text-primary" />
+                <Label className="font-semibold">Expiry Type</Label>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'evergreen', label: '♾️ Evergreen', desc: 'Runs forever' },
+                  { value: 'trending', label: '⚡ Trending', desc: '48 hours' },
+                  { value: 'brand_battle', label: '🏆 Brand Battle', desc: '30-day cycles' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setExpiryType(opt.value)}
+                    className={`p-2 rounded-lg border text-center transition-colors ${
+                      expiryType === opt.value
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-secondary text-muted-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    <span className="text-sm font-medium block">{opt.label}</span>
+                    <span className="text-[10px] block mt-0.5">{opt.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
             
             {/* Demographic Targeting */}
             <div className="border-t border-border pt-4 mt-4">
@@ -1172,6 +1214,13 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
                          poll.intent_tag === 'concept_test' ? '💡 Concept' :
                          poll.intent_tag === 'cultural_signal' ? '🌍 Cultural' :
                          poll.intent_tag === 'fun_engagement' ? '🎮 Fun' : poll.intent_tag}
+                      </span>
+                    )}
+                    {(poll as any).expiry_type && (poll as any).expiry_type !== 'evergreen' && (
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        (poll as any).expiry_type === 'trending' ? 'bg-orange-500/20 text-orange-600' : 'bg-primary/20 text-primary'
+                      }`}>
+                        {(poll as any).expiry_type === 'trending' ? '⚡ Trending' : '🏆 Brand Battle'}
                       </span>
                     )}
                     <span className={`px-2 py-0.5 rounded-full text-xs ${
