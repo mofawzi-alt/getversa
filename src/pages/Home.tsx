@@ -559,6 +559,27 @@ export default function Home() {
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
+        {/* Streak milestone celebration */}
+        <StreakMilestoneCelebration
+          streakDays={streakMilestone || 0}
+          open={!!streakMilestone}
+          onClose={() => setStreakMilestone(null)}
+        />
+
+        {/* Vote milestone celebration */}
+        {voteMilestone && (
+          <VoteMilestoneCelebration
+            milestone={voteMilestone}
+            open={!!voteMilestone}
+            onClose={() => setVoteMilestone(null)}
+          />
+        )}
+
+        {/* Daily return welcome banner */}
+        {user && userStreak?.current ? (
+          <DailyReturnBanner currentStreak={userStreak.current} />
+        ) : null}
+
         {/* Category filter banner */}
         {categoryFilter && (
           <div className="px-3 mb-1">
