@@ -6,7 +6,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
-import { Sparkles, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
+import HeroCaughtUp from './HeroCaughtUp';
 
 interface HeroPoll {
   id: string;
@@ -157,20 +158,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
   }, [poll, result, isVoting, user, profile, queryClient, onVoteComplete]);
 
   if (!poll) {
-    return (
-      <section className="px-3 pt-4 pb-2">
-        <div className="flex justify-center mb-2">
-          <span className="text-xs px-3 py-1 rounded-full bg-muted text-muted-foreground font-medium">
-            All caught up — check back tomorrow 🔥
-          </span>
-        </div>
-        <div className="rounded-2xl border border-border/60 bg-card px-6 py-12 text-center shadow-sm">
-          <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm font-display font-bold text-foreground">You've voted on everything!</p>
-          <p className="text-xs text-muted-foreground mt-1">New polls drop daily — come back tomorrow</p>
-        </div>
-      </section>
-    );
+    return <HeroCaughtUp />;
   }
 
   const handleStart = (clientX: number, clientY: number) => {
