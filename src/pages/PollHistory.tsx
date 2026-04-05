@@ -47,7 +47,7 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
             option={vote.optionA}
             question={vote.question}
             side="A"
-            maxLogoSize="45%"
+            maxLogoSize="65%"
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
@@ -74,7 +74,7 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
             option={vote.optionB}
             question={vote.question}
             side="B"
-            maxLogoSize="45%"
+            maxLogoSize="65%"
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />

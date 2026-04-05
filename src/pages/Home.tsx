@@ -735,7 +735,7 @@ export default function Home() {
                               option={poll.option_a}
                               question={poll.question}
                               side="A"
-                              maxLogoSize="45%"
+                              maxLogoSize="65%"
                               loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -747,7 +747,7 @@ export default function Home() {
                               option={poll.option_b}
                               question={poll.question}
                               side="B"
-                              maxLogoSize="45%"
+                              maxLogoSize="65%"
                               loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

@@ -610,7 +610,7 @@ function FullScreenCard({
               option={poll.option_a}
               question={poll.question}
               side="A"
-              maxLogoSize="45%"
+              maxLogoSize="65%"
               draggable={false}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
@@ -625,7 +625,7 @@ function FullScreenCard({
               option={poll.option_b}
               question={poll.question}
               side="B"
-              maxLogoSize="45%"
+              maxLogoSize="65%"
               draggable={false}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />

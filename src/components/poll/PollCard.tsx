@@ -163,7 +163,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               option={poll.option_a}
               question={poll.question}
               side="A"
-              maxLogoSize="50%"
+              maxLogoSize="65%"
               showLoader={true}
             />
 
@@ -199,7 +199,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               option={poll.option_b}
               question={poll.question}
               side="B"
-              maxLogoSize="50%"
+              maxLogoSize="65%"
               showLoader={true}
             />
 
