@@ -197,6 +197,7 @@ export default function Home() {
   
   // Category filter for hero card
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const savedHeroIndex = useRef<number>(0);
 
   useEffect(() => {
     if (hasUnlockedExplore && !isExploreUnlocked()) {
@@ -348,8 +349,18 @@ export default function Home() {
 
   // Reset hero index when category filter changes
   useEffect(() => {
-    setHeroPollIndex(0);
+    if (categoryFilter) {
+      setHeroPollIndex(0);
+    }
   }, [categoryFilter]);
+
+  // Auto-clear category filter when all category polls are voted
+  useEffect(() => {
+    if (categoryFilter && newPolls.length === 0) {
+      setCategoryFilter(null);
+      setHeroPollIndex(savedHeroIndex.current);
+    }
+  }, [categoryFilter, newPolls.length]);
 
   // ── Memoized expensive computations ──
   const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
@@ -460,6 +471,10 @@ export default function Home() {
     const catPolls = allPolls.filter(p => (p.category || 'Other') === catName);
     const hasUnvoted = catPolls.some(p => !votedPollIds?.has(p.id));
     if (hasUnvoted) {
+      // Save current position before filtering
+      if (!categoryFilter) {
+        savedHeroIndex.current = heroPollIndex;
+      }
       setCategoryFilter(catName);
       setHeroPollIndex(0);
       heroRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -506,7 +521,7 @@ export default function Home() {
                 {getCategoryMeta(categoryFilter).emoji} Showing: {getDisplayCategoryName(categoryFilter)}
               </span>
               <button
-                onClick={() => setCategoryFilter(null)}
+                onClick={() => { setCategoryFilter(null); setHeroPollIndex(savedHeroIndex.current); }}
                 className="text-[10px] font-bold text-primary/70 hover:text-primary px-2 py-0.5 rounded-full bg-primary/10"
               >
                 ✕ Clear
