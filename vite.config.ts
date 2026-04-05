@@ -15,6 +15,13 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      devOptions: {
+        enabled: false,
+      },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        navigateFallbackDenylist: [/^\/~oauth/],
+      },
       includeAssets: ["favicon.ico", "apple-touch-icon.png"],
       manifest: {
         name: "Versa - Decision Infrastructure",
