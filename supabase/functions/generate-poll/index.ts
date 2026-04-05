@@ -326,6 +326,7 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
         target_age_range: targetAgeRange || null,
         target_gender: targetGender || null,
         target_country: targetCountry || null,
+        weight_score: 500,
       })
       .select()
       .single();
