@@ -721,7 +721,13 @@ export default function SwipeFeed() {
       }
       const { data: fetchedPolls, error } = await query;
       if (error) throw error;
-      let allPolls = fetchedPolls || [];
+      let allPolls = (fetchedPolls || []).filter(p => {
+        // Filter out expired trending polls from the active feed
+        if ((p as any).expiry_type === 'trending' && p.ends_at && new Date(p.ends_at) < new Date()) {
+          return false;
+        }
+        return true;
+      });
 
       // Build category affinity map from user's past votes for personalization
       const categoryAffinity = new Map<string, number>();
