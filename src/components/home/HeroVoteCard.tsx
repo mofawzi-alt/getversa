@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
@@ -49,6 +49,9 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
   } | null>(null);
   const [isVoting, setIsVoting] = useState(false);
   const [showHint, setShowHint] = useState(true);
+  const [isMinority, setIsMinority] = useState(false);
+  const [isFirstVoteOfDay, setIsFirstVoteOfDay] = useState(false);
+  const sessionShownRef = useRef(new Set<string>());
 
   const startX = useRef(0);
   const startY = useRef(0);
@@ -74,6 +77,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
     setIsVoting(true);
     setDragX(0);
     setDragY(0);
+    setIsMinority(false);
+    setIsFirstVoteOfDay(false);
 
     playSwipeSound();
 
@@ -86,6 +91,20 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
     });
 
     if (user) {
+      // Check if this is the first vote of the day
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { count: todayVotesBefore } = await supabase
+        .from('votes')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', todayStart.toISOString());
+      
+      if ((todayVotesBefore || 0) === 0 && !sessionShownRef.current.has('first_vote_today')) {
+        setIsFirstVoteOfDay(true);
+        sessionShownRef.current.add('first_vote_today');
+      }
+
       const votePayload = {
         poll_id: poll.id,
         user_id: user.id,
@@ -107,12 +126,20 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
 
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: [poll.id] });
       if (results?.[0]) {
+        const pA = results[0].percent_a;
+        const pB = results[0].percent_b;
+        const userPct = choice === 'A' ? pA : pB;
         setResult({
           choice,
-          percentA: results[0].percent_a,
-          percentB: results[0].percent_b,
+          percentA: pA,
+          percentB: pB,
           total: Number(results[0].total_votes),
         });
+        // Minority moment: user chose the side with < 35%
+        if (userPct < 35 && !sessionShownRef.current.has(`minority_${poll.id}`)) {
+          setIsMinority(true);
+          sessionShownRef.current.add(`minority_${poll.id}`);
+        }
       }
     }
 
@@ -126,6 +153,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
     setTimeout(() => {
       setResult(null);
       setIsVoting(false);
+      setIsMinority(false);
+      setIsFirstVoteOfDay(false);
       setShowHint(true);
       onVoteComplete?.();
     }, RESULT_MS);
@@ -436,6 +465,34 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
               exit={{ opacity: 0 }}
               className="absolute bottom-0 inset-x-0 z-20 px-4 pb-3 pt-8 bg-gradient-to-t from-black/90 to-transparent"
             >
+              {/* Minority moment badge */}
+              {isMinority && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="mb-2 px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-center"
+                >
+                  <p className="text-[11px] font-bold text-amber-300">
+                    You're in the bold minority 💡 Only {result.choice === 'A' ? result.percentA : result.percentB}% chose this
+                  </p>
+                </motion.div>
+              )}
+
+              {/* First vote of the day */}
+              {isFirstVoteOfDay && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="mb-2 text-center"
+                >
+                  <p className="text-[11px] font-medium text-emerald-300">
+                    First vote of the day ✅ Keep the streak alive
+                  </p>
+                </motion.div>
+              )}
+
               <div className="h-2 bg-white/15 rounded-full overflow-hidden flex mb-1.5">
                 <motion.div
                   className="h-full bg-option-a rounded-l-full"

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,9 @@ import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/co
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 import HeroVoteCard from '@/components/home/HeroVoteCard';
 import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
+import StreakMilestoneCelebration, { checkStreakMilestone } from '@/components/streak/StreakMilestoneCelebration';
+import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/VoteMilestoneCelebration';
+import DailyReturnBanner from '@/components/home/DailyReturnBanner';
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
@@ -135,6 +138,8 @@ export default function Home() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
+  const [voteMilestone, setVoteMilestone] = useState<{ count: number; message: string } | null>(null);
 
   // Show tutorial for new visitors who completed welcome but haven't seen tutorial
   useEffect(() => {
@@ -270,6 +275,22 @@ export default function Home() {
     staleTime: 1000 * 60 * 5,
     enabled: !!user,
   });
+
+  // Check streak milestones
+  useEffect(() => {
+    if (userStreak?.current) {
+      const m = checkStreakMilestone(userStreak.current);
+      if (m) setStreakMilestone(m);
+    }
+  }, [userStreak?.current]);
+
+  // Check vote milestones
+  useEffect(() => {
+    if (voteCount > 0) {
+      const m = checkVoteMilestone(voteCount);
+      if (m) setVoteMilestone(m);
+    }
+  }, [voteCount]);
 
   const { data: polls, isLoading } = useQuery({
     queryKey: ['visual-feed-home', profile?.gender, profile?.age_range, profile?.country],
@@ -537,6 +558,27 @@ export default function Home() {
       )}
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
+
+        {/* Streak milestone celebration */}
+        <StreakMilestoneCelebration
+          streakDays={streakMilestone || 0}
+          open={!!streakMilestone}
+          onClose={() => setStreakMilestone(null)}
+        />
+
+        {/* Vote milestone celebration */}
+        {voteMilestone && (
+          <VoteMilestoneCelebration
+            milestone={voteMilestone}
+            open={!!voteMilestone}
+            onClose={() => setVoteMilestone(null)}
+          />
+        )}
+
+        {/* Daily return welcome banner */}
+        {user && userStreak?.current ? (
+          <DailyReturnBanner currentStreak={userStreak.current} />
+        ) : null}
 
         {/* Category filter banner */}
         {categoryFilter && (
