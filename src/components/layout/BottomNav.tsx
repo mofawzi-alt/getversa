@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, LogIn } from 'lucide-react';
+import { Home, User, LogIn, Compass } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
@@ -12,7 +12,8 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
     return (
       <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-nav border-t border-border/40 safe-area-bottom z-50">
         <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
-          <NavButton path="/" icon={Home} label="Vote" active={location.pathname === '/' || location.pathname === '/vote'} onClick={() => navigate('/')} />
+          <NavButton path="/" icon={Home} label="Home" active={location.pathname === '/' || location.pathname === '/home'} onClick={() => navigate('/')} />
+          <NavButton path="/browse" icon={Compass} label="Browse" active={location.pathname === '/browse'} onClick={() => navigate('/browse')} />
           <NavButton path="/auth" icon={LogIn} label="Sign In" active={location.pathname === '/auth'} onClick={() => navigate('/auth')} />
         </div>
       </nav>
@@ -55,6 +56,15 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
             location.pathname === '/home' ? 'text-primary' : 'text-card-foreground/70'
           }`}>Vote</span>
         </button>
+
+        {/* Browse */}
+        <NavButton
+          path="/browse"
+          icon={Compass}
+          label="Browse"
+          active={location.pathname === '/browse'}
+          onClick={() => navigate('/browse')}
+        />
 
         {/* Profile */}
         <NavButton
