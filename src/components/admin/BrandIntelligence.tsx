@@ -672,7 +672,17 @@ export default function BrandIntelligence() {
                           <Badge className="text-[10px] px-1.5 py-0 bg-red-500/20 text-red-500 border-0">LOSS</Badge>
                         )}
                         <span className="text-xs text-muted-foreground">{poll.totalVotes} votes</span>
+                        {poll.expiryType !== 'evergreen' && (
+                          <Badge className={`text-[10px] px-1.5 py-0 border-0 ${poll.expiryType === 'trending' ? 'bg-orange-500/20 text-orange-500' : 'bg-primary/20 text-primary'}`}>
+                            {poll.expiryType === 'trending' ? '⚡ 48h' : '🏆 Monthly'}
+                          </Badge>
+                        )}
                       </div>
+                      {poll.startsAt && poll.endsAt && (
+                        <p className="text-[10px] text-muted-foreground">
+                          {new Date(poll.startsAt).toLocaleDateString()} — {new Date(poll.endsAt).toLocaleDateString()}
+                        </p>
+                      )}
                       <p className="text-sm font-medium truncate">{poll.question}</p>
                       <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
                         <span className="font-semibold text-primary">{activeBrand} {poll.brandPercent}%</span>
