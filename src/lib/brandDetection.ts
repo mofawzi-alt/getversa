@@ -140,6 +140,24 @@ const BRAND_COLORS: Record<string, string> = {
   'valu': '#1E3A5F',
   halan: '#FFD100',
   
+  // Grocery & Supermarket
+  carrefour: '#004B87',
+  spinneys: '#E30613',
+  seoudi: '#1A1A2E',
+  'seoudi market': '#1A1A2E',
+  'metro market': '#E30613',
+  'hyper one': '#1A1A2E',
+  
+  // Dessert & Cafe
+  cinnabon: '#C8102E',
+  'ladurée': '#8DB96E',
+  laduree: '#8DB96E',
+  'crumbl': '#F5F5F5',
+  'crumbl cookies': '#F5F5F5',
+  'häagen-dazs': '#C8102E',
+  'haagen-dazs': '#C8102E',
+  'baskin robbins': '#FF69B4',
+  
   // Fintech
   paypal: '#003087',
   'crypto wallet': '#F7931A',
