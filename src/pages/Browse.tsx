@@ -412,8 +412,13 @@ export default function Browse() {
 
     scored.sort((a, b) => b.score - a.score);
 
-    const result: typeof scored = [];
-    const remaining = [...scored];
+    // Apply age-based sequencing first
+    const votedIds = userVotes ? new Set(Array.from(userVotes.keys())) : undefined;
+    const ageSequenced = applyAgeSequencing(scored, profile?.age_range, votedIds);
+
+    // Then diversify by category
+    const result: typeof ageSequenced = [];
+    const remaining = [...ageSequenced];
     let lastCategory: string | null = null;
 
     while (remaining.length > 0) {
@@ -424,7 +429,7 @@ export default function Browse() {
     }
 
     return result;
-  }, [feedPolls]);
+  }, [feedPolls, profile?.age_range, userVotes]);
 
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
