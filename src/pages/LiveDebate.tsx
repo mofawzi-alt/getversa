@@ -71,7 +71,7 @@ export default function LiveDebate() {
   const [phase, setPhase] = useState<'swipe' | 'suspense' | 'result'>('swipe');
   const [exitDragY, setExitDragY] = useState(0);
   const [isDraggingExit, setIsDraggingExit] = useState(false);
-  const [localVotedIds, setLocalVotedIds] = useState<Set<string>>(new Set());
+  const [localResults, setLocalResults] = useState<Map<string, VoteResult>>(new Map());
 
   const streakData = profile ? {
     current: (profile as any).current_streak as number || 0,
@@ -137,22 +137,44 @@ export default function LiveDebate() {
   const votedChoices = livePolls?.votedChoices || new Map<string, string>();
   const currentPoll = polls[currentIndex];
   const hasMore = currentIndex < polls.length - 1;
-  const currentPollIsVoted = currentPoll ? (votedChoices.has(currentPoll.id) || localVotedIds.has(currentPoll.id)) : false;
+  const currentLocalResult = currentPoll ? localResults.get(currentPoll.id) ?? null : null;
+  const currentPollChoice = currentLocalResult?.choice ?? (currentPoll ? votedChoices.get(currentPoll.id) : undefined);
+  const currentPollIsVoted = Boolean(currentPollChoice);
 
   // If the current poll was already voted on, show results immediately (no swipe)
   useEffect(() => {
     if (!currentPoll || phase !== 'swipe' || !currentPollIsVoted) return;
-    const prevChoice = votedChoices.get(currentPoll.id);
-    if (!prevChoice) return;
-    
+
+    if (currentLocalResult) {
+      setResult(currentLocalResult);
+      setPhase('result');
+      return;
+    }
+
+    if (!currentPollChoice) return;
+
+    let isCancelled = false;
+
     supabase.from('votes').select('choice').eq('poll_id', currentPoll.id).then(({ data: votes }) => {
+      if (isCancelled) return;
+
       const total = votes?.length || 0;
       const aVotes = votes?.filter(v => v.choice === 'A').length || 0;
       const percentA = total > 0 ? Math.round((aVotes / total) * 100) : 0;
-      setResult({ choice: prevChoice as 'A' | 'B', percentA, percentB: 100 - percentA, totalVotes: total });
+
+      setResult({
+        choice: currentPollChoice as 'A' | 'B',
+        percentA,
+        percentB: 100 - percentA,
+        totalVotes: total,
+      });
       setPhase('result');
     });
-  }, [currentPoll?.id, phase]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [currentPoll, phase, currentPollIsVoted, currentLocalResult, currentPollChoice]);
 
   // Preload next 3 images
   useEffect(() => {
@@ -189,7 +211,11 @@ export default function LiveDebate() {
     },
     onSuccess: (data, variables) => {
       setResult(data);
-      setLocalVotedIds(prev => new Set(prev).add(variables.pollId));
+      setLocalResults(prev => {
+        const next = new Map(prev);
+        next.set(variables.pollId, data);
+        return next;
+      });
       // Suspense phase
       setPhase('suspense');
       setTimeout(() => {
