@@ -195,6 +195,9 @@ export default function Home() {
   // Track which hero poll index to show for infinite voting
   const [heroPollIndex, setHeroPollIndex] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
+
+  // Live debates auto-rotate
+  const [liveCarouselApi, setLiveCarouselApi] = useState<any>(null);
   
   // Category filter for hero card
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
@@ -363,6 +366,7 @@ export default function Home() {
     }
   }, [categoryFilter, newPolls.length]);
 
+
   // ── Memoized expensive computations ──
   const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
     const now = new Date();
@@ -372,10 +376,17 @@ export default function Home() {
       return hasStarted && !isExpired;
     }).sort((a, b) => ((b as any).weight_score || 1) - ((a as any).weight_score || 1) || b.totalVotes - a.totalVotes);
 
+    // Prioritize unvoted polls first, then diversify by category
+    const unvotedFirst = [...livePollsRaw].sort((a, b) => {
+      const aVoted = votedPollIds?.has(a.id) ? 1 : 0;
+      const bVoted = votedPollIds?.has(b.id) ? 1 : 0;
+      return aVoted - bVoted;
+    });
+
     // Diversify live polls by category (round-robin pick)
     const diversifiedLive = (() => {
       const byCategory = new Map<string, PollCard[]>();
-      livePollsRaw.forEach(p => {
+      unvotedFirst.forEach(p => {
         const cat = p.category || 'Other';
         if (!byCategory.has(cat)) byCategory.set(cat, []);
         byCategory.get(cat)!.push(p);
@@ -384,7 +395,7 @@ export default function Home() {
       const result: PollCard[] = [];
       const usedIds = new Set<string>();
       let round = 0;
-      while (result.length < livePollsRaw.length) {
+      while (result.length < unvotedFirst.length) {
         let added = false;
         for (const catPolls of cats) {
           if (round < catPolls.length && !usedIds.has(catPolls[round].id)) {
@@ -451,7 +462,20 @@ export default function Home() {
     })();
 
     return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
-  }, [allPolls]);
+  }, [allPolls, votedPollIds]);
+
+  // Auto-rotate live debates carousel every 5 seconds
+  useEffect(() => {
+    if (!liveCarouselApi || livePolls.length <= 1) return;
+    const interval = setInterval(() => {
+      if (liveCarouselApi.canScrollNext()) {
+        liveCarouselApi.scrollNext();
+      } else {
+        liveCarouselApi.scrollTo(0);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [liveCarouselApi, livePolls.length]);
 
   if (showWelcome) {
     return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); setShowTutorial(true); }} />;
@@ -628,7 +652,7 @@ export default function Home() {
           </div>
 
           {livePolls.length > 0 ? (
-            <Carousel opts={{ align: 'start', loop: false }} className="px-3">
+            <Carousel opts={{ align: 'start', loop: true }} setApi={setLiveCarouselApi} className="px-3">
               <CarouselContent className="-ml-2.5">
                 {livePolls.map((poll, i) => {
                   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
