@@ -477,6 +477,14 @@ export default function Explore() {
             </div>
           )}
         </section>
+
+        <HomeResultsModal
+          open={!!modalPoll}
+          onOpenChange={(open) => !open && setModalPoll(null)}
+          poll={modalPoll}
+          imageA={modalPoll ? (getPollDisplayImageSrc({ imageUrl: modalPoll.image_a_url, option: modalPoll.option_a, question: modalPoll.question, side: 'A' }) || getFallbackImage(modalPoll.id, 0)) : ''}
+          imageB={modalPoll ? (getPollDisplayImageSrc({ imageUrl: modalPoll.image_b_url, option: modalPoll.option_b, question: modalPoll.question, side: 'B' }) || getFallbackImage(modalPoll.id, 1)) : ''}
+        />
       </div>
     </AppLayout>
   );
