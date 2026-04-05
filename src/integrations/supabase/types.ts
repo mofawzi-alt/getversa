@@ -444,6 +444,59 @@ export type Database = {
         }
         Relationships: []
       }
+      poll_cycles: {
+        Row: {
+          created_at: string
+          cycle_end: string
+          cycle_number: number
+          cycle_start: string
+          demographic_data: Json | null
+          id: string
+          percent_a: number
+          percent_b: number
+          poll_id: string
+          total_votes: number
+          votes_a: number
+          votes_b: number
+        }
+        Insert: {
+          created_at?: string
+          cycle_end: string
+          cycle_number?: number
+          cycle_start: string
+          demographic_data?: Json | null
+          id?: string
+          percent_a?: number
+          percent_b?: number
+          poll_id: string
+          total_votes?: number
+          votes_a?: number
+          votes_b?: number
+        }
+        Update: {
+          created_at?: string
+          cycle_end?: string
+          cycle_number?: number
+          cycle_start?: string
+          demographic_data?: Json | null
+          id?: string
+          percent_a?: number
+          percent_b?: number
+          poll_id?: string
+          total_votes?: number
+          votes_a?: number
+          votes_b?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_cycles_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       poll_dimensions: {
         Row: {
           created_at: string
@@ -492,6 +545,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           ends_at: string | null
+          expiry_type: string
           id: string
           image_a_url: string | null
           image_b_url: string | null
@@ -520,6 +574,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           ends_at?: string | null
+          expiry_type?: string
           id?: string
           image_a_url?: string | null
           image_b_url?: string | null
@@ -548,6 +603,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           ends_at?: string | null
+          expiry_type?: string
           id?: string
           image_a_url?: string | null
           image_b_url?: string | null
