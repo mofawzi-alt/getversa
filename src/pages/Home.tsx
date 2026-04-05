@@ -309,29 +309,43 @@ export default function Home() {
       if (!rawPolls || rawPolls.length === 0) return [];
 
       // Filter by user demographics
-      // Separate polls into matching and non-matching based on demographics
-      // Matching polls appear first (prioritized), non-matching still shown after
+      // Move explicitly targeted polls that match this user to the front,
+      // but keep all other polls visible in their original weight order.
       let prioritized = rawPolls;
       if (profile) {
-        const matching: typeof rawPolls = [];
-        const rest: typeof rawPolls = [];
+        const matched: typeof rawPolls = [];
+        const others: typeof rawPolls = [];
+
         rawPolls.forEach(p => {
+          const countries = (p as any).target_countries as string[] | null;
+          const hasExplicitTargeting = Boolean(
+            (p.target_gender && p.target_gender !== 'All') ||
+            (p.target_age_range && p.target_age_range !== 'All') ||
+            (countries && countries.length > 0) ||
+            (p.target_country && p.target_country !== 'All')
+          );
+
+          if (!hasExplicitTargeting) {
+            others.push(p);
+            return;
+          }
+
           let isMatch = true;
           if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) isMatch = false;
           if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range && p.target_age_range !== profile.age_range) isMatch = false;
-          const countries = (p as any).target_countries as string[] | null;
           if (countries && countries.length > 0) {
             if (profile.country && !countries.includes(profile.country)) isMatch = false;
           } else if (p.target_country && p.target_country !== 'All' && profile.country && p.target_country !== profile.country) {
             isMatch = false;
           }
-          if (isMatch) matching.push(p);
-          else rest.push(p);
+
+          if (isMatch) matched.push(p);
+          else others.push(p);
         });
-        prioritized = [...matching, ...rest];
+
+        prioritized = [...matched, ...others];
       }
 
-      // Process top 100 polls
       const topPolls = prioritized.slice(0, 100);
       const pollIds = topPolls.map(p => p.id);
       if (pollIds.length === 0) return [];
