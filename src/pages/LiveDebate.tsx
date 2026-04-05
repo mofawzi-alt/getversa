@@ -402,7 +402,7 @@ export default function LiveDebate() {
 
       {/* All caught up — only for freshly voted polls */}
       <AnimatePresence>
-        {phase === 'result' && !hasMore && !currentPollIsVoted && (
+        {phase === 'result' && !hasMore && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
