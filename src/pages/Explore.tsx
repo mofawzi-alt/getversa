@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Input } from '@/components/ui/input';
 import { getPollDisplayImageSrc, getStablePollFallbackImage, handlePollImageError } from '@/lib/pollImages';
+import HomeResultsModal from '@/components/home/HomeResultsModal';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
