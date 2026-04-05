@@ -276,7 +276,23 @@ export default function Home() {
     enabled: !!user,
   });
 
-  const { data: polls, isLoading } = useQuery({
+  // Check streak milestones
+  useEffect(() => {
+    if (userStreak?.current) {
+      const m = checkStreakMilestone(userStreak.current);
+      if (m) setStreakMilestone(m);
+    }
+  }, [userStreak?.current]);
+
+  // Check vote milestones
+  useEffect(() => {
+    if (voteCount > 0) {
+      const m = checkVoteMilestone(voteCount);
+      if (m) setVoteMilestone(m);
+    }
+  }, [voteCount]);
+
+
     queryKey: ['visual-feed-home', profile?.gender, profile?.age_range, profile?.country],
     queryFn: async () => {
       const now = new Date().toISOString();
