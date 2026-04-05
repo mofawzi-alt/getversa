@@ -1216,6 +1216,13 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
                          poll.intent_tag === 'fun_engagement' ? '🎮 Fun' : poll.intent_tag}
                       </span>
                     )}
+                    {(poll as any).expiry_type && (poll as any).expiry_type !== 'evergreen' && (
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        (poll as any).expiry_type === 'trending' ? 'bg-orange-500/20 text-orange-600' : 'bg-primary/20 text-primary'
+                      }`}>
+                        {(poll as any).expiry_type === 'trending' ? '⚡ Trending' : '🏆 Brand Battle'}
+                      </span>
+                    )}
                     <span className={`px-2 py-0.5 rounded-full text-xs ${
                       isExpired ? 'bg-muted text-muted-foreground' :
                       isLive ? 'bg-success/20 text-success' :
