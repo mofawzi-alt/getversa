@@ -363,7 +363,7 @@ export default function LiveDebate() {
         )}
 
         {/* For voted polls in result view — show Next/Exit buttons */}
-        {phase === 'result' && currentPollIsVoted && (
+        {phase === 'result' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
