@@ -75,6 +75,15 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
   const submitVote = useCallback(async (choice: 'A' | 'B') => {
     if (!poll || result || isVoting) return;
+    
+    // NUDGE 3: Redirect guests to signup when they try to vote
+    if (!user) {
+      // Store intent so we can bring them back
+      try { sessionStorage.setItem('versa_vote_intent', poll.id); } catch {}
+      window.location.href = '/auth?mode=signup&reason=vote';
+      return;
+    }
+    
     setIsVoting(true);
     setDragX(0);
     setDragY(0);

@@ -21,6 +21,8 @@ import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
 import StreakMilestoneCelebration, { checkStreakMilestone } from '@/components/streak/StreakMilestoneCelebration';
 import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/VoteMilestoneCelebration';
 import DailyReturnBanner from '@/components/home/DailyReturnBanner';
+import { WelcomeBanner, TimedFloatingNudge } from '@/components/onboarding/GuestNudges';
+import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
@@ -597,6 +599,9 @@ export default function Home() {
           <DailyReturnBanner currentStreak={userStreak.current} />
         ) : null}
 
+        {/* NUDGE 1: Welcome banner for guests */}
+        {!user && <WelcomeBanner />}
+
         {/* Category filter banner */}
         {categoryFilter && (
           <div className="px-3 mb-1">
@@ -635,30 +640,8 @@ export default function Home() {
           />
         </div>
 
-        {/* Sign-up banner for guests */}
-        {!user && isWelcomeDone() && (
-          <div className="px-3 mb-2">
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl bg-gradient-to-r from-primary/15 to-accent/15 border border-primary/30 p-3 flex items-center gap-3"
-            >
-              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                <span className="text-lg">🚀</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-display font-bold text-xs text-foreground">Save your votes & track insights</p>
-                <p className="text-[10px] text-muted-foreground">Create a free account to unlock all features</p>
-              </div>
-              <button
-                onClick={() => navigate('/auth?mode=signup')}
-                className="shrink-0 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold"
-              >
-                Sign Up
-              </button>
-            </motion.div>
-          </div>
-        )}
+        {/* NUDGE 4: Floating timed nudge for guests */}
+        {!user && <TimedFloatingNudge />}
 
         {/* Weekly Top Results Banner — show on Sundays */}
         {new Date().getDay() === 0 && (
