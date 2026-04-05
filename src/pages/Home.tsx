@@ -372,10 +372,17 @@ export default function Home() {
       return hasStarted && !isExpired;
     }).sort((a, b) => ((b as any).weight_score || 1) - ((a as any).weight_score || 1) || b.totalVotes - a.totalVotes);
 
+    // Prioritize unvoted polls first, then diversify by category
+    const unvotedFirst = [...livePollsRaw].sort((a, b) => {
+      const aVoted = votedPollIds?.has(a.id) ? 1 : 0;
+      const bVoted = votedPollIds?.has(b.id) ? 1 : 0;
+      return aVoted - bVoted;
+    });
+
     // Diversify live polls by category (round-robin pick)
     const diversifiedLive = (() => {
       const byCategory = new Map<string, PollCard[]>();
-      livePollsRaw.forEach(p => {
+      unvotedFirst.forEach(p => {
         const cat = p.category || 'Other';
         if (!byCategory.has(cat)) byCategory.set(cat, []);
         byCategory.get(cat)!.push(p);
@@ -384,7 +391,7 @@ export default function Home() {
       const result: PollCard[] = [];
       const usedIds = new Set<string>();
       let round = 0;
-      while (result.length < livePollsRaw.length) {
+      while (result.length < unvotedFirst.length) {
         let added = false;
         for (const catPolls of cats) {
           if (round < catPolls.length && !usedIds.has(catPolls[round].id)) {
