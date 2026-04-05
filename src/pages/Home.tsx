@@ -785,7 +785,7 @@ export default function Home() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                       whileTap={{ scale: 0.96 }}
-                      onClick={() => navigate(`/vote?category=${encodeURIComponent(catName)}`)}
+                      onClick={() => navigate(`/explore?category=${encodeURIComponent(catName)}`)}
                       className="relative rounded-xl overflow-hidden cursor-pointer group border border-border/60 shadow-card h-24"
                     >
                       {info.thumbnail ? (
