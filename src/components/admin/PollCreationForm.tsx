@@ -44,6 +44,7 @@ export default function PollCreationForm({
   const [category, setCategory] = useState('');
   const [tags, setTags] = useState('');
   const [isDailyPoll, setIsDailyPoll] = useState(true);
+  const [weightScore, setWeightScore] = useState(500);
   const [targetGender, setTargetGender] = useState('');
   const [targetAgeRange, setTargetAgeRange] = useState('');
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
@@ -156,6 +157,7 @@ export default function PollCreationForm({
            intent_tag: intentTag || null,
            option_a_tag: tagA || null,
            option_b_tag: tagB || null,
+           weight_score: weightScore,
          } as any)
         .select()
         .single();
@@ -421,6 +423,24 @@ export default function PollCreationForm({
           <Label htmlFor="isDailyPoll" className="text-sm">
             Daily Poll (24-hour visibility)
           </Label>
+        </div>
+
+        {/* Weight Score / Priority */}
+        <div>
+          <Label className="text-sm font-medium">Priority (Weight Score)</Label>
+          <div className="flex items-center gap-3 mt-1">
+            <Input
+              type="number"
+              min={1}
+              max={1000}
+              value={weightScore}
+              onChange={(e) => setWeightScore(Number(e.target.value) || 1)}
+              className="w-24 h-9 bg-card border-border"
+            />
+            <span className="text-xs text-muted-foreground">
+              Higher = appears sooner in feed (default: 500)
+            </span>
+          </div>
         </div>
         
         {/* Demographic Targeting */}
