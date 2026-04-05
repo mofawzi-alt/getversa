@@ -498,6 +498,23 @@ export default function Home() {
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
+        {/* Category filter banner */}
+        {categoryFilter && (
+          <div className="px-3 mb-1">
+            <div className="flex items-center gap-2 bg-primary/10 rounded-xl px-3 py-2">
+              <span className="text-xs font-bold text-primary flex-1">
+                {getCategoryMeta(categoryFilter).emoji} Showing: {getDisplayCategoryName(categoryFilter)}
+              </span>
+              <button
+                onClick={() => setCategoryFilter(null)}
+                className="text-[10px] font-bold text-primary/70 hover:text-primary px-2 py-0.5 rounded-full bg-primary/10"
+              >
+                ✕ Clear
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ═══ INFINITE HERO VOTE CARD ═══ */}
         <div ref={heroRef}>
           <HeroVoteCard
