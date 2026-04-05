@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3 } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
@@ -367,7 +368,10 @@ export default function Home() {
 
   const allPolls = polls || [];
   const hasUnseen = (unseenCount || 0) > 0;
-  const allNewPolls = useMemo(() => allPolls.filter(p => !votedPollIds?.has(p.id)), [allPolls, votedPollIds]);
+  const allNewPolls = useMemo(() => {
+    const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id));
+    return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
+  }, [allPolls, votedPollIds, profile?.age_range]);
   const newPolls = useMemo(() => {
     if (!categoryFilter) return allNewPolls;
     return allNewPolls.filter(p => (p.category || 'Other') === categoryFilter);
