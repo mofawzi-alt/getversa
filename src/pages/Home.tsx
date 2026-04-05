@@ -542,6 +542,9 @@ export default function Home() {
       if (idx >= 0) {
         setHeroPollIndex(idx);
         heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // Poll not in current filtered list — show results modal as fallback
+        setModalPoll(poll);
       }
     }
   };
