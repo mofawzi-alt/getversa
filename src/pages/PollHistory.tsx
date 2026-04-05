@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { TrendingUp as TrendUp } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { getStablePollFallbackImage } from '@/lib/pollImages';
+import { getPollImageProps } from '@/lib/pollImageProps';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
@@ -33,6 +34,8 @@ interface VoteHistoryItem {
 function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; index: number; total: number }) {
   const imgA = vote.imageAUrl || getFallbackImage(vote.pollId, 0);
   const imgB = vote.imageBUrl || getFallbackImage(vote.pollId, 1);
+  const pA = getPollImageProps({ imageUrl: vote.imageAUrl, option: vote.optionA, question: vote.question, side: 'A' });
+  const pB = getPollImageProps({ imageUrl: vote.imageBUrl, option: vote.optionB, question: vote.question, side: 'B' });
   const winnerIsA = vote.percentA >= vote.percentB;
   const userPercent = vote.userChoice === 'A' ? vote.percentA : vote.percentB;
 
@@ -47,8 +50,8 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
       {/* Split images — proportional aspect ratio */}
       <div className="flex relative mx-4 rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
         {/* Option A */}
-        <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgA} alt={vote.optionA} className="w-full h-full object-cover" />
+        <div className={`w-1/2 h-full relative overflow-hidden ${pA.containerClassName}`} style={pA.containerStyle}>
+          <img src={imgA} alt={vote.optionA} className={`${pA.imgClassName}`} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
           {winnerIsA && (
             <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-option-a/90 text-option-a-foreground text-[9px] font-bold">
@@ -67,8 +70,8 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
         <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/15 z-10" />
 
         {/* Option B */}
-        <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgB} alt={vote.optionB} className="w-full h-full object-cover" />
+        <div className={`w-1/2 h-full relative overflow-hidden ${pB.containerClassName}`} style={pB.containerStyle}>
+          <img src={imgB} alt={vote.optionB} className={`${pB.imgClassName}`} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
           {!winnerIsA && (
             <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-option-b/90 text-option-b-foreground text-[9px] font-bold">
