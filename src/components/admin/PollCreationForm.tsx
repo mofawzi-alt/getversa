@@ -424,6 +424,24 @@ export default function PollCreationForm({
             Daily Poll (24-hour visibility)
           </Label>
         </div>
+
+        {/* Weight Score / Priority */}
+        <div>
+          <Label className="text-sm font-medium">Priority (Weight Score)</Label>
+          <div className="flex items-center gap-3 mt-1">
+            <Input
+              type="number"
+              min={1}
+              max={1000}
+              value={weightScore}
+              onChange={(e) => setWeightScore(Number(e.target.value) || 1)}
+              className="w-24 h-9 bg-card border-border"
+            />
+            <span className="text-xs text-muted-foreground">
+              Higher = appears sooner in feed (default: 500)
+            </span>
+          </div>
+        </div>
         
         {/* Demographic Targeting */}
         <div className="border-t border-border pt-4 mt-4">
