@@ -31,6 +31,7 @@ const SWIPE_THRESHOLD = 50;
 const SWIPE_UP_THRESHOLD = 50;
 const RESULT_MS = 1500;
 const TAP_MOVE_TOLERANCE = 12;
+const DRAG_DEAD_ZONE = 15;
 
 export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: HeroVoteCardProps) {
   const { user, profile } = useAuth();
@@ -243,10 +244,14 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
   const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
 
-  const normalizedOffset = Math.min(Math.abs(dragX), 200) / 200;
-  const rotation = Math.sign(dragX) * normalizedOffset * 8;
-  const highlightA = !result && !isVoting && dragX < -30 ? Math.min(Math.abs(dragX) / SWIPE_THRESHOLD, 1) : 0;
-  const highlightB = !result && !isVoting && dragX > 30 ? Math.min(dragX / SWIPE_THRESHOLD, 1) : 0;
+  // Apply dead zone to visual offset — card doesn't move until drag exceeds threshold
+  const visualDragX = Math.abs(dragX) > DRAG_DEAD_ZONE ? dragX - Math.sign(dragX) * DRAG_DEAD_ZONE : 0;
+  const visualDragY = Math.abs(dragY) > DRAG_DEAD_ZONE ? dragY - Math.sign(dragY) * DRAG_DEAD_ZONE : 0;
+
+  const normalizedOffset = Math.min(Math.abs(visualDragX), 200) / 200;
+  const rotation = Math.sign(visualDragX) * normalizedOffset * 8;
+  const highlightA = !result && !isVoting && visualDragX < -10 ? Math.min(Math.abs(visualDragX) / SWIPE_THRESHOLD, 1) : 0;
+  const highlightB = !result && !isVoting && visualDragX > 10 ? Math.min(visualDragX / SWIPE_THRESHOLD, 1) : 0;
 
   return (
     <section className="px-3 pt-4 pb-2">
@@ -275,7 +280,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
           touchAction: result || isVoting ? 'auto' : 'none',
           transform: result || isVoting
             ? 'none'
-            : `translateX(${dragX}px) translateY(${Math.min(dragY, 0)}px) rotate(${rotation}deg)`,
+            : `translateX(${visualDragX}px) translateY(${Math.min(visualDragY, 0)}px) rotate(${rotation}deg)`,
           transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
           willChange: isDragging ? 'transform' : 'auto',
         }}
