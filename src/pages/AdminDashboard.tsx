@@ -170,6 +170,7 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
   const [isUploading, setIsUploading] = useState(false);
   const [category, setCategory] = useState('');
   const [isDailyPoll, setIsDailyPoll] = useState(true);
+  const [expiryType, setExpiryType] = useState('evergreen');
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiCategory, setAiCategory] = useState('');
   const [aiPollCount, setAiPollCount] = useState(1);
