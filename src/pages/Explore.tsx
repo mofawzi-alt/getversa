@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import { Input } from '@/components/ui/input';
 import { getPollDisplayImageSrc, getStablePollFallbackImage, handlePollImageError } from '@/lib/pollImages';
+import HomeResultsModal from '@/components/home/HomeResultsModal';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
@@ -59,6 +60,7 @@ export default function Explore() {
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [modalPoll, setModalPoll] = useState<PollItem | null>(null);
 
   // Read initial category from URL params (e.g., /explore?category=Food)
   useEffect(() => {
@@ -205,7 +207,7 @@ export default function Explore() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate(`/vote?pollId=${poll.id}`)}
+                  onClick={() => setModalPoll(poll)}
                   className="relative rounded-xl overflow-hidden cursor-pointer group shadow-card"
                 >
                   <div className="flex h-32 relative">
@@ -261,6 +263,14 @@ export default function Explore() {
               </div>
             )}
           </div>
+
+          <HomeResultsModal
+            open={!!modalPoll}
+            onOpenChange={(open) => !open && setModalPoll(null)}
+            poll={modalPoll}
+            imageA={modalPoll ? (getPollDisplayImageSrc({ imageUrl: modalPoll.image_a_url, option: modalPoll.option_a, question: modalPoll.question, side: 'A' }) || getFallbackImage(modalPoll.id, 0)) : ''}
+            imageB={modalPoll ? (getPollDisplayImageSrc({ imageUrl: modalPoll.image_b_url, option: modalPoll.option_b, question: modalPoll.question, side: 'B' }) || getFallbackImage(modalPoll.id, 1)) : ''}
+          />
         </div>
       </AppLayout>
     );
