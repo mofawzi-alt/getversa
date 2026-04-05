@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import { getPollImageProps } from '@/lib/pollImageProps';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
 import { Check } from 'lucide-react';
@@ -260,6 +261,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
 
   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
   const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
+  const propsA = getPollImageProps({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
+  const propsB = getPollImageProps({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
 
   // Apply dead zone to visual offset — card doesn't move until drag exceeds threshold
   const visualDragX = Math.abs(dragX) > DRAG_DEAD_ZONE ? dragX - Math.sign(dragX) * DRAG_DEAD_ZONE : 0;
@@ -325,13 +328,13 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
                 : 'none',
             }}
           >
-            <img
-              src={imgA}
-              alt={poll.option_a}
-              className="w-full h-full object-cover bg-muted pointer-events-none"
-              onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })}
-              draggable={false}
-            />
+            {propsA.isBrand ? (
+              <div className="w-full h-full flex items-center justify-center" style={propsA.containerStyle}>
+                <img src={imgA} alt={poll.option_a} className="max-w-[50%] max-h-[50%] object-contain pointer-events-none" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} draggable={false} />
+              </div>
+            ) : (
+              <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover bg-muted pointer-events-none" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} draggable={false} />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
             {/* Highlight border while dragging */}
@@ -395,13 +398,13 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
                 : 'none',
             }}
           >
-            <img
-              src={imgB}
-              alt={poll.option_b}
-              className="w-full h-full object-cover bg-muted pointer-events-none"
-              onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })}
-              draggable={false}
-            />
+            {propsB.isBrand ? (
+              <div className="w-full h-full flex items-center justify-center" style={propsB.containerStyle}>
+                <img src={imgB} alt={poll.option_b} className="max-w-[50%] max-h-[50%] object-contain pointer-events-none" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} draggable={false} />
+              </div>
+            ) : (
+              <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover bg-muted pointer-events-none" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} draggable={false} />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
             {highlightB > 0 && (
