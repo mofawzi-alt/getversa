@@ -77,6 +77,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
     setIsVoting(true);
     setDragX(0);
     setDragY(0);
+    setIsMinority(false);
+    setIsFirstVoteOfDay(false);
 
     playSwipeSound();
 
@@ -89,6 +91,20 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
     });
 
     if (user) {
+      // Check if this is the first vote of the day
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { count: todayVotesBefore } = await supabase
+        .from('votes')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', todayStart.toISOString());
+      
+      if ((todayVotesBefore || 0) === 0 && !sessionShownRef.current.has('first_vote_today')) {
+        setIsFirstVoteOfDay(true);
+        sessionShownRef.current.add('first_vote_today');
+      }
+
       const votePayload = {
         poll_id: poll.id,
         user_id: user.id,
@@ -110,12 +126,20 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
 
       const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: [poll.id] });
       if (results?.[0]) {
+        const pA = results[0].percent_a;
+        const pB = results[0].percent_b;
+        const userPct = choice === 'A' ? pA : pB;
         setResult({
           choice,
-          percentA: results[0].percent_a,
-          percentB: results[0].percent_b,
+          percentA: pA,
+          percentB: pB,
           total: Number(results[0].total_votes),
         });
+        // Minority moment: user chose the side with < 35%
+        if (userPct < 35 && !sessionShownRef.current.has(`minority_${poll.id}`)) {
+          setIsMinority(true);
+          sessionShownRef.current.add(`minority_${poll.id}`);
+        }
       }
     }
 
@@ -129,6 +153,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete }: Hero
     setTimeout(() => {
       setResult(null);
       setIsVoting(false);
+      setIsMinority(false);
+      setIsFirstVoteOfDay(false);
       setShowHint(true);
       onVoteComplete?.();
     }, RESULT_MS);
