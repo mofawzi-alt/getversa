@@ -366,18 +366,6 @@ export default function Home() {
     }
   }, [categoryFilter, newPolls.length]);
 
-  // Auto-rotate live debates carousel every 5 seconds
-  useEffect(() => {
-    if (!liveCarouselApi || livePolls.length <= 1) return;
-    const interval = setInterval(() => {
-      if (liveCarouselApi.canScrollNext()) {
-        liveCarouselApi.scrollNext();
-      } else {
-        liveCarouselApi.scrollTo(0);
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [liveCarouselApi, livePolls.length]);
 
   // ── Memoized expensive computations ──
   const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
