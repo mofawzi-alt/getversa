@@ -29,6 +29,9 @@ interface BrandPoll {
   brandPercent: number;
   competitorPercent: number;
   won: boolean;
+  expiryType: string;
+  startsAt: string | null;
+  endsAt: string | null;
   demographics: {
     gender: Record<string, { brand: number; total: number }>;
     age: Record<string, { brand: number; total: number }>;
