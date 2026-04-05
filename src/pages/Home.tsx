@@ -401,7 +401,7 @@ export default function Home() {
   }, [allPolls, votedPollIds, profile?.age_range]);
   const newPolls = useMemo(() => {
     if (!categoryFilter) return allNewPolls;
-    return allNewPolls.filter(p => (p.category || 'Other') === categoryFilter);
+    return allNewPolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter);
   }, [allNewPolls, categoryFilter]);
 
   // Reset hero index when category filter changes
@@ -535,7 +535,7 @@ export default function Home() {
 
   // Smart category tap: unvoted → filter hero, all voted → explore with results
   const handleCategoryTap = (catName: string) => {
-    const catPolls = allPolls.filter(p => (p.category || 'Other') === catName);
+    const catPolls = allPolls.filter(p => getDisplayCategoryName(p.category || 'Other') === catName);
     const hasUnvoted = catPolls.some(p => !votedPollIds?.has(p.id));
     if (hasUnvoted) {
       // Save current position before filtering
@@ -875,14 +875,15 @@ export default function Home() {
         {(() => {
           const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
           for (const p of allPolls) {
-            const cat = p.category || 'Other';
-            const existing = categoryMap.get(cat) || { count: 0, unseen: 0, thumbnail: null };
+            const rawCat = p.category || 'Other';
+            const displayCat = getDisplayCategoryName(rawCat);
+            const existing = categoryMap.get(displayCat) || { count: 0, unseen: 0, thumbnail: null };
             existing.count++;
             if (!votedPollIds?.has(p.id)) existing.unseen++;
              if (!existing.thumbnail) {
                existing.thumbnail = getPollDisplayImageSrc({ imageUrl: p.image_a_url, option: p.option_a, question: p.question, side: 'A' });
              }
-            categoryMap.set(cat, existing);
+            categoryMap.set(displayCat, existing);
           }
           const categories = Array.from(categoryMap.entries())
             .sort((a, b) => b[1].count - a[1].count);
