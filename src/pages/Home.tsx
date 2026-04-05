@@ -519,7 +519,7 @@ export default function Home() {
         <div ref={heroRef}>
           <HeroVoteCard
             poll={newPolls[heroPollIndex] || null}
-            unseenCount={Math.max(0, (unseenCount || 0) - heroPollIndex)}
+            unseenCount={categoryFilter ? newPolls.length : Math.max(0, (unseenCount || 0) - heroPollIndex)}
             onVoteComplete={() => {
               // Don't increment heroPollIndex — the voted poll will be removed
               // from newPolls when votedPollIds updates, so the same index
