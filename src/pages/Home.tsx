@@ -340,7 +340,16 @@ export default function Home() {
 
   const allPolls = polls || [];
   const hasUnseen = (unseenCount || 0) > 0;
-  const newPolls = useMemo(() => allPolls.filter(p => !votedPollIds?.has(p.id)), [allPolls, votedPollIds]);
+  const allNewPolls = useMemo(() => allPolls.filter(p => !votedPollIds?.has(p.id)), [allPolls, votedPollIds]);
+  const newPolls = useMemo(() => {
+    if (!categoryFilter) return allNewPolls;
+    return allNewPolls.filter(p => (p.category || 'Other') === categoryFilter);
+  }, [allNewPolls, categoryFilter]);
+
+  // Reset hero index when category filter changes
+  useEffect(() => {
+    setHeroPollIndex(0);
+  }, [categoryFilter]);
 
   // ── Memoized expensive computations ──
   const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
