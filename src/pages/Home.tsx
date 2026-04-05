@@ -21,6 +21,7 @@ import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/
 import DailyReturnBanner from '@/components/home/DailyReturnBanner';
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import { getPollImageProps } from '@/lib/pollImageProps';
 
 // FIX 4: Conversational category name mapping
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
@@ -728,15 +729,17 @@ export default function Home() {
 
                         {/* Images */}
                         <div className="flex h-[55vh] max-h-[420px] relative">
-                          <div className="w-1/2 h-full relative overflow-hidden">
-                            <img src={imgA} alt={poll.option_a} loading="lazy" className="w-full h-full object-cover bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
+                          {(() => { const p = getPollImageProps({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' }); return (
+                          <div className={`w-1/2 h-full relative overflow-hidden ${p.containerClassName}`} style={p.containerStyle}>
+                            <img src={imgA} alt={poll.option_a} loading="lazy" className={`${p.imgClassName} bg-muted transition-transform duration-500 group-hover:scale-105 pointer-events-none`} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                          </div>
+                          </div>); })()}
                           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
-                          <div className="w-1/2 h-full relative overflow-hidden">
-                            <img src={imgB} alt={poll.option_b} loading="lazy" className="w-full h-full object-cover bg-muted transition-transform duration-500 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
+                          {(() => { const p = getPollImageProps({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' }); return (
+                          <div className={`w-1/2 h-full relative overflow-hidden ${p.containerClassName}`} style={p.containerStyle}>
+                            <img src={imgB} alt={poll.option_b} loading="lazy" className={`${p.imgClassName} bg-muted transition-transform duration-500 group-hover:scale-105 pointer-events-none`} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                          </div>
+                          </div>); })()}
                         </div>
 
                         {/* Question overlay */}
@@ -1068,9 +1071,13 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
       onClick={() => onTap(poll)}
       className="shrink-0 w-44 rounded-xl overflow-hidden cursor-pointer snap-start group shadow-card"
     >
+      {(() => {
+        const pA = getPollImageProps({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
+        const pB = getPollImageProps({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
+        return (
       <div className="flex h-24 relative">
-        <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
+        <div className={`w-1/2 h-full relative overflow-hidden ${pA.containerClassName}`} style={pA.containerStyle}>
+          <img src={imgA} alt={poll.option_a} className={`${pA.imgClassName} ${pA.isBrand ? '' : 'object-top'} transition-transform duration-300 group-hover:scale-105 pointer-events-none`} onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 left-1.5">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_a}</p>
@@ -1078,8 +1085,8 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
           </div>
         </div>
         <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
-        <div className="w-1/2 h-full relative overflow-hidden">
-          <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
+        <div className={`w-1/2 h-full relative overflow-hidden ${pB.containerClassName}`} style={pB.containerStyle}>
+          <img src={imgB} alt={poll.option_b} className={`${pB.imgClassName} ${pB.isBrand ? '' : 'object-top'} transition-transform duration-300 group-hover:scale-105 pointer-events-none`} onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-1.5 right-1.5 text-right">
             <p className="text-white text-[8px] font-bold drop-shadow-lg truncate max-w-[70px]">{poll.option_b}</p>
