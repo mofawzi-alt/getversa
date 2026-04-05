@@ -538,13 +538,15 @@ function FullScreenCard({
           boxShadow: phase === 'swipe' ? glowColor : 'none',
           transformStyle: 'preserve-3d',
         }}
-        onTouchStart={(e) => handleStart(e.touches[0].clientX)}
-        onTouchMove={(e) => { handleMove(e.touches[0].clientX); if (Math.abs(dragX) > 10) e.preventDefault(); }}
-        onTouchEnd={handleEnd}
-        onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX); }}
-        onMouseMove={(e) => handleMove(e.clientX)}
-        onMouseUp={handleEnd}
-        onMouseLeave={() => isDragging && handleEnd()}
+        {...(canSwipe ? {
+          onTouchStart: (e: React.TouchEvent) => handleStart(e.touches[0].clientX),
+          onTouchMove: (e: React.TouchEvent) => { handleMove(e.touches[0].clientX); if (Math.abs(dragX) > 10) e.preventDefault(); },
+          onTouchEnd: handleEnd,
+          onMouseDown: (e: React.MouseEvent) => { e.preventDefault(); handleStart(e.clientX); },
+          onMouseMove: (e: React.MouseEvent) => handleMove(e.clientX),
+          onMouseUp: handleEnd,
+          onMouseLeave: () => isDragging && handleEnd(),
+        } : {})}
       >
         {/* Split images — full screen */}
         <div className="flex h-full w-full">
