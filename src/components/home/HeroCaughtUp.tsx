@@ -282,7 +282,7 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {highlights.map((poll, i) => (
-              <HighlightCard key={poll.id} poll={poll} index={i} />
+              <HighlightCard key={poll.id} poll={poll} index={i} onTap={onPollTap} />
             ))}
           </div>
         </motion.div>
