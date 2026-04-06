@@ -330,7 +330,6 @@ export default function Browse() {
   const [reactedPolls, setReactedPolls] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const hasScrolledToTarget = useRef(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [feedNudgeDismissed, setFeedNudgeDismissed] = useState(false);
   const showSignupBanner = !user && activeIndex >= 10 && !bannerDismissed;
@@ -345,10 +344,8 @@ export default function Browse() {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (liveFilter) {
-        const now = new Date().toISOString();
-        query = query.lte('starts_at', now).gte('ends_at', now);
-      }
+      // For live filter, fetch all active polls and filter client-side
+      // to match Home's logic (polls without starts_at/ends_at are considered live)
 
       const { data: polls } = await query.limit(100);
 
@@ -371,7 +368,7 @@ export default function Browse() {
         demoMap.get(v.poll_id)!.push(v);
       });
 
-      return polls.map(p => {
+      let enriched = polls.map(p => {
         const r = resultsMap.get(p.id) as any;
         const total = r?.total_votes || 0;
         const votesA = r?.votes_a || 0;
@@ -390,6 +387,18 @@ export default function Browse() {
           demographicInsight: generateDemographicInsight(demoMap.get(p.id) || []),
         };
       });
+
+      // Client-side live filter matching Home's logic
+      if (liveFilter) {
+        const now = new Date();
+        enriched = enriched.filter(p => {
+          const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
+          const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
+          return hasStarted && !isExpired;
+        });
+      }
+
+      return enriched;
     },
     staleTime: 1000 * 60 * 2,
   });
@@ -440,20 +449,17 @@ export default function Browse() {
       result.push(pick);
     }
 
-    return result;
-  }, [feedPolls, profile?.age_range, userVotes]);
-
-  // Scroll to target poll when navigated with pollId param
-  useEffect(() => {
-    if (!targetPollId || !sortedFeed || sortedFeed.length === 0 || hasScrolledToTarget.current) return;
-    const targetIndex = sortedFeed.findIndex(p => p.id === targetPollId);
-    if (targetIndex >= 0 && containerRef.current) {
-      const cardHeight = containerRef.current.clientHeight;
-      containerRef.current.scrollTo({ top: targetIndex * cardHeight, behavior: 'instant' });
-      setActiveIndex(targetIndex);
-      hasScrolledToTarget.current = true;
+    // If navigated with a target poll, move it to the front
+    if (targetPollId) {
+      const targetIdx = result.findIndex(p => p.id === targetPollId);
+      if (targetIdx > 0) {
+        const [target] = result.splice(targetIdx, 1);
+        result.unshift(target);
+      }
     }
-  }, [targetPollId, sortedFeed]);
+
+    return result;
+  }, [feedPolls, profile?.age_range, userVotes, targetPollId]);
 
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
