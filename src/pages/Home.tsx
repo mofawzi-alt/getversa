@@ -571,7 +571,7 @@ export default function Home() {
   };
 
   const handleLivePollTap = (poll: PollCard) => {
-    navigate(`/live-debate?pollId=${poll.id}`);
+    navigate(`/browse?filter=live`);
   };
 
   return (

@@ -485,6 +485,17 @@ export default function Browse() {
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
+      {/* Live filter header */}
+      {liveFilter && (
+        <div className="shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-border/40 bg-background z-30">
+          <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-muted/50">
+            <ArrowLeft className="h-5 w-5 text-foreground" />
+          </button>
+          <Radio className="h-4 w-4 text-destructive animate-pulse" />
+          <span className="text-sm font-display font-bold text-foreground">Live Debates</span>
+          <span className="text-xs text-muted-foreground ml-auto">{sortedFeed.length} active</span>
+        </div>
+      )}
       <div
         ref={containerRef}
         onScroll={handleScroll}
