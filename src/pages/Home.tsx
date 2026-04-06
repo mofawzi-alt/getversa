@@ -650,13 +650,11 @@ export default function Home() {
             poll={newPolls[heroPollIndex] || null}
             unseenCount={newPolls.length}
             onVoteComplete={() => {
-              // Don't increment heroPollIndex — the voted poll will be removed
-              // from newPolls when votedPollIds updates, so the same index
-              // will naturally point to the next unvoted poll
               queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
               queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
               queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
               queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+              queryClient.invalidateQueries({ queryKey: ['daily-queue-voted'] });
             }}
             onPollTap={(poll) => setModalPoll(poll)}
           />
