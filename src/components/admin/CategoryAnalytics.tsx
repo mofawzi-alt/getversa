@@ -283,7 +283,14 @@ export default function CategoryAnalytics() {
             return (
               <div key={demo.label} className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">{demo.label}</span>
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    {title === 'By Gender' && (
+                      <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ 
+                        backgroundColor: demo.label === 'Male' ? 'hsl(210, 80%, 55%)' : demo.label === 'Female' ? 'hsl(340, 75%, 55%)' : 'hsl(var(--muted-foreground))' 
+                      }} />
+                    )}
+                    {demo.label}
+                  </span>
                   <span>{demo.total} votes</span>
                 </div>
                 <div className="flex h-2 rounded-full overflow-hidden bg-secondary">
