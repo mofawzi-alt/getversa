@@ -26,6 +26,7 @@ import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/compon
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import { useDailyQueue } from '@/hooks/useDailyQueue';
 
 // FIX 4: Conversational category name mapping
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
