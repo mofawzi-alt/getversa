@@ -172,30 +172,47 @@ export default function PersonalWeeklySummary() {
       <motion.div
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl bg-card border border-border/60 px-3 py-2.5 flex items-center gap-3"
+        className="rounded-xl bg-card border border-border/60 px-3 py-2.5"
       >
-        <div className="flex items-center gap-1.5 shrink-0">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <span className="text-xs font-display font-bold text-primary">Week</span>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-display font-bold text-primary">Your Week</span>
+          </div>
+          <button onClick={handleShare} className="p-1.5 rounded-full hover:bg-muted/50 text-muted-foreground">
+            <Share2 className="h-3.5 w-3.5" />
+          </button>
         </div>
 
-        <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground flex-1 min-w-0">
-          <span>📊 <span className="font-bold text-foreground">{summary.totalVoted}</span> voted</span>
-          <span className="text-muted-foreground/30">·</span>
-          <span>✅ <span className="font-bold text-foreground">{summary.majority}</span></span>
-          <span className="text-muted-foreground/30">·</span>
-          <span>🎯 <span className="font-bold text-foreground">{summary.minority}</span></span>
-          {summary.biggestUpset && (
-            <>
-              <span className="text-muted-foreground/30">·</span>
-              <span className="truncate">🤯 {summary.biggestUpset.question.length > 20 ? summary.biggestUpset.question.slice(0, 20) + '…' : summary.biggestUpset.question}</span>
-            </>
-          )}
+        {/* Stats row */}
+        <div className="flex items-center justify-around mb-2">
+          <div className="text-center">
+            <p className="text-lg font-bold font-display text-foreground">{summary.totalVoted}</p>
+            <p className="text-[9px] text-muted-foreground">Voted</p>
+          </div>
+          <div className="h-6 w-px bg-border/60" />
+          <div className="text-center">
+            <p className="text-lg font-bold font-display text-green-600">{summary.majority}</p>
+            <p className="text-[9px] text-muted-foreground">Majority</p>
+          </div>
+          <div className="h-6 w-px bg-border/60" />
+          <div className="text-center">
+            <p className="text-lg font-bold font-display text-amber-500">{summary.minority}</p>
+            <p className="text-[9px] text-muted-foreground">Minority</p>
+          </div>
         </div>
 
-        <button onClick={handleShare} className="p-1.5 rounded-full hover:bg-muted/50 text-muted-foreground shrink-0">
-          <Share2 className="h-3.5 w-3.5" />
-        </button>
+        {/* Most surprising */}
+        {summary.biggestUpset && (
+          <div className="rounded-lg bg-muted/40 px-2.5 py-1.5 flex items-center gap-1.5">
+            <Target className="h-3 w-3 text-muted-foreground shrink-0" />
+            <span className="text-[10px] text-muted-foreground font-medium">Most Surprising:</span>
+            <span className="text-[10px] text-foreground font-medium truncate">
+              {summary.biggestUpset.question.length > 35 ? summary.biggestUpset.question.slice(0, 35) + '…' : summary.biggestUpset.question}
+            </span>
+          </div>
+        )}
       </motion.div>
     </>
   );
