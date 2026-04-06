@@ -18,8 +18,7 @@ export default function SplashScreen({ onComplete }: { onComplete?: () => void }
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-[200] flex flex-col items-center justify-center"
-      style={{ backgroundColor: '#111111' }}
+      className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -27,13 +26,13 @@ export default function SplashScreen({ onComplete }: { onComplete?: () => void }
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className="flex flex-col items-center gap-4"
       >
-        <VersaLogo size="hero" className="brightness-0 invert" />
+        <VersaLogo size="hero" />
         <motion.p
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
           className="text-sm tracking-wide"
-          style={{ color: '#888888' }}
+          style={{ color: '#b0b0b0' }}
         >
           Where you decide.
         </motion.p>
