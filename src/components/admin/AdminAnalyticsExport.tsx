@@ -338,6 +338,27 @@ export default function AdminAnalyticsExport() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="border-dashed border-primary/30 bg-primary/5">
+              <CardContent className="pt-6">
+                <div className="text-center space-y-3">
+                  <FileSpreadsheet className="h-8 w-8 mx-auto text-primary" />
+                  <h3 className="font-medium">User List</h3>
+                  <Badge className="text-xs">Names & Emails</Badge>
+                  <p className="text-xs text-muted-foreground">
+                    All users with full details and activity
+                  </p>
+                  <Button 
+                    onClick={exportUsersCSV} 
+                    disabled={exporting === 'users'}
+                    className="w-full"
+                    size="sm"
+                  >
+                    {exporting === 'users' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Download CSV'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="border-dashed">
               <CardContent className="pt-6">
                 <div className="text-center space-y-3">
