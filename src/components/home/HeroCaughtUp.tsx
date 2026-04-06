@@ -267,26 +267,6 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
         </motion.div>
       )}
 
-      {/* Highlight polls */}
-      {highlights && highlights.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className="flex items-center gap-1.5 mb-2">
-            <TrendingUp className="h-3.5 w-3.5 text-primary" />
-            <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">
-              Battle Highlights
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {highlights.map((poll, i) => (
-              <HighlightCard key={poll.id} poll={poll} index={i} onTap={onPollTap} />
-            ))}
-          </div>
-        </motion.div>
-      )}
 
       {/* Browse prompt */}
       <motion.div
