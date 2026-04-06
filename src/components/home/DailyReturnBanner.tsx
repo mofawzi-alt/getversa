@@ -27,14 +27,18 @@ export default function DailyReturnBanner({ currentStreak, remainingToday }: Pro
   useEffect(() => {
     if (hasShownToday()) return;
 
-    if (currentStreak >= 7) {
+    if (currentStreak === 0 || currentStreak === 1) {
+      // Brand new user or first day
+      setMessage('Welcome to Versa 🔥 Your first battles are ready');
+    } else if (currentStreak >= 7) {
       setMessage('7 days in a row 🔥 You never miss a battle');
     } else if (currentStreak >= 2) {
       setMessage("You're back 🙌 New battles are waiting");
     } else if (remainingToday && remainingToday > 0) {
       setMessage(`Your daily battles are ready 🔥 ${remainingToday} new polls today`);
     } else {
-      return; // nothing to show
+      // Fallback welcome
+      setMessage('Welcome to Versa 🔥 Your first battles are ready');
     }
 
     markShownToday();
