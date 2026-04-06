@@ -252,29 +252,19 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
         </p>
       </motion.div>
 
-      {/* User stats row */}
+      {/* User stats strip */}
       {user && userStats && (
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="grid grid-cols-3 gap-2"
+          className="flex items-center justify-center gap-3 text-sm font-display font-bold text-foreground"
         >
-          <div className="bg-card rounded-xl border border-border/60 px-3 py-2.5 text-center">
-            <Flame className="h-4 w-4 text-destructive mx-auto mb-1" />
-            <p className="text-lg font-display font-bold text-foreground">{userStats.streak}</p>
-            <p className="text-[9px] text-muted-foreground font-medium">Day Streak</p>
-          </div>
-          <div className="bg-card rounded-xl border border-border/60 px-3 py-2.5 text-center">
-            <Zap className="h-4 w-4 text-primary mx-auto mb-1" />
-            <p className="text-lg font-display font-bold text-foreground">{userStats.todayVotes}</p>
-            <p className="text-[9px] text-muted-foreground font-medium">Voted Today</p>
-          </div>
-          <div className="bg-card rounded-xl border border-border/60 px-3 py-2.5 text-center">
-            <Crown className="h-4 w-4 text-amber-500 mx-auto mb-1" />
-            <p className="text-lg font-display font-bold text-foreground">{userStats.points.toLocaleString()}</p>
-            <p className="text-[9px] text-muted-foreground font-medium">Total Points</p>
-          </div>
+          <span className="flex items-center gap-1">🔥 {userStats.streak}</span>
+          <span className="text-muted-foreground/40">·</span>
+          <span className="flex items-center gap-1">⚡ {userStats.todayVotes}</span>
+          <span className="text-muted-foreground/40">·</span>
+          <span className="flex items-center gap-1">👑 {userStats.points.toLocaleString()}</span>
         </motion.div>
       )}
 
