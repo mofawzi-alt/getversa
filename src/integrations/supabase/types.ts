@@ -222,6 +222,65 @@ export type Database = {
           },
         ]
       }
+      daily_poll_queues: {
+        Row: {
+          created_at: string
+          id: string
+          poll_id: string
+          queue_date: string
+          queue_order: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          poll_id: string
+          queue_date: string
+          queue_order?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          poll_id?: string
+          queue_date?: string
+          queue_order?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_poll_queues_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_poll_settings: {
+        Row: {
+          daily_limit: number
+          first_day_limit: number
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          daily_limit?: number
+          first_day_limit?: number
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          daily_limit?: number
+          first_day_limit?: number
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       dimensions: {
         Row: {
           created_at: string
@@ -1336,6 +1395,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_daily_queue: {
+        Args: { p_user_id: string }
+        Returns: {
+          poll_id: string
+          queue_order: number
+        }[]
+      }
       generate_redemption_code: { Args: never; Returns: string }
       get_all_polls_for_history: {
         Args: never
