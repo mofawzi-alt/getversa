@@ -354,28 +354,34 @@ export default function InsightsReport() {
             </CardHeader>
             <CardContent className="pb-3">
               <div className="space-y-2">
-                {reportData.genderBreakdown.map(g => (
-                  <div key={g.name} className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="font-medium">{g.name}</span>
-                      <span className="text-muted-foreground">{g.total} votes</span>
-                    </div>
-                    <div className="flex h-5 rounded-full overflow-hidden bg-muted">
-                      <div
-                        className="flex items-center justify-center text-[10px] font-bold text-white"
-                        style={{ width: `${g.percentA}%`, backgroundColor: '#6366f1' }}
-                      >
-                        {g.percentA > 15 ? `${g.percentA}%` : ''}
+                {reportData.genderBreakdown.map(g => {
+                  const genderColor = GENDER_COLORS[g.name] || 'hsl(var(--muted-foreground))';
+                  return (
+                    <div key={g.name} className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="font-medium flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: genderColor }} />
+                          {g.name}
+                        </span>
+                        <span className="text-muted-foreground">{g.total} votes</span>
                       </div>
-                      <div
-                        className="flex items-center justify-center text-[10px] font-bold text-white"
-                        style={{ width: `${g.percentB}%`, backgroundColor: '#ec4899' }}
-                      >
-                        {g.percentB > 15 ? `${g.percentB}%` : ''}
+                      <div className="flex h-5 rounded-full overflow-hidden bg-muted">
+                        <div
+                          className="flex items-center justify-center text-[10px] font-bold text-white"
+                          style={{ width: `${g.percentA}%`, backgroundColor: 'hsl(var(--option-a))' }}
+                        >
+                          {g.percentA > 15 ? `${g.percentA}%` : ''}
+                        </div>
+                        <div
+                          className="flex items-center justify-center text-[10px] font-bold text-white"
+                          style={{ width: `${g.percentB}%`, backgroundColor: 'hsl(var(--option-b))' }}
+                        >
+                          {g.percentB > 15 ? `${g.percentB}%` : ''}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
