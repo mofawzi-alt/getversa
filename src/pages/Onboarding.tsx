@@ -245,6 +245,9 @@ export default function Onboarding() {
                   </button>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Your details are never shared or shown publicly — we use them only to show you how people like you voted.
+              </p>
             </div>
           )}
 
@@ -270,6 +273,9 @@ export default function Onboarding() {
                   </button>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Your details are never shared or shown publicly — we use them only to show you how people like you voted.
+              </p>
             </div>
           )}
 
