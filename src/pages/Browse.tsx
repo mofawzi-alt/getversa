@@ -440,20 +440,17 @@ export default function Browse() {
       result.push(pick);
     }
 
-    return result;
-  }, [feedPolls, profile?.age_range, userVotes]);
-
-  // Scroll to target poll when navigated with pollId param
-  useEffect(() => {
-    if (!targetPollId || !sortedFeed || sortedFeed.length === 0 || hasScrolledToTarget.current) return;
-    const targetIndex = sortedFeed.findIndex(p => p.id === targetPollId);
-    if (targetIndex >= 0 && containerRef.current) {
-      const cardHeight = containerRef.current.clientHeight;
-      containerRef.current.scrollTo({ top: targetIndex * cardHeight, behavior: 'instant' });
-      setActiveIndex(targetIndex);
-      hasScrolledToTarget.current = true;
+    // If navigated with a target poll, move it to the front
+    if (targetPollId) {
+      const targetIdx = result.findIndex(p => p.id === targetPollId);
+      if (targetIdx > 0) {
+        const [target] = result.splice(targetIdx, 1);
+        result.unshift(target);
+      }
     }
-  }, [targetPollId, sortedFeed]);
+
+    return result;
+  }, [feedPolls, profile?.age_range, userVotes, targetPollId]);
 
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
