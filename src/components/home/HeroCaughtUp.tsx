@@ -247,7 +247,7 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
         </motion.div>
         <h2 className="text-base font-display font-bold text-foreground">All battles conquered 🔥</h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">
-          New battles drop in {countdown} — here's what happened
+          Come back tomorrow for new battles — {countdown} until reset
         </p>
       </motion.div>
 
