@@ -166,7 +166,7 @@ export default function Home() {
     }
   }, [loading, profileComplete, user]);
 
-  // Realtime subscription: invalidate vote-related queries on new votes
+  // Realtime subscription: invalidate vote-related queries on new votes AND new polls
   useEffect(() => {
     const channel = supabase
       .channel('home-votes-realtime')
@@ -176,6 +176,16 @@ export default function Home() {
         () => {
           queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
           queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+          queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'polls' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+          queryClient.invalidateQueries({ queryKey: ['daily-queue'] });
+          queryClient.invalidateQueries({ queryKey: ['daily-queue-voted'] });
           queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
         }
       )
