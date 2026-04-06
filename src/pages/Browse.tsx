@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
-import { useNavigate } from 'react-router-dom';
-import { Share2, Flame, Check, ChevronUp, X } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio } from 'lucide-react';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -323,6 +323,8 @@ function BrowseCard({
 export default function Browse() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const liveFilter = searchParams.get('filter') === 'live';
   const { share } = useShareImage();
   const [reactedPolls, setReactedPolls] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
@@ -333,14 +335,20 @@ export default function Browse() {
 
   // Fetch all polls with results — no auth required
   const { data: feedPolls, isLoading } = useQuery({
-    queryKey: ['browse-feed'],
+    queryKey: ['browse-feed', liveFilter],
     queryFn: async () => {
-      const { data: polls } = await supabase
+      let query = supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at')
+        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at')
         .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .order('created_at', { ascending: false });
+
+      if (liveFilter) {
+        const now = new Date().toISOString();
+        query = query.lte('starts_at', now).gte('ends_at', now);
+      }
+
+      const { data: polls } = await query.limit(100);
 
       if (!polls || polls.length === 0) return [];
 
@@ -477,6 +485,17 @@ export default function Browse() {
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
+      {/* Live filter header */}
+      {liveFilter && (
+        <div className="shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-border/40 bg-background z-30">
+          <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-muted/50">
+            <ArrowLeft className="h-5 w-5 text-foreground" />
+          </button>
+          <Radio className="h-4 w-4 text-destructive animate-pulse" />
+          <span className="text-sm font-display font-bold text-foreground">Live Debates</span>
+          <span className="text-xs text-muted-foreground ml-auto">{sortedFeed.length} active</span>
+        </div>
+      )}
       <div
         ref={containerRef}
         onScroll={handleScroll}
