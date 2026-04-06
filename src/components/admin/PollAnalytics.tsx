@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, BarChart3, Users, Globe, Calendar, TrendingUp, Eye, Clock, Image as ImageIcon, Download, Filter, MapPin } from 'lucide-react';
+import { Loader2, BarChart3, Users, Globe, Calendar, TrendingUp, Eye, Clock, Image as ImageIcon, Download, Filter, MapPin, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { 
   Select, 
@@ -51,6 +52,7 @@ interface PollAnalyticsProps {
 
 export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
   const [selectedPollId, setSelectedPollId] = useState<string | null>(initialPollId || null);
+  const [pollSearchQuery, setPollSearchQuery] = useState('');
   const [filterGender, setFilterGender] = useState<string>('all');
   const [filterAge, setFilterAge] = useState<string>('all');
   const [filterCountry, setFilterCountry] = useState<string>('all');
@@ -390,27 +392,59 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
         </div>
       </div>
 
-      {/* Poll Selector */}
-      <div className="glass rounded-xl p-4">
-        <label className="text-sm font-medium mb-2 block">Select a poll to analyze</label>
-        <Select value={selectedPollId || undefined} onValueChange={(val) => setSelectedPollId(val)}>
-          <SelectTrigger className="w-full bg-secondary">
-            <SelectValue placeholder="Choose a poll..." />
-          </SelectTrigger>
-          <SelectContent className="max-h-[300px]">
-            {pollsLoading ? (
-              <div className="p-4 flex justify-center">
-                <Loader2 className="h-4 w-4 animate-spin" />
-              </div>
-            ) : (
-              polls?.map((poll) => (
-                <SelectItem key={poll.id} value={poll.id} className="py-2">
-                  {poll.option_a} vs {poll.option_b}
-                </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
+      {/* Poll Selector with Search */}
+      <div className="glass rounded-xl p-4 space-y-3">
+        <label className="text-sm font-medium block">Select a poll to analyze</label>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search polls by question, option, or category..."
+            value={pollSearchQuery}
+            onChange={(e) => setPollSearchQuery(e.target.value)}
+            className="pl-9 bg-secondary"
+          />
+        </div>
+        <div className="max-h-[250px] overflow-y-auto rounded-lg border bg-background">
+          {pollsLoading ? (
+            <div className="p-4 flex justify-center">
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </div>
+          ) : (() => {
+            const q = pollSearchQuery.toLowerCase().trim();
+            const filtered = q
+              ? polls?.filter(p =>
+                  p.question.toLowerCase().includes(q) ||
+                  p.option_a.toLowerCase().includes(q) ||
+                  p.option_b.toLowerCase().includes(q) ||
+                  (p.category || '').toLowerCase().includes(q)
+                )
+              : polls;
+            
+            if (!filtered || filtered.length === 0) {
+              return (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {q ? 'No polls match your search' : 'No polls found'}
+                </p>
+              );
+            }
+            
+            return filtered.map(poll => (
+              <button
+                key={poll.id}
+                onClick={() => { setSelectedPollId(poll.id); setPollSearchQuery(''); }}
+                className={`w-full text-left px-3 py-2.5 text-sm border-b last:border-b-0 transition-colors hover:bg-secondary/80 ${
+                  selectedPollId === poll.id ? 'bg-primary/10 text-primary font-medium' : ''
+                }`}
+              >
+                <span className="block truncate font-medium">{poll.option_a} vs {poll.option_b}</span>
+                <span className="block truncate text-xs text-muted-foreground">{poll.question}</span>
+                {poll.category && (
+                  <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{poll.category}</span>
+                )}
+              </button>
+            ));
+          })()}
+        </div>
       </div>
 
       {/* Analytics Display */}
