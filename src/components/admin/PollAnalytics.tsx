@@ -217,7 +217,14 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
             return (
               <div key={item.label} className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="font-medium text-foreground">{item.label}</span>
+                  <span className="font-medium text-foreground flex items-center gap-1.5">
+                    {title === 'By Gender' && (
+                      <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ 
+                        backgroundColor: item.label === 'Male' ? 'hsl(210, 80%, 55%)' : item.label === 'Female' ? 'hsl(340, 75%, 55%)' : 'hsl(var(--muted-foreground))' 
+                      }} />
+                    )}
+                    {item.label}
+                  </span>
                   <span className="text-foreground/70">{item.total} votes</span>
                 </div>
                 {/* Show percentages above bar when one is 0% or very small */}
