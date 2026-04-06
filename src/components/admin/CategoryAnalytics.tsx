@@ -293,10 +293,17 @@ export default function CategoryAnalytics() {
                   </span>
                   <span>{demo.total} votes</span>
                 </div>
-                <div className="flex h-2 rounded-full overflow-hidden bg-secondary">
-                  <div className="bg-option-a" style={{ width: `${percentA}%` }} />
-                  <div className="bg-option-b" style={{ width: `${100 - percentA}%` }} />
-                </div>
+                {title === 'By Gender' ? (
+                  <div className="flex h-2 rounded-full overflow-hidden bg-secondary">
+                    <div style={{ width: `${percentA}%`, backgroundColor: demo.label === 'Male' ? 'hsl(210, 80%, 55%)' : demo.label === 'Female' ? 'hsl(340, 75%, 55%)' : 'hsl(var(--primary))' }} />
+                    <div style={{ width: `${100 - percentA}%`, backgroundColor: demo.label === 'Male' ? 'hsl(210, 80%, 55%)' : demo.label === 'Female' ? 'hsl(340, 75%, 55%)' : 'hsl(var(--primary))', opacity: 0.4 }} />
+                  </div>
+                ) : (
+                  <div className="flex h-2 rounded-full overflow-hidden bg-secondary">
+                    <div className="bg-option-a" style={{ width: `${percentA}%` }} />
+                    <div className="bg-option-b" style={{ width: `${100 - percentA}%` }} />
+                  </div>
+                )}
               </div>
             );
           })}
