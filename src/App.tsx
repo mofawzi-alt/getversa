@@ -8,6 +8,8 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SplashScreen, { isSplashSeen, markSplashSeen } from "@/components/SplashScreen";
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/components/onboarding/SwipeOverlay";
+import TrialPolls from "@/components/onboarding/TrialPolls";
+import HookMoment from "@/components/onboarding/HookMoment";
 import { AnimatePresence } from "framer-motion";
 
 import Auth from "./pages/Auth";
@@ -34,33 +36,48 @@ import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeF
 
 const queryClient = new QueryClient();
 
-// Smart landing: first-time visitors see Splash → Onboarding → Auth, returning users go to /home
+const TRIAL_DONE_KEY = 'versa_trial_polls_done';
+
+function isTrialDone(): boolean {
+  try { return localStorage.getItem(TRIAL_DONE_KEY) === 'true'; } catch { return false; }
+}
+function markTrialDone() {
+  try { localStorage.setItem(TRIAL_DONE_KEY, 'true'); } catch {}
+}
+
+// Smart landing: Splash → Onboarding → Trial Polls → Hook → Auth → Home
+type LandingPhase = 'splash' | 'onboarding' | 'trials' | 'hook' | 'done';
+
 function SmartLanding() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [phase, setPhase] = useState<'splash' | 'onboarding' | 'done'>('done');
+  const [phase, setPhase] = useState<LandingPhase>('done');
 
   useEffect(() => {
-    // If user is logged in or has completed onboarding before, go home
-    if (user || isSwipeOverlayDone()) return;
+    // Logged in or completed full onboarding → go home
+    if (user || isTrialDone()) return;
 
-    // First-time visitor
+    // First time: determine starting phase
     if (!isSplashSeen()) {
       setPhase('splash');
-      // Show splash for 1.5s then transition to onboarding
       const timer = setTimeout(() => {
         markSplashSeen();
-        setPhase('onboarding');
+        if (isSwipeOverlayDone()) {
+          setPhase('trials');
+        } else {
+          setPhase('onboarding');
+        }
       }, 1500);
       return () => clearTimeout(timer);
-    } else {
-      // Splash seen but overlay not done — show onboarding
+    } else if (!isSwipeOverlayDone()) {
       setPhase('onboarding');
+    } else {
+      setPhase('trials');
     }
   }, [user]);
 
-  // Logged in or returning user
-  if (user || isSwipeOverlayDone()) {
+  // Already done
+  if (user || isTrialDone()) {
     return <Navigate to="/home" replace />;
   }
 
@@ -75,6 +92,21 @@ function SmartLanding() {
           onDismiss={() => {
             markSwipeOverlayDone();
             markWelcomeDone();
+            setPhase('trials');
+          }}
+        />
+      )}
+      {phase === 'trials' && (
+        <TrialPolls
+          key="trials"
+          onComplete={() => setPhase('hook')}
+        />
+      )}
+      {phase === 'hook' && (
+        <HookMoment
+          key="hook"
+          onJoin={() => {
+            markTrialDone();
             navigate('/auth?mode=signup', { replace: true });
           }}
         />
@@ -83,8 +115,7 @@ function SmartLanding() {
   );
 }
 
-// DemographicsGuard — no longer redirects to onboarding since signup collects all fields.
-// Kept as a pass-through wrapper for backward compatibility.
+// DemographicsGuard — pass-through
 function DemographicsGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
@@ -94,7 +125,6 @@ function AppInner() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // For returning users, show a brief loading state while auth resolves
     const minTimer = setTimeout(() => {
       if (!loading) setShowSplash(false);
     }, 400);
@@ -109,7 +139,6 @@ function AppInner() {
   }, [loading, showSplash]);
 
   if (showSplash) {
-    // Minimal loading indicator for returning users (not the full splash)
     return (
       <div className="fixed inset-0 z-[200] bg-background flex items-center justify-center">
         <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
