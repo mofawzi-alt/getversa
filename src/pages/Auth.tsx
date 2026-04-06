@@ -6,14 +6,58 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 
+const AGE_RANGES = ['Under 18', '18-24', '25-34', '35-44', '45+'];
+const GENDERS = ['Male', 'Female', 'Prefer not to say'];
+const COUNTRIES = [
+  'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
+  'Jordan', 'Lebanon', 'Syria', 'Iraq', 'Palestine', 'Yemen', 'Egypt'
+];
+const CITIES: Record<string, string[]> = {
+  'Saudi Arabia': ['Riyadh', 'Jeddah', 'Mecca', 'Medina', 'Dammam', 'Khobar', 'Dhahran', 'Tabuk', 'Abha', 'Taif', 'Jubail', 'Yanbu', 'Buraidah', 'Najran', 'Hail', 'Jazan'],
+  'United Arab Emirates': ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain', 'Al Ain'],
+  'Qatar': ['Doha', 'Al Wakrah', 'Al Khor', 'Lusail', 'Al Rayyan', 'Umm Salal'],
+  'Kuwait': ['Kuwait City', 'Hawalli', 'Salmiya', 'Farwaniya', 'Jahra', 'Ahmadi', 'Mangaf'],
+  'Bahrain': ['Manama', 'Muharraq', 'Riffa', 'Hamad Town', 'Isa Town', 'Sitra'],
+  'Oman': ['Muscat', 'Salalah', 'Sohar', 'Nizwa', 'Sur', 'Ibri', 'Barka', 'Rustaq'],
+  'Jordan': ['Amman', 'Zarqa', 'Irbid', 'Aqaba', 'Madaba', 'Salt', 'Jerash', 'Mafraq'],
+  'Lebanon': ['Beirut', 'Tripoli', 'Sidon', 'Tyre', 'Jounieh', 'Byblos', 'Zahle', 'Baalbek'],
+  'Syria': ['Damascus', 'Aleppo', 'Homs', 'Latakia', 'Hama', 'Tartus', 'Deir ez-Zor', 'Raqqa'],
+  'Iraq': ['Baghdad', 'Basra', 'Erbil', 'Mosul', 'Sulaymaniyah', 'Najaf', 'Karbala', 'Kirkuk', 'Duhok'],
+  'Palestine': ['Ramallah', 'Gaza', 'Nablus', 'Hebron', 'Bethlehem', 'Jenin', 'Tulkarm', 'Jericho'],
+  'Yemen': ['Sanaa', 'Aden', 'Taiz', 'Hodeidah', 'Mukalla', 'Ibb', 'Dhamar'],
+  'Egypt': ['Cairo', 'Alexandria', 'Giza', 'Sharm El Sheikh', 'Hurghada', 'Luxor', 'Aswan', 'Mansoura', 'Tanta', 'Port Said', 'Suez', 'Ismailia'],
+};
 
-const authSchema = z.object({
+function detectCountry(): string {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz.includes('Riyadh')) return 'Saudi Arabia';
+    if (tz.includes('Dubai')) return 'United Arab Emirates';
+    if (tz.includes('Qatar') || tz.includes('Doha')) return 'Qatar';
+    if (tz.includes('Kuwait')) return 'Kuwait';
+    if (tz.includes('Bahrain')) return 'Bahrain';
+    if (tz.includes('Muscat')) return 'Oman';
+    if (tz.includes('Amman')) return 'Jordan';
+    if (tz.includes('Beirut')) return 'Lebanon';
+    if (tz.includes('Damascus')) return 'Syria';
+    if (tz.includes('Baghdad')) return 'Iraq';
+    if (tz.includes('Gaza') || tz.includes('Hebron')) return 'Palestine';
+    if (tz.includes('Aden')) return 'Yemen';
+    if (tz.includes('Cairo')) return 'Egypt';
+  } catch {}
+  return '';
+}
+
+const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
+
+const selectClass = "flex h-10 w-full rounded-md border border-input bg-secondary/80 px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-foreground appearance-none cursor-pointer border-border/50 focus:border-accent focus:ring-accent/30";
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -23,8 +67,13 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState('');
+  const [ageRange, setAgeRange] = useState('');
+  const [gender, setGender] = useState('');
+  const [country, setCountry] = useState(detectCountry());
+  const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn, signUp, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   // Redirect authenticated users to home
@@ -32,44 +81,85 @@ export default function Auth() {
     if (user) navigate('/home', { replace: true });
   }, [user, navigate]);
 
+  // Reset city when country changes
+  useEffect(() => { setCity(''); }, [country]);
+
+  const availableCities = CITIES[country] || [];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const validation = authSchema.safeParse({ email, password });
-    if (!validation.success) {
-      toast.error(validation.error.errors[0].message);
-      return;
-    }
-    
-    setLoading(true);
-    
-    try {
-      if (isLogin) {
+
+    if (isLogin) {
+      // Login — only email + password
+      const validation = loginSchema.safeParse({ email, password });
+      if (!validation.success) {
+        toast.error(validation.error.errors[0].message);
+        return;
+      }
+      setLoading(true);
+      try {
         const { error } = await signIn(email, password);
         if (error) {
-          if (error.message.includes('Invalid login credentials')) {
-            toast.error('Invalid email or password');
-          } else {
-            toast.error(error.message);
-          }
+          toast.error(error.message.includes('Invalid login credentials') ? 'Invalid email or password' : error.message);
         } else {
           toast.success('Welcome back!');
           navigate('/home');
         }
-      } else {
-        const { error } = await signUp(email, password);
-        if (error) {
-          if (error.message.includes('already registered')) {
-            toast.error('This email is already registered. Please sign in instead.');
-          } else {
-            toast.error(error.message);
-          }
+      } catch { toast.error('An unexpected error occurred'); }
+      finally { setLoading(false); }
+      return;
+    }
+
+    // Signup — validate all fields
+    const validation = loginSchema.safeParse({ email, password });
+    if (!validation.success) { toast.error(validation.error.errors[0].message); return; }
+    if (!name.trim()) { toast.error('Please enter your name'); return; }
+    if (!ageRange) { toast.error('Please select your age range'); return; }
+    if (!gender) { toast.error('Please select your gender'); return; }
+    if (!city) { toast.error('Please select your city'); return; }
+
+    setLoading(true);
+    try {
+      const { error } = await signUp(email, password);
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast.error('This email is already registered. Please sign in instead.');
         } else {
-          toast.success('Account created! Welcome to VERSA!');
-          navigate('/onboarding');
+          toast.error(error.message);
         }
+        setLoading(false);
+        return;
       }
-    } catch (err) {
+
+      // Wait briefly for auth to settle, then save profile
+      // The AuthContext auto-creates the user row; we just update it
+      const { data: { user: newUser } } = await supabase.auth.getUser();
+      if (newUser) {
+        const { error: profileError } = await supabase
+          .from('users')
+          .upsert({
+            id: newUser.id,
+            email: newUser.email || '',
+            username: name.trim(),
+            age_range: ageRange,
+            gender,
+            country,
+            city,
+          }, { onConflict: 'id' });
+
+        if (profileError) {
+          console.error('Profile save error:', profileError);
+        }
+
+        await supabase.from('automation_settings').upsert({ user_id: newUser.id }, { onConflict: 'user_id' });
+        await refreshProfile();
+      }
+
+      toast.success('Welcome to Versa! 🔥');
+
+      // If they came from trying to vote, go home (vote intent poll handled there)
+      navigate('/home', { replace: true });
+    } catch {
       toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);
@@ -77,15 +167,14 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-area-top safe-area-bottom bg-background relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-start p-6 pt-12 safe-area-top safe-area-bottom bg-background relative overflow-y-auto">
       {/* Minimal background */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="absolute w-[400px] h-[400px] rounded-full border border-primary/10 opacity-40" />
         <div className="absolute w-[250px] h-[250px] rounded-full border border-accent/10 opacity-30" />
       </div>
 
-      <div className="w-full max-w-sm space-y-8 animate-slide-up relative z-10">
-
+      <div className="w-full max-w-sm space-y-6 animate-slide-up relative z-10">
         <div className="text-center flex flex-col items-center">
           <VersaLogo size="lg" />
           {isVoteIntent && !isLogin ? (
@@ -96,23 +185,39 @@ export default function Auth() {
         </div>
 
         {/* Auth Form */}
-        <div className="bg-card/80 backdrop-blur-lg rounded-2xl p-6 shadow-card border border-border/50">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-card-foreground">Email</Label>
+        <div className="bg-card/80 backdrop-blur-lg rounded-2xl p-5 shadow-card border border-border/50">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {/* Signup-only fields */}
+            {!isLogin && (
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-card-foreground text-xs">Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="bg-secondary/80 border-border/50 text-card-foreground placeholder:text-muted-foreground focus:border-accent focus:ring-accent/30 h-10"
+                  disabled={loading}
+                />
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-card-foreground text-xs">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-secondary/80 border-border/50 text-card-foreground placeholder:text-muted-foreground focus:border-accent focus:ring-accent/30"
+                className="bg-secondary/80 border-border/50 text-card-foreground placeholder:text-muted-foreground focus:border-accent focus:ring-accent/30 h-10"
                 disabled={loading}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-card-foreground">Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-card-foreground text-xs">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -120,7 +225,7 @@ export default function Auth() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-secondary/80 border-border/50 pr-10 text-card-foreground placeholder:text-muted-foreground focus:border-accent focus:ring-accent/30"
+                  className="bg-secondary/80 border-border/50 pr-10 text-card-foreground placeholder:text-muted-foreground focus:border-accent focus:ring-accent/30 h-10"
                   disabled={loading}
                 />
                 <button
@@ -133,9 +238,78 @@ export default function Auth() {
               </div>
             </div>
 
+            {/* Signup-only demographic fields */}
+            {!isLogin && (
+              <>
+                <div className="space-y-1.5">
+                  <Label className="text-card-foreground text-xs">Age range</Label>
+                  <div className="relative">
+                    <select
+                      value={ageRange}
+                      onChange={(e) => setAgeRange(e.target.value)}
+                      className={selectClass}
+                      disabled={loading}
+                    >
+                      <option value="" disabled>Select age range</option>
+                      {AGE_RANGES.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-card-foreground text-xs">Gender</Label>
+                  <div className="relative">
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      className={selectClass}
+                      disabled={loading}
+                    >
+                      <option value="" disabled>Select gender</option>
+                      {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-card-foreground text-xs">Country</Label>
+                  <div className="relative">
+                    <select
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className={selectClass}
+                      disabled={loading}
+                    >
+                      <option value="" disabled>Select country</option>
+                      {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-card-foreground text-xs">City</Label>
+                  <div className="relative">
+                    <select
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className={selectClass}
+                      disabled={loading || !country}
+                    >
+                      <option value="" disabled>{country ? 'Select city' : 'Select country first'}</option>
+                      {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
+              </>
+            )}
+
             <Button
               type="submit"
-              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-12 rounded-full shadow-accent transition-all hover:scale-[1.02]"
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-12 rounded-full shadow-accent transition-all hover:scale-[1.02] mt-2"
               disabled={loading}
             >
               {loading ? (
@@ -143,12 +317,12 @@ export default function Auth() {
               ) : isLogin ? (
                 'Sign In'
               ) : (
-                'Create Account'
+                'Join Versa'
               )}
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
@@ -159,22 +333,6 @@ export default function Auth() {
                 {isLogin ? 'Sign up' : 'Sign in'}
               </span>
             </button>
-          </div>
-        </div>
-
-        {/* Simple tagline */}
-        <div className="grid grid-cols-3 gap-4 text-center text-sm">
-          <div className="space-y-1">
-            <span className="text-xl">🗳️</span>
-            <p className="text-muted-foreground text-xs">Vote</p>
-          </div>
-          <div className="space-y-1">
-            <span className="text-xl">📊</span>
-            <p className="text-muted-foreground text-xs">See Results</p>
-          </div>
-          <div className="space-y-1">
-            <span className="text-xl">🔥</span>
-            <p className="text-muted-foreground text-xs">Trending</p>
           </div>
         </div>
       </div>
