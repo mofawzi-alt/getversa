@@ -808,53 +808,6 @@ export default function Home() {
         
 
 
-        {/* ═══ GAMIFICATION STRIP ═══ */}
-        {user && (
-          <section className="px-3 mb-3">
-            <div className="grid grid-cols-3 gap-2">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-card rounded-xl px-3 py-2.5 border border-border/60 text-center"
-              >
-                <Trophy className="h-4 w-4 text-warning mx-auto mb-1" />
-                <p className="text-lg font-display font-bold text-foreground">
-                  <AnimatedNumber value={weeklyVotes || 0} />
-                </p>
-                <p className="text-[9px] text-muted-foreground font-medium">This Week</p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="bg-card rounded-xl px-3 py-2.5 border border-border/60 text-center"
-              >
-                <Flame className="h-4 w-4 text-destructive mx-auto mb-1" />
-                <p className="text-lg font-display font-bold text-foreground">
-                  <AnimatedNumber value={userStreak?.current || 0} />
-                </p>
-                <p className="text-[9px] text-muted-foreground font-medium">Day Streak</p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/insights')}
-                className="bg-card rounded-xl px-3 py-2.5 border border-border/60 text-center cursor-pointer"
-              >
-                <BarChart3 className="h-4 w-4 text-primary mx-auto mb-1" />
-                <p className="text-[10px] font-display font-bold text-foreground">
-                  {voteCount >= 10 ? '✓ Ready' : `${Math.min(voteCount, 10)}/10`}
-                </p>
-                <p className="text-[9px] text-muted-foreground font-medium">Your Report</p>
-              </motion.div>
-            </div>
-          </section>
-        )}
 
         {/* ═══ 🔥 TRENDING NOW ═══ */}
         {trendingPolls.length > 0 && (
