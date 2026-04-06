@@ -344,10 +344,8 @@ export default function Browse() {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (liveFilter) {
-        const now = new Date().toISOString();
-        query = query.lte('starts_at', now).gte('ends_at', now);
-      }
+      // For live filter, fetch all active polls and filter client-side
+      // to match Home's logic (polls without starts_at/ends_at are considered live)
 
       const { data: polls } = await query.limit(100);
 
