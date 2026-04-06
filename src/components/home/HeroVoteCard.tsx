@@ -289,7 +289,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             animate={{ scale: 1, opacity: 1 }}
             className="text-xs px-3 py-1 rounded-full bg-primary text-primary-foreground font-bold"
           >
-            {unseenCount} new poll{unseenCount !== 1 ? 's' : ''} waiting
+            🔥 {unseenCount} battle{unseenCount !== 1 ? 's' : ''} left today
           </motion.span>
         )}
       </div>
