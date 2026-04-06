@@ -258,13 +258,13 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="flex items-center justify-center gap-3 text-sm font-display font-bold text-foreground"
+          className="flex items-center justify-center gap-3 text-xs font-medium text-muted-foreground"
         >
-          <span className="flex items-center gap-1">🔥 {userStats.streak}</span>
+          <span>Streak 🔥 <span className="font-display font-bold text-foreground">{userStats.streak}</span></span>
           <span className="text-muted-foreground/40">·</span>
-          <span className="flex items-center gap-1">⚡ {userStats.todayVotes}</span>
+          <span>Today ⚡ <span className="font-display font-bold text-foreground">{userStats.todayVotes}</span></span>
           <span className="text-muted-foreground/40">·</span>
-          <span className="flex items-center gap-1">👑 {userStats.points.toLocaleString()}</span>
+          <span>Points 👑 <span className="font-display font-bold text-foreground">{userStats.points.toLocaleString()}</span></span>
         </motion.div>
       )}
 
