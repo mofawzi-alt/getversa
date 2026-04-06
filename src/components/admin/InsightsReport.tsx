@@ -9,10 +9,10 @@ import { Loader2, FileText, Download, Trophy, Users, MapPin, Calendar, Sparkles 
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 const GENDER_COLORS: Record<string, string> = {
-  'Male': '#3b82f6',
-  'Female': '#ec4899',
-  'Prefer not to say': '#94a3b8',
-  'Unknown': '#cbd5e1',
+  'Male': 'hsl(210, 80%, 55%)',
+  'Female': 'hsl(340, 75%, 55%)',
+  'Prefer not to say': 'hsl(var(--muted-foreground))',
+  'Unknown': 'hsl(var(--muted-foreground))',
 };
 
 const AGE_COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe'];
