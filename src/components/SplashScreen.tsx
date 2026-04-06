@@ -26,7 +26,7 @@ export default function SplashScreen({ onComplete }: { onComplete?: () => void }
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className="flex flex-col items-center gap-4"
       >
-        <VersaLogo size="hero" className="brightness-0 invert" />
+        <VersaLogo size="hero" />
         <motion.p
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
