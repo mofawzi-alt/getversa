@@ -322,6 +322,20 @@ export default function Browse() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [showSwipeHint, setShowSwipeHint] = useState(() => {
+    if (!liveFilter) return false;
+    return !localStorage.getItem('versa_live_swipe_hint_seen');
+  });
+
+  useEffect(() => {
+    if (showSwipeHint) {
+      const timer = setTimeout(() => {
+        setShowSwipeHint(false);
+        localStorage.setItem('versa_live_swipe_hint_seen', '1');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSwipeHint]);
   const [feedNudgeDismissed, setFeedNudgeDismissed] = useState(false);
   const showSignupBanner = !user && activeIndex >= 10 && !bannerDismissed;
 
@@ -559,6 +573,36 @@ export default function Browse() {
           <span className="text-[10px] text-muted-foreground font-medium">Scroll for more</span>
         </motion.div>
       )}
+
+      {/* Live Debates swipe tutorial overlay — shown once */}
+      <AnimatePresence>
+        {showSwipeHint && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm"
+            onClick={() => {
+              setShowSwipeHint(false);
+              localStorage.setItem('versa_live_swipe_hint_seen', '1');
+            }}
+          >
+            <div className="flex flex-col items-center gap-4 text-center px-8">
+              <motion.div
+                animate={{ y: [0, -30, 0] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+                className="text-4xl"
+              >
+                👆
+              </motion.div>
+              <p className="text-lg font-display font-bold text-foreground">Swipe up to see more battles</p>
+              <p className="text-sm text-muted-foreground">Scroll through all live debates like a feed</p>
+              <span className="text-xs text-muted-foreground/60 mt-2">Tap anywhere to continue</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Nudge 2: Sticky sign-up banner after 10 cards */}
       <AnimatePresence>
