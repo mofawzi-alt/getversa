@@ -571,7 +571,7 @@ export default function Home() {
   };
 
   const handleLivePollTap = (poll: PollCard) => {
-    navigate(`/browse?filter=live`);
+    navigate(`/browse?filter=live&pollId=${poll.id}`);
   };
 
   return (

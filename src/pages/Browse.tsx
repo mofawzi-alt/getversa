@@ -325,10 +325,12 @@ export default function Browse() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const liveFilter = searchParams.get('filter') === 'live';
+  const targetPollId = searchParams.get('pollId');
   const { share } = useShareImage();
   const [reactedPolls, setReactedPolls] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const hasScrolledToTarget = useRef(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [feedNudgeDismissed, setFeedNudgeDismissed] = useState(false);
   const showSignupBanner = !user && activeIndex >= 10 && !bannerDismissed;
@@ -440,6 +442,18 @@ export default function Browse() {
 
     return result;
   }, [feedPolls, profile?.age_range, userVotes]);
+
+  // Scroll to target poll when navigated with pollId param
+  useEffect(() => {
+    if (!targetPollId || !sortedFeed || sortedFeed.length === 0 || hasScrolledToTarget.current) return;
+    const targetIndex = sortedFeed.findIndex(p => p.id === targetPollId);
+    if (targetIndex >= 0 && containerRef.current) {
+      const cardHeight = containerRef.current.clientHeight;
+      containerRef.current.scrollTo({ top: targetIndex * cardHeight, behavior: 'instant' });
+      setActiveIndex(targetIndex);
+      hasScrolledToTarget.current = true;
+    }
+  }, [targetPollId, sortedFeed]);
 
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
