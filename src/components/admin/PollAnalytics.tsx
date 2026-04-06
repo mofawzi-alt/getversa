@@ -52,6 +52,7 @@ interface PollAnalyticsProps {
 
 export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
   const [selectedPollId, setSelectedPollId] = useState<string | null>(initialPollId || null);
+  const [pollSearchQuery, setPollSearchQuery] = useState('');
   const [filterGender, setFilterGender] = useState<string>('all');
   const [filterAge, setFilterAge] = useState<string>('all');
   const [filterCountry, setFilterCountry] = useState<string>('all');
