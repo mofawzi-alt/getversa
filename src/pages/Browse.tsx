@@ -322,6 +322,20 @@ export default function Browse() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [showSwipeHint, setShowSwipeHint] = useState(() => {
+    if (!liveFilter) return false;
+    return !localStorage.getItem('versa_live_swipe_hint_seen');
+  });
+
+  useEffect(() => {
+    if (showSwipeHint) {
+      const timer = setTimeout(() => {
+        setShowSwipeHint(false);
+        localStorage.setItem('versa_live_swipe_hint_seen', '1');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSwipeHint]);
   const [feedNudgeDismissed, setFeedNudgeDismissed] = useState(false);
   const showSignupBanner = !user && activeIndex >= 10 && !bannerDismissed;
 
