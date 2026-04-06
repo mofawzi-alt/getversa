@@ -10,7 +10,7 @@ import { Loader2, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 
-const AGE_RANGES = ['Under 18', '18-24', '25-34', '35-44', '45+'];
+const AGE_RANGES = ['Under 18', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDERS = ['Male', 'Female'];
 const COUNTRIES = [
   'Egypt', 'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
