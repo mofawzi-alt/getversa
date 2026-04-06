@@ -244,9 +244,9 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
           transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.1 }}
           className="text-3xl mb-1.5"
         >
-          ✅
+          🔥
         </motion.div>
-        <h2 className="text-base font-display font-bold text-foreground">You're all caught up!</h2>
+        <h2 className="text-base font-display font-bold text-foreground">All battles conquered 🔥</h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">
           New battles drop in {countdown} — here's what happened
         </p>
