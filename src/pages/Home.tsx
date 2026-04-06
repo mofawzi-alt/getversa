@@ -677,32 +677,8 @@ export default function Home() {
         {/* NUDGE 4: Floating timed nudge for guests */}
         {!user && <TimedFloatingNudge />}
 
-        {/* Weekly Top Results Banner — show on Sundays */}
-        {new Date().getDay() === 0 && (
-          <div className="px-3 mb-2">
-            <motion.button
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              onClick={() => navigate('/weekly-results')}
-              className="w-full rounded-2xl bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 p-3 flex items-center gap-3 text-left"
-            >
-              <Trophy className="h-6 w-6 text-amber-500 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="font-display font-bold text-sm">This Week on Versa</p>
-                <p className="text-[10px] text-muted-foreground">Top results, biggest debates & surprises</p>
-              </div>
-              <ArrowRight className="h-4 w-4 text-amber-500 shrink-0" />
-            </motion.button>
-          </div>
-        )}
-
-        {/* Personal Weekly Summary */}
-        <div className="px-3 mb-2">
-          <PersonalWeeklySummary />
-        </div>
-
         {/* Live activity strip */}
-        <div className="flex items-center justify-center gap-3 px-3 mb-1">
+        <div className="flex items-center justify-center gap-3 px-3 mb-1 mt-1">
           <LiveIndicator variant="badge" />
           {totalLiveVoters > 0 && (
             <span className="text-xs text-muted-foreground">
