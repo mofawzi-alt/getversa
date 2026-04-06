@@ -18,6 +18,12 @@ import {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
+const GENDER_COLORS: Record<string, string> = {
+  'Male': 'hsl(210, 80%, 55%)',
+  'Female': 'hsl(340, 75%, 55%)',
+  'Unknown': 'hsl(var(--muted-foreground))',
+};
+
 interface DemographicData {
   gender: { name: string; value: number; percentage: number }[];
   ageRange: { name: string; value: number; percentage: number }[];
@@ -162,8 +168,8 @@ export default function AudienceDemographics() {
                     label={({ name, percentage }) => `${name}: ${percentage}%`}
                     labelLine={false}
                   >
-                    {data.gender.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    {data.gender.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={GENDER_COLORS[entry.name] || COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip 
@@ -182,7 +188,7 @@ export default function AudienceDemographics() {
                 <div key={item.name} className="flex items-center gap-2 text-sm">
                   <div 
                     className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    style={{ backgroundColor: GENDER_COLORS[item.name] || COLORS[index % COLORS.length] }}
                   />
                   <span>{item.name}</span>
                   <span className="text-muted-foreground">({item.percentage}%)</span>
