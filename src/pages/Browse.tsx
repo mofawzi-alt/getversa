@@ -445,15 +445,15 @@ export default function Browse() {
 
   // Scroll to target poll when navigated with pollId param
   useEffect(() => {
-    if (!targetPollId || !sortedPolls || hasScrolledToTarget.current) return;
-    const targetIndex = sortedPolls.findIndex(p => p.id === targetPollId);
+    if (!targetPollId || !sortedFeed || sortedFeed.length === 0 || hasScrolledToTarget.current) return;
+    const targetIndex = sortedFeed.findIndex(p => p.id === targetPollId);
     if (targetIndex >= 0 && containerRef.current) {
       const cardHeight = containerRef.current.clientHeight;
       containerRef.current.scrollTo({ top: targetIndex * cardHeight, behavior: 'instant' });
       setActiveIndex(targetIndex);
       hasScrolledToTarget.current = true;
     }
-  }, [targetPollId, sortedPolls]);
+  }, [targetPollId, sortedFeed]);
 
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
