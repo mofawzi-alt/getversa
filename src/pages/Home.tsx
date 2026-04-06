@@ -235,18 +235,23 @@ export default function Home() {
     staleTime: 1000 * 60 * 2,
   });
 
+  // Daily queue system
+  const { queuePollIds, remainingToday, allDone, invalidateQueue, isQueueLoading, totalToday } = useDailyQueue();
+
   const { data: unseenCount } = useQuery({
-    queryKey: ['unseen-poll-count', user?.id],
+    queryKey: ['unseen-poll-count', user?.id, queuePollIds],
     queryFn: async () => {
+      // For authenticated users, unseen = remaining daily queue polls
+      if (user && queuePollIds.length > 0) {
+        return remainingToday;
+      }
+      // For guests, show total active polls
       const now = new Date().toISOString();
       const { data: polls } = await supabase.from('polls').select('id').eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`);
-      if (!polls || !user) return polls?.length || 0;
-      const { data: votes } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
-      const voted = new Set(votes?.map(v => v.poll_id) || []);
-      return polls.filter(p => !voted.has(p.id)).length;
+      return polls?.length || 0;
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 30,
   });
 
   // Votes in last 24 hours — refreshes via realtime + refetchInterval fallback
