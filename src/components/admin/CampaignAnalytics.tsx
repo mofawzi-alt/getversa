@@ -852,8 +852,11 @@ export default function CampaignAnalytics() {
                                     <span className="text-xs w-20 text-muted-foreground">{demo.label}</span>
                                     <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
                                       <div 
-                                        className="h-full bg-primary transition-all"
-                                        style={{ width: `${demo.winRate}%` }}
+                                        className="h-full transition-all"
+                                        style={{ 
+                                          width: `${demo.winRate}%`,
+                                          backgroundColor: demo.label === 'Male' ? 'hsl(210, 80%, 55%)' : demo.label === 'Female' ? 'hsl(340, 75%, 55%)' : 'hsl(var(--primary))'
+                                        }}
                                       />
                                     </div>
                                     <span className="text-xs font-medium w-12 text-right">{demo.winRate}%</span>
