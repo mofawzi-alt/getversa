@@ -443,6 +443,18 @@ export default function Browse() {
     return result;
   }, [feedPolls, profile?.age_range, userVotes]);
 
+  // Scroll to target poll when navigated with pollId param
+  useEffect(() => {
+    if (!targetPollId || !sortedPolls || hasScrolledToTarget.current) return;
+    const targetIndex = sortedPolls.findIndex(p => p.id === targetPollId);
+    if (targetIndex >= 0 && containerRef.current) {
+      const cardHeight = containerRef.current.clientHeight;
+      containerRef.current.scrollTo({ top: targetIndex * cardHeight, behavior: 'instant' });
+      setActiveIndex(targetIndex);
+      hasScrolledToTarget.current = true;
+    }
+  }, [targetPollId, sortedPolls]);
+
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
     if (!container) return;
