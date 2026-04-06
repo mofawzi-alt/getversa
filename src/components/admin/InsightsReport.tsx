@@ -368,13 +368,13 @@ export default function InsightsReport() {
                       <div className="flex h-5 rounded-full overflow-hidden bg-muted">
                         <div
                           className="flex items-center justify-center text-[10px] font-bold text-white"
-                          style={{ width: `${g.percentA}%`, backgroundColor: 'hsl(var(--option-a))' }}
+                          style={{ width: `${g.percentA}%`, backgroundColor: genderColor }}
                         >
                           {g.percentA > 15 ? `${g.percentA}%` : ''}
                         </div>
                         <div
                           className="flex items-center justify-center text-[10px] font-bold text-white"
-                          style={{ width: `${g.percentB}%`, backgroundColor: 'hsl(var(--option-b))' }}
+                          style={{ width: `${g.percentB}%`, backgroundColor: genderColor, opacity: 0.5 }}
                         >
                           {g.percentB > 15 ? `${g.percentB}%` : ''}
                         </div>
