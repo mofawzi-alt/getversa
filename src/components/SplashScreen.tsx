@@ -32,7 +32,7 @@ export default function SplashScreen({ onComplete }: { onComplete?: () => void }
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
           className="text-sm tracking-wide"
-          style={{ color: '#888888' }}
+          style={{ color: '#b0b0b0' }}
         >
           Where you decide.
         </motion.p>
