@@ -403,8 +403,19 @@ export default function Home() {
   const hasUnseen = (unseenCount || 0) > 0;
   const allNewPolls = useMemo(() => {
     const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id));
+    // For authenticated users with daily queue, only show queue polls
+    if (user && queuePollIds.length > 0) {
+      const queueSet = new Set(queuePollIds);
+      const queuePolls = unvoted.filter(p => queueSet.has(p.id));
+      // Sort by queue order
+      return queuePolls.sort((a, b) => {
+        const aIdx = queuePollIds.indexOf(a.id);
+        const bIdx = queuePollIds.indexOf(b.id);
+        return aIdx - bIdx;
+      });
+    }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
-  }, [allPolls, votedPollIds, profile?.age_range]);
+  }, [allPolls, votedPollIds, profile?.age_range, user, queuePollIds]);
   const newPolls = useMemo(() => {
     if (!categoryFilter) return allNewPolls;
     return allNewPolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter);
