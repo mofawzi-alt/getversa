@@ -297,23 +297,14 @@ function BrowseCard({
           <div className="bg-accent h-full transition-all duration-500" style={{ width: `${poll.percentB}%` }} />
         </div>
 
-        {/* Nudge 3: Close result trigger for non-signed-in users */}
-        {isCloseResult && (
-          <button onClick={onVote} className="w-full text-center text-xs text-primary/80 hover:text-primary transition-colors py-0.5">
-            ⚡ Too close to call — add your vote
-          </button>
-        )}
-
-        {/* Add your vote CTA (only for unvoted polls) */}
+        {/* Nudge: Vote from Home for unvoted polls */}
         {!userChoice && (
-          <motion.button
+          <button
             onClick={onVote}
-            animate={{ scale: [1, 1.02, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-full py-2 rounded-xl bg-primary text-primary-foreground font-display font-bold text-sm"
+            className="w-full text-center text-xs text-primary/80 hover:text-primary transition-colors py-0.5"
           >
-            Add Your Vote
-          </motion.button>
+            Vote on today's battles from Home →
+          </button>
         )}
       </div>
     </div>

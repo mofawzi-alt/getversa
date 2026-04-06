@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -68,6 +68,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="analytics" className="text-xs px-4 py-2">Analytics</TabsTrigger>
           <TabsTrigger value="rewards" className="text-xs px-4 py-2">Rewards</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs px-4 py-2">Notify</TabsTrigger>
+          <TabsTrigger value="daily-limit" className="text-xs px-4 py-2">Daily Limit</TabsTrigger>
         </TabsList>
 
         <TabsContent value="polls" className="space-y-4">
@@ -155,6 +156,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="notifications" className="space-y-4">
           <NotificationsTab />
+        </TabsContent>
+
+        <TabsContent value="daily-limit" className="space-y-4">
+          <DailyLimitTab />
         </TabsContent>
       </Tabs>
     </div>
@@ -1447,6 +1452,149 @@ function RewardsTab({ showForm, setShowForm }: { showForm: boolean; setShowForm:
         </div>
       )}
     </>
+  );
+}
+
+// Daily Limit Tab
+function DailyLimitTab() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ['admin-daily-settings'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('daily_poll_settings')
+        .select('*')
+        .limit(1)
+        .single();
+      return data;
+    },
+  });
+
+  const [dailyLimit, setDailyLimit] = useState(15);
+  const [firstDayLimit, setFirstDayLimit] = useState(20);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (settings) {
+      setDailyLimit(settings.daily_limit);
+      setFirstDayLimit(settings.first_day_limit);
+    }
+  }, [settings]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (settings) {
+        const { error } = await supabase
+          .from('daily_poll_settings')
+          .update({ 
+            daily_limit: dailyLimit, 
+            first_day_limit: firstDayLimit,
+            updated_by: user?.id,
+          })
+          .eq('id', settings.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('daily_poll_settings')
+          .insert({ 
+            daily_limit: dailyLimit, 
+            first_day_limit: firstDayLimit,
+            updated_by: user?.id,
+          });
+        if (error) throw error;
+      }
+      queryClient.invalidateQueries({ queryKey: ['admin-daily-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['daily-poll-settings'] });
+      toast.success('Daily limit settings saved!');
+    } catch {
+      toast.error('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="glass rounded-xl p-4 space-y-5">
+      <h2 className="text-lg font-semibold flex items-center gap-2">
+        <Target className="h-5 w-5 text-primary" />
+        Daily Poll Limit
+      </h2>
+      <p className="text-sm text-muted-foreground">
+        Control how many new polls each user gets per day. Lower limits create daily habit loops (like Wordle).
+      </p>
+
+      <div className="space-y-4">
+        <div>
+          <Label className="text-sm font-medium">Daily Limit (returning users)</Label>
+          <div className="flex items-center gap-3 mt-1">
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              value={dailyLimit}
+              onChange={(e) => setDailyLimit(Number(e.target.value))}
+              className="bg-secondary w-24"
+            />
+            <span className="text-sm text-muted-foreground">polls per day</span>
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-sm font-medium">First Day Limit (new users)</Label>
+          <div className="flex items-center gap-3 mt-1">
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              value={firstDayLimit}
+              onChange={(e) => setFirstDayLimit(Number(e.target.value))}
+              className="bg-secondary w-24"
+            />
+            <span className="text-sm text-muted-foreground">polls on first day</span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">Give new users extra content to get hooked.</p>
+        </div>
+
+        <div className="bg-secondary/50 rounded-lg p-3 space-y-1.5">
+          <p className="text-xs font-medium text-foreground">Quick presets:</p>
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { label: 'Normal (15)', daily: 15, first: 20 },
+              { label: 'Event (25)', daily: 25, first: 30 },
+              { label: 'Ramadan (20)', daily: 20, first: 25 },
+              { label: 'Weekend (30)', daily: 30, first: 35 },
+            ].map(preset => (
+              <button
+                key={preset.label}
+                onClick={() => { setDailyLimit(preset.daily); setFirstDayLimit(preset.first); }}
+                className="text-[10px] px-2.5 py-1 rounded-full bg-primary/10 text-primary font-bold hover:bg-primary/20 transition-colors"
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full bg-gradient-primary"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Settings'}
+        </Button>
+      </div>
+    </div>
   );
 }
 

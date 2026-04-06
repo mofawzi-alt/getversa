@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const SEEN_KEY = 'versa_daily_return_seen';
 const SESSION_KEY = 'versa_session_return_shown';
 
 function getTodayKey(): string {
@@ -18,26 +17,31 @@ function markShownToday() {
 
 interface Props {
   currentStreak: number;
+  remainingToday?: number;
 }
 
-export default function DailyReturnBanner({ currentStreak }: Props) {
+export default function DailyReturnBanner({ currentStreak, remainingToday }: Props) {
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (currentStreak < 2 || hasShownToday()) return;
+    if (hasShownToday()) return;
 
     if (currentStreak >= 7) {
       setMessage('7 days in a row 🔥 You never miss a battle');
-    } else {
+    } else if (currentStreak >= 2) {
       setMessage("You're back 🙌 New battles are waiting");
+    } else if (remainingToday && remainingToday > 0) {
+      setMessage(`Your daily battles are ready 🔥 ${remainingToday} new polls today`);
+    } else {
+      return; // nothing to show
     }
 
     markShownToday();
     setVisible(true);
-    const timer = setTimeout(() => setVisible(false), 3000);
+    const timer = setTimeout(() => setVisible(false), 3500);
     return () => clearTimeout(timer);
-  }, [currentStreak]);
+  }, [currentStreak, remainingToday]);
 
   return (
     <AnimatePresence>

@@ -617,9 +617,9 @@ export default function Home() {
         )}
 
         {/* Daily return welcome banner */}
-        {user && userStreak?.current ? (
-          <DailyReturnBanner currentStreak={userStreak.current} />
-        ) : null}
+        {user && (
+          <DailyReturnBanner currentStreak={userStreak?.current || 0} remainingToday={remainingToday} />
+        )}
 
         {/* NUDGE 1: Welcome banner for guests */}
         {!user && <WelcomeBanner />}
