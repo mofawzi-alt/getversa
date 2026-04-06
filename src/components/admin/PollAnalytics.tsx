@@ -232,16 +232,29 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
                   <span className="font-bold text-option-a">{percentA}%</span>
                   <span className="font-bold text-option-b">{percentB}%</span>
                 </div>
-                <div className="flex h-4 rounded-full overflow-hidden bg-secondary">
-                  <div 
-                    className="bg-option-a transition-all"
-                    style={{ width: `${percentA}%` }}
-                  />
-                  <div 
-                    className="bg-option-b transition-all"
-                    style={{ width: `${percentB}%` }}
-                  />
-                </div>
+                {title === 'By Gender' ? (
+                  <div className="flex h-4 rounded-full overflow-hidden bg-secondary">
+                    <div 
+                      className="transition-all"
+                      style={{ width: `${percentA}%`, backgroundColor: item.label === 'Male' ? 'hsl(210, 80%, 55%)' : item.label === 'Female' ? 'hsl(340, 75%, 55%)' : 'hsl(var(--primary))' }}
+                    />
+                    <div 
+                      className="transition-all"
+                      style={{ width: `${percentB}%`, backgroundColor: item.label === 'Male' ? 'hsl(210, 80%, 55%)' : item.label === 'Female' ? 'hsl(340, 75%, 55%)' : 'hsl(var(--primary))', opacity: 0.4 }}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-4 rounded-full overflow-hidden bg-secondary">
+                    <div 
+                      className="bg-option-a transition-all"
+                      style={{ width: `${percentA}%` }}
+                    />
+                    <div 
+                      className="bg-option-b transition-all"
+                      style={{ width: `${percentB}%` }}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
