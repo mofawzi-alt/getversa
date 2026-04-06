@@ -368,7 +368,7 @@ export default function Browse() {
         demoMap.get(v.poll_id)!.push(v);
       });
 
-      return polls.map(p => {
+      let enriched = polls.map(p => {
         const r = resultsMap.get(p.id) as any;
         const total = r?.total_votes || 0;
         const votesA = r?.votes_a || 0;
@@ -387,6 +387,18 @@ export default function Browse() {
           demographicInsight: generateDemographicInsight(demoMap.get(p.id) || []),
         };
       });
+
+      // Client-side live filter matching Home's logic
+      if (liveFilter) {
+        const now = new Date();
+        enriched = enriched.filter(p => {
+          const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
+          const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
+          return hasStarted && !isExpired;
+        });
+      }
+
+      return enriched;
     },
     staleTime: 1000 * 60 * 2,
   });
