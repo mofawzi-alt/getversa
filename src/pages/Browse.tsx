@@ -325,10 +325,12 @@ export default function Browse() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const liveFilter = searchParams.get('filter') === 'live';
+  const targetPollId = searchParams.get('pollId');
   const { share } = useShareImage();
   const [reactedPolls, setReactedPolls] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const hasScrolledToTarget = useRef(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [feedNudgeDismissed, setFeedNudgeDismissed] = useState(false);
   const showSignupBanner = !user && activeIndex >= 10 && !bannerDismissed;
