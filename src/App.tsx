@@ -6,8 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import SplashScreen from "@/components/SplashScreen";
+import SplashScreen, { isSplashSeen, markSplashSeen } from "@/components/SplashScreen";
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/components/onboarding/SwipeOverlay";
+import { AnimatePresence } from "framer-motion";
 
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -33,17 +34,29 @@ import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeF
 
 const queryClient = new QueryClient();
 
-// Smart landing: first-time visitors see SwipeOverlay, returning users go to /home
+// Smart landing: first-time visitors see Splash → Onboarding → Auth, returning users go to /home
 function SmartLanding() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [showOverlay, setShowOverlay] = useState(false);
+  const [phase, setPhase] = useState<'splash' | 'onboarding' | 'done'>('done');
 
   useEffect(() => {
-    // If user is logged in or has seen overlay, go home
+    // If user is logged in or has completed onboarding before, go home
     if (user || isSwipeOverlayDone()) return;
-    // First-time visitor: show overlay
-    setShowOverlay(true);
+
+    // First-time visitor
+    if (!isSplashSeen()) {
+      setPhase('splash');
+      // Show splash for 1.5s then transition to onboarding
+      const timer = setTimeout(() => {
+        markSplashSeen();
+        setPhase('onboarding');
+      }, 1500);
+      return () => clearTimeout(timer);
+    } else {
+      // Splash seen but overlay not done — show onboarding
+      setPhase('onboarding');
+    }
   }, [user]);
 
   // Logged in or returning user
@@ -51,18 +64,23 @@ function SmartLanding() {
     return <Navigate to="/home" replace />;
   }
 
-  // First time visitor: show SwipeOverlay, then go to signup
-  if (showOverlay) {
-    return (
-      <SwipeOverlay onDismiss={() => {
-        markSwipeOverlayDone();
-        markWelcomeDone(); // Also mark welcome as done
-        navigate('/auth?mode=signup', { replace: true });
-      }} />
-    );
-  }
-
-  return null;
+  return (
+    <AnimatePresence mode="wait">
+      {phase === 'splash' && (
+        <SplashScreen key="splash" />
+      )}
+      {phase === 'onboarding' && (
+        <SwipeOverlay
+          key="onboarding"
+          onDismiss={() => {
+            markSwipeOverlayDone();
+            markWelcomeDone();
+            navigate('/auth?mode=signup', { replace: true });
+          }}
+        />
+      )}
+    </AnimatePresence>
+  );
 }
 
 // Checks if a logged-in user has incomplete demographics and redirects to onboarding
@@ -84,24 +102,31 @@ function AppInner() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Show splash for minimum time, then wait for auth
+    // For returning users, show a brief loading state while auth resolves
     const minTimer = setTimeout(() => {
       if (!loading) setShowSplash(false);
-    }, 1500);
+    }, 400);
     return () => clearTimeout(minTimer);
   }, [loading]);
 
-  // Once loading finishes after min time, hide splash
   useEffect(() => {
     if (!loading && showSplash) {
-      const t = setTimeout(() => setShowSplash(false), 300);
+      const t = setTimeout(() => setShowSplash(false), 200);
       return () => clearTimeout(t);
     }
   }, [loading, showSplash]);
 
+  if (showSplash) {
+    // Minimal loading indicator for returning users (not the full splash)
+    return (
+      <div className="fixed inset-0 z-[200] bg-background flex items-center justify-center">
+        <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <>
-      {showSplash && <SplashScreen />}
       <Toaster />
       <Sonner />
       
