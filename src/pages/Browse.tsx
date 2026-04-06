@@ -335,14 +335,20 @@ export default function Browse() {
 
   // Fetch all polls with results — no auth required
   const { data: feedPolls, isLoading } = useQuery({
-    queryKey: ['browse-feed'],
+    queryKey: ['browse-feed', liveFilter],
     queryFn: async () => {
-      const { data: polls } = await supabase
+      let query = supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at')
+        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at')
         .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .order('created_at', { ascending: false });
+
+      if (liveFilter) {
+        const now = new Date().toISOString();
+        query = query.lte('starts_at', now).gte('ends_at', now);
+      }
+
+      const { data: polls } = await query.limit(100);
 
       if (!polls || polls.length === 0) return [];
 
