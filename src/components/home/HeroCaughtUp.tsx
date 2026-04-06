@@ -24,8 +24,7 @@ interface HighlightPoll {
   emoji: string;
 }
 
-function HighlightCard({ poll, index }: { poll: HighlightPoll; index: number }) {
-  const navigate = useNavigate();
+function HighlightCard({ poll, index, onTap }: { poll: HighlightPoll; index: number; onTap?: (poll: HighlightPoll) => void }) {
   const winnerOption = poll.winner === 'A' ? poll.option_a : poll.option_b;
   const winnerPct = poll.winner === 'A' ? poll.percentA : poll.percentB;
 
@@ -34,7 +33,7 @@ function HighlightCard({ poll, index }: { poll: HighlightPoll; index: number }) 
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 + index * 0.1 }}
-      onClick={() => navigate('/browse')}
+      onClick={() => onTap?.(poll)}
       className="rounded-2xl border border-border/60 bg-card overflow-hidden cursor-pointer hover:border-primary/30 transition-colors"
     >
       {/* Images */}
@@ -283,7 +282,7 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {highlights.map((poll, i) => (
-              <HighlightCard key={poll.id} poll={poll} index={i} />
+              <HighlightCard key={poll.id} poll={poll} index={i} onTap={onPollTap} />
             ))}
           </div>
         </motion.div>
