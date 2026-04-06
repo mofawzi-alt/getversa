@@ -28,6 +28,7 @@ import InsightsReport from '@/components/admin/InsightsReport';
 import BrandIntelligence from '@/components/admin/BrandIntelligence';
 import IndustryReport from '@/components/admin/IndustryReport';
 import MonthlyLeaderboard from '@/components/admin/MonthlyLeaderboard';
+import ActivePollsMonitor from '@/components/admin/ActivePollsMonitor';
 import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
@@ -95,6 +96,7 @@ export default function AdminDashboard() {
               <TabsTrigger value="brand-intel" className="text-xs px-3 py-1.5">Brand Intel</TabsTrigger>
               <TabsTrigger value="industry-report" className="text-xs px-3 py-1.5">Industry Report</TabsTrigger>
               <TabsTrigger value="monthly-leaderboard" className="text-xs px-3 py-1.5">Monthly</TabsTrigger>
+              <TabsTrigger value="monitor" className="text-xs px-3 py-1.5">Monitor</TabsTrigger>
             </TabsList>
             
             <TabsContent value="dashboard">
@@ -142,6 +144,10 @@ export default function AdminDashboard() {
             
             <TabsContent value="monthly-leaderboard">
               <MonthlyLeaderboard />
+            </TabsContent>
+            
+            <TabsContent value="monitor">
+              <ActivePollsMonitor />
             </TabsContent>
           </Tabs>
         </TabsContent>
