@@ -11,10 +11,10 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 
 const AGE_RANGES = ['Under 18', '18-24', '25-34', '35-44', '45+'];
-const GENDERS = ['Male', 'Female', 'Prefer not to say'];
+const GENDERS = ['Male', 'Female'];
 const COUNTRIES = [
-  'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
-  'Jordan', 'Lebanon', 'Syria', 'Iraq', 'Palestine', 'Yemen', 'Egypt'
+  'Egypt', 'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
+  'Jordan', 'Lebanon', 'Syria', 'Iraq', 'Palestine', 'Yemen'
 ];
 const CITIES: Record<string, string[]> = {
   'Saudi Arabia': ['Riyadh', 'Jeddah', 'Mecca', 'Medina', 'Dammam', 'Khobar', 'Dhahran', 'Tabuk', 'Abha', 'Taif', 'Jubail', 'Yanbu', 'Buraidah', 'Najran', 'Hail', 'Jazan'],
