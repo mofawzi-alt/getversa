@@ -83,17 +83,9 @@ function SmartLanding() {
   );
 }
 
-// Checks if a logged-in user has incomplete demographics and redirects to onboarding
+// DemographicsGuard — no longer redirects to onboarding since signup collects all fields.
+// Kept as a pass-through wrapper for backward compatibility.
 function DemographicsGuard({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading } = useAuth();
-
-  if (loading) return <>{children}</>;
-
-  // Only redirect logged-in users with incomplete profiles
-  if (user && profile && (!profile.age_range || !profile.gender || !profile.country || !profile.city)) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
   return <>{children}</>;
 }
 
