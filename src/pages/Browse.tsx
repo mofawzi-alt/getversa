@@ -475,6 +475,8 @@ export default function Browse() {
       navigate('/auth');
       return;
     }
+    // Browse is results-only — redirect to home for voting
+    toast.info('Vote on today\'s battles from the Home screen! 🔥');
     navigate('/home');
   }, [user, navigate]);
 

@@ -26,6 +26,7 @@ import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/compon
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import { useDailyQueue } from '@/hooks/useDailyQueue';
 
 // FIX 4: Conversational category name mapping
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
@@ -234,18 +235,23 @@ export default function Home() {
     staleTime: 1000 * 60 * 2,
   });
 
+  // Daily queue system
+  const { queuePollIds, remainingToday, allDone, invalidateQueue, isQueueLoading, totalToday } = useDailyQueue();
+
   const { data: unseenCount } = useQuery({
-    queryKey: ['unseen-poll-count', user?.id],
+    queryKey: ['unseen-poll-count', user?.id, queuePollIds],
     queryFn: async () => {
+      // For authenticated users, unseen = remaining daily queue polls
+      if (user && queuePollIds.length > 0) {
+        return remainingToday;
+      }
+      // For guests, show total active polls
       const now = new Date().toISOString();
       const { data: polls } = await supabase.from('polls').select('id').eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`);
-      if (!polls || !user) return polls?.length || 0;
-      const { data: votes } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
-      const voted = new Set(votes?.map(v => v.poll_id) || []);
-      return polls.filter(p => !voted.has(p.id)).length;
+      return polls?.length || 0;
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 30,
   });
 
   // Votes in last 24 hours — refreshes via realtime + refetchInterval fallback
@@ -397,8 +403,19 @@ export default function Home() {
   const hasUnseen = (unseenCount || 0) > 0;
   const allNewPolls = useMemo(() => {
     const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id));
+    // For authenticated users with daily queue, only show queue polls
+    if (user && queuePollIds.length > 0) {
+      const queueSet = new Set(queuePollIds);
+      const queuePolls = unvoted.filter(p => queueSet.has(p.id));
+      // Sort by queue order
+      return queuePolls.sort((a, b) => {
+        const aIdx = queuePollIds.indexOf(a.id);
+        const bIdx = queuePollIds.indexOf(b.id);
+        return aIdx - bIdx;
+      });
+    }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
-  }, [allPolls, votedPollIds, profile?.age_range]);
+  }, [allPolls, votedPollIds, profile?.age_range, user, queuePollIds]);
   const newPolls = useMemo(() => {
     if (!categoryFilter) return allNewPolls;
     return allNewPolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter);
@@ -633,13 +650,11 @@ export default function Home() {
             poll={newPolls[heroPollIndex] || null}
             unseenCount={newPolls.length}
             onVoteComplete={() => {
-              // Don't increment heroPollIndex — the voted poll will be removed
-              // from newPolls when votedPollIds updates, so the same index
-              // will naturally point to the next unvoted poll
               queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
               queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
               queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
               queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+              queryClient.invalidateQueries({ queryKey: ['daily-queue-voted'] });
             }}
             onPollTap={(poll) => setModalPoll(poll)}
           />
