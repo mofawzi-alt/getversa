@@ -75,12 +75,48 @@ export default function AdminAnalyticsExport() {
     }
   };
 
+  const exportUsersCSV = async () => {
+    setExporting('users');
+    try {
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, username, email, gender, age_range, country, city, points, current_streak, longest_streak, created_at, last_vote_date, first_vote_date, total_days_active')
+        .order('created_at', { ascending: false });
+
+      if (!users || users.length === 0) {
+        toast.error('No users to export');
+        setExporting(null);
+        return;
+      }
+
+      const { data: votes } = await supabase.from('votes').select('user_id');
+      const voteCounts = new Map<string, number>();
+      votes?.forEach(v => {
+        voteCounts.set(v.user_id, (voteCounts.get(v.user_id) || 0) + 1);
+      });
+
+      let csv = "Username,Email,Gender,Age Range,Country,City,Points,Current Streak,Longest Streak,Total Votes,Days Active,First Vote,Last Vote,Joined\n";
+      
+      users.forEach(user => {
+        csv += `"${user.username || ''}","${user.email}","${user.gender || ''}","${user.age_range || ''}","${user.country || ''}","${user.city || ''}","${user.points || 0}","${user.current_streak || 0}","${user.longest_streak || 0}","${voteCounts.get(user.id) || 0}","${user.total_days_active || 0}","${user.first_vote_date || ''}","${user.last_vote_date || ''}","${user.created_at}"\n`;
+      });
+
+      downloadCSV(csv, 'versa-users');
+      toast.success(`${users.length} users exported`);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export users');
+    } finally {
+      setExporting(null);
+    }
+  };
+
   const exportDemographicsCSV = async () => {
     setExporting('demographics');
     try {
       const { data: users } = await supabase
         .from('users')
-        .select('id, gender, age_range, country, points, current_streak, created_at');
+        .select('id, gender, age_range, country, city, points, current_streak, created_at');
 
       const { data: votes } = await supabase
         .from('votes')
@@ -92,16 +128,15 @@ export default function AdminAnalyticsExport() {
         return;
       }
 
-      // Count votes per user
       const voteCounts = new Map<string, number>();
       votes?.forEach(v => {
         voteCounts.set(v.user_id, (voteCounts.get(v.user_id) || 0) + 1);
       });
 
-      let csv = "User ID,Gender,Age Range,Country,Total Points,Current Streak,Total Votes,Joined At\n";
+      let csv = "User ID,Gender,Age Range,Country,City,Total Points,Current Streak,Total Votes,Joined At\n";
       
       users.forEach(user => {
-        csv += `"${user.id}","${user.gender || 'Unknown'}","${user.age_range || 'Unknown'}","${user.country || 'Unknown'}","${user.points || 0}","${user.current_streak || 0}","${voteCounts.get(user.id) || 0}","${user.created_at}"\n`;
+        csv += `"${user.id}","${user.gender || 'Unknown'}","${user.age_range || 'Unknown'}","${user.country || 'Unknown'}","${user.city || 'Unknown'}","${user.points || 0}","${user.current_streak || 0}","${voteCounts.get(user.id) || 0}","${user.created_at}"\n`;
       });
 
       downloadCSV(csv, 'user-demographics');
