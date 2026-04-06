@@ -91,7 +91,7 @@ export default function Auth() {
           {isVoteIntent && !isLogin ? (
             <p className="text-foreground font-display font-bold mt-2 text-sm">Sign up free to add your vote 🔥<br /><span className="text-muted-foreground font-normal text-xs">Takes 30 seconds</span></p>
           ) : (
-            <p className="text-muted-foreground mt-2">Your opinion. Structured.</p>
+            <p className="text-muted-foreground mt-2">{isLogin ? 'Welcome back.' : 'Join the conversation'}</p>
           )}
         </div>
 
