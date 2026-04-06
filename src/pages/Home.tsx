@@ -413,16 +413,20 @@ export default function Home() {
   const hasUnseen = (unseenCount || 0) > 0;
   const allNewPolls = useMemo(() => {
     const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id));
-    // For authenticated users with daily queue, only show queue polls
+    // For authenticated users with daily queue, show queue polls + any very recent polls (created in last 30 min)
     if (user && queuePollIds.length > 0) {
       const queueSet = new Set(queuePollIds);
+      const recentCutoff = Date.now() - 30 * 60 * 1000; // 30 minutes ago
+      const recentNonQueue = unvoted.filter(p => !queueSet.has(p.id) && new Date(p.created_at).getTime() > recentCutoff);
       const queuePolls = unvoted.filter(p => queueSet.has(p.id));
-      // Sort by queue order
-      return queuePolls.sort((a, b) => {
+      // Sort queue polls by queue order
+      queuePolls.sort((a, b) => {
         const aIdx = queuePollIds.indexOf(a.id);
         const bIdx = queuePollIds.indexOf(b.id);
         return aIdx - bIdx;
       });
+      // Prepend brand-new polls before queue polls so they appear first
+      return [...recentNonQueue, ...queuePolls];
     }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
   }, [allPolls, votedPollIds, profile?.age_range, user, queuePollIds]);
