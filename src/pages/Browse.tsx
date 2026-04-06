@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
-import { useNavigate } from 'react-router-dom';
-import { Share2, Flame, Check, ChevronUp, X } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio } from 'lucide-react';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -323,6 +323,8 @@ function BrowseCard({
 export default function Browse() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const liveFilter = searchParams.get('filter') === 'live';
   const { share } = useShareImage();
   const [reactedPolls, setReactedPolls] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
