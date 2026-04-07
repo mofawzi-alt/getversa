@@ -5,13 +5,20 @@ import { Button } from '@/components/ui/button';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const PROMPT_KEY = 'versa_notif_prompt_shown';
+const PROMPT_SESSION_KEY = 'versa_notif_prompt_session';
 
 export function hasSeenNotifPrompt(): boolean {
-  return localStorage.getItem(PROMPT_KEY) === '1';
+  // If already subscribed, never show
+  if (Notification.permission === 'granted') {
+    return true;
+  }
+  // For unsubscribed users: only suppress within the same session
+  return sessionStorage.getItem(PROMPT_SESSION_KEY) === '1';
 }
 
 export function markNotifPromptSeen(): void {
   localStorage.setItem(PROMPT_KEY, '1');
+  sessionStorage.setItem(PROMPT_SESSION_KEY, '1');
 }
 
 interface NotificationPromptProps {
