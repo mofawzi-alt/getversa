@@ -626,7 +626,13 @@ export default function Home() {
       {/* App Tutorial for new visitors */}
       {showTutorial && (
         <AppTutorial onComplete={() => setShowTutorial(false)} />
-      )}
+        )}
+
+        {/* Notification prompt after first vote */}
+        <NotificationPrompt
+          open={showNotifPrompt}
+          onClose={() => setShowNotifPrompt(false)}
+        />
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
