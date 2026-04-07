@@ -53,7 +53,7 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
             transition={{ type: 'spring', damping: 22, stiffness: 300 }}
             className="w-full max-w-sm rounded-3xl bg-card border border-border p-8 text-center space-y-6 shadow-2xl"
           >
-            {/* Icon */}
+            {/* Animated bell icon */}
             <motion.div
               animate={{ 
                 scale: [1, 1.15, 1],
@@ -65,7 +65,7 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
               <Bell className="h-10 w-10 text-primary" />
             </motion.div>
 
-            {/* Text */}
+            {/* Copy */}
             <div className="space-y-2">
               <h2 className="text-2xl font-display font-bold text-foreground">
                 Never miss a battle 🔥
