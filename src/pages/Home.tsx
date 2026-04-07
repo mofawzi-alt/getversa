@@ -23,6 +23,7 @@ import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/
 import DailyReturnBanner from '@/components/home/DailyReturnBanner';
 import { WelcomeBanner, TimedFloatingNudge } from '@/components/onboarding/GuestNudges';
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
+import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/NotificationPrompt';
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
