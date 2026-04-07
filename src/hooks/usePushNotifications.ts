@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 // VAPID public key - must match your backend secret
 // Users need to regenerate their subscription if this changes
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BDYNC1YHcRfHX-4KpkSunIiQmXPLwjZkwH3KYjUrRD9aGo0DA9i1Rg9EdulqmMYlFEO-rVizI-HpC8EkVkKQlz8';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
