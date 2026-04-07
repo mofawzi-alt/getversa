@@ -147,6 +147,8 @@ export default function Home() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
   const [voteMilestone, setVoteMilestone] = useState<{ count: number; message: string } | null>(null);
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
+  const prevVoteCountRef = useRef<number | null>(null);
 
   // Show tutorial for new visitors who completed welcome but haven't seen tutorial
   useEffect(() => {
@@ -317,6 +319,19 @@ export default function Home() {
       if (m) setVoteMilestone(m);
     }
   }, [voteCount]);
+
+  // Show notification prompt after first real vote
+  useEffect(() => {
+    if (!user) return;
+    const prev = prevVoteCountRef.current;
+    prevVoteCountRef.current = voteCount;
+    // Trigger when vote count transitions from 0 to 1 (first vote just happened)
+    if (prev === 0 && voteCount === 1 && !hasSeenNotifPrompt()) {
+      // Delay slightly so result screen shows first
+      const timer = setTimeout(() => setShowNotifPrompt(true), 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [voteCount, user]);
 
   const { data: polls, isLoading } = useQuery({
     queryKey: ['visual-feed-home', profile?.gender, profile?.age_range, profile?.country],
