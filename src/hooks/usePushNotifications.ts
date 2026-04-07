@@ -3,8 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-// VAPID public key - must match your backend secret
-// Users need to regenerate their subscription if this changes
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BDYNC1YHcRfHX-4KpkSunIiQmXPLwjZkwH3KYjUrRD9aGo0DA9i1Rg9EdulqmMYlFEO-rVizI-HpC8EkVkKQlz8';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
@@ -19,7 +17,64 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
+
   return outputArray;
+}
+
+function hasMatchingApplicationServerKey(
+  subscription: PushSubscription,
+  expectedKey: Uint8Array<ArrayBuffer>,
+): boolean {
+  const existingKey = subscription.options?.applicationServerKey;
+
+  if (!existingKey) {
+    return false;
+  }
+
+  const normalizedExistingKey = new Uint8Array(existingKey);
+
+  if (normalizedExistingKey.length !== expectedKey.length) {
+    return false;
+  }
+
+  return normalizedExistingKey.every((value, index) => value === expectedKey[index]);
+}
+
+async function persistSubscription(userId: string, subscription: PushSubscription) {
+  const subscriptionJson = subscription.toJSON();
+  const endpoint = subscriptionJson.endpoint;
+  const p256dh = subscriptionJson.keys?.p256dh;
+  const auth = subscriptionJson.keys?.auth;
+
+  if (!endpoint || !p256dh || !auth) {
+    throw new Error('Incomplete push subscription');
+  }
+
+  const { error } = await supabase
+    .from('push_subscriptions')
+    .upsert(
+      {
+        user_id: userId,
+        endpoint,
+        p256dh,
+        auth,
+      },
+      {
+        onConflict: 'user_id,endpoint',
+      },
+    );
+
+  if (error) {
+    throw error;
+  }
+}
+
+function isIosDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent);
+}
+
+function isStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 }
 
 export function usePushNotifications() {
@@ -29,46 +84,79 @@ export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    // Check if push notifications are supported
-    const supported = 'serviceWorker' in navigator && 'PushManager' in window;
-    setIsSupported(supported);
-
-    if (supported) {
-      setPermission(Notification.permission);
-      checkSubscription();
+  const checkSubscription = useCallback(async () => {
+    if (!user) {
+      setIsSubscribed(false);
+      return;
     }
-  }, [user]);
-
-  const checkSubscription = async () => {
-    if (!user) return;
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await (registration as any).pushManager.getSubscription();
-      setIsSubscribed(!!subscription);
+      const subscription = await registration.pushManager.getSubscription();
+
+      if (!subscription) {
+        setIsSubscribed(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('push_subscriptions')
+        .select('endpoint')
+        .eq('user_id', user.id)
+        .eq('endpoint', subscription.endpoint)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      setIsSubscribed(Boolean(data));
     } catch (error) {
       console.error('Error checking subscription:', error);
+      setIsSubscribed(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    const supported = 'serviceWorker' in navigator && 'PushManager' in window;
+    setIsSupported(supported);
+
+    if (!supported) {
+      setIsSubscribed(false);
+      return;
+    }
+
+    setPermission(Notification.permission);
+    void checkSubscription();
+  }, [checkSubscription, user]);
 
   const registerServiceWorker = async (): Promise<ServiceWorkerRegistration> => {
-    const registration = await navigator.serviceWorker.register('/sw.js', {
+    await navigator.serviceWorker.register('/sw.js', {
       scope: '/',
     });
-    
-    // Wait for the service worker to be ready
-    await navigator.serviceWorker.ready;
-    return registration;
+
+    return navigator.serviceWorker.ready;
   };
 
   const subscribe = useCallback(async () => {
-    if (!user || !isSupported) return false;
-    
+    if (!user) {
+      toast.error('Please sign in to enable notifications');
+      return false;
+    }
+
+    if (!isSupported) {
+      toast.error('Push notifications are not supported on this device');
+      return false;
+    }
+
+    if (isIosDevice() && !isStandaloneMode()) {
+      toast.error('Open Versa from your Home Screen to enable notifications');
+      return false;
+    }
+
     setIsLoading(true);
-    
+
     try {
-      // Request permission
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
 
@@ -77,31 +165,30 @@ export function usePushNotifications() {
         return false;
       }
 
-      // Register service worker
       const registration = await registerServiceWorker();
+      const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
 
-      // Subscribe to push
-      const subscription = await (registration as any).pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-      });
+      let subscription = await registration.pushManager.getSubscription();
+      let syncedExistingSubscription = false;
 
-      const subscriptionJson = subscription.toJSON();
+      if (subscription && !hasMatchingApplicationServerKey(subscription, applicationServerKey)) {
+        await subscription.unsubscribe();
+        subscription = null;
+      }
 
-      // Save subscription to database
-      const { error } = await supabase.from('push_subscriptions').upsert({
-        user_id: user.id,
-        endpoint: subscriptionJson.endpoint!,
-        p256dh: subscriptionJson.keys!.p256dh,
-        auth: subscriptionJson.keys!.auth,
-      }, {
-        onConflict: 'user_id,endpoint',
-      });
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey,
+        });
+      } else {
+        syncedExistingSubscription = true;
+      }
 
-      if (error) throw error;
+      await persistSubscription(user.id, subscription);
 
       setIsSubscribed(true);
-      toast.success('Notifications enabled!');
+      toast.success(syncedExistingSubscription ? 'Notifications synced!' : 'Notifications enabled!');
       return true;
     } catch (error) {
       console.error('Error subscribing to push:', error);
@@ -113,19 +200,20 @@ export function usePushNotifications() {
   }, [user, isSupported]);
 
   const unsubscribe = useCallback(async () => {
-    if (!user) return false;
-    
+    if (!user) {
+      toast.error('Please sign in to manage notifications');
+      return false;
+    }
+
     setIsLoading(true);
-    
+
     try {
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await (registration as any).pushManager.getSubscription();
+      const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {
-        // Unsubscribe from push
         await subscription.unsubscribe();
 
-        // Remove from database
         const { error } = await supabase
           .from('push_subscriptions')
           .delete()

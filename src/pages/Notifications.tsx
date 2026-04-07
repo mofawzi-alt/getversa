@@ -62,6 +62,8 @@ export default function Notifications() {
           <p className="text-foreground/60 text-sm">Stay in the loop</p>
         </header>
 
+        <NotificationToggle />
+
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -107,7 +109,6 @@ export default function Notifications() {
                 Enable notifications to know when fresh polls are live and see how your votes compare.
               </p>
             </div>
-            <NotificationToggle />
           </div>
         )}
       </div>

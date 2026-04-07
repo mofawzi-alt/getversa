@@ -14,12 +14,17 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       registerType: "autoUpdate",
       devOptions: {
         enabled: false,
       },
-      workbox: {
+      injectManifest: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      },
+      workbox: {
         navigateFallbackDenylist: [/^\/~oauth/],
       },
       includeAssets: ["favicon.ico", "apple-touch-icon.png"],
