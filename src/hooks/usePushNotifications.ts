@@ -40,7 +40,7 @@ function hasMatchingApplicationServerKey(
   return normalizedExistingKey.every((value, index) => value === expectedKey[index]);
 }
 
-async function persistSubscription(userId: string, subscription: PushSubscription) {
+async function persistSubscription(subscription: PushSubscription) {
   const subscriptionJson = subscription.toJSON();
   const endpoint = subscriptionJson.endpoint;
   const p256dh = subscriptionJson.keys?.p256dh;
@@ -50,22 +50,20 @@ async function persistSubscription(userId: string, subscription: PushSubscriptio
     throw new Error('Incomplete push subscription');
   }
 
-  const { error } = await supabase
-    .from('push_subscriptions')
-    .upsert(
-      {
-        user_id: userId,
-        endpoint,
-        p256dh,
-        auth,
-      },
-      {
-        onConflict: 'user_id,endpoint',
-      },
-    );
+  const { data, error } = await supabase.functions.invoke('save-push-subscription', {
+    body: {
+      endpoint,
+      p256dh,
+      auth,
+    },
+  });
 
   if (error) {
     throw error;
+  }
+
+  if (data?.error) {
+    throw new Error(data.error);
   }
 }
 
@@ -99,6 +97,14 @@ export function usePushNotifications() {
         return;
       }
 
+      const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+
+      if (!hasMatchingApplicationServerKey(subscription, applicationServerKey)) {
+        await subscription.unsubscribe();
+        setIsSubscribed(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('push_subscriptions')
         .select('endpoint')
@@ -110,7 +116,13 @@ export function usePushNotifications() {
         throw error;
       }
 
-      setIsSubscribed(Boolean(data));
+      if (data) {
+        setIsSubscribed(true);
+        return;
+      }
+
+      await persistSubscription(subscription);
+      setIsSubscribed(true);
     } catch (error) {
       console.error('Error checking subscription:', error);
       setIsSubscribed(false);
@@ -185,7 +197,7 @@ export function usePushNotifications() {
         syncedExistingSubscription = true;
       }
 
-      await persistSubscription(user.id, subscription);
+      await persistSubscription(subscription);
 
       setIsSubscribed(true);
       toast.success(syncedExistingSubscription ? 'Notifications synced!' : 'Notifications enabled!');
