@@ -5,6 +5,12 @@ import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 
 export {};
 
+type PushAction = {
+  action: string;
+  title: string;
+  icon?: string;
+};
+
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{
     revision?: string | null;
@@ -28,7 +34,7 @@ self.addEventListener('push', (event) => {
     title?: string;
     body?: string;
     url?: string;
-    actions?: NotificationAction[];
+    actions?: PushAction[];
   } = {
     title: 'Versa',
     body: 'New notification!',
@@ -47,7 +53,6 @@ self.addEventListener('push', (event) => {
     body: data.body,
     icon: '/icon-192.png',
     badge: '/icon-192.png',
-    vibrate: [100, 50, 100],
     data: {
       url: data.url || '/',
       dateOfArrival: Date.now(),
@@ -66,7 +71,7 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
+        if (client.url.includes(self.location.origin) && 'focus' in client && 'navigate' in client) {
           client.navigate(url);
           return client.focus();
         }
