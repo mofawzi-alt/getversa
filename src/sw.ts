@@ -57,7 +57,6 @@ self.addEventListener('push', (event) => {
       url: data.url || '/',
       dateOfArrival: Date.now(),
     },
-    actions: data.actions || [],
   };
 
   event.waitUntil(self.registration.showNotification(data.title || 'Versa', options));
