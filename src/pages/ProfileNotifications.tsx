@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
+import { NotificationToggle } from '@/components/NotificationToggle';
 
 export default function ProfileNotifications() {
   const { profile } = useAuth();
@@ -76,7 +77,6 @@ export default function ProfileNotifications() {
   return (
     <AppLayout>
       <div className="p-4 space-y-6 animate-slide-up">
-        {/* Header */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/profile')}
@@ -87,7 +87,8 @@ export default function ProfileNotifications() {
           <h1 className="text-2xl font-display font-bold">Notification Settings</h1>
         </div>
 
-        {/* Settings */}
+        <NotificationToggle />
+
         <div className="glass rounded-2xl divide-y divide-border">
           <div className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">

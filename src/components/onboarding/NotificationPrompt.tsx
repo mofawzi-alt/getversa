@@ -24,7 +24,12 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
   const [closing, setClosing] = useState(false);
 
   const handleEnable = async () => {
-    await subscribe();
+    const enabled = await subscribe();
+
+    if (!enabled) {
+      return;
+    }
+
     markNotifPromptSeen();
     setClosing(true);
     setTimeout(onClose, 300);
