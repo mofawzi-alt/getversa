@@ -23,6 +23,7 @@ import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/
 import DailyReturnBanner from '@/components/home/DailyReturnBanner';
 import { WelcomeBanner, TimedFloatingNudge } from '@/components/onboarding/GuestNudges';
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
+import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/NotificationPrompt';
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
@@ -146,6 +147,8 @@ export default function Home() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
   const [voteMilestone, setVoteMilestone] = useState<{ count: number; message: string } | null>(null);
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
+  const prevVoteCountRef = useRef<number | null>(null);
 
   // Show tutorial for new visitors who completed welcome but haven't seen tutorial
   useEffect(() => {
@@ -316,6 +319,19 @@ export default function Home() {
       if (m) setVoteMilestone(m);
     }
   }, [voteCount]);
+
+  // Show notification prompt after first real vote
+  useEffect(() => {
+    if (!user) return;
+    const prev = prevVoteCountRef.current;
+    prevVoteCountRef.current = voteCount;
+    // Trigger when vote count transitions from 0 to 1 (first vote just happened)
+    if (prev === 0 && voteCount === 1 && !hasSeenNotifPrompt()) {
+      // Delay slightly so result screen shows first
+      const timer = setTimeout(() => setShowNotifPrompt(true), 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [voteCount, user]);
 
   const { data: polls, isLoading } = useQuery({
     queryKey: ['visual-feed-home', profile?.gender, profile?.age_range, profile?.country],
@@ -610,7 +626,13 @@ export default function Home() {
       {/* App Tutorial for new visitors */}
       {showTutorial && (
         <AppTutorial onComplete={() => setShowTutorial(false)} />
-      )}
+        )}
+
+        {/* Notification prompt after first vote */}
+        <NotificationPrompt
+          open={showNotifPrompt}
+          onClose={() => setShowNotifPrompt(false)}
+        />
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 

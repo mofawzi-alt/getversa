@@ -47,6 +47,9 @@ export default function Notifications() {
       case 'vote_result': return '🗳️';
       case 'friend_voted': return '👥';
       case 'challenge': return '🏆';
+      case 'new_poll': return '🔥';
+      case 'streak_reminder': return '🔥';
+      case 'weekly_polls': return '👀';
       default: return '🔔';
     }
   };
