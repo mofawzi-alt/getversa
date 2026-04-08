@@ -15,6 +15,9 @@ import { AnimatePresence } from "framer-motion";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Home from "./pages/Home";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
+import CookieConsent from "./components/CookieConsent";
 
 import PollHistory from "./pages/PollHistory";
 import PastPerspectives from "./pages/PastPerspectives";
@@ -150,6 +153,7 @@ function AppInner() {
     <>
       <Toaster />
       <Sonner />
+      <CookieConsent />
       
       <BrowserRouter>
         <Routes>
@@ -173,6 +177,8 @@ function AppInner() {
           <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
           <Route path="/weekly-results" element={<WeeklyTopResults />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

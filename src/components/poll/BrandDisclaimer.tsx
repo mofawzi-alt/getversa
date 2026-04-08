@@ -1,4 +1,4 @@
-import { detectBrand } from '@/lib/brandDetection';
+import { getBrandColor } from '@/lib/brandDetection';
 
 interface BrandDisclaimerProps {
   optionA: string;
@@ -7,7 +7,7 @@ interface BrandDisclaimerProps {
 }
 
 export default function BrandDisclaimer({ optionA, optionB, question }: BrandDisclaimerProps) {
-  const hasBrand = detectBrand(optionA) || detectBrand(optionB) || detectBrand(question);
+  const hasBrand = getBrandColor(optionA) || getBrandColor(optionB) || getBrandColor(question);
   if (!hasBrand) return null;
 
   return (
