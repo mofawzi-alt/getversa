@@ -49,6 +49,7 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
             side="A"
             maxLogoSize="65%"
             loading="lazy"
+            variant="history"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
           {winnerIsA && (
@@ -76,6 +77,7 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
             side="B"
             maxLogoSize="65%"
             loading="lazy"
+            variant="history"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
           {!winnerIsA && (

@@ -340,6 +340,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               question={poll.question}
               side="A"
               maxLogoSize="65%"
+              variant="hero"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -410,6 +411,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               question={poll.question}
               side="B"
               maxLogoSize="65%"
+              variant="hero"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
