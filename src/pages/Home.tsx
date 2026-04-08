@@ -245,7 +245,7 @@ export default function Home() {
       skipped?.forEach(s => ids.add(s.poll_id));
       return ids;
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 15,
   });
 
   // Daily queue system
