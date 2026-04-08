@@ -1,0 +1,1 @@
+ALTER TABLE public.polls ALTER COLUMN weight_score SET DEFAULT 500;

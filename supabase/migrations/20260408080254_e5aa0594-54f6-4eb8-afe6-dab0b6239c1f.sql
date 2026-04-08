@@ -1,0 +1,1 @@
+UPDATE public.polls SET weight_score = 500 WHERE id = '12c8005b-af27-4ab2-993c-a30eb893951b' AND weight_score = 1;

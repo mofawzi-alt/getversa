@@ -245,7 +245,7 @@ export default function Home() {
       skipped?.forEach(s => ids.add(s.poll_id));
       return ids;
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 15,
   });
 
   // Daily queue system
@@ -467,6 +467,13 @@ export default function Home() {
       setHeroPollIndex(0);
     }
   }, [categoryFilter]);
+
+  // Keep heroPollIndex in bounds — if new polls appear or list shrinks, reset to 0
+  useEffect(() => {
+    if (newPolls.length > 0 && heroPollIndex >= newPolls.length) {
+      setHeroPollIndex(0);
+    }
+  }, [newPolls.length, heroPollIndex]);
 
   // Auto-clear category filter when all category polls are voted
   useEffect(() => {
