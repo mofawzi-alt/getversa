@@ -421,28 +421,44 @@ export default function Browse() {
     staleTime: 1000 * 60 * 2,
   });
 
+  // Generate a session seed that changes each time the page is visited
+  const [sessionSeed] = useState(() => Math.random());
+
   const sortedFeed = useMemo(() => {
     if (!feedPolls || feedPolls.length === 0) return [];
 
     const now = Date.now();
     const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
 
-    const scored = feedPolls.map(p => {
+    // Seeded pseudo-random for consistent shuffle within a session
+    const seededRandom = (seed: number, index: number) => {
+      const x = Math.sin(seed * 9999 + index * 7919) * 10000;
+      return x - Math.floor(x);
+    };
+
+    const scored = feedPolls.map((p, i) => {
       const createdAt = new Date(p.created_at).getTime();
       const isRecent = createdAt > weekAgo;
       const recencyScore = isRecent ? 30 : 0;
       const voteScore = Math.min(p.totalVotes / 10, 40);
       const debateScore = p.totalVotes >= 5 ? (50 - Math.abs(p.percentA - 50)) * 0.6 : 0;
-      return { ...p, score: recencyScore + voteScore + debateScore };
+      // Add randomization (±15 points) so order differs each visit
+      const randomBoost = (seededRandom(sessionSeed, i) - 0.5) * 30;
+      return { ...p, score: recencyScore + voteScore + debateScore + randomBoost };
     });
 
-    scored.sort((a, b) => b.score - a.score);
+    // Unvoted polls first, then voted
+    const votedIds = userVotes ? new Set(Array.from(userVotes.keys())) : new Set<string>();
+    const unvoted = scored.filter(p => !votedIds.has(p.id));
+    const voted = scored.filter(p => votedIds.has(p.id));
+    unvoted.sort((a, b) => b.score - a.score);
+    voted.sort((a, b) => b.score - a.score);
 
-    // Apply age-based sequencing first
-    const votedIds = userVotes ? new Set(Array.from(userVotes.keys())) : undefined;
-    const ageSequenced = applyAgeSequencing(scored, profile?.age_range, votedIds);
+    // Apply age-based sequencing
+    const combined = [...unvoted, ...voted];
+    const ageSequenced = applyAgeSequencing(combined, profile?.age_range, votedIds);
 
-    // Then diversify by category
+    // Diversify by category
     const result: typeof ageSequenced = [];
     const remaining = [...ageSequenced];
     let lastCategory: string | null = null;
@@ -464,7 +480,7 @@ export default function Browse() {
     }
 
     return result;
-  }, [feedPolls, profile?.age_range, userVotes, targetPollId]);
+  }, [feedPolls, profile?.age_range, userVotes, targetPollId, sessionSeed]);
 
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
