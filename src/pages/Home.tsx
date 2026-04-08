@@ -468,6 +468,13 @@ export default function Home() {
     }
   }, [categoryFilter]);
 
+  // Keep heroPollIndex in bounds — if new polls appear or list shrinks, reset to 0
+  useEffect(() => {
+    if (newPolls.length > 0 && heroPollIndex >= newPolls.length) {
+      setHeroPollIndex(0);
+    }
+  }, [newPolls.length, heroPollIndex]);
+
   // Auto-clear category filter when all category polls are voted
   useEffect(() => {
     if (categoryFilter && newPolls.length === 0) {
