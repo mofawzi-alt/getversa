@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import BottomNav from './BottomNav';
 import AppHeader from './AppHeader';
 import PullToRefresh from './PullToRefresh';
+import LegalFooter from './LegalFooter';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -47,6 +48,7 @@ export default function AppLayout({ children, hideNav }: AppLayoutProps) {
         <PullToRefresh onRefresh={handleRefresh}>
           {children}
         </PullToRefresh>
+        <LegalFooter />
       </main>
       {!hideNav && <BottomNav />}
     </div>
