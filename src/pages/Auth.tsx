@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import { Loader2, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Link } from 'react-router-dom';
 
 const AGE_RANGES = ['Under 18', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDERS = ['Male', 'Female'];
@@ -73,6 +75,7 @@ export default function Auth() {
   const [country, setCountry] = useState(detectCountry());
   const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
+  const [ageConfirm, setAgeConfirm] = useState(false);
   const { user, signIn, signUp, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -304,13 +307,28 @@ export default function Auth() {
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                   </div>
                 </div>
+
+                <div className="flex items-start gap-2 mt-1">
+                  <Checkbox
+                    id="age-confirm"
+                    checked={ageConfirm}
+                    onCheckedChange={(checked) => setAgeConfirm(checked === true)}
+                    disabled={loading}
+                    className="mt-0.5"
+                  />
+                  <label htmlFor="age-confirm" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                    I confirm that I am 18 years of age or older and agree to the{' '}
+                    <Link to="/terms" className="text-accent underline">Terms of Service</Link> and{' '}
+                    <Link to="/privacy-policy" className="text-accent underline">Privacy Policy</Link>
+                  </label>
+                </div>
               </>
             )}
 
             <Button
               type="submit"
               className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-12 rounded-full shadow-accent transition-all hover:scale-[1.02] mt-2"
-              disabled={loading}
+              disabled={loading || (!isLogin && !ageConfirm)}
             >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

@@ -3,6 +3,7 @@ import { Clock, Loader2 } from 'lucide-react';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import BrandDisclaimer from '@/components/poll/BrandDisclaimer';
 
 interface Poll {
   id: string;
@@ -273,6 +274,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           <span className="text-xs font-medium">Expired</span>
         </div>
       )}
+      <BrandDisclaimer optionA={poll.option_a} optionB={poll.option_b} question={poll.question} />
     </div>
   );
 }
