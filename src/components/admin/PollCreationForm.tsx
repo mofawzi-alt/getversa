@@ -537,6 +537,46 @@ export default function PollCreationForm({
           </p>
         </div>
         
+        {/* Organization (Private Poll) */}
+        {organizations && organizations.length > 0 && (
+          <div className="border-t border-border pt-4 mt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="h-4 w-4 text-primary">🏢</span>
+              <Label className="font-semibold">Organization <span className="text-muted-foreground text-xs font-normal">(private poll)</span></Label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setOrganizationId('')}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  !organizationId
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-secondary text-muted-foreground border-border hover:border-primary/50'
+                }`}
+              >
+                Public (everyone)
+              </button>
+              {organizations.map((org: any) => (
+                <button
+                  key={org.id}
+                  type="button"
+                  onClick={() => setOrganizationId(org.id)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    organizationId === org.id
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-secondary text-muted-foreground border-border hover:border-primary/50'
+                  }`}
+                >
+                  {org.name}
+                </button>
+              ))}
+            </div>
+            {organizationId && (
+              <p className="text-xs text-amber-500 mt-2">⚠️ This poll will only be visible to members of this organization</p>
+            )}
+          </div>
+        )}
+
         {/* Poll Intent Tag (Internal Only) */}
         <div className="border-t border-border pt-4 mt-4">
           <div className="flex items-center gap-2 mb-3">
