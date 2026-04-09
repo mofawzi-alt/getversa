@@ -171,6 +171,13 @@ export default function Home() {
 
   // Realtime subscription: invalidate vote-related queries on new votes AND new polls
   useEffect(() => {
+    const invalidateHomePollQueries = () => {
+      queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+      queryClient.invalidateQueries({ queryKey: ['daily-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['daily-queue-voted'] });
+      queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
+    };
+
     const channel = supabase
       .channel('home-votes-realtime')
       .on(
@@ -178,19 +185,18 @@ export default function Home() {
         { event: 'INSERT', schema: 'public', table: 'votes' },
         () => {
           queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
-          queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
-          queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
+          invalidateHomePollQueries();
         }
       )
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'polls' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
-          queryClient.invalidateQueries({ queryKey: ['daily-queue'] });
-          queryClient.invalidateQueries({ queryKey: ['daily-queue-voted'] });
-          queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
-        }
+        invalidateHomePollQueries
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'polls' },
+        invalidateHomePollQueries
       )
       .subscribe();
 
