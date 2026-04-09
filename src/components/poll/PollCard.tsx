@@ -8,6 +8,7 @@ import BrandDisclaimer from '@/components/poll/BrandDisclaimer';
 interface Poll {
   id: string;
   question: string;
+  subtitle?: string | null;
   option_a: string;
   option_b: string;
   category: string | null;
@@ -144,6 +145,9 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
       {/* Question */}
       <div className="px-3 py-0.5 shrink-0">
         <p className="text-lg font-bold text-foreground leading-snug text-center">{poll.question}</p>
+        {poll.subtitle && (
+          <p className="text-sm text-muted-foreground text-center -mt-0.5">{poll.subtitle}</p>
+        )}
       </div>
 
       {/* Images — fixed height matching home screen cards */}

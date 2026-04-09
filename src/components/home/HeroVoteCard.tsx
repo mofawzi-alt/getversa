@@ -12,6 +12,7 @@ import HeroCaughtUp from './HeroCaughtUp';
 interface HeroPoll {
   id: string;
   question: string;
+  subtitle?: string | null;
   option_a: string;
   option_b: string;
   image_a_url: string | null;
@@ -465,6 +466,11 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           <h2 className="text-white text-xl font-display font-bold drop-shadow-lg text-center leading-snug">
             {poll.question}
           </h2>
+          {poll.subtitle && (
+            <p className="text-white/70 text-sm font-medium text-center mt-0.5 drop-shadow">
+              {poll.subtitle}
+            </p>
+          )}
         </div>
 
         {/* Result bar overlay */}
