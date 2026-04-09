@@ -90,6 +90,7 @@ const BRAND_COLORS: Record<string, string> = {
   pepsi: '#004B93',
   'coca-cola': '#F40009',
   'coca cola': '#F40009',
+  lipton: '#FDE149',
   
   // Fashion & Luxury
   nike: '#000000',
