@@ -349,28 +349,50 @@ export default function Home() {
   }, [user]);
 
   const { data: polls, isLoading } = useQuery({
-    queryKey: ['visual-feed-home', profile?.gender, profile?.age_range, profile?.country],
+    queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, queuePollIds.join('|')],
     queryFn: async () => {
       const now = new Date().toISOString();
-      const { data: rawPolls } = await supabase
+      const pollSelect = 'id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries';
+
+      const { data: rawPolls, error: rawPollsError } = await supabase
         .from('polls')
-        .select('id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries')
+        .select(pollSelect)
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
         .limit(200);
+
+      if (rawPollsError) throw rawPollsError;
       if (!rawPolls || rawPolls.length === 0) return [];
+
+      const fetchedIds = new Set(rawPolls.map(p => p.id));
+      const missingQueuePollIds = queuePollIds.filter(id => !fetchedIds.has(id));
+      let mergedPolls = rawPolls;
+
+      if (missingQueuePollIds.length > 0) {
+        const { data: queuedPolls, error: queuedPollsError } = await supabase
+          .from('polls')
+          .select(pollSelect)
+          .in('id', missingQueuePollIds)
+          .eq('is_active', true);
+
+        if (queuedPollsError) throw queuedPollsError;
+
+        if (queuedPolls?.length) {
+          mergedPolls = [...rawPolls, ...queuedPolls.filter(p => !fetchedIds.has(p.id))];
+        }
+      }
 
       // Filter by user demographics
       // Move explicitly targeted polls that match this user to the front,
       // but keep all other polls visible in their original weight order.
-      let prioritized = rawPolls;
+      let prioritized = mergedPolls;
       if (profile) {
-        const matched: typeof rawPolls = [];
-        const others: typeof rawPolls = [];
+        const matched: typeof mergedPolls = [];
+        const others: typeof mergedPolls = [];
 
-        rawPolls.forEach(p => {
+        mergedPolls.forEach(p => {
           const countries = (p as any).target_countries as string[] | null;
           const hasExplicitTargeting = Boolean(
             (p.target_gender && p.target_gender !== 'All') ||
@@ -400,32 +422,34 @@ export default function Home() {
         prioritized = [...matched, ...others];
       }
 
-      const topPolls = prioritized.slice(0, 100);
-      const pollIds = topPolls.map(p => p.id);
+      const queueSet = new Set(queuePollIds);
+      const selectedPolls = prioritized.filter((p, index) => index < 100 || queueSet.has(p.id));
+      const pollIds = selectedPolls.map(p => p.id);
       if (pollIds.length === 0) return [];
-      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
+
+      const { data: results, error: resultsError } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
+      if (resultsError) throw resultsError;
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
 
       // Get recent votes (last 5 minutes) — only for top 20 polls to keep it fast
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const recentPollIds = pollIds.slice(0, 20);
-      const { data: recentVotesData } = await supabase
+      const { data: recentVotesData, error: recentVotesError } = await supabase
         .from('votes')
         .select('poll_id, user_id')
         .in('poll_id', recentPollIds)
         .gte('created_at', fiveMinAgo)
         .limit(200);
-      // Count unique users per poll
+
+      if (recentVotesError) throw recentVotesError;
+
       const recentVotesMap = new Map<string, Set<string>>();
       recentVotesData?.forEach(v => {
         if (!recentVotesMap.has(v.poll_id)) recentVotesMap.set(v.poll_id, new Set());
         recentVotesMap.get(v.poll_id)!.add(v.user_id);
       });
-      // Count total unique voters across all polls
-      const allRecentVoters = new Set<string>();
-      recentVotesData?.forEach(v => allRecentVoters.add(v.user_id));
 
-      return topPolls.map(p => {
+      return selectedPolls.map(p => {
         const r = resultsMap.get(p.id) as any;
         const total = (r?.total_votes as number) || 0;
         const votesA = (r?.votes_a as number) || 0;
