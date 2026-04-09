@@ -172,6 +172,7 @@ export default function PollCreationForm({
            option_a_tag: tagA || null,
            option_b_tag: tagB || null,
            weight_score: weightScore,
+           organization_id: organizationId || null,
          } as any)
         .select()
         .single();
