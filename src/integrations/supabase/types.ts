@@ -1639,14 +1639,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_organization_member: {
-        Args: { _organization_id: string; _user_id: string }
-        Returns: boolean
-      }
-      is_organization_owner: {
-        Args: { _organization_id: string; _user_id: string }
-        Returns: boolean
-      }
       redeem_reward: {
         Args: {
           p_cost_points: number
