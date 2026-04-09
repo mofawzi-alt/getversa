@@ -36,7 +36,7 @@ import NotFound from "./pages/NotFound";
 import TasteProfile from "./pages/TasteProfile";
 import WeeklyTopResults from "./pages/WeeklyTopResults";
 import JoinOrganization from "./pages/JoinOrganization";
-import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
+ import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
 
@@ -177,7 +177,6 @@ function AppInner() {
           <Route path="/insights" element={<ProtectedRoute><InsightProfile /></ProtectedRoute>} />
           <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
           <Route path="/weekly-results" element={<WeeklyTopResults />} />
-          <Route path="/join-org" element={<ProtectedRoute><JoinOrganization /></ProtectedRoute>} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<Terms />} />
