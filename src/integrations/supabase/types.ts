@@ -467,6 +467,68 @@ export type Database = {
           },
         ]
       }
+      organization_members: {
+        Row: {
+          id: string
+          joined_at: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          organization_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          invite_code: string
+          logo_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          invite_code?: string
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          invite_code?: string
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pinned_polls: {
         Row: {
           created_at: string
@@ -682,6 +744,7 @@ export type Database = {
           option_a_tag: string | null
           option_b: string
           option_b_tag: string | null
+          organization_id: string | null
           poll_type: string
           question: string
           starts_at: string | null
@@ -712,6 +775,7 @@ export type Database = {
           option_a_tag?: string | null
           option_b: string
           option_b_tag?: string | null
+          organization_id?: string | null
           poll_type?: string
           question: string
           starts_at?: string | null
@@ -742,6 +806,7 @@ export type Database = {
           option_a_tag?: string | null
           option_b?: string
           option_b_tag?: string | null
+          organization_id?: string | null
           poll_type?: string
           question?: string
           starts_at?: string | null
@@ -759,6 +824,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "polls_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
