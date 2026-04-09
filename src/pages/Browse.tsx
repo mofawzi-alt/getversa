@@ -341,31 +341,34 @@ export default function Browse() {
 
   // Fetch all polls with results — no auth required
   const { data: feedPolls, isLoading } = useQuery({
-    queryKey: ['browse-feed', liveFilter],
+    queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range],
     queryFn: async () => {
-      let query = supabase
+      const now = new Date().toISOString();
+      const { data: polls, error: pollsError } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at')
+        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .or(`starts_at.is.null,starts_at.lte.${now}`)
+        .order('weight_score', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false })
+        .limit(liveFilter ? 300 : 250);
 
-      // For live filter, fetch all active polls and filter client-side
-      // to match Home's logic (polls without starts_at/ends_at are considered live)
-
-      const { data: polls } = await query.limit(100);
-
+      if (pollsError) throw pollsError;
       if (!polls || polls.length === 0) return [];
 
       const pollIds = polls.map(p => p.id);
-      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
+      const { data: results, error: resultsError } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
+      if (resultsError) throw resultsError;
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
 
       const sampleIds = pollIds.slice(0, 30);
-      const { data: demoVotes } = await supabase
+      const { data: demoVotes, error: demoVotesError } = await supabase
         .from('votes')
         .select('poll_id, choice, voter_gender, voter_age_range, voter_city')
         .in('poll_id', sampleIds)
         .limit(1000);
+
+      if (demoVotesError) throw demoVotesError;
 
       const demoMap = new Map<string, any[]>();
       demoVotes?.forEach(v => {
@@ -393,12 +396,11 @@ export default function Browse() {
         };
       });
 
-      // Client-side live filter matching Home's logic
       if (liveFilter) {
-        const now = new Date();
+        const nowDate = new Date();
         enriched = enriched.filter(p => {
-          const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
-          const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
+          const hasStarted = p.starts_at ? new Date(p.starts_at) <= nowDate : true;
+          const isExpired = p.ends_at ? new Date(p.ends_at) < nowDate : false;
           return hasStarted && !isExpired;
         });
       }

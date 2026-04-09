@@ -88,30 +88,35 @@ export default function Explore() {
 
   // Fetch all active polls with results
   const { data: pollsData } = useQuery({
-    queryKey: ['explore-polls'],
+    queryKey: ['explore-polls', user?.id],
     queryFn: async () => {
       const now = new Date().toISOString();
-      const { data: rawPolls } = await supabase
+      const { data: rawPolls, error: rawPollsError } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at')
+        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score')
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
+        .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
-        .limit(200);
+        .limit(300);
 
+      if (rawPollsError) throw rawPollsError;
       if (!rawPolls?.length) return { polls: [] as PollItem[], votes24hMap: new Map<string, number>() };
 
       const pollIds = rawPolls.map(p => p.id);
-      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
+      const { data: results, error: resultsError } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
+      if (resultsError) throw resultsError;
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
 
-      // Get votes in last 24h per poll for momentum
       const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data: recentVotes } = await supabase
+      const { data: recentVotes, error: recentVotesError } = await supabase
         .from('votes')
         .select('poll_id')
-        .gte('created_at', since24h);
-      
+        .gte('created_at', since24h)
+        .limit(1000);
+
+      if (recentVotesError) throw recentVotesError;
+
       const votes24hMap = new Map<string, number>();
       recentVotes?.forEach(v => {
         votes24hMap.set(v.poll_id, (votes24hMap.get(v.poll_id) || 0) + 1);
