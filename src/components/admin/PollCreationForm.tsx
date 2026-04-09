@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -54,6 +55,19 @@ export default function PollCreationForm({
   const [showCustomIntentInput, setShowCustomIntentInput] = useState(false);
   const [customIntentName, setCustomIntentName] = useState('');
   const [entityName, setEntityName] = useState(initialEntityName || '');
+  const [organizationId, setOrganizationId] = useState('');
+
+  const { data: organizations } = useQuery({
+    queryKey: ['admin-organizations'],
+    queryFn: async () => {
+      const { data, error } = await (supabase
+        .from('organizations' as any)
+        .select('id, name')
+        .order('name') as any);
+      if (error) throw error;
+      return data as { id: string; name: string }[];
+    },
+  });
   
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
