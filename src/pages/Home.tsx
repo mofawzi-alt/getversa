@@ -728,6 +728,9 @@ export default function Home() {
         {/* ═══ PINNED POLL BANNER ═══ */}
         <PinnedPollBanner />
 
+        {/* ═══ DAILY PULSE STRIP ═══ */}
+        <DailyPulseStrip />
+
         {/* ═══ INFINITE HERO VOTE CARD ═══ */}
         <div ref={heroRef}>
           <HeroVoteCard
