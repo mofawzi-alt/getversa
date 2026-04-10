@@ -518,11 +518,27 @@ export default function Home() {
   // ── Memoized expensive computations ──
   const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
     const now = new Date();
+    const nowMs = now.getTime();
+
+    // Time-decay scoring: newer polls score higher even with fewer votes
+    // score = totalVotes / (ageInHours + 2)^0.6  — gentle decay
+    const decayScore = (p: PollCard) => {
+      const ageHours = Math.max(0, (nowMs - new Date(p.created_at).getTime()) / (1000 * 60 * 60));
+      return p.totalVotes / Math.pow(ageHours + 2, 0.6);
+    };
+
     const livePollsRaw = allPolls.filter(p => {
       const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
       const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
       return hasStarted && !isExpired;
-    }).sort((a, b) => ((b as any).weight_score || 1) - ((a as any).weight_score || 1) || b.totalVotes - a.totalVotes);
+    }).sort((a, b) => {
+      // Primary: weight_score (admin priority)
+      const wA = (a as any).weight_score || 1;
+      const wB = (b as any).weight_score || 1;
+      if (wA !== wB) return wB - wA;
+      // Secondary: time-decay score instead of raw totalVotes
+      return decayScore(b) - decayScore(a);
+    });
 
     // Prioritize unvoted polls first, then diversify by category
     const unvotedFirst = [...livePollsRaw].sort((a, b) => {
@@ -558,7 +574,7 @@ export default function Home() {
       return result;
     })();
 
-    // Trending
+    // Trending — use decay score as primary ranking
     const trending: (PollCard & { trendBadge: string; trendHot?: boolean })[] = [];
     const seenIds = new Set<string>();
     const seenTrendingCategories = new Set<string>();
@@ -572,30 +588,34 @@ export default function Home() {
       trending.push({ ...p, trendBadge: badge, trendHot: hot });
     };
 
-    [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).forEach(p => {
+    // 1. Top by decay score (replaces raw totalVotes)
+    [...allPolls].sort((a, b) => decayScore(b) - decayScore(a)).forEach(p => {
       if (trending.length >= 9) return;
       tryAddTrending(p, `🔥 ${p.totalVotes} votes`);
     });
 
+    // 2. Tightest margins
     [...allPolls].filter(p => p.totalVotes > 0).sort((a, b) => Math.abs(a.percentA - 50) - Math.abs(b.percentA - 50)).forEach(p => {
       if (trending.length >= 9) return;
       const spread = Math.abs(p.percentA - 50);
       tryAddTrending(p, `⚡ ${spread}% gap`, spread <= 5);
     });
 
+    // 3. Fastest vote rate
     [...allPolls].sort((a, b) => {
-      const aAge = (Date.now() - new Date(a.created_at).getTime()) / (1000 * 60 * 60);
-      const bAge = (Date.now() - new Date(b.created_at).getTime()) / (1000 * 60 * 60);
+      const aAge = (nowMs - new Date(a.created_at).getTime()) / (1000 * 60 * 60);
+      const bAge = (nowMs - new Date(b.created_at).getTime()) / (1000 * 60 * 60);
       return (bAge > 0 ? b.totalVotes / bAge : b.totalVotes) - (aAge > 0 ? a.totalVotes / aAge : a.totalVotes);
     }).forEach(p => {
       if (trending.length >= 9) return;
-      const ageHours = Math.max(1, (Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60));
+      const ageHours = Math.max(1, (nowMs - new Date(p.created_at).getTime()) / (1000 * 60 * 60));
       const rate = Math.round(p.totalVotes / ageHours);
       tryAddTrending(p, `🚀 ${rate}/hr`);
     });
 
+    // 4. Fallback fill
     if (trending.length < 9) {
-      [...allPolls].sort((a, b) => b.totalVotes - a.totalVotes).forEach(p => {
+      [...allPolls].sort((a, b) => decayScore(b) - decayScore(a)).forEach(p => {
         if (trending.length >= 9 || seenIds.has(p.id)) return;
         seenIds.add(p.id);
         trending.push({ ...p, trendBadge: `🔥 ${p.totalVotes} votes` });
