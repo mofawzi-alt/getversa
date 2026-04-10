@@ -6,6 +6,19 @@ export function getPublicPollImageUrl(fileName: string) {
   return `${POLL_IMAGE_BASE_PATH}/${encodeURIComponent(fileName.toLowerCase())}`;
 }
 
+// Reliable Unsplash fallback images that always load
+const UNSPLASH_FALLBACKS = [
+  'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=600&h=600&fit=crop', // nature
+  'https://images.unsplash.com/photo-1495195134817-aeb325a55b65?w=600&h=600&fit=crop', // coffee
+  'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=600&fit=crop', // books
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=600&fit=crop', // beach
+  'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&h=600&fit=crop', // city
+  'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=600&fit=crop', // pizza
+  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&h=600&fit=crop', // sunrise
+  'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=600&fit=crop', // sneakers
+  'https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=600&h=600&fit=crop', // summer
+];
+
 // ═══════════════════════════════════════════════════════════════
 // LOCKED A/B IMAGE MAP — Rule 5
 // Every poll question is mapped to EXACT image files.
@@ -961,11 +974,10 @@ const GENERIC_FALLBACK_IMAGE_FILES = [
 ];
 
 export function getStablePollFallbackImage(seed?: string | null, index = 0): string {
-  if (GENERIC_FALLBACK_IMAGE_FILES.length === 0) return '';
+  // Use reliable Unsplash URLs instead of missing local files
+  if (UNSPLASH_FALLBACKS.length === 0) return '';
   const hash = (seed || 'x').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return getPublicPollImageUrl(
-    GENERIC_FALLBACK_IMAGE_FILES[(hash + index) % GENERIC_FALLBACK_IMAGE_FILES.length]
-  );
+  return UNSPLASH_FALLBACKS[(hash + index) % UNSPLASH_FALLBACKS.length];
 }
 
 interface PollImageParams {
@@ -1053,7 +1065,7 @@ export function getPollDisplayImageSrc(params: PollImageParams) {
   return params.genericFallback || getGenericFallback(params.option || params.question);
 }
 
-/** onError handler for img tags — swaps to local fallback */
+/** onError handler for img tags — swaps to reliable Unsplash fallback */
 export function handlePollImageError(
   e: React.SyntheticEvent<HTMLImageElement>,
   params: Omit<PollImageParams, 'imageUrl'>
@@ -1061,8 +1073,9 @@ export function handlePollImageError(
   const target = e.currentTarget;
   if (target.dataset.fallbackApplied) return; // prevent infinite loop
   target.dataset.fallbackApplied = 'true';
-  // When a local /polls/ image fails, use a neutral generic fallback
-  const fallback = params.genericFallback || getStablePollFallbackImage(params.option || params.question);
+  // Use Unsplash fallback which always loads
+  const hash = (params.option || params.question || 'x').split('').reduce((a: number, c: string) => a + c.charCodeAt(0), 0);
+  const fallback = UNSPLASH_FALLBACKS[hash % UNSPLASH_FALLBACKS.length];
   if (fallback) {
     target.src = fallback;
   }
