@@ -974,11 +974,10 @@ const GENERIC_FALLBACK_IMAGE_FILES = [
 ];
 
 export function getStablePollFallbackImage(seed?: string | null, index = 0): string {
-  if (GENERIC_FALLBACK_IMAGE_FILES.length === 0) return '';
+  // Use reliable Unsplash URLs instead of missing local files
+  if (UNSPLASH_FALLBACKS.length === 0) return '';
   const hash = (seed || 'x').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return getPublicPollImageUrl(
-    GENERIC_FALLBACK_IMAGE_FILES[(hash + index) % GENERIC_FALLBACK_IMAGE_FILES.length]
-  );
+  return UNSPLASH_FALLBACKS[(hash + index) % UNSPLASH_FALLBACKS.length];
 }
 
 interface PollImageParams {
