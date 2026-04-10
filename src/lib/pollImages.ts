@@ -6,6 +6,19 @@ export function getPublicPollImageUrl(fileName: string) {
   return `${POLL_IMAGE_BASE_PATH}/${encodeURIComponent(fileName.toLowerCase())}`;
 }
 
+// Reliable Unsplash fallback images that always load
+const UNSPLASH_FALLBACKS = [
+  'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=600&h=600&fit=crop', // nature
+  'https://images.unsplash.com/photo-1495195134817-aeb325a55b65?w=600&h=600&fit=crop', // coffee
+  'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=600&fit=crop', // books
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=600&fit=crop', // beach
+  'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&h=600&fit=crop', // city
+  'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=600&fit=crop', // pizza
+  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&h=600&fit=crop', // sunrise
+  'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=600&fit=crop', // sneakers
+  'https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=600&h=600&fit=crop', // summer
+];
+
 // ═══════════════════════════════════════════════════════════════
 // LOCKED A/B IMAGE MAP — Rule 5
 // Every poll question is mapped to EXACT image files.
