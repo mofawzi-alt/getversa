@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
+import DailyPulseStrip from '@/components/home/DailyPulseStrip';
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
