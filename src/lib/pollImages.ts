@@ -1065,7 +1065,7 @@ export function getPollDisplayImageSrc(params: PollImageParams) {
   return params.genericFallback || getGenericFallback(params.option || params.question);
 }
 
-/** onError handler for img tags — swaps to local fallback */
+/** onError handler for img tags — swaps to reliable Unsplash fallback */
 export function handlePollImageError(
   e: React.SyntheticEvent<HTMLImageElement>,
   params: Omit<PollImageParams, 'imageUrl'>
@@ -1073,8 +1073,9 @@ export function handlePollImageError(
   const target = e.currentTarget;
   if (target.dataset.fallbackApplied) return; // prevent infinite loop
   target.dataset.fallbackApplied = 'true';
-  // When a local /polls/ image fails, use a neutral generic fallback
-  const fallback = params.genericFallback || getStablePollFallbackImage(params.option || params.question);
+  // Use Unsplash fallback which always loads
+  const hash = (params.option || params.question || 'x').split('').reduce((a: number, c: string) => a + c.charCodeAt(0), 0);
+  const fallback = UNSPLASH_FALLBACKS[hash % UNSPLASH_FALLBACKS.length];
   if (fallback) {
     target.src = fallback;
   }
