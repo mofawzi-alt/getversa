@@ -1609,41 +1609,64 @@ function DailyLimitTab() {
 function NotificationsTab() {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [link, setLink] = useState('');
   const [sending, setSending] = useState(false);
+  const [lastResult, setLastResult] = useState<{ push: number; inApp: number } | null>(null);
 
-  const sendNotificationMutation = useMutation({
+  const sendBroadcastMutation = useMutation({
     mutationFn: async () => {
       setSending(true);
-      
-      // Get all users
+      setLastResult(null);
+
+      // 1. Send push notifications via edge function
+      const { data: pushResult, error: pushError } = await supabase.functions.invoke('send-push-notification', {
+        body: {
+          title,
+          body,
+          url: link || '/home',
+        },
+      });
+
+      if (pushError) {
+        console.error('Push error:', pushError);
+      }
+
+      // 2. Also store in-app notifications for users without push
       const { data: users, error: usersError } = await supabase
         .from('users')
         .select('id');
-      
+
       if (usersError) throw usersError;
-      
-      // Create notification for each user
+
       const notifications = users.map(user => ({
         user_id: user.id,
         title,
         body,
-        type: 'system',
+        type: 'broadcast',
+        data: link ? { url: link } : null,
       }));
-      
-      const { error } = await supabase
+
+      const { error: notifError } = await supabase
         .from('notifications')
         .insert(notifications);
-      
-      if (error) throw error;
+
+      if (notifError) throw notifError;
+
+      return {
+        pushSent: pushResult?.sent ?? 0,
+        inAppCount: users.length,
+      };
     },
-    onSuccess: () => {
-      toast.success('Notifications sent!');
+    onSuccess: (data) => {
+      toast.success(`Broadcast sent! ${data.pushSent} push + ${data.inAppCount} in-app`);
+      setLastResult({ push: data.pushSent, inApp: data.inAppCount });
       setTitle('');
       setBody('');
+      setLink('');
       setSending(false);
     },
     onError: () => {
-      toast.error('Failed to send notifications');
+      toast.error('Failed to send broadcast');
       setSending(false);
     },
   });
@@ -1652,8 +1675,11 @@ function NotificationsTab() {
     <div className="glass rounded-xl p-4 space-y-4">
       <h2 className="text-lg font-semibold flex items-center gap-2">
         <Bell className="h-5 w-5 text-primary" />
-        Broadcast Notification
+        Broadcast Push & In-App
       </h2>
+      <p className="text-xs text-muted-foreground">
+        Sends a real push notification to all subscribed devices + an in-app notification for everyone.
+      </p>
       
       <div className="space-y-3">
         <div>
@@ -1661,8 +1687,9 @@ function NotificationsTab() {
           <Input 
             value={title} 
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="New Feature!"
+            placeholder="🔥 New polls just dropped!"
             className="bg-secondary"
+            maxLength={100}
           />
         </div>
         <div>
@@ -1670,17 +1697,40 @@ function NotificationsTab() {
           <Textarea 
             value={body} 
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Check out our latest update..."
+            placeholder="Come vote on today's battles..."
             className="bg-secondary"
+            maxLength={200}
           />
         </div>
+        <div>
+          <Label>Link (optional)</Label>
+          <Input 
+            value={link} 
+            onChange={(e) => setLink(e.target.value)}
+            placeholder="/home or /explore"
+            className="bg-secondary"
+            maxLength={200}
+          />
+          <p className="text-xs text-muted-foreground mt-1">Where users land when they tap the notification</p>
+        </div>
+
+        {lastResult && (
+          <div className="p-3 rounded-lg bg-primary/10 text-sm space-y-1">
+            <p className="font-medium text-primary">✅ Last broadcast sent</p>
+            <p className="text-muted-foreground">{lastResult.push} push notifications · {lastResult.inApp} in-app</p>
+          </div>
+        )}
         
         <Button 
-          onClick={() => sendNotificationMutation.mutate()}
+          onClick={() => sendBroadcastMutation.mutate()}
           disabled={!title || !body || sending}
           className="w-full bg-gradient-primary"
         >
-          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send to All Users'}
+          {sending ? (
+            <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Sending...</>
+          ) : (
+            '📢 Send Broadcast to All Users'
+          )}
         </Button>
       </div>
     </div>
