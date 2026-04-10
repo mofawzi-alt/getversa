@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX polls_dedup_idx ON polls(question, option_a, option_b) WHERE is_active = true;
