@@ -12,6 +12,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Loader2, Upload, X, Calendar } from 'lucide-react';
+import ImageCropPreview from './ImageCropPreview';
 import { toast } from 'sonner';
 
 interface Poll {
@@ -223,7 +224,15 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
               {!currentImageB && (
                 <Input value={imageBUrl} onChange={(e) => setImageBUrl(e.target.value)} placeholder="Or paste URL..." className="bg-secondary mt-2 text-xs" />
               )}
+          </div>
+
+          {/* Image Crop Previews */}
+          {(currentImageA || currentImageB) && (
+            <div className="grid grid-cols-2 gap-3">
+              {currentImageA && <ImageCropPreview src={currentImageA} label="Option A" />}
+              {currentImageB && <ImageCropPreview src={currentImageB} label="Option B" />}
             </div>
+          )}
           </div>
 
           {/* Category & Intent */}
