@@ -396,7 +396,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
         } catch {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
-          a.href = url; a.download = 'versa-result.png'; a.click();
+          a.href = url; a.download = 'versa-result.jpg'; a.click();
           URL.revokeObjectURL(url);
           toast.success('Image saved! Open Instagram and share it 📸');
         }
