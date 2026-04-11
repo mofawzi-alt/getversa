@@ -310,7 +310,7 @@ function useShareCard(props: {
     ctx.textAlign = 'left';
     ctx.fillText('getversa.app', 60, H - 60);
 
-    return new Promise(r => canvas.toBlob(r, 'image/png'));
+    return new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.92));
   }, [props]);
 
   return { canvasRef, generate };
@@ -363,12 +363,12 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
     try {
       const blob = await generate();
       if (!blob) { toast.error('Failed to generate'); return; }
-      const file = new File([blob], 'versa-result.png', { type: 'image/png' });
+      const file = new File([blob], 'versa-result.jpg', { type: 'image/jpeg' });
 
       if (type === 'save') {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = 'versa-result.png'; a.click();
+        a.href = url; a.download = 'versa-result.jpg'; a.click();
         URL.revokeObjectURL(url);
         toast.success('Saved to downloads 📸');
         return;
@@ -396,7 +396,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
         } catch {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
-          a.href = url; a.download = 'versa-result.png'; a.click();
+          a.href = url; a.download = 'versa-result.jpg'; a.click();
           URL.revokeObjectURL(url);
           toast.success('Image saved! Open Instagram and share it 📸');
         }
