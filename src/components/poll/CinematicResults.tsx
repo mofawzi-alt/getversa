@@ -476,16 +476,16 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           )}
 
           {/* Content */}
-          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-2 min-h-0 overflow-hidden">
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-1.5 min-h-0 overflow-hidden">
             {/* Minority badge */}
             {isMinority && step >= 4 && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mb-4 px-5 py-1.5 rounded-full"
+                className="mb-2 px-4 py-1 rounded-full"
                 style={{ backgroundColor: '#F59E0B' }}
               >
-                <span className="text-[11px] font-bold tracking-[0.15em] text-[#020617] uppercase">
+                <span className="text-[10px] font-bold tracking-[0.15em] text-[#020617] uppercase">
                   Minority Opinion
                 </span>
               </motion.div>
@@ -502,7 +502,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 <span
                   className="font-bold tracking-tight block"
                   style={{
-                    fontSize: 'clamp(56px, 15vw, 96px)',
+                    fontSize: 'clamp(48px, 14vw, 84px)',
                     color: accentColor,
                     lineHeight: 1,
                   }}
@@ -518,7 +518,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mt-1 text-center text-sm font-medium max-w-xs"
+                className="mt-1 text-center text-sm font-medium max-w-[18rem] leading-snug"
                 style={{ color: 'rgba(255,255,255,0.85)' }}
               >
                 {statement}
@@ -531,7 +531,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2 }}
-                className="mt-1 text-center text-sm max-w-xs"
+                className="mt-1 text-center text-xs max-w-[18rem] leading-snug"
                 style={{ color: 'rgba(255,255,255,0.5)' }}
               >
                 The most interesting opinions are the ones nobody expects.
@@ -544,7 +544,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="mt-2 text-center text-xs font-semibold max-w-xs"
+                className="mt-2 text-center text-xs font-semibold max-w-[18rem] leading-snug"
                 style={{ color: '#F59E0B' }}
               >
                 {patternLine}
@@ -557,7 +557,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="mt-1 text-center text-xs italic max-w-xs"
+                className="mt-1 text-center text-[11px] italic max-w-[18rem] leading-snug"
                 style={{ color: '#64748B' }}
               >
                 {teaserLine}
@@ -566,39 +566,48 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           </div>
 
           {/* Bottom section: share card + buttons */}
-          <div className="relative z-10 flex-shrink-0 px-4 pb-3 space-y-1.5">
+          <div className="relative z-10 flex-shrink-0 px-3 pb-2 space-y-1">
             {/* Share card preview */}
             {step >= 9 && (
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, type: 'spring', damping: 25 }}
-                className="rounded-2xl p-3 border"
+                className="rounded-xl p-2 border"
                 style={{
                   backgroundColor: 'rgba(15,23,42,0.9)',
                   borderColor: isMinority ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.1)',
                 }}
               >
-                <p className="text-white font-bold text-xs text-center mb-2">{poll.question}</p>
-                <div className="flex gap-2 mb-2">
-                  <div className="flex-1 rounded-lg overflow-hidden aspect-[4/3]">
+                <p
+                  className="text-white font-semibold text-[11px] leading-4 text-center mb-1.5"
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {poll.question}
+                </p>
+                <div className="flex gap-1.5 mb-1.5">
+                  <div className="flex-1 rounded-lg overflow-hidden h-24">
                     <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex-1 rounded-lg overflow-hidden aspect-[4/3]">
+                  <div className="flex-1 rounded-lg overflow-hidden h-24">
                     <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" />
                   </div>
                 </div>
-                {/* Bar */}
-                <div className="h-1.5 rounded-full overflow-hidden flex mb-1.5" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                <div className="h-1.5 rounded-full overflow-hidden flex mb-1" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
                   <div className="h-full rounded-l-full" style={{ width: `${percentA}%`, backgroundColor: choice === 'A' ? '#2563EB' : '#475569' }} />
                   <div className="h-full rounded-r-full" style={{ width: `${percentB}%`, backgroundColor: choice === 'B' ? '#2563EB' : '#475569' }} />
                 </div>
-                <div className="flex justify-between text-[10px] font-bold">
-                  <span style={{ color: choice === 'A' ? '#2563EB' : '#94A3B8' }}>{percentA}%</span>
-                  <span className="text-white/50 text-[9px]">
+                <div className="flex items-center justify-between gap-2 text-[9px] font-bold leading-none">
+                  <span className="shrink-0" style={{ color: choice === 'A' ? '#2563EB' : '#94A3B8' }}>{percentA}%</span>
+                  <span className="min-w-0 flex-1 truncate text-center text-white/50 text-[8px]">
                     {userPercent >= 50 ? `I voted with the ${userPercent}%` : `I voted with the ${userPercent}% minority`}
                   </span>
-                  <span style={{ color: choice === 'B' ? '#2563EB' : '#94A3B8' }}>{percentB}%</span>
+                  <span className="shrink-0" style={{ color: choice === 'B' ? '#2563EB' : '#94A3B8' }}>{percentB}%</span>
                 </div>
               </motion.div>
             )}
@@ -609,24 +618,24 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-2"
+                className="space-y-1"
               >
                 <Button
                   onClick={() => handleShare('instagram')}
-                  className="w-full h-10 rounded-xl font-bold text-sm gap-2"
+                  className="w-full h-9 rounded-xl font-bold text-xs gap-2"
                   style={{
                     backgroundColor: isMinority ? '#F59E0B' : '#2563EB',
                     color: isMinority ? '#020617' : '#ffffff',
                   }}
                 >
-                  <Share2 className="h-4 w-4" />
-                  Share to Instagram Stories
+                  <Share2 className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Share to Instagram Stories</span>
                 </Button>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-1.5">
                   <Button
                     onClick={() => handleShare('whatsapp')}
                     variant="outline"
-                    className="flex-1 h-9 rounded-xl font-semibold text-xs gap-1.5 border-white/10 text-white bg-white/5 hover:bg-white/10"
+                    className="h-8 rounded-xl font-semibold text-[11px] gap-1.5 border-white/10 text-white bg-white/5 hover:bg-white/10"
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
                     WhatsApp
@@ -634,7 +643,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   <Button
                     onClick={() => handleShare('save')}
                     variant="outline"
-                    className="flex-1 h-9 rounded-xl font-semibold text-xs gap-1.5 border-white/10 text-white bg-white/5 hover:bg-white/10"
+                    className="h-8 rounded-xl font-semibold text-[11px] gap-1.5 border-white/10 text-white bg-white/5 hover:bg-white/10"
                   >
                     <Download className="h-3.5 w-3.5" />
                     Save
@@ -652,7 +661,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   transition={{ duration: 2, repeat: Infinity }}
                   exit={{ opacity: 0 }}
                   onClick={onNext}
-                  className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold"
+                  className="w-full flex items-center justify-center gap-2 py-1 text-[11px] font-semibold"
                   style={{ color: 'rgba(255,255,255,0.6)' }}
                 >
                   Next battle <ArrowRight className="h-4 w-4" />
