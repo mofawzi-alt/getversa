@@ -19,7 +19,7 @@ import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/co
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 import HeroVoteCard from '@/components/home/HeroVoteCard';
 import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
-import StreakMilestoneCelebration, { checkStreakMilestone } from '@/components/streak/StreakMilestoneCelebration';
+
 import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/VoteMilestoneCelebration';
 import DailyReturnBanner from '@/components/home/DailyReturnBanner';
 import { WelcomeBanner, TimedFloatingNudge } from '@/components/onboarding/GuestNudges';
@@ -146,7 +146,7 @@ export default function Home() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
+  
   const [voteMilestone, setVoteMilestone] = useState<{ count: number; message: string } | null>(null);
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const prevVoteCountRef = useRef<number | null>(null);
@@ -317,13 +317,6 @@ export default function Home() {
     enabled: !!user,
   });
 
-  // Check streak milestones
-  useEffect(() => {
-    if (userStreak?.current) {
-      const m = checkStreakMilestone(userStreak.current);
-      if (m) setStreakMilestone(m);
-    }
-  }, [userStreak?.current]);
 
   // Check vote milestones
   useEffect(() => {
@@ -710,12 +703,6 @@ export default function Home() {
       <div className="min-h-screen flex flex-col pb-28 gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
-        {/* Streak milestone celebration */}
-        <StreakMilestoneCelebration
-          streakDays={streakMilestone || 0}
-          open={!!streakMilestone}
-          onClose={() => setStreakMilestone(null)}
-        />
 
         {/* Vote milestone celebration */}
         {voteMilestone && (
