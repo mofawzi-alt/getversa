@@ -84,11 +84,50 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const submitVote = useCallback(async (choice: 'A' | 'B') => {
     if (!poll || result || isVoting) return;
     
-    // NUDGE 3: Redirect guests to signup when they try to vote
+    // Guest gate: allow 3 free votes, then require signup
     if (!user) {
-      // Store intent so we can bring them back
-      try { sessionStorage.setItem('versa_vote_intent', poll.id); } catch {}
-      window.location.href = '/auth?mode=signup&reason=vote';
+      const guestVotes = parseInt(localStorage.getItem('versa_guest_votes') || '0', 10);
+      if (guestVotes >= 3) {
+        // 4th vote attempt — redirect to signup
+        try { sessionStorage.setItem('versa_vote_intent', poll.id); } catch {}
+        window.location.href = '/auth?mode=signup&reason=vote';
+        return;
+      }
+      // Allow the vote but track it client-side (won't be saved to DB)
+      setIsVoting(true);
+      setDragX(0);
+      setDragY(0);
+      playSwipeSound();
+
+      // Show fake result for guests
+      setResult({
+        choice,
+        percentA: poll.percentA,
+        percentB: poll.percentB,
+        total: poll.totalVotes,
+      });
+
+      localStorage.setItem('versa_guest_votes', String(guestVotes + 1));
+      // Track which polls the guest has voted on so they advance in the feed
+      try {
+        const stored = localStorage.getItem('versa_guest_voted_polls');
+        const ids: string[] = stored ? JSON.parse(stored) : [];
+        ids.push(poll.id);
+        localStorage.setItem('versa_guest_voted_polls', JSON.stringify(ids));
+      } catch {}
+      playResultSound();
+
+      // Show cinematic results for guests too
+      setTimeout(() => {
+        setCinematicData({
+          choice,
+          percentA: poll.percentA,
+          percentB: poll.percentB,
+          totalVotes: poll.totalVotes,
+        });
+      }, RESULT_MS);
+
+      queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
       return;
     }
     

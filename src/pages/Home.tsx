@@ -243,7 +243,13 @@ export default function Home() {
   const { data: votedPollIds } = useQuery({
     queryKey: ['user-voted-ids', user?.id],
     queryFn: async () => {
-      if (!user) return new Set<string>();
+      if (!user) {
+        // For guests, track voted polls in localStorage
+        try {
+          const stored = localStorage.getItem('versa_guest_voted_polls');
+          return new Set<string>(stored ? JSON.parse(stored) : []);
+        } catch { return new Set<string>(); }
+      }
       const [{ data: votes }, { data: skipped }] = await Promise.all([
         supabase.from('votes').select('poll_id').eq('user_id', user.id),
         supabase.from('skipped_polls').select('poll_id').eq('user_id', user.id),
@@ -635,7 +641,7 @@ export default function Home() {
   // (auto-rotate removed — static horizontal scroll)
 
   if (showWelcome) {
-    return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); setShowTutorial(true); }} />;
+    return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); }} />;
   }
 
   if (isLoading) {
