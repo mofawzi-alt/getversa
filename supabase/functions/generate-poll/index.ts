@@ -333,6 +333,16 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
 
     if (insertError) {
       console.error('Database insert error:', insertError);
+      // If duplicate, return a friendly message instead of crashing
+      if (insertError.code === '23505') {
+        return new Response(JSON.stringify({ 
+          error: 'This poll already exists. Please try generating again.',
+          duplicate: true 
+        }), {
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       throw new Error('Failed to save poll to database');
     }
 
