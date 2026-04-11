@@ -575,6 +575,27 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           </button>
         </div>
       )}
+
+      {/* Cinematic Results */}
+      {poll && cinematicData && (
+        <CinematicResults
+          poll={poll}
+          choice={cinematicData.choice}
+          percentA={cinematicData.percentA}
+          percentB={cinematicData.percentB}
+          totalVotes={cinematicData.totalVotes}
+          visible={!!cinematicData}
+          onNext={() => {
+            setCinematicData(null);
+            setResult(null);
+            setIsVoting(false);
+            setIsMinority(false);
+            setIsFirstVoteOfDay(false);
+            setShowHint(true);
+            onVoteComplete?.();
+          }}
+        />
+      )}
     </section>
   );
 }
