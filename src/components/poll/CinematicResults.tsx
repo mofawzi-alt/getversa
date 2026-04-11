@@ -387,11 +387,19 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ title: 'VERSA', text: `📊 ${poll.question}`, files: [file] });
       } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'versa-result.png'; a.click();
-        URL.revokeObjectURL(url);
-        toast.success('Image saved! Share to your story 📸');
+        // Fallback: copy image to clipboard if possible, otherwise download
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]);
+          toast.success('Image copied! Paste it in your Instagram story 📋');
+        } catch {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = 'versa-result.png'; a.click();
+          URL.revokeObjectURL(url);
+          toast.success('Image saved! Open Instagram and share it 📸');
+        }
       }
     } catch (err) {
       if ((err as Error).name !== 'AbortError') toast.error('Share failed');
