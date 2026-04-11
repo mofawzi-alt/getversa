@@ -352,13 +352,13 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
   // Animation sequence
   useEffect(() => {
     if (!visible) { setStep(0); setShowNextHint(false); return; }
+    setShowNextHint(true);
     const timers: ReturnType<typeof setTimeout>[] = [];
     // Step 1: bg (0ms), Step 2: images (300ms), Step 3: glow (500ms), Step 4: number (800ms)
     // Step 5: statement (2000ms), Step 6: pattern (2400ms), Step 7: teaser (2700ms)
     // Step 8: celebrity (3000ms), Step 9: share card (3300ms), Step 10: buttons (3800ms)
     const delays = [0, 300, 500, 800, 2000, 2400, 2700, 3000, 3300, 3800];
     delays.forEach((d, i) => timers.push(setTimeout(() => setStep(i + 1), d)));
-    timers.push(setTimeout(() => setShowNextHint(true), 5000));
     return () => timers.forEach(clearTimeout);
   }, [visible]);
 
@@ -476,16 +476,16 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           )}
 
           {/* Content */}
-          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-1.5 min-h-0 overflow-hidden">
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-1 min-h-0 overflow-hidden">
             {/* Minority badge */}
             {isMinority && step >= 4 && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mb-2 px-4 py-1 rounded-full"
+                className="mb-2 px-3 py-1 rounded-full"
                 style={{ backgroundColor: '#F59E0B' }}
               >
-                <span className="text-[10px] font-bold tracking-[0.15em] text-[#020617] uppercase">
+                <span className="text-[9px] font-bold tracking-[0.15em] text-[#020617] uppercase">
                   Minority Opinion
                 </span>
               </motion.div>
@@ -502,7 +502,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 <span
                   className="font-bold tracking-tight block"
                   style={{
-                    fontSize: 'clamp(48px, 14vw, 84px)',
+                    fontSize: 'clamp(40px, 12vw, 72px)',
                     color: accentColor,
                     lineHeight: 1,
                   }}
@@ -518,7 +518,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mt-1 text-center text-sm font-medium max-w-[18rem] leading-snug"
+                className="mt-1 text-center text-sm font-medium max-w-[17rem] leading-snug"
                 style={{ color: 'rgba(255,255,255,0.85)' }}
               >
                 {statement}
@@ -531,7 +531,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2 }}
-                className="mt-1 text-center text-xs max-w-[18rem] leading-snug"
+                className="mt-1 text-center text-[11px] max-w-[17rem] leading-snug"
                 style={{ color: 'rgba(255,255,255,0.5)' }}
               >
                 The most interesting opinions are the ones nobody expects.
@@ -544,7 +544,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="mt-2 text-center text-xs font-semibold max-w-[18rem] leading-snug"
+                className="mt-2 text-center text-[11px] font-semibold max-w-[17rem] leading-snug"
                 style={{ color: '#F59E0B' }}
               >
                 {patternLine}
@@ -557,7 +557,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="mt-1 text-center text-[11px] italic max-w-[18rem] leading-snug"
+                className="mt-1 text-center text-[10px] italic max-w-[17rem] leading-snug"
                 style={{ color: '#64748B' }}
               >
                 {teaserLine}
@@ -591,10 +591,10 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   {poll.question}
                 </p>
                 <div className="flex gap-1.5 mb-1.5">
-                  <div className="flex-1 rounded-lg overflow-hidden h-24">
+                  <div className="flex-1 rounded-lg overflow-hidden h-20">
                     <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex-1 rounded-lg overflow-hidden h-24">
+                  <div className="flex-1 rounded-lg overflow-hidden h-20">
                     <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" />
                   </div>
                 </div>
@@ -612,62 +612,64 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
               </motion.div>
             )}
 
-            {/* Share buttons */}
-            {step >= 10 && (
+            {/* Actions */}
+            {(step >= 10 || showNextHint) && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
                 className="space-y-1"
               >
-                <Button
-                  onClick={() => handleShare('instagram')}
-                  className="w-full h-9 rounded-xl font-bold text-xs gap-2"
-                  style={{
-                    backgroundColor: isMinority ? '#F59E0B' : '#2563EB',
-                    color: isMinority ? '#020617' : '#ffffff',
-                  }}
-                >
-                  <Share2 className="h-4 w-4 shrink-0" />
-                  <span className="truncate">Share to Instagram Stories</span>
-                </Button>
-                <div className="grid grid-cols-2 gap-1.5">
+                {step >= 10 && (
                   <Button
-                    onClick={() => handleShare('whatsapp')}
-                    variant="outline"
-                    className="h-8 rounded-xl font-semibold text-[11px] gap-1.5 border-white/10 text-white bg-white/5 hover:bg-white/10"
+                    onClick={() => handleShare('instagram')}
+                    className="w-full h-8 rounded-xl font-bold text-[11px] gap-1.5"
+                    style={{
+                      backgroundColor: isMinority ? '#F59E0B' : '#2563EB',
+                      color: isMinority ? '#020617' : '#ffffff',
+                    }}
                   >
-                    <MessageCircle className="h-3.5 w-3.5" />
-                    WhatsApp
+                    <Share2 className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Share to Instagram Stories</span>
                   </Button>
-                  <Button
-                    onClick={() => handleShare('save')}
-                    variant="outline"
-                    className="h-8 rounded-xl font-semibold text-[11px] gap-1.5 border-white/10 text-white bg-white/5 hover:bg-white/10"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    Save
-                  </Button>
+                )}
+
+                <div className={`grid gap-1.5 ${step >= 10 ? 'grid-cols-3' : 'grid-cols-1'}`}>
+                  {step >= 10 && (
+                    <Button
+                      onClick={() => handleShare('whatsapp')}
+                      variant="outline"
+                      className="h-8 rounded-xl font-semibold text-[10px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
+                    >
+                      <MessageCircle className="h-3 w-3 shrink-0" />
+                      <span className="truncate">WhatsApp</span>
+                    </Button>
+                  )}
+
+                  {step >= 10 && (
+                    <Button
+                      onClick={() => handleShare('save')}
+                      variant="outline"
+                      className="h-8 rounded-xl font-semibold text-[10px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
+                    >
+                      <Download className="h-3 w-3 shrink-0" />
+                      <span className="truncate">Save</span>
+                    </Button>
+                  )}
+
+                  {showNextHint && (
+                    <Button
+                      onClick={onNext}
+                      variant="outline"
+                      className="h-8 rounded-xl font-semibold text-[10px] gap-1 border-white/15 text-white bg-white/10 hover:bg-white/15"
+                    >
+                      <span className="truncate">Next</span>
+                      <ArrowRight className="h-3 w-3 shrink-0" />
+                    </Button>
+                  )}
                 </div>
               </motion.div>
             )}
-
-            {/* Next poll */}
-            <AnimatePresence>
-              {showNextHint && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0.4, 0.9, 0.4] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  exit={{ opacity: 0 }}
-                  onClick={onNext}
-                  className="w-full flex items-center justify-center gap-2 py-1 text-[11px] font-semibold"
-                  style={{ color: 'rgba(255,255,255,0.6)' }}
-                >
-                  Next battle <ArrowRight className="h-4 w-4" />
-                </motion.button>
-              )}
-            </AnimatePresence>
           </div>
         </motion.div>
       )}
