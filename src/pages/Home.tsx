@@ -635,7 +635,7 @@ export default function Home() {
   // (auto-rotate removed — static horizontal scroll)
 
   if (showWelcome) {
-    return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); setShowTutorial(true); }} />;
+    return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); }} />;
   }
 
   if (isLoading) {
