@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, MessageCircle, Download, ArrowRight, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -349,6 +350,19 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
     generateTeaser(poll.id, percentA, percentB).then(t => setTeaserLine(t));
   }, [visible, user?.id, poll.id, choice, percentA, percentB]);
 
+  useEffect(() => {
+    if (!visible || typeof document === 'undefined') return;
+    const previousOverflow = document.body.style.overflow;
+    const previousTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.touchAction = previousTouchAction;
+    };
+  }, [visible]);
+
   // Animation sequence
   useEffect(() => {
     if (!visible) { setStep(0); setShowNextHint(false); return; }
@@ -417,7 +431,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
   const accentColor = isMinority ? '#F59E0B' : '#ffffff';
   const statement = getPersonalStatement(userPercent, profile?.city);
 
-  return (
+  const overlay = (
     <AnimatePresence>
       {visible && (
         <motion.div
@@ -425,8 +439,13 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[100] flex flex-col overflow-hidden"
-          style={{ backgroundColor: bgColor }}
+          className="fixed inset-0 z-[200] flex flex-col overflow-hidden"
+          style={{
+            backgroundColor: bgColor,
+            minHeight: '100dvh',
+            paddingTop: 'env(safe-area-inset-top)',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+          }}
         >
           <canvas ref={canvasRef} className="hidden" />
 
@@ -468,16 +487,14 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
             </div>
           )}
 
-          {/* Gold edge glow for minority */}
           {isMinority && step >= 4 && (
-            <div className="absolute inset-0 pointer-events-none" style={{
-              boxShadow: 'inset 0 0 120px rgba(245,158,11,0.12)',
-            }} />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ boxShadow: 'inset 0 0 120px rgba(245,158,11,0.12)' }}
+            />
           )}
 
-          {/* Content */}
           <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-1 min-h-0 overflow-hidden">
-            {/* Minority badge */}
             {isMinority && step >= 4 && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -491,7 +508,6 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
               </motion.div>
             )}
 
-            {/* Big number */}
             {step >= 4 && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -512,7 +528,6 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
               </motion.div>
             )}
 
-            {/* Personal statement */}
             {step >= 5 && (
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
@@ -525,7 +540,6 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
               </motion.p>
             )}
 
-            {/* Minority second line */}
             {isMinority && step >= 5 && (
               <motion.p
                 initial={{ opacity: 0, y: 8 }}
@@ -538,7 +552,6 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
               </motion.p>
             )}
 
-            {/* Pattern insight */}
             {step >= 6 && patternLine && (
               <motion.p
                 initial={{ opacity: 0, y: 8 }}
@@ -551,7 +564,6 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
               </motion.p>
             )}
 
-            {/* Teaser hint */}
             {step >= 7 && teaserLine && (
               <motion.p
                 initial={{ opacity: 0, y: 8 }}
@@ -565,9 +577,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
             )}
           </div>
 
-          {/* Bottom section: share card + buttons */}
           <div className="relative z-10 flex-shrink-0 px-3 pb-2 space-y-1">
-            {/* Share card preview */}
             {step >= 9 && (
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
@@ -612,7 +622,6 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
               </motion.div>
             )}
 
-            {/* Actions */}
             {(step >= 10 || showNextHint) && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -675,4 +684,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
       )}
     </AnimatePresence>
   );
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(overlay, document.body);
 }
