@@ -576,6 +576,7 @@ function ImmersivePollCard({
             </div>
             {/* FIX 2: Prominent Share Button */}
             <ShareImageCard
+              pollId={poll.id}
               question={poll.question}
               optionA={poll.option_a}
               optionB={poll.option_b}

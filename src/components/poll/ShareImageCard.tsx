@@ -2,8 +2,10 @@ import { useRef, useCallback } from 'react';
 import { Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ShareImageCardProps {
+  pollId: string;
   question: string;
   optionA: string;
   optionB: string;
@@ -15,6 +17,7 @@ interface ShareImageCardProps {
 }
 
 export default function ShareImageCard({
+  pollId,
   question,
   optionA,
   optionB,
@@ -24,7 +27,23 @@ export default function ShareImageCard({
   imageBUrl,
   choice,
 }: ShareImageCardProps) {
+  const { profile } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const shareBaseUrl = window.location.origin;
+  const sharerName = profile?.username?.trim();
+  const shareParams = new URLSearchParams({ c: choice });
+  if (sharerName) {
+    shareParams.set('by', sharerName);
+  }
+  const pollUrl = `${shareBaseUrl}/poll/${pollId}?${shareParams.toString()}`;
+  const displayHost = (() => {
+    try {
+      return new URL(shareBaseUrl).host;
+    } catch {
+      return 'getversa.app';
+    }
+  })();
 
   const generateImage = useCallback(async (): Promise<Blob | null> => {
     const canvas = canvasRef.current;
@@ -34,9 +53,9 @@ export default function ShareImageCard({
     const H = 1920;
     canvas.width = W;
     canvas.height = H;
-    const ctx = canvas.getContext('2d')!;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
 
-    // Background gradient
     const grad = ctx.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0, '#0a0a0a');
     grad.addColorStop(0.5, '#111111');
@@ -44,7 +63,6 @@ export default function ShareImageCard({
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    // Accent lines
     ctx.strokeStyle = 'rgba(255,255,255,0.06)';
     ctx.lineWidth = 1;
     for (let y = 0; y < H; y += 60) {
@@ -54,7 +72,6 @@ export default function ShareImageCard({
       ctx.stroke();
     }
 
-    // Load images
     const loadImg = (url: string): Promise<HTMLImageElement | null> =>
       new Promise((resolve) => {
         const img = new Image();
@@ -69,13 +86,13 @@ export default function ShareImageCard({
       imageBUrl ? loadImg(imageBUrl) : null,
     ]);
 
-    // Question
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 56px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'center';
     const words = question.split(' ');
-    let lines: string[] = [];
+    const lines: string[] = [];
     let currentLine = '';
+
     for (const word of words) {
       const test = currentLine ? `${currentLine} ${word}` : word;
       if (ctx.measureText(test).width > W - 160) {
@@ -93,14 +110,12 @@ export default function ShareImageCard({
       y += 70;
     }
 
-    // Images section
     const imgY = y + 40;
     const imgW = 460;
     const imgH = 520;
     const gap = 40;
 
-    // Option A image
-    const ax = (W / 2) - imgW - (gap / 2);
+    const ax = W / 2 - imgW - gap / 2;
     ctx.save();
     ctx.beginPath();
     ctx.roundRect(ax, imgY, imgW, imgH, 24);
@@ -116,7 +131,6 @@ export default function ShareImageCard({
     }
     ctx.restore();
 
-    // Option A border if chosen
     if (choice === 'A') {
       ctx.strokeStyle = '#22c55e';
       ctx.lineWidth = 4;
@@ -125,8 +139,7 @@ export default function ShareImageCard({
       ctx.stroke();
     }
 
-    // Option B image
-    const bx = (W / 2) + (gap / 2);
+    const bx = W / 2 + gap / 2;
     ctx.save();
     ctx.beginPath();
     ctx.roundRect(bx, imgY, imgW, imgH, 24);
@@ -150,7 +163,6 @@ export default function ShareImageCard({
       ctx.stroke();
     }
 
-    // Divider line
     ctx.strokeStyle = 'rgba(255,255,255,0.2)';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -158,91 +170,106 @@ export default function ShareImageCard({
     ctx.lineTo(W / 2, imgY + imgH);
     ctx.stroke();
 
-    // Option labels
     const labelY = imgY + imgH + 50;
     ctx.font = 'bold 44px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(optionA.length > 18 ? optionA.slice(0, 18) + '…' : optionA, ax + imgW / 2, labelY);
-    ctx.fillText(optionB.length > 18 ? optionB.slice(0, 18) + '…' : optionB, bx + imgW / 2, labelY);
+    ctx.fillText(optionA.length > 18 ? `${optionA.slice(0, 18)}…` : optionA, ax + imgW / 2, labelY);
+    ctx.fillText(optionB.length > 18 ? `${optionB.slice(0, 18)}…` : optionB, bx + imgW / 2, labelY);
 
-    // Percentage bars
     const barY = labelY + 50;
     const barH = 60;
-    
-    // A percentage
+
     ctx.font = 'bold 72px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = '#22c55e';
     ctx.fillText(`${percentA}%`, ax + imgW / 2, barY + barH);
-    
-    // B percentage
+
     ctx.fillStyle = '#f59e0b';
     ctx.fillText(`${percentB}%`, bx + imgW / 2, barY + barH);
 
-    // Combined progress bar
     const pbY = barY + barH + 30;
     const pbW = W - 160;
     const pbH = 16;
     const pbX = 80;
-    
+
     ctx.fillStyle = 'rgba(255,255,255,0.1)';
     ctx.beginPath();
     ctx.roundRect(pbX, pbY, pbW, pbH, 8);
     ctx.fill();
-    
+
     ctx.fillStyle = '#22c55e';
     ctx.beginPath();
     ctx.roundRect(pbX, pbY, pbW * (percentA / 100), pbH, 8);
     ctx.fill();
 
-    // Total votes
     ctx.font = '32px system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.textAlign = 'center';
     ctx.fillText('What would you choose?', W / 2, pbY + 70);
 
-    // VERSA watermark
+    ctx.font = 'bold 30px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.78)';
+    ctx.fillText(`Vote on Versa → ${displayHost}`, W / 2, H - 120);
+
     ctx.font = 'bold 48px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.textAlign = 'center';
-    ctx.fillText('VERSA', W / 2, H - 80);
-    
-    ctx.font = '24px system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
-    ctx.fillText('Decision Infrastructure', W / 2, H - 40);
+    ctx.fillText('VERSA', W / 2, H - 72);
 
-    return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-  }, [question, optionA, optionB, percentA, percentB, imageAUrl, imageBUrl, choice]);
+    ctx.font = '24px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.24)';
+    ctx.fillText('Open the shared link to vote on this poll', W / 2, H - 34);
+
+    return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+  }, [choice, displayHost, imageAUrl, imageBUrl, optionA, optionB, percentA, percentB, question]);
 
   const handleShare = useCallback(async () => {
     try {
       const blob = await generateImage();
-      if (!blob) { toast.error('Failed to generate image'); return; }
+      if (!blob) {
+        toast.error('Failed to generate image');
+        return;
+      }
 
-      const file = new File([blob], 'versa-poll.png', { type: 'image/png' });
+      const file = new File([blob], 'versa-poll.jpg', { type: 'image/jpeg' });
+      const shareText = `What would you choose? Vote on Versa 👉 ${pollUrl}`;
 
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          title: 'VERSA Poll',
-          text: `📊 ${question}`,
-          files: [file],
-        });
-      } else {
-        // Fallback: download
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'versa-poll.png';
-        a.click();
-        URL.revokeObjectURL(url);
-        toast.success('Image downloaded! Share it on your story 📸');
+      if (navigator.share) {
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({
+            title: 'VERSA Poll',
+            text: shareText,
+            url: pollUrl,
+            files: [file],
+          });
+        } else {
+          await navigator.share({
+            title: 'VERSA Poll',
+            text: shareText,
+            url: pollUrl,
+          });
+        }
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'versa-poll.jpg';
+      a.click();
+      URL.revokeObjectURL(url);
+
+      try {
+        await navigator.clipboard.writeText(shareText);
+        toast.success('Image downloaded and link copied');
+      } catch {
+        toast.success('Image downloaded. Share it with the Versa link.');
       }
     } catch (err) {
       if ((err as Error).name !== 'AbortError') {
         toast.error('Failed to share');
       }
     }
-  }, [generateImage, question]);
+  }, [generateImage, pollUrl]);
 
   return (
     <>
