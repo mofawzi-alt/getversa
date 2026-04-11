@@ -300,15 +300,17 @@ function useShareCard(props: {
       ctx.fillText(props.city, W/2, barY + 195);
     }
 
-    // VERSA branding
+    // VERSA branding + CTA
     ctx.font = 'bold 40px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.textAlign = 'right';
-    ctx.fillText('VERSA', W - 60, H - 60);
-    ctx.font = '24px system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.textAlign = 'left';
-    ctx.fillText('getversa.app', 60, H - 60);
+    ctx.fillText('VERSA', W - 60, H - 90);
+
+    // Prominent link CTA
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Vote now 👉 getversa.app', W / 2, H - 40);
 
     return new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.92));
   }, [props]);
@@ -374,18 +376,20 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
         return;
       }
 
+      const shareText = `What would you choose? Vote on Versa 👉 getversa.app`;
+
       if (type === 'whatsapp') {
         if (navigator.share && navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ text: `📊 ${poll.question}`, files: [file] });
+          await navigator.share({ text: shareText, files: [file] });
         } else {
-          window.open(`https://wa.me/?text=${encodeURIComponent(`📊 ${poll.question} — Vote now on VERSA: getversa.app`)}`, '_blank');
+          window.open(`https://wa.me/?text=${encodeURIComponent(`📊 ${poll.question}\n\n${shareText}`)}`, '_blank');
         }
         return;
       }
 
       // Instagram / generic share
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ title: 'VERSA', text: `📊 ${poll.question}`, files: [file] });
+        await navigator.share({ title: 'VERSA', text: shareText, url: 'https://getversa.app', files: [file] });
       } else {
         // Fallback: copy image to clipboard if possible, otherwise download
         try {
