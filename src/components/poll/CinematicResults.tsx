@@ -425,7 +425,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[100] flex flex-col overflow-y-auto"
+          className="fixed inset-0 z-[100] flex flex-col"
           style={{ backgroundColor: bgColor }}
         >
           <canvas ref={canvasRef} className="hidden" />
@@ -476,7 +476,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           )}
 
           {/* Content */}
-          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-8 min-h-0">
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-4 min-h-0 overflow-hidden">
             {/* Minority badge */}
             {isMinority && step >= 4 && (
               <motion.div
@@ -566,36 +566,36 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           </div>
 
           {/* Bottom section: share card + buttons */}
-          <div className="relative z-10 px-5 pb-6 space-y-3">
+          <div className="relative z-10 flex-shrink-0 px-5 pb-safe space-y-2 pb-4">
             {/* Share card preview */}
             {step >= 9 && (
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, type: 'spring', damping: 25 }}
-                className="rounded-2xl p-4 border"
+                className="rounded-2xl p-3 border"
                 style={{
                   backgroundColor: 'rgba(15,23,42,0.9)',
                   borderColor: isMinority ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.1)',
                 }}
               >
-                <p className="text-white font-bold text-sm text-center mb-3">{poll.question}</p>
-                <div className="flex gap-2 mb-3">
-                  <div className="flex-1 rounded-xl overflow-hidden aspect-[3/4]">
+                <p className="text-white font-bold text-xs text-center mb-2">{poll.question}</p>
+                <div className="flex gap-2 mb-2">
+                  <div className="flex-1 rounded-lg overflow-hidden aspect-[4/3]">
                     <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex-1 rounded-xl overflow-hidden aspect-[3/4]">
+                  <div className="flex-1 rounded-lg overflow-hidden aspect-[4/3]">
                     <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" />
                   </div>
                 </div>
                 {/* Bar */}
-                <div className="h-2 rounded-full overflow-hidden flex mb-2" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                <div className="h-1.5 rounded-full overflow-hidden flex mb-1.5" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
                   <div className="h-full rounded-l-full" style={{ width: `${percentA}%`, backgroundColor: choice === 'A' ? '#2563EB' : '#475569' }} />
                   <div className="h-full rounded-r-full" style={{ width: `${percentB}%`, backgroundColor: choice === 'B' ? '#2563EB' : '#475569' }} />
                 </div>
-                <div className="flex justify-between text-xs font-bold">
+                <div className="flex justify-between text-[10px] font-bold">
                   <span style={{ color: choice === 'A' ? '#2563EB' : '#94A3B8' }}>{percentA}%</span>
-                  <span className="text-white/50 text-[10px]">
+                  <span className="text-white/50 text-[9px]">
                     {userPercent >= 50 ? `I voted with the ${userPercent}%` : `I voted with the ${userPercent}% minority`}
                   </span>
                   <span style={{ color: choice === 'B' ? '#2563EB' : '#94A3B8' }}>{percentB}%</span>
@@ -613,30 +613,30 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
               >
                 <Button
                   onClick={() => handleShare('instagram')}
-                  className="w-full h-12 rounded-xl font-bold text-base gap-2"
+                  className="w-full h-10 rounded-xl font-bold text-sm gap-2"
                   style={{
                     backgroundColor: isMinority ? '#F59E0B' : '#2563EB',
                     color: isMinority ? '#020617' : '#ffffff',
                   }}
                 >
-                  <Share2 className="h-5 w-5" />
+                  <Share2 className="h-4 w-4" />
                   Share to Instagram Stories
                 </Button>
                 <div className="flex gap-2">
                   <Button
                     onClick={() => handleShare('whatsapp')}
                     variant="outline"
-                    className="flex-1 h-10 rounded-xl font-semibold text-sm gap-2 border-white/10 text-white bg-white/5 hover:bg-white/10"
+                    className="flex-1 h-9 rounded-xl font-semibold text-xs gap-1.5 border-white/10 text-white bg-white/5 hover:bg-white/10"
                   >
-                    <MessageCircle className="h-4 w-4" />
+                    <MessageCircle className="h-3.5 w-3.5" />
                     WhatsApp
                   </Button>
                   <Button
                     onClick={() => handleShare('save')}
                     variant="outline"
-                    className="flex-1 h-10 rounded-xl font-semibold text-sm gap-2 border-white/10 text-white bg-white/5 hover:bg-white/10"
+                    className="flex-1 h-9 rounded-xl font-semibold text-xs gap-1.5 border-white/10 text-white bg-white/5 hover:bg-white/10"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-3.5 w-3.5" />
                     Save
                   </Button>
                 </div>
@@ -652,7 +652,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   transition={{ duration: 2, repeat: Infinity }}
                   exit={{ opacity: 0 }}
                   onClick={onNext}
-                  className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold"
+                  className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold"
                   style={{ color: 'rgba(255,255,255,0.6)' }}
                 >
                   Next battle <ArrowRight className="h-4 w-4" />
