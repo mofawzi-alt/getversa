@@ -425,7 +425,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[100] flex flex-col"
+          className="fixed inset-0 z-[100] flex flex-col overflow-hidden"
           style={{ backgroundColor: bgColor }}
         >
           <canvas ref={canvasRef} className="hidden" />
@@ -476,7 +476,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           )}
 
           {/* Content */}
-          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-4 min-h-0 overflow-hidden">
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-2 min-h-0 overflow-hidden">
             {/* Minority badge */}
             {isMinority && step >= 4 && (
               <motion.div
@@ -502,7 +502,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 <span
                   className="font-bold tracking-tight block"
                   style={{
-                    fontSize: 'clamp(72px, 20vw, 120px)',
+                    fontSize: 'clamp(56px, 15vw, 96px)',
                     color: accentColor,
                     lineHeight: 1,
                   }}
@@ -518,7 +518,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mt-3 text-center text-base font-medium max-w-xs"
+                className="mt-1 text-center text-sm font-medium max-w-xs"
                 style={{ color: 'rgba(255,255,255,0.85)' }}
               >
                 {statement}
@@ -544,7 +544,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="mt-4 text-center text-sm font-semibold max-w-xs"
+                className="mt-2 text-center text-xs font-semibold max-w-xs"
                 style={{ color: '#F59E0B' }}
               >
                 {patternLine}
@@ -557,7 +557,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="mt-3 text-center text-sm italic max-w-xs"
+                className="mt-1 text-center text-xs italic max-w-xs"
                 style={{ color: '#64748B' }}
               >
                 {teaserLine}
@@ -566,7 +566,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           </div>
 
           {/* Bottom section: share card + buttons */}
-          <div className="relative z-10 flex-shrink-0 px-5 pb-safe space-y-2 pb-4">
+          <div className="relative z-10 flex-shrink-0 px-4 pb-3 space-y-1.5">
             {/* Share card preview */}
             {step >= 9 && (
               <motion.div
