@@ -8,6 +8,7 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import { toast } from 'sonner';
 import { Check } from 'lucide-react';
 import HeroCaughtUp from './HeroCaughtUp';
+import CinematicResults from '@/components/poll/CinematicResults';
 
 interface HeroPoll {
   id: string;
@@ -53,6 +54,12 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const [showHint, setShowHint] = useState(true);
   const [isMinority, setIsMinority] = useState(false);
   const [isFirstVoteOfDay, setIsFirstVoteOfDay] = useState(false);
+  const [cinematicData, setCinematicData] = useState<{
+    choice: 'A' | 'B';
+    percentA: number;
+    percentB: number;
+    totalVotes: number;
+  } | null>(null);
   const sessionShownRef = useRef(new Set<string>());
 
   const startX = useRef(0);
@@ -161,13 +168,18 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
     queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
 
+    // Show cinematic results after brief confirmation
     setTimeout(() => {
-      setResult(null);
-      setIsVoting(false);
-      setIsMinority(false);
-      setIsFirstVoteOfDay(false);
-      setShowHint(true);
-      onVoteComplete?.();
+      if (result) {
+        // We have updated results — but need to get the latest
+      }
+      const latestResult = result || { choice, percentA: poll.percentA, percentB: poll.percentB, total: poll.totalVotes };
+      setCinematicData({
+        choice,
+        percentA: latestResult.percentA ?? poll.percentA,
+        percentB: latestResult.percentB ?? poll.percentB,
+        totalVotes: latestResult.total ?? poll.totalVotes,
+      });
     }, RESULT_MS);
   }, [onVoteComplete, poll, profile, queryClient, result, isVoting, user]);
 
@@ -562,6 +574,27 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             Skip ↑
           </button>
         </div>
+      )}
+
+      {/* Cinematic Results */}
+      {poll && cinematicData && (
+        <CinematicResults
+          poll={poll}
+          choice={cinematicData.choice}
+          percentA={cinematicData.percentA}
+          percentB={cinematicData.percentB}
+          totalVotes={cinematicData.totalVotes}
+          visible={!!cinematicData}
+          onNext={() => {
+            setCinematicData(null);
+            setResult(null);
+            setIsVoting(false);
+            setIsMinority(false);
+            setIsFirstVoteOfDay(false);
+            setShowHint(true);
+            onVoteComplete?.();
+          }}
+        />
       )}
     </section>
   );

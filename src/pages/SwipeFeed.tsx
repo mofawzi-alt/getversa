@@ -6,6 +6,7 @@ import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame } from 'lucide-
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import ShareImageCard from '@/components/poll/ShareImageCard';
+import CinematicResults from '@/components/poll/CinematicResults';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -674,6 +675,13 @@ export default function SwipeFeed() {
   const [showValueMsg, setShowValueMsg] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [cinematicData, setCinematicData] = useState<{
+    poll: Poll;
+    choice: 'A' | 'B';
+    percentA: number;
+    percentB: number;
+    totalVotes: number;
+  } | null>(null);
 
   // Check if authenticated user needs to complete profile
   const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
@@ -942,6 +950,18 @@ export default function SwipeFeed() {
       setVotedResults(prev => new Map(prev).set(data.pollId, data));
       setFeedbackPollId(data.pollId);
       setTimeout(() => setFeedbackPollId(null), 1800);
+
+      // Show cinematic results screen
+      const currentPoll = polls?.find(p => p.id === data.pollId);
+      if (currentPoll) {
+        setCinematicData({
+          poll: currentPoll,
+          choice: data.choice,
+          percentA: data.percentA,
+          percentB: data.percentB,
+          totalVotes: data.totalVotes,
+        });
+      }
 
       // Show points earned feedback
       if (user) {
@@ -1360,6 +1380,32 @@ export default function SwipeFeed() {
         open={!!streakMilestone}
         onClose={() => setStreakMilestone(null)}
       />
+
+      {/* Cinematic Results Screen */}
+      {cinematicData && (
+        <CinematicResults
+          poll={cinematicData.poll}
+          choice={cinematicData.choice}
+          percentA={cinematicData.percentA}
+          percentB={cinematicData.percentB}
+          totalVotes={cinematicData.totalVotes}
+          visible={!!cinematicData}
+          onNext={() => {
+            const pollId = cinematicData.poll.id;
+            setCinematicData(null);
+            // Scroll to next unvoted card
+            if (polls) {
+              const idx = polls.findIndex(p => p.id === pollId);
+              const unvotedAfter = polls.filter((p, i) => i > idx && !votedResults.has(p.id));
+              const nextPoll = unvotedAfter[0];
+              if (nextPoll) {
+                const nextEl = cardRefs.current.get(nextPoll.id);
+                nextEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
