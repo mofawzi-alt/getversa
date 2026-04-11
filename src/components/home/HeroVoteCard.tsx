@@ -108,7 +108,13 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
       });
 
       localStorage.setItem('versa_guest_votes', String(guestVotes + 1));
-
+      // Track which polls the guest has voted on so they advance in the feed
+      try {
+        const stored = localStorage.getItem('versa_guest_voted_polls');
+        const ids: string[] = stored ? JSON.parse(stored) : [];
+        ids.push(poll.id);
+        localStorage.setItem('versa_guest_voted_polls', JSON.stringify(ids));
+      } catch {}
       playResultSound();
 
       // Show cinematic results for guests too
