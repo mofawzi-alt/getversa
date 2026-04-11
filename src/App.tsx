@@ -36,6 +36,7 @@ import NotFound from "./pages/NotFound";
 import TasteProfile from "./pages/TasteProfile";
 import WeeklyTopResults from "./pages/WeeklyTopResults";
 import JoinOrganization from "./pages/JoinOrganization";
+import SharedPoll from "./pages/SharedPoll";
  import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
@@ -165,6 +166,7 @@ function AppInner() {
           <Route path="/home" element={<DemographicsGuard><Home /></DemographicsGuard>} />
           <Route path="/explore" element={<DemographicsGuard><Explore /></DemographicsGuard>} />
           <Route path="/browse" element={<Browse />} />
+          <Route path="/poll/:id" element={<SharedPoll />} />
           <Route path="/live-debate" element={<DemographicsGuard><LiveDebate /></DemographicsGuard>} />
           <Route path="/seasonal/:slug" element={<SeasonalHub />} />
           <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />

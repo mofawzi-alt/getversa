@@ -306,7 +306,8 @@ function useShareCard(props: {
     ctx.textAlign = 'right';
     ctx.fillText('VERSA', W - 60, H - 90);
 
-    // Prominent link CTA
+    // Prominent link CTA — use poll-specific deep link
+    const pollLink = `getversa.app/poll/${props.question ? '' : ''}`;
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'center';
@@ -367,6 +368,9 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
       if (!blob) { toast.error('Failed to generate'); return; }
       const file = new File([blob], 'versa-result.jpg', { type: 'image/jpeg' });
 
+      const username = profile?.username || '';
+      const pollUrl = `${window.location.origin}/poll/${poll.id}?c=${choice}${username ? `&by=${encodeURIComponent(username)}` : ''}`;
+
       if (type === 'save') {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -376,7 +380,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
         return;
       }
 
-      const shareText = `What would you choose? Vote on Versa 👉 getversa.app`;
+      const shareText = `What would you choose? Vote on Versa 👉 ${pollUrl}`;
 
       if (type === 'whatsapp') {
         if (navigator.share && navigator.canShare?.({ files: [file] })) {
@@ -389,9 +393,8 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
 
       // Instagram / generic share
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ title: 'VERSA', text: shareText, url: 'https://getversa.app', files: [file] });
+        await navigator.share({ title: 'VERSA', text: shareText, url: pollUrl, files: [file] });
       } else {
-        // Fallback: copy image to clipboard if possible, otherwise download
         try {
           await navigator.clipboard.write([
             new ClipboardItem({ 'image/png': blob })
@@ -408,7 +411,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
     } catch (err) {
       if ((err as Error).name !== 'AbortError') toast.error('Share failed');
     }
-  }, [generate, poll.question]);
+  }, [generate, poll.question, poll.id, choice, profile?.username]);
 
   const bgColor = isMinority ? '#020617' : '#0F172A';
   const accentColor = isMinority ? '#F59E0B' : '#ffffff';
