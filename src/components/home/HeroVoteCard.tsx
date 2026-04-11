@@ -8,6 +8,7 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import { toast } from 'sonner';
 import { Check } from 'lucide-react';
 import HeroCaughtUp from './HeroCaughtUp';
+import CinematicResults from '@/components/poll/CinematicResults';
 
 interface HeroPoll {
   id: string;
