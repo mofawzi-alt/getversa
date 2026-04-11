@@ -168,13 +168,18 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
     queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
 
+    // Show cinematic results after brief confirmation
     setTimeout(() => {
-      setResult(null);
-      setIsVoting(false);
-      setIsMinority(false);
-      setIsFirstVoteOfDay(false);
-      setShowHint(true);
-      onVoteComplete?.();
+      if (result) {
+        // We have updated results — but need to get the latest
+      }
+      const latestResult = result || { choice, percentA: poll.percentA, percentB: poll.percentB, total: poll.totalVotes };
+      setCinematicData({
+        choice,
+        percentA: latestResult.percentA ?? poll.percentA,
+        percentB: latestResult.percentB ?? poll.percentB,
+        totalVotes: latestResult.total ?? poll.totalVotes,
+      });
     }, RESULT_MS);
   }, [onVoteComplete, poll, profile, queryClient, result, isVoting, user]);
 
