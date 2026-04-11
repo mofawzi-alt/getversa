@@ -54,6 +54,12 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const [showHint, setShowHint] = useState(true);
   const [isMinority, setIsMinority] = useState(false);
   const [isFirstVoteOfDay, setIsFirstVoteOfDay] = useState(false);
+  const [cinematicData, setCinematicData] = useState<{
+    choice: 'A' | 'B';
+    percentA: number;
+    percentB: number;
+    totalVotes: number;
+  } | null>(null);
   const sessionShownRef = useRef(new Set<string>());
 
   const startX = useRef(0);
