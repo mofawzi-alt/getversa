@@ -349,7 +349,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
   // Animation sequence
   useEffect(() => {
     if (!visible) { setStep(0); setShowNextHint(false); return; }
-    const timers: NodeJS.Timeout[] = [];
+    const timers: ReturnType<typeof setTimeout>[] = [];
     // Step 1: bg (0ms), Step 2: images (300ms), Step 3: glow (500ms), Step 4: number (800ms)
     // Step 5: statement (2000ms), Step 6: pattern (2400ms), Step 7: teaser (2700ms)
     // Step 8: celebrity (3000ms), Step 9: share card (3300ms), Step 10: buttons (3800ms)
@@ -484,17 +484,16 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 transition={{ type: 'spring', damping: 20, stiffness: 200 }}
                 className="text-center"
               >
-                <CountUp
-                  target={userPercent}
-                  duration={1200}
-                  className="font-bold tracking-tight"
+                <span
+                  className="font-bold tracking-tight block"
                   style={{
                     fontSize: 'clamp(72px, 20vw, 120px)',
                     color: accentColor,
                     lineHeight: 1,
-                    display: 'block',
                   }}
-                />
+                >
+                  <CountUp target={userPercent} duration={1200} />
+                </span>
               </motion.div>
             )}
 
