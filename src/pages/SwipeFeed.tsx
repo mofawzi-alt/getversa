@@ -675,6 +675,13 @@ export default function SwipeFeed() {
   const [showValueMsg, setShowValueMsg] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [cinematicData, setCinematicData] = useState<{
+    poll: Poll;
+    choice: 'A' | 'B';
+    percentA: number;
+    percentB: number;
+    totalVotes: number;
+  } | null>(null);
 
   // Check if authenticated user needs to complete profile
   const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
