@@ -6,6 +6,7 @@ import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame } from 'lucide-
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import ShareImageCard from '@/components/poll/ShareImageCard';
+import CinematicResults from '@/components/poll/CinematicResults';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
