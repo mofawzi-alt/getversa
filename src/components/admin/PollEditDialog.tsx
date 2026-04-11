@@ -12,7 +12,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Loader2, Upload, X, Calendar } from 'lucide-react';
-import ImageCropPreview from './ImageCropPreview';
 import { toast } from 'sonner';
 
 interface Poll {
