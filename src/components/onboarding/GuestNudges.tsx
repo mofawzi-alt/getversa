@@ -15,8 +15,16 @@ function isWelcomeBannerDismissed(): boolean {
 export function WelcomeBanner() {
   const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(isWelcomeBannerDismissed);
+  const [guestVotes, setGuestVotes] = useState(0);
+
+  useEffect(() => {
+    try { setGuestVotes(parseInt(localStorage.getItem('versa_guest_votes') || '0', 10)); } catch {}
+  }, []);
 
   if (dismissed) return null;
+
+  const remaining = Math.max(0, 3 - guestVotes);
+  const urgentMode = guestVotes >= 3;
 
   return (
     <motion.div
@@ -25,9 +33,12 @@ export function WelcomeBanner() {
       exit={{ opacity: 0, y: -8 }}
       className="mx-3 mb-2 rounded-2xl bg-card border border-border/60 px-3 py-2.5 flex items-center gap-2.5"
     >
-      <span className="text-base shrink-0">👋</span>
+      <span className="text-base shrink-0">{urgentMode ? '🔒' : '👋'}</span>
       <p className="flex-1 text-[11px] text-foreground leading-tight">
-        Welcome to Versa — <span className="font-bold">sign up free</span> to vote and track your choices
+        {urgentMode
+          ? <><span className="font-bold">Sign up free</span> to keep voting and track your insights</>
+          : <>You have <span className="font-bold">{remaining} free vote{remaining !== 1 ? 's' : ''}</span> left — sign up to unlock unlimited</>
+        }
       </p>
       <button
         onClick={() => navigate('/auth?mode=signup')}
@@ -35,12 +46,14 @@ export function WelcomeBanner() {
       >
         Join
       </button>
-      <button
-        onClick={() => { localStorage.setItem(WELCOME_BANNER_KEY, 'true'); setDismissed(true); }}
-        className="shrink-0 p-1 rounded-full hover:bg-muted/50 text-muted-foreground"
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
+      {!urgentMode && (
+        <button
+          onClick={() => { localStorage.setItem(WELCOME_BANNER_KEY, 'true'); setDismissed(true); }}
+          className="shrink-0 p-1 rounded-full hover:bg-muted/50 text-muted-foreground"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
     </motion.div>
   );
 }
