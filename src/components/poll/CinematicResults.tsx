@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, MessageCircle, Download, ArrowRight, BadgeCheck } from 'lucide-react';
+import FollowingVotesSection from './FollowingVotesSection';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -576,6 +577,23 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
               </motion.p>
             )}
           </div>
+
+          {/* Following votes social proof */}
+          {step >= 8 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="relative z-10 px-3"
+            >
+              <FollowingVotesSection
+                pollId={poll.id}
+                userChoice={choice}
+                optionA={poll.option_a}
+                optionB={poll.option_b}
+              />
+            </motion.div>
+          )}
 
           <div className="relative z-10 flex-shrink-0 px-3 pb-2 space-y-1">
             {step >= 9 && (
