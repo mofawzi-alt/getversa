@@ -440,7 +440,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[200] flex flex-col overflow-hidden"
+          className="fixed inset-0 z-[200] flex flex-col overflow-auto"
           style={{
             backgroundColor: bgColor,
             minHeight: '100dvh',
@@ -450,44 +450,6 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
         >
           <canvas ref={canvasRef} className="hidden" />
 
-          {/* Background images — dimmed */}
-          {step >= 2 && (
-            <div className="absolute inset-0 flex pointer-events-none">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: choice === 'A' ? 0.15 : 0.08 }}
-                transition={{ duration: 0.5, delay: step >= 3 ? 0 : 0.3 }}
-                className="w-1/2 h-full relative overflow-hidden"
-              >
-                <img src={imgA} alt="" className="w-full h-full object-cover" />
-                {choice === 'A' && step >= 3 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="absolute inset-0"
-                    style={{ boxShadow: `inset 0 0 80px ${isMinority ? 'rgba(245,158,11,0.3)' : 'rgba(37,99,235,0.3)'}` }}
-                  />
-                )}
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: choice === 'B' ? 0.15 : 0.08 }}
-                transition={{ duration: 0.5, delay: step >= 3 ? 0 : 0.3 }}
-                className="w-1/2 h-full relative overflow-hidden"
-              >
-                <img src={imgB} alt="" className="w-full h-full object-cover" />
-                {choice === 'B' && step >= 3 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="absolute inset-0"
-                    style={{ boxShadow: `inset 0 0 80px ${isMinority ? 'rgba(245,158,11,0.3)' : 'rgba(37,99,235,0.3)'}` }}
-                  />
-                )}
-              </motion.div>
-            </div>
-          )}
-
           {isMinority && step >= 4 && (
             <div
               className="absolute inset-0 pointer-events-none"
@@ -495,120 +457,107 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
             />
           )}
 
-          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-1 min-h-0 overflow-hidden">
-            {isMinority && step >= 4 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mb-2 px-3 py-1 rounded-full"
-                style={{ backgroundColor: '#F59E0B' }}
-              >
-                <span className="text-[9px] font-bold tracking-[0.15em] text-[#020617] uppercase">
-                  Minority Opinion
-                </span>
-              </motion.div>
-            )}
+          {/* Main content — vertically centered, scrollable if needed */}
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-4 gap-3">
 
-            {step >= 4 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', damping: 20, stiffness: 200 }}
-                className="text-center"
-              >
-                <span
-                  className="font-bold tracking-tight block"
-                  style={{
-                    fontSize: 'clamp(40px, 12vw, 72px)',
-                    color: accentColor,
-                    lineHeight: 1,
-                  }}
+            {/* Badge + percentage + statement */}
+            <div className="flex flex-col items-center gap-1">
+              {isMinority && step >= 4 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="px-3 py-1 rounded-full"
+                  style={{ backgroundColor: '#F59E0B' }}
                 >
-                  <CountUp target={userPercent} duration={1200} />
-                </span>
-              </motion.div>
-            )}
+                  <span className="text-[9px] font-bold tracking-[0.15em] text-[#020617] uppercase">
+                    Minority Opinion
+                  </span>
+                </motion.div>
+              )}
 
-            {step >= 5 && (
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="mt-1 text-center text-sm font-medium max-w-[17rem] leading-snug"
-                style={{ color: 'rgba(255,255,255,0.85)' }}
-              >
-                {statement}
-              </motion.p>
-            )}
+              {step >= 4 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+                  className="text-center"
+                >
+                  <span
+                    className="font-bold tracking-tight block"
+                    style={{
+                      fontSize: 'clamp(36px, 10vw, 60px)',
+                      color: accentColor,
+                      lineHeight: 1,
+                    }}
+                  >
+                    <CountUp target={userPercent} duration={1200} />
+                  </span>
+                </motion.div>
+              )}
 
-            {isMinority && step >= 5 && (
-              <motion.p
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                className="mt-1 text-center text-[11px] max-w-[17rem] leading-snug"
-                style={{ color: 'rgba(255,255,255,0.5)' }}
-              >
-                The most interesting opinions are the ones nobody expects.
-              </motion.p>
-            )}
+              {step >= 5 && (
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="text-center text-xs font-medium max-w-[16rem] leading-snug"
+                  style={{ color: 'rgba(255,255,255,0.85)' }}
+                >
+                  {statement}
+                </motion.p>
+              )}
 
-            {step >= 6 && patternLine && (
-              <motion.p
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="mt-2 text-center text-[11px] font-semibold max-w-[17rem] leading-snug"
-                style={{ color: '#F59E0B' }}
-              >
-                {patternLine}
-              </motion.p>
-            )}
+              {isMinority && step >= 5 && (
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                  className="text-center text-[10px] max-w-[16rem] leading-snug"
+                  style={{ color: 'rgba(255,255,255,0.5)' }}
+                >
+                  The most interesting opinions are the ones nobody expects.
+                </motion.p>
+              )}
 
-            {step >= 7 && teaserLine && (
-              <motion.p
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="mt-1 text-center text-[10px] italic max-w-[17rem] leading-snug"
-                style={{ color: '#64748B' }}
-              >
-                {teaserLine}
-              </motion.p>
-            )}
-          </div>
+              {step >= 6 && patternLine && (
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-center text-[10px] font-semibold max-w-[16rem] leading-snug"
+                  style={{ color: '#F59E0B' }}
+                >
+                  {patternLine}
+                </motion.p>
+              )}
 
-          {/* Following votes social proof */}
-          {step >= 8 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="relative z-10 px-3"
-            >
-              <FollowingVotesSection
-                pollId={poll.id}
-                userChoice={choice}
-                optionA={poll.option_a}
-                optionB={poll.option_b}
-              />
-            </motion.div>
-          )}
+              {step >= 7 && teaserLine && (
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-center text-[9px] italic max-w-[16rem] leading-snug"
+                  style={{ color: '#64748B' }}
+                >
+                  {teaserLine}
+                </motion.p>
+              )}
+            </div>
 
-          <div className="relative z-10 flex-shrink-0 px-3 pb-2 space-y-1">
+            {/* Poll card — centered, Instagram-like */}
             {step >= 9 && (
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, type: 'spring', damping: 25 }}
-                className="rounded-xl p-2 border"
+                className="w-full max-w-[320px] rounded-2xl p-3 border"
                 style={{
                   backgroundColor: 'rgba(15,23,42,0.9)',
                   borderColor: isMinority ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.1)',
                 }}
               >
                 <p
-                  className="text-white font-semibold text-[11px] leading-4 text-center mb-1.5"
+                  className="text-white font-semibold text-sm leading-5 text-center mb-2"
                   style={{
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
@@ -618,83 +567,116 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 >
                   {poll.question}
                 </p>
-                <div className="flex gap-1.5 mb-1.5">
-                  <div className="flex-1 rounded-lg overflow-hidden h-20">
+                <div className="flex gap-2 mb-2">
+                  <div className="flex-1 rounded-xl overflow-hidden" style={{ aspectRatio: '1/1' }}>
                     <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex-1 rounded-lg overflow-hidden h-20">
+                  <div className="flex-1 rounded-xl overflow-hidden" style={{ aspectRatio: '1/1' }}>
                     <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" />
                   </div>
                 </div>
-                <div className="h-1.5 rounded-full overflow-hidden flex mb-1" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                <div className="h-2 rounded-full overflow-hidden flex mb-1.5" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
                   <div className="h-full rounded-l-full" style={{ width: `${percentA}%`, backgroundColor: choice === 'A' ? '#2563EB' : '#475569' }} />
                   <div className="h-full rounded-r-full" style={{ width: `${percentB}%`, backgroundColor: choice === 'B' ? '#2563EB' : '#475569' }} />
                 </div>
-                <div className="flex items-center justify-between gap-2 text-[9px] font-bold leading-none">
-                  <span className="shrink-0" style={{ color: choice === 'A' ? '#2563EB' : '#94A3B8' }}>{percentA}%</span>
-                  <span className="min-w-0 flex-1 truncate text-center text-white/50 text-[8px]">
+                <div className="flex items-center justify-between gap-2 text-[10px] font-bold leading-none">
+                  <span style={{ color: choice === 'A' ? '#2563EB' : '#94A3B8' }}>{percentA}%</span>
+                  <span className="text-white/50 text-[9px]">
                     {userPercent >= 50 ? `I voted with the ${userPercent}%` : `I voted with the ${userPercent}% minority`}
                   </span>
-                  <span className="shrink-0" style={{ color: choice === 'B' ? '#2563EB' : '#94A3B8' }}>{percentB}%</span>
+                  <span style={{ color: choice === 'B' ? '#2563EB' : '#94A3B8' }}>{percentB}%</span>
                 </div>
               </motion.div>
             )}
 
-            {(step >= 10 || showNextHint) && (
+            {/* Following votes social proof */}
+            {step >= 8 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full max-w-[320px]"
+              >
+                <FollowingVotesSection
+                  pollId={poll.id}
+                  userChoice={choice}
+                  optionA={poll.option_a}
+                  optionB={poll.option_b}
+                />
+              </motion.div>
+            )}
+          </div>
+
+          {/* Bottom action buttons — always pinned */}
+          <div className="relative z-10 flex-shrink-0 px-4 pb-3 space-y-1.5">
+            {step >= 10 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="space-y-1.5"
+              >
+                <Button
+                  onClick={() => handleShare('instagram')}
+                  className="w-full h-10 rounded-xl font-bold text-xs gap-2"
+                  style={{
+                    backgroundColor: isMinority ? '#F59E0B' : '#2563EB',
+                    color: isMinority ? '#020617' : '#ffffff',
+                  }}
+                >
+                  <Share2 className="h-4 w-4 shrink-0" />
+                  Share to Instagram Stories
+                </Button>
+
+                <div className="grid grid-cols-3 gap-1.5">
+                  <Button
+                    onClick={() => handleShare('whatsapp')}
+                    variant="outline"
+                    className="h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5 shrink-0" />
+                    WhatsApp
+                  </Button>
+
+                  <Button
+                    onClick={() => handleShare('save')}
+                    variant="outline"
+                    className="h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
+                  >
+                    <Download className="h-3.5 w-3.5 shrink-0" />
+                    Save
+                  </Button>
+
+                  <Button
+                    onClick={onNext}
+                    variant="outline"
+                    className="h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/15 text-white bg-white/10 hover:bg-white/15"
+                  >
+                    Next
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
+            {!showNextHint && step < 10 && (
+              <div className="h-10" /> 
+            )}
+
+            {showNextHint && step < 10 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-1"
               >
-                {step >= 10 && (
-                  <Button
-                    onClick={() => handleShare('instagram')}
-                    className="w-full h-8 rounded-xl font-bold text-[11px] gap-1.5"
-                    style={{
-                      backgroundColor: isMinority ? '#F59E0B' : '#2563EB',
-                      color: isMinority ? '#020617' : '#ffffff',
-                    }}
-                  >
-                    <Share2 className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">Share to Instagram Stories</span>
-                  </Button>
-                )}
-
-                <div className={`grid gap-1.5 ${step >= 10 ? 'grid-cols-3' : 'grid-cols-1'}`}>
-                  {step >= 10 && (
-                    <Button
-                      onClick={() => handleShare('whatsapp')}
-                      variant="outline"
-                      className="h-8 rounded-xl font-semibold text-[10px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
-                    >
-                      <MessageCircle className="h-3 w-3 shrink-0" />
-                      <span className="truncate">WhatsApp</span>
-                    </Button>
-                  )}
-
-                  {step >= 10 && (
-                    <Button
-                      onClick={() => handleShare('save')}
-                      variant="outline"
-                      className="h-8 rounded-xl font-semibold text-[10px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
-                    >
-                      <Download className="h-3 w-3 shrink-0" />
-                      <span className="truncate">Save</span>
-                    </Button>
-                  )}
-
-                  {showNextHint && (
-                    <Button
-                      onClick={onNext}
-                      variant="outline"
-                      className="h-8 rounded-xl font-semibold text-[10px] gap-1 border-white/15 text-white bg-white/10 hover:bg-white/15"
-                    >
-                      <span className="truncate">Next</span>
-                      <ArrowRight className="h-3 w-3 shrink-0" />
-                    </Button>
-                  )}
-                </div>
+                <Button
+                  onClick={onNext}
+                  variant="outline"
+                  className="w-full h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/15 text-white bg-white/10 hover:bg-white/15"
+                >
+                  Next
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                </Button>
               </motion.div>
             )}
           </div>
