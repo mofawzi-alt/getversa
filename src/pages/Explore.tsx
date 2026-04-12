@@ -325,12 +325,12 @@ export default function Explore() {
                       <div className="text-white/90">{style.icon}</div>
                       <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white/20 backdrop-blur-sm">
                         <ArrowUp className="h-2.5 w-2.5 text-white" />
-                        <span className="text-[8px] font-bold text-white">Hot</span>
+                        <span className="text-[10px] font-bold text-white">Hot</span>
                       </div>
                     </div>
                     <div className="p-2.5">
-                      <p className="text-[11px] font-bold text-foreground truncate">{cat.name}</p>
-                      <p className="text-[9px] text-muted-foreground mt-0.5">
+                      <p className="text-sm font-bold text-foreground truncate">{cat.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {cat.votes24h > 0 ? `${cat.votes24h} votes today` : `${cat.activePolls} polls`}
                       </p>
                     </div>
@@ -366,26 +366,26 @@ export default function Explore() {
                         {style.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-bold text-foreground truncate">{cat.name}</p>
-                        <p className="text-[9px] text-muted-foreground">{cat.activePolls} polls</p>
+                        <p className="text-sm font-bold text-foreground truncate">{cat.name}</p>
+                        <p className="text-xs text-muted-foreground">{cat.activePolls} polls</p>
                       </div>
                     </div>
                     
                     {/* Status badges */}
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {cat.hasLive && (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive text-[8px] font-bold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" /> Live
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive text-[10px] font-bold">
+                         <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" /> Live
                         </span>
                       )}
                       {cat.momentum === 'rising' && (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[8px] font-bold">
-                          <TrendingUp className="h-2.5 w-2.5" /> Trending
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-bold">
+                          <TrendingUp className="h-3 w-3" /> Trending
                         </span>
                       )}
                       {cat.votes24h > 0 && (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[8px] font-bold">
-                          <Zap className="h-2.5 w-2.5" /> {cat.votes24h} today
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                          <Zap className="h-3 w-3" /> {cat.votes24h} today
                         </span>
                       )}
                     </div>
@@ -431,8 +431,8 @@ function PollCard({ poll, index, votes24hMap, onTap }: { poll: PollItem; index: 
           <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="55%" loading="lazy" variant="browse" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-2 left-2">
-            <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_a}</p>
-            <span className="text-xs font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>
+            <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_a}</p>
+            <span className="text-sm font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>
           </div>
         </div>
         <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
@@ -440,29 +440,29 @@ function PollCard({ poll, index, votes24hMap, onTap }: { poll: PollItem; index: 
           <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="55%" loading="lazy" variant="browse" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-2 right-2 text-right">
-            <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_b}</p>
-            <span className="text-xs font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>
+            <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_b}</p>
+            <span className="text-sm font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>
           </div>
         </div>
       </div>
       <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-4 bg-gradient-to-b from-black/60 to-transparent">
-        <h3 className="text-white text-[11px] font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
+        <h3 className="text-white text-sm font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
       </div>
       <div className="absolute bottom-1.5 inset-x-2 flex items-center justify-between z-10">
         <div className="flex items-center gap-1.5">
           {poll.isLive && <LiveIndicator variant="overlay" />}
-          <span className="text-[8px] text-white/60 flex items-center gap-0.5">
-            <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
+          <span className="text-[10px] text-white/70 flex items-center gap-0.5">
+            <Users className="h-3 w-3" /> {poll.totalVotes}
           </span>
           {recentVotes > 0 && (
-            <span className="text-[8px] text-white/60 flex items-center gap-0.5">
-              <Zap className="h-2.5 w-2.5" /> {recentVotes}/hr
+            <span className="text-[10px] text-white/70 flex items-center gap-0.5">
+              <Zap className="h-3 w-3" /> {recentVotes}/hr
             </span>
           )}
         </div>
         {poll.ends_at && (
-          <span className="text-[8px] text-white/50 flex items-center gap-0.5">
-            <Timer className="h-2.5 w-2.5" /> {getTimeLeft(poll.ends_at)}
+          <span className="text-[10px] text-white/60 flex items-center gap-0.5">
+            <Timer className="h-3 w-3" /> {getTimeLeft(poll.ends_at)}
           </span>
         )}
       </div>
