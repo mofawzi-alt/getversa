@@ -33,6 +33,7 @@ interface HeroVoteCardProps {
 
 const SWIPE_THRESHOLD = 50;
 const SWIPE_UP_THRESHOLD = 50;
+const FLASH_RESULT_MS = 1500;
 const RESULT_MS = 1500;
 const TAP_MOVE_TOLERANCE = 12;
 const DRAG_DEAD_ZONE = 15;
@@ -54,6 +55,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const [showHint, setShowHint] = useState(true);
   const [isMinority, setIsMinority] = useState(false);
   const [isFirstVoteOfDay, setIsFirstVoteOfDay] = useState(false);
+  const [revealMode, setRevealMode] = useState<'flash' | 'full' | null>(null);
   const [cinematicData, setCinematicData] = useState<{
     choice: 'A' | 'B';
     percentA: number;
@@ -88,18 +90,15 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     if (!user) {
       const guestVotes = parseInt(localStorage.getItem('versa_guest_votes') || '0', 10);
       if (guestVotes >= 3) {
-        // 4th vote attempt — redirect to signup
         try { sessionStorage.setItem('versa_vote_intent', poll.id); } catch {}
         window.location.href = '/auth?mode=signup&reason=vote';
         return;
       }
-      // Allow the vote but track it client-side (won't be saved to DB)
       setIsVoting(true);
       setDragX(0);
       setDragY(0);
       playSwipeSound();
 
-      // Show fake result for guests
       setResult({
         choice,
         percentA: poll.percentA,
@@ -108,7 +107,6 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
       });
 
       localStorage.setItem('versa_guest_votes', String(guestVotes + 1));
-      // Track which polls the guest has voted on so they advance in the feed
       try {
         const stored = localStorage.getItem('versa_guest_voted_polls');
         const ids: string[] = stored ? JSON.parse(stored) : [];
@@ -117,15 +115,15 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
       } catch {}
       playResultSound();
 
-      // Show cinematic results for guests too
+      // Guests always get flash mode
+      setRevealMode('flash');
       setTimeout(() => {
-        setCinematicData({
-          choice,
-          percentA: poll.percentA,
-          percentB: poll.percentB,
-          totalVotes: poll.totalVotes,
-        });
-      }, RESULT_MS);
+        setResult(null);
+        setIsVoting(false);
+        setRevealMode(null);
+        setShowHint(true);
+        onVoteComplete?.();
+      }, FLASH_RESULT_MS);
 
       queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
       return;
@@ -136,6 +134,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     setDragY(0);
     setIsMinority(false);
     setIsFirstVoteOfDay(false);
+    setRevealMode(null);
 
     playSwipeSound();
 
@@ -147,57 +146,72 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
       total: poll.totalVotes,
     });
 
-    if (user) {
-      // Check if this is the first vote of the day
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const { count: todayVotesBefore } = await supabase
-        .from('votes')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .gte('created_at', todayStart.toISOString());
+    // Check if this is the first vote of the day
+    let firstVoteToday = false;
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const { count: todayVotesBefore } = await supabase
+      .from('votes')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', todayStart.toISOString());
+    
+    if ((todayVotesBefore || 0) === 0 && !sessionShownRef.current.has('first_vote_today')) {
+      firstVoteToday = true;
+      setIsFirstVoteOfDay(true);
+      sessionShownRef.current.add('first_vote_today');
+    }
+
+    // Get total vote count for milestone check
+    const { count: totalVoteCount } = await supabase
+      .from('votes')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+    const voteNumber = (totalVoteCount || 0) + 1; // +1 for current vote
+
+    const votePayload = {
+      poll_id: poll.id,
+      user_id: user.id,
+      choice,
+      ...(poll.category ? { category: poll.category } : {}),
+      ...(profile?.gender ? { voter_gender: profile.gender } : {}),
+      ...(profile?.age_range ? { voter_age_range: profile.age_range } : {}),
+      ...(profile?.country ? { voter_country: profile.country } : {}),
+      ...(profile?.city ? { voter_city: profile.city } : {}),
+    };
+
+    const { error } = await supabase.from('votes').insert(votePayload);
+    if (error && error.code !== '23505') {
+      toast.error('Vote failed');
+      setResult(null);
+      setIsVoting(false);
+      return;
+    }
+
+    const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: [poll.id] });
+    let pA = poll.percentA;
+    let pB = poll.percentB;
+    let total = poll.totalVotes;
+    let userPct = choice === 'A' ? pA : pB;
+    let isMinorityVote = false;
+    let isCloseSplit = false;
+
+    if (results?.[0]) {
+      pA = results[0].percent_a;
+      pB = results[0].percent_b;
+      total = Number(results[0].total_votes);
+      userPct = choice === 'A' ? pA : pB;
       
-      if ((todayVotesBefore || 0) === 0 && !sessionShownRef.current.has('first_vote_today')) {
-        setIsFirstVoteOfDay(true);
-        sessionShownRef.current.add('first_vote_today');
-      }
+      setResult({ choice, percentA: pA, percentB: pB, total });
 
-      const votePayload = {
-        poll_id: poll.id,
-        user_id: user.id,
-        choice,
-        ...(poll.category ? { category: poll.category } : {}),
-        ...(profile?.gender ? { voter_gender: profile.gender } : {}),
-        ...(profile?.age_range ? { voter_age_range: profile.age_range } : {}),
-        ...(profile?.country ? { voter_country: profile.country } : {}),
-        ...(profile?.city ? { voter_city: profile.city } : {}),
-      };
-
-      const { error } = await supabase.from('votes').insert(votePayload);
-      if (error && error.code !== '23505') {
-        toast.error('Vote failed');
-        setResult(null);
-        setIsVoting(false);
-        return;
+      // Minority: user chose side with < 25%
+      if (userPct < 25) {
+        isMinorityVote = true;
+        setIsMinority(true);
       }
-
-      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: [poll.id] });
-      if (results?.[0]) {
-        const pA = results[0].percent_a;
-        const pB = results[0].percent_b;
-        const userPct = choice === 'A' ? pA : pB;
-        setResult({
-          choice,
-          percentA: pA,
-          percentB: pB,
-          total: Number(results[0].total_votes),
-        });
-        // Minority moment: user chose the side with < 35%
-        if (userPct < 35 && !sessionShownRef.current.has(`minority_${poll.id}`)) {
-          setIsMinority(true);
-          sessionShownRef.current.add(`minority_${poll.id}`);
-        }
-      }
+      
+      // Close split: between 45-55%
+      isCloseSplit = pA >= 45 && pA <= 55;
     }
 
     playResultSound();
@@ -207,19 +221,34 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
     queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
 
-    // Show cinematic results after brief confirmation
-    setTimeout(() => {
-      if (result) {
-        // We have updated results — but need to get the latest
-      }
-      const latestResult = result || { choice, percentA: poll.percentA, percentB: poll.percentB, total: poll.totalVotes };
-      setCinematicData({
-        choice,
-        percentA: latestResult.percentA ?? poll.percentA,
-        percentB: latestResult.percentB ?? poll.percentB,
-        totalVotes: latestResult.total ?? poll.totalVotes,
-      });
-    }, RESULT_MS);
+    // Determine mode: Flash vs Full Reveal
+    const milestoneVotes = [10, 25, 50, 100, 200, 500, 1000];
+    const isMilestone = milestoneVotes.includes(voteNumber);
+    const shouldFullReveal = isMinorityVote || isCloseSplit || firstVoteToday || isMilestone;
+
+    if (shouldFullReveal) {
+      setRevealMode('full');
+      setTimeout(() => {
+        setCinematicData({
+          choice,
+          percentA: pA,
+          percentB: pB,
+          totalVotes: total,
+        });
+      }, RESULT_MS);
+    } else {
+      // Flash mode: show inline result briefly, then auto-advance
+      setRevealMode('flash');
+      setTimeout(() => {
+        setResult(null);
+        setIsVoting(false);
+        setRevealMode(null);
+        setIsMinority(false);
+        setIsFirstVoteOfDay(false);
+        setShowHint(true);
+        onVoteComplete?.();
+      }, FLASH_RESULT_MS);
+    }
   }, [onVoteComplete, poll, profile, queryClient, result, isVoting, user]);
 
   const submitSkip = useCallback(async () => {
@@ -534,7 +563,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               className="absolute bottom-0 inset-x-0 z-20 px-4 pb-3 pt-8 bg-gradient-to-t from-black/90 to-transparent"
             >
               {/* Minority moment badge */}
-              {isMinority && (
+              {isMinority && revealMode === 'full' && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -548,7 +577,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               )}
 
               {/* First vote of the day */}
-              {isFirstVoteOfDay && (
+              {isFirstVoteOfDay && revealMode === 'full' && (
                 <motion.div
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -575,9 +604,25 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                   transition={{ duration: 0.7 }}
                 />
               </div>
-              <p className="text-[10px] text-white/60 text-center">
-                {result.total.toLocaleString()} perspectives · Keep going →
-              </p>
+
+              {/* Flash mode: quick one-liner */}
+              {revealMode === 'flash' && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-[10px] text-white/60 text-center"
+                >
+                  {result.total.toLocaleString()} perspectives · Next loading...
+                </motion.p>
+              )}
+
+              {/* Full reveal mode hint */}
+              {revealMode === 'full' && (
+                <p className="text-[10px] text-white/60 text-center">
+                  {result.total.toLocaleString()} perspectives
+                </p>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -615,8 +660,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         </div>
       )}
 
-      {/* Cinematic Results */}
-      {poll && cinematicData && (
+      {/* Cinematic Results — only in Full Reveal mode */}
+      {poll && cinematicData && revealMode === 'full' && (
         <CinematicResults
           poll={poll}
           choice={cinematicData.choice}
@@ -630,6 +675,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             setIsVoting(false);
             setIsMinority(false);
             setIsFirstVoteOfDay(false);
+            setRevealMode(null);
             setShowHint(true);
             onVoteComplete?.();
           }}
