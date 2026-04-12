@@ -808,7 +808,7 @@ export default function Home() {
           </div>
 
           {livePolls.length > 0 ? (
-            <div className="flex flex-col gap-4 px-3">
+            <div className="flex gap-3 overflow-x-auto px-3 scrollbar-hide snap-x snap-mandatory pb-1" style={{ scrollSnapType: 'x mandatory' }}>
               {livePolls.slice(0, 5).map((poll, i) => {
                 const hasVoted = votedPollIds?.has(poll.id);
                 const voteData = userVoteChoices?.get(poll.id);
