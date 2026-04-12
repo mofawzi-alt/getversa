@@ -421,7 +421,7 @@ export default function Explore() {
 }
 
 // ── Extracted Poll Card ──
-function PollCard({ poll, index, votes24hMap, onTap }: { poll: PollItem; index: number; votes24hMap: Map<string, number>; onTap: (p: PollItem) => void }) {
+function PollCard({ poll, index, votes24hMap, onTap, celebrityNames }: { poll: PollItem; index: number; votes24hMap: Map<string, number>; onTap: (p: PollItem) => void; celebrityNames?: { username: string }[] }) {
   const recentVotes = votes24hMap.get(poll.id) || 0;
   return (
     <motion.div
@@ -453,6 +453,17 @@ function PollCard({ poll, index, votes24hMap, onTap }: { poll: PollItem; index: 
       </div>
       <div className="absolute top-0 inset-x-0 px-3 pt-2.5 pb-6 bg-gradient-to-b from-black/70 to-transparent">
         <h3 className="text-white text-base font-bold drop-shadow-lg leading-snug">{poll.question}</h3>
+        {/* Celebrity indicator */}
+        {celebrityNames && celebrityNames.length > 0 && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            {celebrityNames.slice(0, 2).map((celeb, ci) => (
+              <span key={ci} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-sm">
+                <VerifiedBadge size="sm" />
+                <span className="text-[10px] font-semibold text-white/90">{celeb.username} voted</span>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
       <div className="absolute bottom-1.5 inset-x-2.5 flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
