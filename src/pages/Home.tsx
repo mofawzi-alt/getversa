@@ -29,6 +29,8 @@ import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useDailyQueue } from '@/hooks/useDailyQueue';
+import { useCelebrityPresence } from '@/hooks/useCelebrityVotes';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 // FIX 4: Conversational category name mapping
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
@@ -645,6 +647,10 @@ export default function Home() {
     return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
   }, [allPolls, votedPollIds]);
 
+  // Celebrity presence on live debate polls
+  const livePollIds = useMemo(() => livePolls.map(p => p.id), [livePolls]);
+  const { data: celebrityPresence = {} } = useCelebrityPresence(livePollIds);
+
   // (auto-rotate removed — static horizontal scroll)
 
   if (showWelcome) {
@@ -915,6 +921,17 @@ export default function Home() {
                         )}
                       </div>
                       <p className="text-lg font-bold text-foreground leading-snug">{poll.question}</p>
+                      {/* Celebrity indicator */}
+                      {celebrityPresence[poll.id]?.length > 0 && (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          {celebrityPresence[poll.id].slice(0, 2).map((celeb, ci) => (
+                            <span key={ci} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10">
+                              <VerifiedBadge size="sm" />
+                              <span className="text-[10px] font-semibold text-foreground/80">{celeb.username} voted</span>
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Side-by-side images — Instagram post ratio */}
