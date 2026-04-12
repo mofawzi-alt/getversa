@@ -808,93 +808,135 @@ export default function Home() {
           </div>
 
           {livePolls.length > 0 ? (
-            <div className="px-3 overflow-x-auto scrollbar-hide">
-              <div className="flex gap-2.5" style={{ width: 'max-content' }}>
-                {livePolls.map((poll, i) => {
-                  const hasVoted = votedPollIds?.has(poll.id);
-                  return (
-                    <motion.div
-                      key={poll.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.06 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleLivePollTap(poll)}
-                      className="relative rounded-2xl overflow-hidden cursor-pointer group border border-border/60 shadow-card shrink-0"
-                      style={{ width: 'calc((100vw - 36px) / 1.8)' }}
-                    >
-                      {/* Pin button */}
-                      <div className="absolute top-2 right-2 z-30">
-                        <PinButton pollId={poll.id} />
-                      </div>
+            <div className="flex flex-col gap-3 px-3">
+              {livePolls.slice(0, 5).map((poll, i) => {
+                const hasVoted = votedPollIds?.has(poll.id);
+                const voteData = userVoteChoices?.get(poll.id);
+                const userChoice = voteData?.choice;
+                const chosenOptionLabel = userChoice === 'A' ? poll.option_a : userChoice === 'B' ? poll.option_b : null;
 
-                      {/* Images — Instagram post ratio */}
-                      <div className="flex relative" style={{ aspectRatio: '4/5' }}>
-                        <div className="w-1/2 h-full relative overflow-hidden">
-                          <PollOptionImage
-                            imageUrl={poll.image_a_url}
-                            option={poll.option_a}
-                            question={poll.question}
-                            side="A"
-                            maxLogoSize="65%"
-                            loading="lazy"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        </div>
-                        <div className="absolute inset-y-0 left-1/2 w-[1px] bg-white/20 z-10" />
-                        <div className="w-1/2 h-full relative overflow-hidden">
-                          <PollOptionImage
-                            imageUrl={poll.image_b_url}
-                            option={poll.option_b}
-                            question={poll.question}
-                            side="B"
-                            maxLogoSize="65%"
-                            loading="lazy"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        </div>
-                      </div>
+                // Generate insight line
+                const insightLine = (() => {
+                  const spread = Math.abs(poll.percentA - 50);
+                  if (spread <= 5) return '⚡ Almost perfectly split';
+                  if (poll.percentA >= 75) return `🔥 ${poll.percentA}% chose ${poll.option_a}`;
+                  if (poll.percentB >= 75) return `🔥 ${poll.percentB}% chose ${poll.option_b}`;
+                  const winner = poll.percentA > poll.percentB ? poll.option_a : poll.option_b;
+                  const winPct = Math.max(poll.percentA, poll.percentB);
+                  return `${winPct}% leaning towards ${winner}`;
+                })();
 
-                      {/* Content overlay */}
-                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-6 pb-2 px-2.5 z-10">
-                        <p className="text-white text-[11px] font-bold drop-shadow-lg leading-tight mb-1.5 line-clamp-2">{poll.question}</p>
-                        {/* Percentage bar */}
-                        <div className="h-1 bg-white/15 rounded-full overflow-hidden mb-1.5 flex">
-                          <motion.div
-                            className="h-full bg-option-a"
-                            animate={{ width: hasVoted ? `${poll.percentA}%` : '50%' }}
-                            transition={{ duration: 0.7 }}
-                          />
-                          <motion.div
-                            className="h-full bg-option-b"
-                            animate={{ width: hasVoted ? `${poll.percentB}%` : '50%' }}
-                            transition={{ duration: 0.7 }}
-                          />
-                        </div>
+                return (
+                  <motion.div
+                    key={poll.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      if (hasVoted) {
+                        setModalPoll(poll);
+                      } else {
+                        const idx = newPolls.findIndex(p => p.id === poll.id);
+                        if (idx >= 0) {
+                          setHeroPollIndex(idx);
+                          heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                          navigate(`/browse?filter=live&pollId=${poll.id}`);
+                        }
+                      }
+                    }}
+                    className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-sm"
+                  >
+                    {/* Question */}
+                    <div className="px-3 pt-3 pb-1.5">
+                      <p className="text-sm font-bold text-foreground leading-snug">{poll.question}</p>
+                    </div>
+
+                    {/* Side-by-side images */}
+                    <div className="flex relative mx-2 rounded-xl overflow-hidden" style={{ aspectRatio: '2/1' }}>
+                      <div className="w-1/2 h-full relative overflow-hidden">
+                        <PollOptionImage
+                          imageUrl={poll.image_a_url}
+                          option={poll.option_a}
+                          question={poll.question}
+                          side="A"
+                          maxLogoSize="65%"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                        <span className="absolute bottom-1.5 left-2 text-[11px] font-bold text-white drop-shadow-lg truncate max-w-[90%]">{poll.option_a}</span>
                         {hasVoted && (
-                          <div className="flex justify-between mb-1">
-                            <span className="text-[10px] font-bold text-option-a">{poll.percentA}%</span>
-                            <span className="text-[10px] font-bold text-option-b">{poll.percentB}%</span>
+                          <div className="absolute top-1.5 left-1.5 bg-black/60 backdrop-blur-sm rounded-md px-1.5 py-0.5">
+                            <span className="text-xs font-bold text-option-a">{poll.percentA}%</span>
                           </div>
                         )}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1">
-                            <LiveIndicator variant="overlay" />
-                            <span className="text-[9px] text-white/70 font-medium">
-                              {poll.totalVotes} votes
-                            </span>
-                          </div>
-                          {!hasVoted && (
-                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-bold">
-                              Vote
-                            </span>
-                          )}
-                        </div>
                       </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                      <div className="absolute inset-y-0 left-1/2 w-[1px] bg-white/30 z-10" />
+                      <div className="w-1/2 h-full relative overflow-hidden">
+                        <PollOptionImage
+                          imageUrl={poll.image_b_url}
+                          option={poll.option_b}
+                          question={poll.question}
+                          side="B"
+                          maxLogoSize="65%"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                        <span className="absolute bottom-1.5 right-2 text-[11px] font-bold text-white drop-shadow-lg truncate max-w-[90%] text-right">{poll.option_b}</span>
+                        {hasVoted && (
+                          <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-sm rounded-md px-1.5 py-0.5">
+                            <span className="text-xs font-bold text-option-b">{poll.percentB}%</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Result bar + insight + footer */}
+                    <div className="px-3 pt-2 pb-2.5 space-y-1.5">
+                      {/* Percentage bar */}
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden flex">
+                        <motion.div
+                          className="h-full bg-option-a rounded-l-full"
+                          initial={{ width: '50%' }}
+                          animate={{ width: hasVoted ? `${poll.percentA}%` : '50%' }}
+                          transition={{ duration: 0.8, ease: 'easeOut' }}
+                        />
+                        <motion.div
+                          className="h-full bg-option-b rounded-r-full"
+                          initial={{ width: '50%' }}
+                          animate={{ width: hasVoted ? `${poll.percentB}%` : '50%' }}
+                          transition={{ duration: 0.8, ease: 'easeOut' }}
+                        />
+                      </div>
+
+                      {/* Insight line */}
+                      {hasVoted && (
+                        <p className="text-[11px] text-muted-foreground italic">{insightLine}</p>
+                      )}
+
+                      {/* Footer row */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <LiveIndicator variant="overlay" />
+                          <span className="text-[10px] text-muted-foreground">
+                            {poll.totalVotes.toLocaleString()} votes
+                          </span>
+                        </div>
+                        {hasVoted ? (
+                          <span className="text-[10px] font-semibold text-primary">
+                            You voted {chosenOptionLabel && chosenOptionLabel.length > 16 ? chosenOptionLabel.slice(0, 16) + '…' : chosenOptionLabel}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-primary flex items-center gap-0.5">
+                            Vote on this <ArrowRight className="h-2.5 w-2.5" />
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           ) : (
             <div className="mx-3 rounded-2xl border border-border/60 bg-card px-4 py-8 text-center">
