@@ -55,6 +55,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const [showHint, setShowHint] = useState(true);
   const [isMinority, setIsMinority] = useState(false);
   const [isFirstVoteOfDay, setIsFirstVoteOfDay] = useState(false);
+  const [revealMode, setRevealMode] = useState<'flash' | 'full' | null>(null);
   const [cinematicData, setCinematicData] = useState<{
     choice: 'A' | 'B';
     percentA: number;
