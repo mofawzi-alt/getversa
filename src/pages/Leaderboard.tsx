@@ -83,6 +83,14 @@ export default function Leaderboard() {
     },
   });
 
+  // Collect all user IDs for verified check
+  const allUserIds = [
+    ...(pointsLeaderboard || []),
+    ...(streakLeaderboard || []),
+    ...(votesLeaderboard || []),
+  ].map(u => u.id);
+  const { isVerified } = useVerifiedUsers([...new Set(allUserIds)]);
+
   const getRankIcon = (rank: number) => {
     if (rank === 0) return <Crown className="h-5 w-5 text-yellow-400" />;
     if (rank === 1) return <Medal className="h-5 w-5 text-gray-300" />;
