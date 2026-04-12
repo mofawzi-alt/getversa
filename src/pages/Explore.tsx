@@ -6,7 +6,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { 
   Search, TrendingUp, ArrowUp, ArrowDown, Minus, Zap, Users, Timer, ChevronLeft, CheckCircle2,
   Flame, Utensils, Shirt, Laptop, Plane, Heart, ShoppingBag, Building2, Sparkles, Music, 
-  Gamepad2, Dumbbell, BookOpen, Globe, Star, LayoutGrid
+  Gamepad2, Dumbbell, BookOpen, Globe, Star, LayoutGrid, Trophy
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Progress } from '@/components/ui/progress';
@@ -24,20 +24,27 @@ function getFallbackImage(seed: string, index: number): string {
 // Category icon & color mapping
 const CATEGORY_STYLE: Record<string, { icon: React.ReactNode; gradient: string; accent: string }> = {
   'Food': { icon: <Utensils className="h-5 w-5" />, gradient: 'from-orange-500 to-amber-400', accent: 'text-orange-500' },
+  'Eat & Drink': { icon: <Utensils className="h-5 w-5" />, gradient: 'from-orange-500 to-amber-400', accent: 'text-orange-500' },
   'Fashion': { icon: <Shirt className="h-5 w-5" />, gradient: 'from-pink-500 to-rose-400', accent: 'text-pink-500' },
+  'Style': { icon: <Shirt className="h-5 w-5" />, gradient: 'from-pink-500 to-rose-400', accent: 'text-pink-500' },
   'Tech': { icon: <Laptop className="h-5 w-5" />, gradient: 'from-blue-500 to-cyan-400', accent: 'text-blue-500' },
   'Travel': { icon: <Plane className="h-5 w-5" />, gradient: 'from-emerald-500 to-teal-400', accent: 'text-emerald-500' },
   'Lifestyle': { icon: <Heart className="h-5 w-5" />, gradient: 'from-red-500 to-pink-400', accent: 'text-red-500' },
+  'Everyday Life': { icon: <Heart className="h-5 w-5" />, gradient: 'from-red-500 to-pink-400', accent: 'text-red-500' },
   'Consumer': { icon: <ShoppingBag className="h-5 w-5" />, gradient: 'from-violet-500 to-purple-400', accent: 'text-violet-500' },
   'Shopping': { icon: <ShoppingBag className="h-5 w-5" />, gradient: 'from-violet-500 to-purple-400', accent: 'text-violet-500' },
   'Brands': { icon: <Star className="h-5 w-5" />, gradient: 'from-amber-500 to-yellow-400', accent: 'text-amber-500' },
   'Platforms': { icon: <Globe className="h-5 w-5" />, gradient: 'from-indigo-500 to-blue-400', accent: 'text-indigo-500' },
   'Money': { icon: <Building2 className="h-5 w-5" />, gradient: 'from-green-600 to-emerald-400', accent: 'text-green-600' },
+  'Spending & Money': { icon: <Building2 className="h-5 w-5" />, gradient: 'from-green-600 to-emerald-400', accent: 'text-green-600' },
   'Culture': { icon: <BookOpen className="h-5 w-5" />, gradient: 'from-amber-600 to-orange-400', accent: 'text-amber-600' },
   'Music': { icon: <Music className="h-5 w-5" />, gradient: 'from-fuchsia-500 to-pink-400', accent: 'text-fuchsia-500' },
   'Gaming': { icon: <Gamepad2 className="h-5 w-5" />, gradient: 'from-purple-600 to-indigo-400', accent: 'text-purple-600' },
   'Fitness': { icon: <Dumbbell className="h-5 w-5" />, gradient: 'from-lime-500 to-green-400', accent: 'text-lime-600' },
   'Entertainment': { icon: <Sparkles className="h-5 w-5" />, gradient: 'from-yellow-500 to-orange-400', accent: 'text-yellow-500' },
+  'Egyptian Football': { icon: <Trophy className="h-5 w-5" />, gradient: 'from-emerald-600 to-green-400', accent: 'text-emerald-600' },
+  'Sports': { icon: <Trophy className="h-5 w-5" />, gradient: 'from-emerald-600 to-green-400', accent: 'text-emerald-600' },
+  'Apps & Tech': { icon: <Globe className="h-5 w-5" />, gradient: 'from-indigo-500 to-blue-400', accent: 'text-indigo-500' },
 };
 
 function getCategoryStyle(name: string) {
