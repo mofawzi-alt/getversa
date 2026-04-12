@@ -547,6 +547,26 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   {teaserLine}
                 </motion.p>
               )}
+              {/* Celebrity votes */}
+              {step >= 8 && celebrityVotes.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col items-center gap-1 max-w-[16rem]"
+                >
+                  {celebrityVotes.map((celeb, i) => (
+                    <div key={i} className="flex items-center gap-1.5 text-center">
+                      <VerifiedBadge size="sm" />
+                      <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {celeb.choice === choice
+                          ? `${celeb.username} also chose this`
+                          : `${celeb.username} voted the other way`}
+                      </span>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
             </div>
 
             {/* Poll card — centered, Instagram-like */}
