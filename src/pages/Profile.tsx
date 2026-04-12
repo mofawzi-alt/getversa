@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Building2, Users, UserPlus, UserCheck } from 'lucide-react';
+import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Users, UserPlus, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import ProfileDimensionsSection from '@/components/profile/ProfileDimensionsSection';
 import VotingInsights from '@/components/profile/VotingInsights';
