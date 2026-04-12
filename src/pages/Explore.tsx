@@ -430,39 +430,39 @@ function PollCard({ poll, index, votes24hMap, onTap }: { poll: PollItem; index: 
         <div className="w-1/2 h-full relative overflow-hidden">
           <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="55%" loading="lazy" variant="browse" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-          <div className="absolute bottom-2 left-2">
-            <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_a}</p>
-            <span className="text-sm font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>
+          <div className="absolute bottom-3 left-3">
+            <p className="text-white text-base font-extrabold drop-shadow-lg">{poll.option_a}</p>
+            <span className="text-lg font-extrabold text-option-a drop-shadow-lg">{poll.percentA}%</span>
           </div>
         </div>
         <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
         <div className="w-1/2 h-full relative overflow-hidden">
           <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="55%" loading="lazy" variant="browse" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-          <div className="absolute bottom-2 right-2 text-right">
-            <p className="text-white text-xs font-bold drop-shadow-lg">{poll.option_b}</p>
-            <span className="text-sm font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>
+          <div className="absolute bottom-3 right-3 text-right">
+            <p className="text-white text-base font-extrabold drop-shadow-lg">{poll.option_b}</p>
+            <span className="text-lg font-extrabold text-option-b drop-shadow-lg">{poll.percentB}%</span>
           </div>
         </div>
       </div>
-      <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-4 bg-gradient-to-b from-black/60 to-transparent">
-        <h3 className="text-white text-sm font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
+      <div className="absolute top-0 inset-x-0 px-3 pt-2.5 pb-6 bg-gradient-to-b from-black/70 to-transparent">
+        <h3 className="text-white text-base font-bold drop-shadow-lg leading-snug">{poll.question}</h3>
       </div>
-      <div className="absolute bottom-1.5 inset-x-2 flex items-center justify-between z-10">
-        <div className="flex items-center gap-1.5">
+      <div className="absolute bottom-1.5 inset-x-2.5 flex items-center justify-between z-10">
+        <div className="flex items-center gap-2">
           {poll.isLive && <LiveIndicator variant="overlay" />}
-          <span className="text-[10px] text-white/70 flex items-center gap-0.5">
-            <Users className="h-3 w-3" /> {poll.totalVotes}
+          <span className="text-xs text-white/80 font-semibold flex items-center gap-1">
+            <Users className="h-3.5 w-3.5" /> {poll.totalVotes}
           </span>
           {recentVotes > 0 && (
-            <span className="text-[10px] text-white/70 flex items-center gap-0.5">
-              <Zap className="h-3 w-3" /> {recentVotes}/hr
+            <span className="text-xs text-white/80 font-semibold flex items-center gap-1">
+              <Zap className="h-3.5 w-3.5" /> {recentVotes}/hr
             </span>
           )}
         </div>
         {poll.ends_at && (
-          <span className="text-[10px] text-white/60 flex items-center gap-0.5">
-            <Timer className="h-3 w-3" /> {getTimeLeft(poll.ends_at)}
+          <span className="text-xs text-white/70 font-medium flex items-center gap-1">
+            <Timer className="h-3.5 w-3.5" /> {getTimeLeft(poll.ends_at)}
           </span>
         )}
       </div>
