@@ -29,6 +29,8 @@ import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useDailyQueue } from '@/hooks/useDailyQueue';
+import { useCelebrityPresence } from '@/hooks/useCelebrityVotes';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 // FIX 4: Conversational category name mapping
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
