@@ -563,7 +563,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               className="absolute bottom-0 inset-x-0 z-20 px-4 pb-3 pt-8 bg-gradient-to-t from-black/90 to-transparent"
             >
               {/* Minority moment badge */}
-              {isMinority && (
+              {isMinority && revealMode === 'full' && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -577,7 +577,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               )}
 
               {/* First vote of the day */}
-              {isFirstVoteOfDay && (
+              {isFirstVoteOfDay && revealMode === 'full' && (
                 <motion.div
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -604,9 +604,25 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                   transition={{ duration: 0.7 }}
                 />
               </div>
-              <p className="text-[10px] text-white/60 text-center">
-                {result.total.toLocaleString()} perspectives · Keep going →
-              </p>
+
+              {/* Flash mode: quick one-liner */}
+              {revealMode === 'flash' && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-[10px] text-white/60 text-center"
+                >
+                  {result.total.toLocaleString()} perspectives · Next loading...
+                </motion.p>
+              )}
+
+              {/* Full reveal mode hint */}
+              {revealMode === 'full' && (
+                <p className="text-[10px] text-white/60 text-center">
+                  {result.total.toLocaleString()} perspectives
+                </p>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
