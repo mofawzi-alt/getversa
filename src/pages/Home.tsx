@@ -921,6 +921,17 @@ export default function Home() {
                         )}
                       </div>
                       <p className="text-lg font-bold text-foreground leading-snug">{poll.question}</p>
+                      {/* Celebrity indicator */}
+                      {celebrityPresence[poll.id]?.length > 0 && (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          {celebrityPresence[poll.id].slice(0, 2).map((celeb, ci) => (
+                            <span key={ci} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10">
+                              <VerifiedBadge size="sm" />
+                              <span className="text-[10px] font-semibold text-foreground/80">{celeb.username} voted</span>
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Side-by-side images — Instagram post ratio */}
