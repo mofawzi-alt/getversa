@@ -233,7 +233,7 @@ export default function Explore() {
                   onClick={() => setModalPoll(poll)}
                   className="relative rounded-xl overflow-hidden cursor-pointer group shadow-card"
                 >
-                  <div className="flex h-32 relative">
+                  <div className="flex relative" style={{ aspectRatio: '4/5' }}>
                     <div className="w-1/2 h-full relative overflow-hidden">
                       <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="55%" loading="lazy" variant="browse" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
@@ -350,7 +350,7 @@ export default function Explore() {
                     onClick={() => setModalPoll(poll)}
                     className="relative rounded-xl overflow-hidden cursor-pointer group shadow-card"
                   >
-                    <div className="flex h-32 relative">
+                    <div className="flex relative" style={{ aspectRatio: '4/5' }}>
                       <div className="w-1/2 h-full relative overflow-hidden">
                         <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="55%" loading="lazy" variant="browse" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
