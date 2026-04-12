@@ -647,6 +647,10 @@ export default function Home() {
     return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
   }, [allPolls, votedPollIds]);
 
+  // Celebrity presence on live debate polls
+  const livePollIds = useMemo(() => livePolls.map(p => p.id), [livePolls]);
+  const { data: celebrityPresence = {} } = useCelebrityPresence(livePollIds);
+
   // (auto-rotate removed — static horizontal scroll)
 
   if (showWelcome) {
