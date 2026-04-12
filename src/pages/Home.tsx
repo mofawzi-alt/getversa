@@ -793,7 +793,65 @@ export default function Home() {
         </div>
 
 
-        {/* ═══ 🔴 LIVE NOW ═══ */}
+        {/* ═══ Categories strip (Instagram Stories style) ═══ */}
+        {(() => {
+          const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
+          for (const p of allPolls) {
+            const rawCat = p.category || 'Other';
+            const displayCat = getDisplayCategoryName(rawCat);
+            const existing = categoryMap.get(displayCat) || { count: 0, unseen: 0, thumbnail: null };
+            existing.count++;
+            if (!votedPollIds?.has(p.id)) existing.unseen++;
+            if (!existing.thumbnail) {
+              existing.thumbnail = getPollDisplayImageSrc({ imageUrl: p.image_a_url, option: p.option_a, question: p.question, side: 'A' });
+            }
+            categoryMap.set(displayCat, existing);
+          }
+          const categories = Array.from(categoryMap.entries()).sort((a, b) => b[1].count - a[1].count);
+          if (categories.length === 0) return null;
+
+          return (
+            <div className="flex gap-3 overflow-x-auto px-3 scrollbar-hide pb-2 mb-1">
+              {/* Trending entry */}
+              {trendingPolls.length > 0 && (
+                <div
+                  className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+                  onClick={() => navigate('/explore?tab=trending')}
+                >
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/40 flex items-center justify-center">
+                    <Flame className="h-6 w-6 text-primary" />
+                  </div>
+                  <span className="text-[10px] font-bold text-foreground">Trending</span>
+                </div>
+              )}
+              {categories.map(([catName, info]) => {
+                const displayName = getDisplayCategoryName(catName);
+                const meta = getCategoryMeta(displayName.toLowerCase());
+                const hasUnseen = info.unseen > 0;
+                return (
+                  <div
+                    key={catName}
+                    className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+                    onClick={() => handleCategoryTap(catName)}
+                  >
+                    <div className={`w-16 h-16 rounded-full overflow-hidden border-2 ${hasUnseen ? 'border-primary' : 'border-border/60'}`}>
+                      {info.thumbnail ? (
+                        <img src={info.thumbnail} alt={displayName} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center" style={{ background: meta.bg }}>
+                          <span className="text-xl">{meta.emoji}</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-medium text-foreground truncate max-w-[64px] text-center">{displayName}</span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+
+        {/* ═══ 🔴 LIVE DEBATES ═══ */}
         <section className="mb-3">
           <div className="px-3 flex items-center gap-2 mb-2">
             <motion.div
@@ -808,14 +866,13 @@ export default function Home() {
           </div>
 
           {livePolls.length > 0 ? (
-            <div className="flex gap-3 overflow-x-auto px-3 scrollbar-hide snap-x snap-mandatory pb-1" style={{ scrollSnapType: 'x mandatory' }}>
-              {livePolls.slice(0, 5).map((poll, i) => {
+            <div className="flex flex-col gap-4 px-3">
+              {livePolls.map((poll, i) => {
                 const hasVoted = votedPollIds?.has(poll.id);
                 const voteData = userVoteChoices?.get(poll.id);
                 const userChoice = voteData?.choice;
                 const chosenOptionLabel = userChoice === 'A' ? poll.option_a : userChoice === 'B' ? poll.option_b : null;
 
-                // Generate insight line
                 const insightLine = (() => {
                   const spread = Math.abs(poll.percentA - 50);
                   if (spread <= 5) return '⚡ Almost perfectly split';
@@ -831,7 +888,7 @@ export default function Home() {
                     key={poll.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
+                    transition={{ delay: Math.min(i * 0.05, 0.3) }}
                     whileTap={{ scale: 0.985 }}
                     onClick={() => {
                       if (hasVoted) {
@@ -846,8 +903,7 @@ export default function Home() {
                         }
                       }
                     }}
-                    className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-md shrink-0 snap-center"
-                    style={{ width: 'calc(100vw - 40px)', minHeight: '70vh' }}
+                    className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-md"
                   >
                     {/* Question header */}
                     <div className="px-4 pt-4 pb-2">
@@ -861,18 +917,10 @@ export default function Home() {
                       <p className="text-lg font-bold text-foreground leading-snug">{poll.question}</p>
                     </div>
 
-                    {/* Side-by-side images — tall, immersive */}
+                    {/* Side-by-side images — Instagram post ratio */}
                     <div className="flex relative mx-2 rounded-xl overflow-hidden" style={{ aspectRatio: '4/5' }}>
-                      {/* Option A */}
                       <div className="w-1/2 h-full relative overflow-hidden">
-                        <PollOptionImage
-                          imageUrl={poll.image_a_url}
-                          option={poll.option_a}
-                          question={poll.question}
-                          side="A"
-                          maxLogoSize="65%"
-                          loading="lazy"
-                        />
+                        <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading="lazy" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-3">
                           <p className="text-white text-base font-extrabold drop-shadow-lg truncate">{poll.option_a}</p>
@@ -887,16 +935,8 @@ export default function Home() {
                         )}
                       </div>
                       <div className="absolute inset-y-0 left-1/2 w-[1px] bg-white/30 z-10" />
-                      {/* Option B */}
                       <div className="w-1/2 h-full relative overflow-hidden">
-                        <PollOptionImage
-                          imageUrl={poll.image_b_url}
-                          option={poll.option_b}
-                          question={poll.question}
-                          side="B"
-                          maxLogoSize="65%"
-                          loading="lazy"
-                        />
+                        <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading="lazy" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-3">
                           <p className="text-white text-base font-extrabold drop-shadow-lg truncate text-right">{poll.option_b}</p>
@@ -914,34 +954,17 @@ export default function Home() {
 
                     {/* Result bar + insight + CTA */}
                     <div className="px-4 pt-3 pb-4 space-y-2">
-                      {/* Thick percentage bar */}
                       <div className="h-2.5 bg-muted rounded-full overflow-hidden flex">
-                        <motion.div
-                          className="h-full bg-option-a rounded-l-full"
-                          initial={{ width: '50%' }}
-                          animate={{ width: hasVoted ? `${poll.percentA}%` : '50%' }}
-                          transition={{ duration: 0.8, ease: 'easeOut' }}
-                        />
-                        <motion.div
-                          className="h-full bg-option-b rounded-r-full"
-                          initial={{ width: '50%' }}
-                          animate={{ width: hasVoted ? `${poll.percentB}%` : '50%' }}
-                          transition={{ duration: 0.8, ease: 'easeOut' }}
-                        />
+                        <motion.div className="h-full bg-option-a rounded-l-full" initial={{ width: '50%' }} animate={{ width: hasVoted ? `${poll.percentA}%` : '50%' }} transition={{ duration: 0.8, ease: 'easeOut' }} />
+                        <motion.div className="h-full bg-option-b rounded-r-full" initial={{ width: '50%' }} animate={{ width: hasVoted ? `${poll.percentB}%` : '50%' }} transition={{ duration: 0.8, ease: 'easeOut' }} />
                       </div>
-
-                      {/* Percentage numbers */}
                       {hasVoted && (
                         <div className="flex justify-between">
                           <span className="text-sm font-bold text-option-a">{poll.percentA}%</span>
                           <span className="text-sm font-bold text-option-b">{poll.percentB}%</span>
                         </div>
                       )}
-
-                      {/* Insight line */}
                       <p className="text-xs text-muted-foreground italic">{insightLine}</p>
-
-                      {/* CTA */}
                       {hasVoted ? (
                         <div className="flex items-center justify-between pt-1">
                           <span className="text-xs font-semibold text-primary">
@@ -961,10 +984,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="mx-3 rounded-2xl border border-border/60 bg-card px-4 py-8 text-center">
-              <motion.div
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
+              <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }}>
                 <Sparkles className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
               </motion.div>
               <p className="text-sm font-display font-bold text-foreground">New live debates launching soon</p>
@@ -998,90 +1018,7 @@ export default function Home() {
         </div>
 
 
-        {/* ═══ 🔥 TRENDING NOW ═══ */}
-        {trendingPolls.length > 0 && (
-          <section className="mb-3">
-            <div className="px-3 flex items-center gap-1.5 mb-2">
-              <TrendingUp className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">🔥 Trending Now</span>
-            </div>
-            <div className="flex gap-2.5 overflow-x-auto px-3 scrollbar-hide snap-x pb-1">
-              {trendingPolls.map((poll, i) => (
-                <TrendingPollCard key={poll.id} poll={poll} index={i} hasVoted={!!votedPollIds?.has(poll.id)} onTap={handlePollTap} badge={poll.trendBadge} hot={poll.trendHot} onCategoryTap={(cat) => handleCategoryTap(cat)} />
-              ))}
-            </div>
-          </section>
-        )}
 
-        {/* ═══ BROWSE BY CATEGORY (FIX 3 & 4) ═══ */}
-        {(() => {
-          const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
-          for (const p of allPolls) {
-            const rawCat = p.category || 'Other';
-            const displayCat = getDisplayCategoryName(rawCat);
-            const existing = categoryMap.get(displayCat) || { count: 0, unseen: 0, thumbnail: null };
-            existing.count++;
-            if (!votedPollIds?.has(p.id)) existing.unseen++;
-             if (!existing.thumbnail) {
-               existing.thumbnail = getPollDisplayImageSrc({ imageUrl: p.image_a_url, option: p.option_a, question: p.question, side: 'A' });
-             }
-            categoryMap.set(displayCat, existing);
-          }
-          const categories = Array.from(categoryMap.entries())
-            .sort((a, b) => b[1].count - a[1].count);
-
-          if (categories.length === 0) return null;
-
-          return (
-            <section className="px-3 mb-3">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Eye className="h-3.5 w-3.5 text-primary" />
-                <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Browse by Category</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {categories.map(([catName, info], i) => {
-                  const displayName = getDisplayCategoryName(catName);
-                  const meta = getCategoryMeta(displayName.toLowerCase());
-                  return (
-                    <motion.div
-                      key={catName}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => handleCategoryTap(catName)}
-                      className="relative rounded-xl overflow-hidden cursor-pointer group border border-border/60 shadow-card h-24"
-                    >
-                      {info.thumbnail ? (
-                        <img src={info.thumbnail} alt={displayName} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity" />
-                      ) : (
-                        <div className="absolute inset-0" style={{ background: meta.bg }} />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-card/40" />
-                      <div className="relative h-full flex flex-col justify-end p-3">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-lg">{meta.emoji}</span>
-                          <span className="text-xs font-display font-bold text-foreground">{displayName}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {info.unseen > 0 ? (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
-                              New polls today
-                            </span>
-                          ) : (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
-                              Updated daily
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })()}
 
         {/* ═══ 🔥 WHAT PEOPLE ARE CHOOSING RIGHT NOW ═══ */}
         {(() => {
