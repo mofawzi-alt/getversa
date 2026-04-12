@@ -19,14 +19,6 @@ interface LeaderboardUser {
 export default function Leaderboard() {
   const { profile } = useAuth();
 
-  // Collect all user IDs for verified check
-  const allUserIds = [
-    ...(pointsLeaderboard || []),
-    ...(streakLeaderboard || []),
-    ...(votesLeaderboard || []),
-  ].map(u => u.id);
-  const { isVerified } = useVerifiedUsers([...new Set(allUserIds)]);
-
   const { data: pointsLeaderboard, isLoading: loadingPoints } = useQuery({
     queryKey: ['leaderboard-points'],
     queryFn: async () => {
