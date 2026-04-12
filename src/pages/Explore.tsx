@@ -6,7 +6,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { 
   Search, TrendingUp, ArrowUp, ArrowDown, Minus, Zap, Users, Timer, ChevronLeft, CheckCircle2,
   Flame, Utensils, Shirt, Laptop, Plane, Heart, ShoppingBag, Building2, Sparkles, Music, 
-  Gamepad2, Dumbbell, BookOpen, Globe, Star, LayoutGrid
+  Gamepad2, Dumbbell, BookOpen, Globe, Star, LayoutGrid, Trophy
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Progress } from '@/components/ui/progress';
