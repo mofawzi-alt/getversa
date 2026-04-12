@@ -808,7 +808,7 @@ export default function Home() {
           </div>
 
           {livePolls.length > 0 ? (
-            <div className="flex flex-col gap-4 px-3">
+            <div className="flex gap-3 overflow-x-auto px-3 scrollbar-hide snap-x snap-mandatory pb-1" style={{ scrollSnapType: 'x mandatory' }}>
               {livePolls.slice(0, 5).map((poll, i) => {
                 const hasVoted = votedPollIds?.has(poll.id);
                 const voteData = userVoteChoices?.get(poll.id);
@@ -846,8 +846,8 @@ export default function Home() {
                         }
                       }
                     }}
-                    className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-md"
-                    style={{ minHeight: '75vh' }}
+                    className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-md shrink-0 snap-center"
+                    style={{ width: 'calc(100vw - 40px)', minHeight: '70vh' }}
                   >
                     {/* Question header */}
                     <div className="px-4 pt-4 pb-2">
