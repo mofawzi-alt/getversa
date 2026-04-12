@@ -807,15 +807,15 @@ export default function Home() {
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleLivePollTap(poll)}
                       className="relative rounded-2xl overflow-hidden cursor-pointer group border border-border/60 shadow-card shrink-0"
-                      style={{ width: 'calc((100vw - 36px) / 2.3)' }}
+                      style={{ width: 'calc((100vw - 36px) / 1.8)' }}
                     >
                       {/* Pin button */}
                       <div className="absolute top-2 right-2 z-30">
                         <PinButton pollId={poll.id} />
                       </div>
 
-                      {/* Images */}
-                      <div className="flex h-40 relative">
+                      {/* Images — Instagram post ratio */}
+                      <div className="flex relative" style={{ aspectRatio: '4/5' }}>
                         <div className="w-1/2 h-full relative overflow-hidden">
                           <PollOptionImage
                             imageUrl={poll.image_a_url}
@@ -1103,9 +1103,10 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
       transition={{ delay: index * 0.04 }}
       whileTap={{ scale: 0.96 }}
       onClick={() => onTap(poll)}
-      className="shrink-0 w-44 rounded-xl overflow-hidden cursor-pointer snap-start group shadow-card"
+      className="shrink-0 rounded-xl overflow-hidden cursor-pointer snap-start group shadow-card"
+      style={{ width: 'calc((100vw - 36px) / 1.8)' }}
     >
-      <div className="flex h-24 relative">
+      <div className="flex relative" style={{ aspectRatio: '4/5' }}>
         <div className="w-1/2 h-full relative overflow-hidden">
           <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105" onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
