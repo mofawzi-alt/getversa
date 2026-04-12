@@ -9,6 +9,8 @@ import { playSwipeSound, playResultSound, playMinoritySound } from '@/lib/sounds
 import { getPollDisplayImageSrc, getStablePollFallbackImage, handlePollImageError } from '@/lib/pollImages';
 import { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import { useCelebrityPresence, useCelebrityVotes } from '@/hooks/useCelebrityVotes';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
