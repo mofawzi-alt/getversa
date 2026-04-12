@@ -324,13 +324,13 @@ export default function Explore() {
                     <div className={`h-16 bg-gradient-to-br ${style.gradient} flex items-center justify-center relative`}>
                       <div className="text-white/90">{style.icon}</div>
                       <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white/20 backdrop-blur-sm">
-                        <ArrowUp className="h-2.5 w-2.5 text-white" />
-                        <span className="text-[10px] font-bold text-white">Hot</span>
+                        <ArrowUp className="h-3 w-3 text-white" />
+                        <span className="text-xs font-bold text-white">Hot</span>
                       </div>
                     </div>
                     <div className="p-2.5">
-                      <p className="text-sm font-bold text-foreground truncate">{cat.name}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-base font-bold text-foreground truncate">{cat.name}</p>
+                      <p className="text-sm text-muted-foreground mt-0.5">
                         {cat.votes24h > 0 ? `${cat.votes24h} votes today` : `${cat.activePolls} polls`}
                       </p>
                     </div>
@@ -366,26 +366,26 @@ export default function Explore() {
                         {style.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-foreground truncate">{cat.name}</p>
-                        <p className="text-xs text-muted-foreground">{cat.activePolls} polls</p>
+                        <p className="text-base font-bold text-foreground truncate">{cat.name}</p>
+                        <p className="text-sm text-muted-foreground">{cat.activePolls} polls</p>
                       </div>
                     </div>
                     
                     {/* Status badges */}
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {cat.hasLive && (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive text-[10px] font-bold">
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-destructive/10 text-destructive text-xs font-bold">
                          <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" /> Live
                         </span>
                       )}
                       {cat.momentum === 'rising' && (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-bold">
-                          <TrendingUp className="h-3 w-3" /> Trending
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 text-xs font-bold">
+                          <TrendingUp className="h-3.5 w-3.5" /> Trending
                         </span>
                       )}
                       {cat.votes24h > 0 && (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
-                          <Zap className="h-3 w-3" /> {cat.votes24h} today
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                          <Zap className="h-3.5 w-3.5" /> {cat.votes24h} today
                         </span>
                       )}
                     </div>
