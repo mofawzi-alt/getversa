@@ -818,8 +818,8 @@ export default function Home() {
                   className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
                   onClick={() => navigate('/explore?tab=trending')}
                 >
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/40 flex items-center justify-center">
-                    <Flame className="h-6 w-6 text-primary" />
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500/25 to-red-500/15 border-2 border-orange-400 flex items-center justify-center">
+                    <Flame className="h-6 w-6 text-orange-500" />
                   </div>
                   <span className="text-[10px] font-bold text-foreground">Trending</span>
                 </div>
