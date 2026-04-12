@@ -36,6 +36,8 @@ import NotFound from "./pages/NotFound";
 import TasteProfile from "./pages/TasteProfile";
 import WeeklyTopResults from "./pages/WeeklyTopResults";
 import JoinOrganization from "./pages/JoinOrganization";
+import Friends from "./pages/Friends";
+import FriendComparison from "./pages/FriendComparison";
 import SharedPoll from "./pages/SharedPoll";
  import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
@@ -179,6 +181,8 @@ function AppInner() {
           <Route path="/insights" element={<ProtectedRoute><InsightProfile /></ProtectedRoute>} />
           <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
           <Route path="/weekly-results" element={<WeeklyTopResults />} />
+          <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+          <Route path="/friends/:friendId" element={<ProtectedRoute><FriendComparison /></ProtectedRoute>} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<Terms />} />

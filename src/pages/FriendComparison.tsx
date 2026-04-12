@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import FollowButton from '@/components/poll/FollowButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   ArrowLeft, Heart, Check, X, Users, 
@@ -176,6 +177,11 @@ export default function FriendComparison() {
           </div>
           
           <h2 className="text-lg font-semibold">@{friend.username}</h2>
+          {friendId && (
+            <div className="mt-2">
+              <FollowButton creatorId={friendId} creatorName={friend.username} variant="compact" />
+            </div>
+          )}
           <p className={`text-sm ${getCompatibilityColor(compatibilityScore)} font-medium mt-1`}>
             {getCompatibilityLabel(compatibilityScore)}
           </p>

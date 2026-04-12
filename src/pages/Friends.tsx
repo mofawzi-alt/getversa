@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFriends, SearchResult } from '@/hooks/useFriends';
+import FollowButton from '@/components/poll/FollowButton';
 import { 
   Search, UserPlus, UserCheck, Users, Loader2, 
   Check, X, Heart, ChevronRight, Trophy, 
@@ -373,26 +374,30 @@ export default function Friends() {
                         </div>
                       </div>
 
-                      {user.friendship_status === 'accepted' ? (
-                        <Button size="sm" variant="secondary" disabled>
-                          <UserCheck className="h-4 w-4 mr-1" />
-                          Friends
-                        </Button>
-                      ) : user.friendship_status === 'pending' || hasPendingRequest(user.id) ? (
-                        <Button size="sm" variant="secondary" disabled>
-                          <Loader2 className="h-4 w-4 mr-1" />
-                          Pending
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => sendRequest(user.id)}
-                          disabled={sendingRequest}
-                        >
-                          <UserPlus className="h-4 w-4 mr-1" />
-                          Add
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <FollowButton creatorId={user.id} variant="icon" />
+                        
+                        {user.friendship_status === 'accepted' ? (
+                          <Button size="sm" variant="secondary" disabled>
+                            <UserCheck className="h-4 w-4 mr-1" />
+                            Friends
+                          </Button>
+                        ) : user.friendship_status === 'pending' || hasPendingRequest(user.id) ? (
+                          <Button size="sm" variant="secondary" disabled>
+                            <Loader2 className="h-4 w-4 mr-1" />
+                            Pending
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => sendRequest(user.id)}
+                            disabled={sendingRequest}
+                          >
+                            <UserPlus className="h-4 w-4 mr-1" />
+                            Add
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
