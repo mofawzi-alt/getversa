@@ -382,6 +382,8 @@ export default function LiveDebate() {
         result={result}
         disabled={voteMutation.isPending}
         isVotedPoll={currentPollIsVoted}
+        celebrityNames={celebrityPresence[currentPoll.id]?.map(c => c.username) || []}
+        celebrityVotes={currentCelebVotes}
       />
 
       {/* Remaining count & navigation */}
