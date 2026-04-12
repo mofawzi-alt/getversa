@@ -747,6 +747,27 @@ function FullScreenCard({
                     <span className="text-white text-xs font-bold">You're in the {userPct}% 👀</span>
                   </motion.div>
                 )}
+
+                {/* Celebrity vote lines */}
+                {celebrityVotes.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    {celebrityVotes.map((celeb, i) => (
+                      <div key={i} className="flex items-center gap-1.5">
+                        <VerifiedBadge size="sm" />
+                        <span className="text-[10px] font-semibold text-white/80">
+                          {celeb.choice === result!.choice
+                            ? `${celeb.username} also chose this`
+                            : `${celeb.username} voted the other way`}
+                        </span>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}
