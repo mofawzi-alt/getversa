@@ -164,6 +164,10 @@ export default function Explore() {
   const polls = pollsData?.polls || [];
   const votes24hMap = pollsData?.votes24hMap || new Map();
 
+  // Celebrity presence for all polls
+  const allPollIds = useMemo(() => polls.map(p => p.id), [polls]);
+  const { data: celebrityPresence = {} } = useCelebrityPresence(allPollIds);
+
   const categories: CategoryData[] = useMemo(() => {
     const catMap = new Map<string, { name: string; activePolls: number; votedPolls: number; hasLive: boolean; votes24h: number; totalVotes: number }>();
     polls.forEach(p => {
