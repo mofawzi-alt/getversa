@@ -143,9 +143,10 @@ export default function Leaderboard() {
               </div>
               
               <div className="flex-1 min-w-0">
-                <p className={`font-semibold truncate ${isCurrentUser ? 'text-primary' : ''}`}>
+                <p className={`font-semibold truncate flex items-center gap-1 ${isCurrentUser ? 'text-primary' : ''}`}>
                   @{user.username || 'anonymous'}
-                  {isCurrentUser && <span className="text-xs ml-2 text-primary">(You)</span>}
+                  {isVerified(user.id) && <VerifiedBadge size="sm" />}
+                  {isCurrentUser && <span className="text-xs ml-1 text-primary">(You)</span>}
                 </p>
               </div>
               
