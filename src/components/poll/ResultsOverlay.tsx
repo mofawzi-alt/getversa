@@ -1,5 +1,7 @@
 import { forwardRef, useEffect } from 'react';
 import ShareButton from './ShareButton';
+import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface Poll {
   id: string;
@@ -34,6 +36,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
   const userPercent = result.choice === 'A' ? result.percentA : result.percentB;
   const isWinnerA = result.percentA >= result.percentB;
   const userPickedWinner = (result.choice === 'A' && isWinnerA) || (result.choice === 'B' && !isWinnerA);
+  const { data: celebrityVotes = [] } = useCelebrityVotes(poll.id, poll.category);
 
   // Auto-advance after 1.4 seconds
   useEffect(() => {
@@ -88,6 +91,20 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
           }`}>
             {userPickedWinner ? 'Majority' : 'Minority'}
           </span>
+          {celebrityVotes.length > 0 && (
+            <div className="space-y-0.5 mt-1">
+              {celebrityVotes.map((celeb, i) => (
+                <div key={i} className="flex items-center justify-center gap-1">
+                  <VerifiedBadge size="sm" />
+                  <span className="text-[10px] font-semibold text-foreground/80">
+                    {celeb.choice === result.choice
+                      ? `${celeb.username} also chose this`
+                      : `${celeb.username} voted the other way`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Progress bar for auto-advance */}

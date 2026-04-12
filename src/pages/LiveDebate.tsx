@@ -9,6 +9,8 @@ import { playSwipeSound, playResultSound, playMinoritySound } from '@/lib/sounds
 import { getPollDisplayImageSrc, getStablePollFallbackImage, handlePollImageError } from '@/lib/pollImages';
 import { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import { useCelebrityPresence, useCelebrityVotes } from '@/hooks/useCelebrityVotes';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
@@ -141,6 +143,16 @@ export default function LiveDebate() {
   const currentLocalResult = currentPoll ? localResults.get(currentPoll.id) ?? null : null;
   const currentPollChoice = currentLocalResult?.choice ?? (currentPoll ? votedChoices.get(currentPoll.id) : undefined);
   const currentPollIsVoted = Boolean(currentPollChoice);
+
+  // Celebrity presence on all loaded polls (for card indicators)
+  const pollIds = polls.map(p => p.id);
+  const { data: celebrityPresence = {} } = useCelebrityPresence(pollIds);
+
+  // Celebrity votes for current poll result screen
+  const { data: currentCelebVotes = [] } = useCelebrityVotes(
+    (phase === 'result' && currentPoll) ? currentPoll.id : undefined,
+    currentPoll?.category
+  );
 
   // If the current poll was already voted on, show results immediately (no swipe)
   useEffect(() => {
@@ -370,6 +382,8 @@ export default function LiveDebate() {
         result={result}
         disabled={voteMutation.isPending}
         isVotedPoll={currentPollIsVoted}
+        celebrityNames={celebrityPresence[currentPoll.id]?.map(c => c.username) || []}
+        celebrityVotes={currentCelebVotes}
       />
 
       {/* Remaining count & navigation */}
@@ -484,6 +498,8 @@ function FullScreenCard({
   result,
   disabled,
   isVotedPoll,
+  celebrityNames = [],
+  celebrityVotes = [],
 }: {
   poll: Poll;
   imgA: string;
@@ -493,6 +509,8 @@ function FullScreenCard({
   result: VoteResult | null;
   disabled: boolean;
   isVotedPoll: boolean;
+  celebrityNames?: string[];
+  celebrityVotes?: { username: string; choice: 'A' | 'B'; verified_category: string | null }[];
 }) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -638,6 +656,17 @@ function FullScreenCard({
         {/* Question overlay at top */}
         <div className="absolute top-16 inset-x-0 px-6 z-20 pointer-events-none">
           <p className="text-white text-xl font-display font-bold drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] text-center leading-snug">{poll.question}</p>
+          {/* Celebrity indicator — no vote shown, just name + badge */}
+          {celebrityNames.length > 0 && phase === 'swipe' && (
+            <div className="flex items-center justify-center gap-1 mt-2">
+              {celebrityNames.slice(0, 2).map((name, i) => (
+                <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 backdrop-blur-sm">
+                  <VerifiedBadge size="sm" />
+                  <span className="text-[9px] font-semibold text-white/80">{name}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Suspense loading */}
@@ -716,6 +745,27 @@ function FullScreenCard({
                     className="px-4 py-1.5 rounded-full bg-white/10 border border-white/10"
                   >
                     <span className="text-white text-xs font-bold">You're in the {userPct}% 👀</span>
+                  </motion.div>
+                )}
+
+                {/* Celebrity vote lines */}
+                {celebrityVotes.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    {celebrityVotes.map((celeb, i) => (
+                      <div key={i} className="flex items-center gap-1.5">
+                        <VerifiedBadge size="sm" />
+                        <span className="text-[10px] font-semibold text-white/80">
+                          {celeb.choice === result!.choice
+                            ? `${celeb.username} also chose this`
+                            : `${celeb.username} voted the other way`}
+                        </span>
+                      </div>
+                    ))}
                   </motion.div>
                 )}
               </div>

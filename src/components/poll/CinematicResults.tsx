@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
+import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface CinematicResultsProps {
   poll: {
@@ -333,6 +335,9 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
   const [patternLine, setPatternLine] = useState<string | null>(null);
   const [teaserLine, setTeaserLine] = useState<string | null>(null);
 
+  // Celebrity votes
+  const { data: celebrityVotes = [] } = useCelebrityVotes(visible ? poll.id : undefined, poll.category);
+
   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
   const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
 
@@ -541,6 +546,26 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 >
                   {teaserLine}
                 </motion.p>
+              )}
+              {/* Celebrity votes */}
+              {step >= 8 && celebrityVotes.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col items-center gap-1 max-w-[16rem]"
+                >
+                  {celebrityVotes.map((celeb, i) => (
+                    <div key={i} className="flex items-center gap-1.5 text-center">
+                      <VerifiedBadge size="sm" />
+                      <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {celeb.choice === choice
+                          ? `${celeb.username} also chose this`
+                          : `${celeb.username} voted the other way`}
+                      </span>
+                    </div>
+                  ))}
+                </motion.div>
               )}
             </div>
 
