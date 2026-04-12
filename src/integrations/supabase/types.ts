@@ -1363,6 +1363,8 @@ export type Database = {
           points: number | null
           total_days_active: number | null
           username: string | null
+          verified_category: string | null
+          verified_public_figure: boolean
         }
         Insert: {
           age_range?: string | null
@@ -1384,6 +1386,8 @@ export type Database = {
           points?: number | null
           total_days_active?: number | null
           username?: string | null
+          verified_category?: string | null
+          verified_public_figure?: boolean
         }
         Update: {
           age_range?: string | null
@@ -1405,6 +1409,8 @@ export type Database = {
           points?: number | null
           total_days_active?: number | null
           username?: string | null
+          verified_category?: string | null
+          verified_public_figure?: boolean
         }
         Relationships: []
       }
@@ -1414,6 +1420,7 @@ export type Database = {
           choice: string
           created_at: string | null
           id: string
+          is_public_vote: boolean
           poll_id: string
           session_duration_ms: number | null
           user_id: string
@@ -1427,6 +1434,7 @@ export type Database = {
           choice: string
           created_at?: string | null
           id?: string
+          is_public_vote?: boolean
           poll_id: string
           session_duration_ms?: number | null
           user_id: string
@@ -1440,6 +1448,7 @@ export type Database = {
           choice?: string
           created_at?: string | null
           id?: string
+          is_public_vote?: boolean
           poll_id?: string
           session_duration_ms?: number | null
           user_id?: string

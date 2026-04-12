@@ -6,6 +6,8 @@ import { useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Users, UserPlus, UserCheck } from 'lucide-react';
+import VerifiedBadge from '@/components/VerifiedBadge';
+import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import { toast } from 'sonner';
 import ProfileDimensionsSection from '@/components/profile/ProfileDimensionsSection';
 import VotingInsights from '@/components/profile/VotingInsights';
@@ -16,6 +18,7 @@ export default function Profile() {
   const { profile, isAdmin, signOut, user } = useAuth();
   const navigate = useNavigate();
   const { following, isFollowing, toggleFollow } = useFollows();
+  const { isVerified: selfVerified, category: selfCategory } = useVerifiedUser(user?.id);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
 
@@ -103,9 +106,15 @@ export default function Profile() {
             </span>
           </div>
           
-          <h1 className="text-2xl font-display font-bold">
-            @{profile?.username || 'user'}
-          </h1>
+          <div className="flex items-center justify-center gap-1.5">
+            <h1 className="text-2xl font-display font-bold">
+              @{profile?.username || 'user'}
+            </h1>
+            {selfVerified && <VerifiedBadge size="lg" />}
+          </div>
+          {selfVerified && selfCategory && (
+            <p className="text-xs text-blue-500 font-medium mt-0.5">{selfCategory}</p>
+          )}
           
           <p className="text-card-foreground/70 text-sm mt-1">
             {profile?.country || 'Unknown location'}

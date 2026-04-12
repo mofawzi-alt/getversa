@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import { Loader2, Trophy, Flame, Medal, Crown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useVerifiedUsers } from '@/hooks/useVerifiedUsers';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface LeaderboardUser {
   id: string;
@@ -81,6 +83,14 @@ export default function Leaderboard() {
     },
   });
 
+  // Collect all user IDs for verified check
+  const allUserIds = [
+    ...(pointsLeaderboard || []),
+    ...(streakLeaderboard || []),
+    ...(votesLeaderboard || []),
+  ].map(u => u.id);
+  const { isVerified } = useVerifiedUsers([...new Set(allUserIds)]);
+
   const getRankIcon = (rank: number) => {
     if (rank === 0) return <Crown className="h-5 w-5 text-yellow-400" />;
     if (rank === 1) return <Medal className="h-5 w-5 text-gray-300" />;
@@ -133,9 +143,10 @@ export default function Leaderboard() {
               </div>
               
               <div className="flex-1 min-w-0">
-                <p className={`font-semibold truncate ${isCurrentUser ? 'text-primary' : ''}`}>
+                <p className={`font-semibold truncate flex items-center gap-1 ${isCurrentUser ? 'text-primary' : ''}`}>
                   @{user.username || 'anonymous'}
-                  {isCurrentUser && <span className="text-xs ml-2 text-primary">(You)</span>}
+                  {isVerified(user.id) && <VerifiedBadge size="sm" />}
+                  {isCurrentUser && <span className="text-xs ml-1 text-primary">(You)</span>}
                 </p>
               </div>
               
