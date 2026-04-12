@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3 } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2 } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
@@ -970,7 +970,21 @@ export default function Home() {
                           <span className="text-xs font-semibold text-primary">
                             You voted {chosenOptionLabel && chosenOptionLabel.length > 20 ? chosenOptionLabel.slice(0, 20) + '…' : chosenOptionLabel}
                           </span>
-                          <span className="text-[10px] text-muted-foreground">Tap for full results</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const pollUrl = `${window.location.origin}/poll/${poll.id}`;
+                              if (navigator.share) {
+                                navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
+                              } else {
+                                navigator.clipboard.writeText(pollUrl);
+                                import('sonner').then(m => m.toast.success('Link copied!'));
+                              }
+                            }}
+                            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <Share2 className="h-3 w-3" /> Share
+                          </button>
                         </div>
                       ) : (
                         <button className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5">
