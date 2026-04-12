@@ -498,6 +498,8 @@ function FullScreenCard({
   result,
   disabled,
   isVotedPoll,
+  celebrityNames = [],
+  celebrityVotes = [],
 }: {
   poll: Poll;
   imgA: string;
@@ -507,6 +509,8 @@ function FullScreenCard({
   result: VoteResult | null;
   disabled: boolean;
   isVotedPoll: boolean;
+  celebrityNames?: string[];
+  celebrityVotes?: { username: string; choice: 'A' | 'B'; verified_category: string | null }[];
 }) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
