@@ -261,6 +261,20 @@ export default function Home() {
     staleTime: 1000 * 15,
   });
 
+  // Fetch user vote choices for showing "You voted X" on live debate cards
+  const { data: userVoteChoices } = useQuery({
+    queryKey: ['user-vote-choices', user?.id],
+    queryFn: async () => {
+      if (!user) return new Map<string, { choice: string }>();
+      const { data } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
+      const map = new Map<string, { choice: string }>();
+      data?.forEach(v => map.set(v.poll_id, { choice: v.choice }));
+      return map;
+    },
+    staleTime: 1000 * 30,
+    enabled: !!user,
+  });
+
   // Daily queue system
   const { queuePollIds, remainingToday, allDone, invalidateQueue, isQueueLoading, totalToday } = useDailyQueue();
 
