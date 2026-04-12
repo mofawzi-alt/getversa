@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
-import { ArrowLeft, Flame, Zap, Users, BarChart3, Sparkles, BadgeCheck } from 'lucide-react';
+import { ArrowLeft, Flame, Zap, Users, BarChart3, Sparkles } from 'lucide-react';
 import { useFollows } from '@/hooks/useFollows';
+import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
 
 // Derive a taste archetype from voting trait tags
@@ -58,6 +60,7 @@ export default function UserProfile() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isFollowing, toggleFollow } = useFollows();
+  const { isVerified, category: verifiedCategory } = useVerifiedUser(userId);
   const isOwnProfile = user?.id === userId;
 
   // Public profile data
@@ -191,10 +194,11 @@ export default function UserProfile() {
             <h2 className="text-xl font-display font-bold text-foreground">
               @{profileData?.username || 'user'}
             </h2>
-            {(profileData?.points || 0) >= 500 && (
-              <BadgeCheck className="h-5 w-5 text-primary" />
-            )}
+            {isVerified && <VerifiedBadge size="lg" />}
           </div>
+          {isVerified && verifiedCategory && (
+            <p className="text-xs text-blue-500 font-medium mt-1">{verifiedCategory}</p>
+          )}
 
           {/* Follow button for non-own profiles */}
           {user && !isOwnProfile && userId && (
