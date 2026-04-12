@@ -3,7 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/layout/AppLayout';
-import { Search, TrendingUp, ArrowUp, ArrowDown, Minus, Zap, Users, Timer, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { 
+  Search, TrendingUp, ArrowUp, ArrowDown, Minus, Zap, Users, Timer, ChevronLeft, CheckCircle2,
+  Flame, Utensils, Shirt, Laptop, Plane, Heart, ShoppingBag, Building2, Sparkles, Music, 
+  Gamepad2, Dumbbell, BookOpen, Globe, Star, LayoutGrid
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
@@ -15,6 +19,29 @@ import HomeResultsModal from '@/components/home/HomeResultsModal';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
+}
+
+// Category icon & color mapping
+const CATEGORY_STYLE: Record<string, { icon: React.ReactNode; gradient: string; accent: string }> = {
+  'Food': { icon: <Utensils className="h-5 w-5" />, gradient: 'from-orange-500 to-amber-400', accent: 'text-orange-500' },
+  'Fashion': { icon: <Shirt className="h-5 w-5" />, gradient: 'from-pink-500 to-rose-400', accent: 'text-pink-500' },
+  'Tech': { icon: <Laptop className="h-5 w-5" />, gradient: 'from-blue-500 to-cyan-400', accent: 'text-blue-500' },
+  'Travel': { icon: <Plane className="h-5 w-5" />, gradient: 'from-emerald-500 to-teal-400', accent: 'text-emerald-500' },
+  'Lifestyle': { icon: <Heart className="h-5 w-5" />, gradient: 'from-red-500 to-pink-400', accent: 'text-red-500' },
+  'Consumer': { icon: <ShoppingBag className="h-5 w-5" />, gradient: 'from-violet-500 to-purple-400', accent: 'text-violet-500' },
+  'Shopping': { icon: <ShoppingBag className="h-5 w-5" />, gradient: 'from-violet-500 to-purple-400', accent: 'text-violet-500' },
+  'Brands': { icon: <Star className="h-5 w-5" />, gradient: 'from-amber-500 to-yellow-400', accent: 'text-amber-500' },
+  'Platforms': { icon: <Globe className="h-5 w-5" />, gradient: 'from-indigo-500 to-blue-400', accent: 'text-indigo-500' },
+  'Money': { icon: <Building2 className="h-5 w-5" />, gradient: 'from-green-600 to-emerald-400', accent: 'text-green-600' },
+  'Culture': { icon: <BookOpen className="h-5 w-5" />, gradient: 'from-amber-600 to-orange-400', accent: 'text-amber-600' },
+  'Music': { icon: <Music className="h-5 w-5" />, gradient: 'from-fuchsia-500 to-pink-400', accent: 'text-fuchsia-500' },
+  'Gaming': { icon: <Gamepad2 className="h-5 w-5" />, gradient: 'from-purple-600 to-indigo-400', accent: 'text-purple-600' },
+  'Fitness': { icon: <Dumbbell className="h-5 w-5" />, gradient: 'from-lime-500 to-green-400', accent: 'text-lime-600' },
+  'Entertainment': { icon: <Sparkles className="h-5 w-5" />, gradient: 'from-yellow-500 to-orange-400', accent: 'text-yellow-500' },
+};
+
+function getCategoryStyle(name: string) {
+  return CATEGORY_STYLE[name] || { icon: <LayoutGrid className="h-5 w-5" />, gradient: 'from-slate-500 to-slate-400', accent: 'text-muted-foreground' };
 }
 
 type CategoryData = {
@@ -63,19 +90,13 @@ export default function Explore() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [modalPoll, setModalPoll] = useState<PollItem | null>(null);
 
-  // Read initial category from URL params (e.g., /explore?category=Food)
   useEffect(() => {
     const catParam = searchParams.get('category');
-    if (catParam) {
-      setSelectedCategory(catParam);
-    }
+    if (catParam) setSelectedCategory(catParam);
     const searchParam = searchParams.get('search');
-    if (searchParam) {
-      setSearch(searchParam);
-    }
+    if (searchParam) setSearch(searchParam);
   }, [searchParams]);
 
-  // Fetch user's voted poll IDs
   const { data: votedPollIds } = useQuery({
     queryKey: ['user-voted-ids-explore', user?.id],
     queryFn: async () => {
@@ -86,7 +107,6 @@ export default function Explore() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Fetch all active polls with results
   const { data: pollsData } = useQuery({
     queryKey: ['explore-polls', user?.id],
     queryFn: async () => {
@@ -110,17 +130,11 @@ export default function Explore() {
 
       const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { data: recentVotes, error: recentVotesError } = await supabase
-        .from('votes')
-        .select('poll_id')
-        .gte('created_at', since24h)
-        .limit(1000);
-
+        .from('votes').select('poll_id').gte('created_at', since24h).limit(1000);
       if (recentVotesError) throw recentVotesError;
 
       const votes24hMap = new Map<string, number>();
-      recentVotes?.forEach(v => {
-        votes24hMap.set(v.poll_id, (votes24hMap.get(v.poll_id) || 0) + 1);
-      });
+      recentVotes?.forEach(v => { votes24hMap.set(v.poll_id, (votes24hMap.get(v.poll_id) || 0) + 1); });
 
       const nowDate = new Date();
       const polls: PollItem[] = rawPolls.map(p => {
@@ -130,14 +144,7 @@ export default function Explore() {
         const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
         const hasStarted = p.starts_at ? new Date(p.starts_at) <= nowDate : true;
         const isExpired = p.ends_at ? new Date(p.ends_at) < nowDate : false;
-        return {
-          ...p,
-          totalVotes: total,
-          percentA: pctA,
-          percentB: 100 - pctA,
-          isLive: hasStarted && !isExpired,
-          contestedness: Math.abs(pctA - 50),
-        };
+        return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, isLive: hasStarted && !isExpired, contestedness: Math.abs(pctA - 50) };
       });
 
       return { polls, votes24hMap };
@@ -148,7 +155,6 @@ export default function Explore() {
   const polls = pollsData?.polls || [];
   const votes24hMap = pollsData?.votes24hMap || new Map();
 
-  // Build categories
   const categories: CategoryData[] = useMemo(() => {
     const catMap = new Map<string, { name: string; activePolls: number; votedPolls: number; hasLive: boolean; votes24h: number; totalVotes: number }>();
     polls.forEach(p => {
@@ -169,33 +175,25 @@ export default function Explore() {
     }).sort((a, b) => b.votes24h - a.votes24h);
   }, [polls, votes24hMap, votedPollIds]);
 
-  const trendingCategories = categories.slice(0, 5);
+  const trendingCategories = categories.filter(c => c.momentum === 'rising').slice(0, 4);
 
-  // Filter for search
   const filteredCategories = search
     ? categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
     : categories;
 
-  // Search polls by option name / question when search is active
   const searchResults = useMemo(() => {
     if (!search || search.length < 2) return [];
     const q = search.toLowerCase();
     return polls
-      .filter(p =>
-        p.option_a.toLowerCase().includes(q) ||
-        p.option_b.toLowerCase().includes(q) ||
-        p.question.toLowerCase().includes(q)
-      )
+      .filter(p => p.option_a.toLowerCase().includes(q) || p.option_b.toLowerCase().includes(q) || p.question.toLowerCase().includes(q))
       .sort((a, b) => b.totalVotes - a.totalVotes);
   }, [search, polls]);
 
-  // Category detail polls
   const categoryPolls = useMemo(() => {
     if (!selectedCategory) return [];
     return polls
       .filter(p => (p.category || 'Uncategorized') === selectedCategory)
       .sort((a, b) => {
-        // Live first, then most voted, then most contested
         if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
         return b.totalVotes - a.totalVotes;
       });
@@ -203,83 +201,30 @@ export default function Explore() {
 
   // ── CATEGORY DETAIL VIEW ──
   if (selectedCategory) {
+    const style = getCategoryStyle(selectedCategory);
     return (
       <AppLayout>
         <div className="min-h-screen flex flex-col pb-24">
-          {/* Header */}
           <div className="px-4 pt-4 pb-3">
-            <button onClick={() => setSelectedCategory(null)} className="flex items-center gap-1 text-muted-foreground mb-2">
+            <button onClick={() => setSelectedCategory(null)} className="flex items-center gap-1 text-muted-foreground mb-3">
               <ChevronLeft className="h-4 w-4" />
-              <span className="text-xs font-medium">Back</span>
+              <span className="text-xs font-medium">Explore</span>
             </button>
-            <h1 className="text-xl font-display font-bold text-foreground">{selectedCategory}</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Browse & vote</p>
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${style.gradient} flex items-center justify-center text-white shadow-sm`}>
+                {style.icon}
+              </div>
+              <div>
+                <h1 className="text-xl font-display font-bold text-foreground">{selectedCategory}</h1>
+                <p className="text-[11px] text-muted-foreground">{categoryPolls.length} active polls</p>
+              </div>
+            </div>
           </div>
 
-          {/* Poll list */}
           <div className="px-3 space-y-2.5">
-            {categoryPolls.map((poll, i) => {
-              const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' }) || getFallbackImage(poll.id, 0);
-              const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' }) || getFallbackImage(poll.id, 1);
-              const recentVotes = votes24hMap.get(poll.id) || 0;
-
-              return (
-                <motion.div
-                  key={poll.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setModalPoll(poll)}
-                  className="relative rounded-xl overflow-hidden cursor-pointer group shadow-card"
-                >
-                  <div className="flex relative" style={{ aspectRatio: '4/5' }}>
-                    <div className="w-1/2 h-full relative overflow-hidden">
-                      <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="55%" loading="lazy" variant="browse" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                      <div className="absolute bottom-2 left-2">
-                        <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_a}</p>
-                        <span className="text-xs font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>
-                      </div>
-                    </div>
-                    <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
-                    <div className="w-1/2 h-full relative overflow-hidden">
-                      <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="55%" loading="lazy" variant="browse" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                      <div className="absolute bottom-2 right-2 text-right">
-                        <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_b}</p>
-                        <span className="text-xs font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Question & meta */}
-                  <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-4 bg-gradient-to-b from-black/60 to-transparent">
-                    <h3 className="text-white text-[11px] font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
-                  </div>
-
-                  <div className="absolute bottom-1.5 inset-x-2 flex items-center justify-between z-10">
-                    <div className="flex items-center gap-1.5">
-                      {poll.isLive && <LiveIndicator variant="overlay" />}
-                      <span className="text-[8px] text-white/60 flex items-center gap-0.5">
-                        <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
-                      </span>
-                      {recentVotes > 0 && (
-                        <span className="text-[8px] text-white/60 flex items-center gap-0.5">
-                          <Zap className="h-2.5 w-2.5" /> {recentVotes}/hr
-                        </span>
-                      )}
-                    </div>
-                    {poll.ends_at && (
-                      <span className="text-[8px] text-white/50 flex items-center gap-0.5">
-                        <Timer className="h-2.5 w-2.5" /> {getTimeLeft(poll.ends_at)}
-                      </span>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-
+            {categoryPolls.map((poll, i) => (
+              <PollCard key={poll.id} poll={poll} index={i} votes24hMap={votes24hMap} onTap={setModalPoll} />
+            ))}
             {categoryPolls.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-muted-foreground text-sm">No active polls in this category</p>
@@ -310,7 +255,7 @@ export default function Explore() {
             <span className="text-xs font-medium">Back</span>
           </button>
           <h1 className="text-xl font-display font-bold text-foreground">Explore</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Browse polls by category or search</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Discover polls across every category</p>
         </div>
 
         {/* Search */}
@@ -326,68 +271,19 @@ export default function Explore() {
           </div>
         </div>
 
-        {/* Search results — show polls matching search */}
+        {/* Search results */}
         {search && search.length >= 2 && searchResults.length > 0 && (
           <section className="px-3 mb-4">
-            <div className="flex items-center gap-1.5 mb-2">
+            <div className="flex items-center gap-1.5 mb-2 px-1">
               <Search className="h-3.5 w-3.5 text-primary" />
               <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">
                 {searchResults.length} poll{searchResults.length !== 1 ? 's' : ''} matching "{search}"
               </span>
             </div>
             <div className="space-y-2.5">
-              {searchResults.map((poll, i) => {
-                const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' }) || getFallbackImage(poll.id, 0);
-                const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' }) || getFallbackImage(poll.id, 1);
-                const recentVotes = votes24hMap.get(poll.id) || 0;
-                return (
-                  <motion.div
-                    key={poll.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setModalPoll(poll)}
-                    className="relative rounded-xl overflow-hidden cursor-pointer group shadow-card"
-                  >
-                    <div className="flex relative" style={{ aspectRatio: '4/5' }}>
-                      <div className="w-1/2 h-full relative overflow-hidden">
-                        <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="55%" loading="lazy" variant="browse" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                        <div className="absolute bottom-2 left-2">
-                          <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_a}</p>
-                          <span className="text-xs font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>
-                        </div>
-                      </div>
-                      <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
-                      <div className="w-1/2 h-full relative overflow-hidden">
-                        <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="55%" loading="lazy" variant="browse" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                        <div className="absolute bottom-2 right-2 text-right">
-                          <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_b}</p>
-                          <span className="text-xs font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-4 bg-gradient-to-b from-black/60 to-transparent">
-                      <h3 className="text-white text-[11px] font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
-                    </div>
-                    <div className="absolute bottom-1.5 inset-x-2 flex items-center justify-between z-10">
-                      <div className="flex items-center gap-1.5">
-                        {poll.isLive && <LiveIndicator variant="overlay" />}
-                        <span className="text-[8px] text-white/60 flex items-center gap-0.5">
-                          <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
-                        </span>
-                      </div>
-                      {poll.ends_at && (
-                        <span className="text-[8px] text-white/50 flex items-center gap-0.5">
-                          <Timer className="h-2.5 w-2.5" /> {getTimeLeft(poll.ends_at)}
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
+              {searchResults.map((poll, i) => (
+                <PollCard key={poll.id} poll={poll} index={i} votes24hMap={votes24hMap} onTap={setModalPoll} />
+              ))}
             </div>
           </section>
         )}
@@ -398,91 +294,106 @@ export default function Explore() {
           </div>
         )}
 
-        {/* Trending Categories (horizontal) — hide when searching */}
+        {/* Trending Now — hot categories */}
         {!search && trendingCategories.length > 0 && (
-          <section className="mb-4">
-            <div className="px-4 flex items-center gap-1.5 mb-2">
-              <TrendingUp className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Trending Categories</span>
+          <section className="mb-5">
+            <div className="px-4 flex items-center gap-1.5 mb-2.5">
+              <Flame className="h-4 w-4 text-orange-500" />
+              <span className="text-xs font-display font-bold text-foreground">Trending Now</span>
             </div>
             <div className="flex gap-2.5 overflow-x-auto px-4 scrollbar-hide pb-1">
-              {trendingCategories.map((cat, i) => (
-                <motion.div
-                  key={cat.name}
-                  initial={{ opacity: 0, x: 15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedCategory(cat.name)}
-                  className="shrink-0 w-36 rounded-xl bg-card border border-border/60 p-3 cursor-pointer hover:border-primary/40 transition-colors"
-                >
-                  <p className="text-xs font-display font-bold text-foreground truncate">{cat.name}</p>
-                  <div className="flex items-center gap-1 mt-1">
-                    {cat.momentum === 'rising' && <ArrowUp className="h-3 w-3 text-success" />}
-                    {cat.momentum === 'slowing' && <ArrowDown className="h-3 w-3 text-destructive" />}
-                    {cat.momentum === 'steady' && <Minus className="h-3 w-3 text-muted-foreground" />}
-                    <span className={`text-[10px] font-bold ${
-                      cat.momentum === 'rising' ? 'text-success' : cat.momentum === 'slowing' ? 'text-destructive' : 'text-muted-foreground'
-                    }`}>
-                      {cat.growthPercent > 0 ? `+${cat.growthPercent}%` : `${cat.growthPercent}%`} today
-                    </span>
-                  </div>
-                  {cat.momentum === 'rising' && (
-                    <div className="flex items-center gap-0.5 mt-1">
-                      <ArrowUp className="h-2.5 w-2.5 text-success" />
-                      <span className="text-[9px] font-bold text-success">Trending</span>
+              {trendingCategories.map((cat, i) => {
+                const style = getCategoryStyle(cat.name);
+                return (
+                  <motion.div
+                    key={cat.name}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.06 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedCategory(cat.name)}
+                    className="shrink-0 w-32 rounded-2xl bg-card border border-border/50 overflow-hidden cursor-pointer hover:shadow-md transition-all group"
+                  >
+                    <div className={`h-16 bg-gradient-to-br ${style.gradient} flex items-center justify-center relative`}>
+                      <div className="text-white/90">{style.icon}</div>
+                      <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white/20 backdrop-blur-sm">
+                        <ArrowUp className="h-2.5 w-2.5 text-white" />
+                        <span className="text-[8px] font-bold text-white">Hot</span>
+                      </div>
                     </div>
-                  )}
-                </motion.div>
-              ))}
+                    <div className="p-2.5">
+                      <p className="text-[11px] font-bold text-foreground truncate">{cat.name}</p>
+                      <p className="text-[9px] text-muted-foreground mt-0.5">
+                        {cat.votes24h > 0 ? `${cat.votes24h} votes today` : `${cat.activePolls} polls`}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </section>
         )}
 
-        {/* All Categories Grid */}
-        <section className="px-4">
-          <div className="flex items-center gap-1.5 mb-2">
-            <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">All Categories</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            {filteredCategories.map((cat, i) => (
-              <motion.div
-                key={cat.name}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setSelectedCategory(cat.name)}
-                className="rounded-xl bg-card border border-border/60 p-3 cursor-pointer hover:border-primary/30 transition-colors relative"
-              >
-                <div className="flex items-start justify-between">
-                  <p className="text-xs font-display font-bold text-foreground truncate flex-1">{cat.name}</p>
-                  {cat.hasLive && (
-                    <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full bg-destructive/15 text-destructive uppercase tracking-wider shrink-0 ml-1">
-                      Live
-                    </span>
-                  )}
-                </div>
-                {/* Progress bar: voted / total */}
-                {cat.hasLive && !cat.momentum && (
-                  <p className="text-[10px] text-muted-foreground mt-1">Active now</p>
-                )}
-                {cat.momentum === 'rising' && (
-                  <div className="flex items-center gap-0.5 mt-1">
-                    <ArrowUp className="h-2.5 w-2.5 text-success" />
-                    <span className="text-[9px] font-bold text-success">Trending</span>
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-
-          {filteredCategories.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-sm">No categories found</p>
+        {/* All Categories — icon grid */}
+        {!search && (
+          <section className="px-4">
+            <div className="flex items-center gap-1.5 mb-3">
+              <LayoutGrid className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-display font-bold text-foreground">All Categories</span>
             </div>
-          )}
-        </section>
+            <div className="grid grid-cols-2 gap-2.5">
+              {filteredCategories.map((cat, i) => {
+                const style = getCategoryStyle(cat.name);
+                return (
+                  <motion.div
+                    key={cat.name}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setSelectedCategory(cat.name)}
+                    className="rounded-2xl bg-card border border-border/50 p-3.5 cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all"
+                  >
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${style.gradient} flex items-center justify-center text-white shadow-sm`}>
+                        {style.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] font-bold text-foreground truncate">{cat.name}</p>
+                        <p className="text-[9px] text-muted-foreground">{cat.activePolls} polls</p>
+                      </div>
+                    </div>
+                    
+                    {/* Status badges */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {cat.hasLive && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive text-[8px] font-bold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" /> Live
+                        </span>
+                      )}
+                      {cat.momentum === 'rising' && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[8px] font-bold">
+                          <TrendingUp className="h-2.5 w-2.5" /> Trending
+                        </span>
+                      )}
+                      {cat.votes24h > 0 && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[8px] font-bold">
+                          <Zap className="h-2.5 w-2.5" /> {cat.votes24h} today
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {filteredCategories.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-sm">No categories found</p>
+              </div>
+            )}
+          </section>
+        )}
 
         <HomeResultsModal
           open={!!modalPoll}
@@ -493,5 +404,61 @@ export default function Explore() {
         />
       </div>
     </AppLayout>
+  );
+}
+
+// ── Extracted Poll Card ──
+function PollCard({ poll, index, votes24hMap, onTap }: { poll: PollItem; index: number; votes24hMap: Map<string, number>; onTap: (p: PollItem) => void }) {
+  const recentVotes = votes24hMap.get(poll.id) || 0;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={() => onTap(poll)}
+      className="relative rounded-xl overflow-hidden cursor-pointer group shadow-card"
+    >
+      <div className="flex relative" style={{ aspectRatio: '4/5' }}>
+        <div className="w-1/2 h-full relative overflow-hidden">
+          <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="55%" loading="lazy" variant="browse" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+          <div className="absolute bottom-2 left-2">
+            <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_a}</p>
+            <span className="text-xs font-bold text-option-a drop-shadow-lg">{poll.percentA}%</span>
+          </div>
+        </div>
+        <div className="absolute inset-y-0 left-1/2 w-px bg-white/15 z-10" />
+        <div className="w-1/2 h-full relative overflow-hidden">
+          <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="55%" loading="lazy" variant="browse" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+          <div className="absolute bottom-2 right-2 text-right">
+            <p className="text-white text-[10px] font-bold drop-shadow-lg">{poll.option_b}</p>
+            <span className="text-xs font-bold text-option-b drop-shadow-lg">{poll.percentB}%</span>
+          </div>
+        </div>
+      </div>
+      <div className="absolute top-0 inset-x-0 px-2.5 pt-2 pb-4 bg-gradient-to-b from-black/60 to-transparent">
+        <h3 className="text-white text-[11px] font-bold drop-shadow-lg leading-tight">{poll.question}</h3>
+      </div>
+      <div className="absolute bottom-1.5 inset-x-2 flex items-center justify-between z-10">
+        <div className="flex items-center gap-1.5">
+          {poll.isLive && <LiveIndicator variant="overlay" />}
+          <span className="text-[8px] text-white/60 flex items-center gap-0.5">
+            <Users className="h-2.5 w-2.5" /> {poll.totalVotes}
+          </span>
+          {recentVotes > 0 && (
+            <span className="text-[8px] text-white/60 flex items-center gap-0.5">
+              <Zap className="h-2.5 w-2.5" /> {recentVotes}/hr
+            </span>
+          )}
+        </div>
+        {poll.ends_at && (
+          <span className="text-[8px] text-white/50 flex items-center gap-0.5">
+            <Timer className="h-2.5 w-2.5" /> {getTimeLeft(poll.ends_at)}
+          </span>
+        )}
+      </div>
+    </motion.div>
   );
 }
