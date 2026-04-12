@@ -29,6 +29,7 @@ import BrandIntelligence from '@/components/admin/BrandIntelligence';
 import IndustryReport from '@/components/admin/IndustryReport';
 import MonthlyLeaderboard from '@/components/admin/MonthlyLeaderboard';
 import ActivePollsMonitor from '@/components/admin/ActivePollsMonitor';
+import UserManagement from '@/components/admin/UserManagement';
 import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
@@ -70,6 +71,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="rewards" className="text-xs px-4 py-2">Rewards</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs px-4 py-2">Notify</TabsTrigger>
           <TabsTrigger value="daily-limit" className="text-xs px-4 py-2">Daily Limit</TabsTrigger>
+          <TabsTrigger value="users" className="text-xs px-4 py-2">Users</TabsTrigger>
         </TabsList>
 
         <TabsContent value="polls" className="space-y-4">
@@ -166,6 +168,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="daily-limit" className="space-y-4">
           <DailyLimitTab />
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-4">
+          <UserManagement />
         </TabsContent>
 
       </Tabs>
