@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
+import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface CinematicResultsProps {
   poll: {
@@ -332,6 +334,9 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
   const [showNextHint, setShowNextHint] = useState(false);
   const [patternLine, setPatternLine] = useState<string | null>(null);
   const [teaserLine, setTeaserLine] = useState<string | null>(null);
+
+  // Celebrity votes
+  const { data: celebrityVotes = [] } = useCelebrityVotes(visible ? poll.id : undefined, poll.category);
 
   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
   const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
