@@ -191,10 +191,10 @@ export default function Profile() {
             <div className="space-y-2 max-h-[60vh] overflow-y-auto">
               {followersList.map((u: any) => (
                 <div key={u.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-secondary/50">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 cursor-pointer" onClick={() => { setShowFollowers(false); navigate(`/user/${u.id}`); }}>
                     <span className="text-sm font-bold text-primary">{u.username?.[0]?.toUpperCase() || '?'}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => { setShowFollowers(false); navigate(`/user/${u.id}`); }}>
                     <p className="text-sm font-semibold text-foreground truncate">@{u.username || 'user'}</p>
                     <p className="text-[10px] text-muted-foreground">{u.points || 0} points</p>
                   </div>
@@ -224,10 +224,10 @@ export default function Profile() {
             <div className="space-y-2 max-h-[60vh] overflow-y-auto">
               {followingList.map((u: any) => (
                 <div key={u.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-secondary/50">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 cursor-pointer" onClick={() => { setShowFollowing(false); navigate(`/user/${u.id}`); }}>
                     <span className="text-sm font-bold text-primary">{u.username?.[0]?.toUpperCase() || '?'}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => { setShowFollowing(false); navigate(`/user/${u.id}`); }}>
                     <p className="text-sm font-semibold text-foreground truncate">@{u.username || 'user'}</p>
                     <p className="text-[10px] text-muted-foreground">{u.points || 0} points</p>
                   </div>
