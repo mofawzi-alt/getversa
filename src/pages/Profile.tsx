@@ -88,7 +88,7 @@ export default function Profile() {
     { icon: History, label: 'My Votes', path: '/history', color: 'text-primary' },
     { icon: User, label: 'Edit Profile', path: '/profile/edit', color: 'text-muted-foreground' },
     { icon: Bell, label: 'Notification Settings', path: '/profile/notifications', color: 'text-muted-foreground' },
-    { icon: Building2, label: 'Join Organization', path: '/join-org', color: 'text-muted-foreground' },
+    
     ...(isAdmin ? [{ icon: Shield, label: 'Admin Dashboard', path: '/admin', color: 'text-destructive' }] : []),
   ];
 
