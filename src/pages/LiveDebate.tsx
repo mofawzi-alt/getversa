@@ -144,6 +144,16 @@ export default function LiveDebate() {
   const currentPollChoice = currentLocalResult?.choice ?? (currentPoll ? votedChoices.get(currentPoll.id) : undefined);
   const currentPollIsVoted = Boolean(currentPollChoice);
 
+  // Celebrity presence on all loaded polls (for card indicators)
+  const pollIds = polls.map(p => p.id);
+  const { data: celebrityPresence = {} } = useCelebrityPresence(pollIds);
+
+  // Celebrity votes for current poll result screen
+  const { data: currentCelebVotes = [] } = useCelebrityVotes(
+    (phase === 'result' && currentPoll) ? currentPoll.id : undefined,
+    currentPoll?.category
+  );
+
   // If the current poll was already voted on, show results immediately (no swipe)
   useEffect(() => {
     if (!currentPoll || phase !== 'swipe' || !currentPollIsVoted) return;
