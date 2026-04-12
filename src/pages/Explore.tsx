@@ -236,7 +236,7 @@ export default function Explore() {
 
           <div className="px-3 space-y-2.5">
             {categoryPolls.map((poll, i) => (
-              <PollCard key={poll.id} poll={poll} index={i} votes24hMap={votes24hMap} onTap={setModalPoll} />
+              <PollCard key={poll.id} poll={poll} index={i} votes24hMap={votes24hMap} onTap={setModalPoll} celebrityNames={celebrityPresence[poll.id]} />
             ))}
             {categoryPolls.length === 0 && (
               <div className="text-center py-12">
@@ -295,7 +295,7 @@ export default function Explore() {
             </div>
             <div className="space-y-2.5">
               {searchResults.map((poll, i) => (
-                <PollCard key={poll.id} poll={poll} index={i} votes24hMap={votes24hMap} onTap={setModalPoll} />
+                <PollCard key={poll.id} poll={poll} index={i} votes24hMap={votes24hMap} onTap={setModalPoll} celebrityNames={celebrityPresence[poll.id]} />
               ))}
             </div>
           </section>
