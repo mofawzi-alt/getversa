@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import { Loader2, Trophy, Flame, Medal, Crown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useVerifiedUsers } from '@/hooks/useVerifiedUsers';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface LeaderboardUser {
   id: string;
@@ -16,6 +18,14 @@ interface LeaderboardUser {
 
 export default function Leaderboard() {
   const { profile } = useAuth();
+
+  // Collect all user IDs for verified check
+  const allUserIds = [
+    ...(pointsLeaderboard || []),
+    ...(streakLeaderboard || []),
+    ...(votesLeaderboard || []),
+  ].map(u => u.id);
+  const { isVerified } = useVerifiedUsers([...new Set(allUserIds)]);
 
   const { data: pointsLeaderboard, isLoading: loadingPoints } = useQuery({
     queryKey: ['leaderboard-points'],
