@@ -33,6 +33,7 @@ interface HeroVoteCardProps {
 
 const SWIPE_THRESHOLD = 50;
 const SWIPE_UP_THRESHOLD = 50;
+const FLASH_RESULT_MS = 1500;
 const RESULT_MS = 1500;
 const TAP_MOVE_TOLERANCE = 12;
 const DRAG_DEAD_ZONE = 15;
