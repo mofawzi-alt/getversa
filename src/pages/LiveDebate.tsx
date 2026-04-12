@@ -656,6 +656,17 @@ function FullScreenCard({
         {/* Question overlay at top */}
         <div className="absolute top-16 inset-x-0 px-6 z-20 pointer-events-none">
           <p className="text-white text-xl font-display font-bold drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] text-center leading-snug">{poll.question}</p>
+          {/* Celebrity indicator — no vote shown, just name + badge */}
+          {celebrityNames.length > 0 && phase === 'swipe' && (
+            <div className="flex items-center justify-center gap-1 mt-2">
+              {celebrityNames.slice(0, 2).map((name, i) => (
+                <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 backdrop-blur-sm">
+                  <VerifiedBadge size="sm" />
+                  <span className="text-[9px] font-semibold text-white/80">{name}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Suspense loading */}
