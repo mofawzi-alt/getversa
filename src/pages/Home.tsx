@@ -846,8 +846,8 @@ export default function Home() {
                         }
                       }
                     }}
-                    className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-md"
-                    style={{ minHeight: '75vh' }}
+                    className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-md shrink-0 snap-center"
+                    style={{ width: 'calc(100vw - 40px)', minHeight: '70vh' }}
                   >
                     {/* Question header */}
                     <div className="px-4 pt-4 pb-2">
