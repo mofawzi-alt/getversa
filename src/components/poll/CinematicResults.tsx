@@ -512,7 +512,31 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 </motion.p>
               )}
 
-              {isMinority && step >= 5 && (
+              {/* Bold blue minority badge for <20% */}
+              {userPercent < 20 && step >= 5 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12, scale: 0.85 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: 'spring', damping: 18, stiffness: 220, delay: 0.15 }}
+                  className="px-5 py-3 rounded-2xl max-w-[18rem] border-2"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(217, 91%, 50%), hsl(224, 76%, 48%))',
+                    borderColor: 'hsl(217, 91%, 65%)',
+                    boxShadow: '0 0 24px hsla(217, 91%, 50%, 0.35)',
+                  }}
+                >
+                  <p className="text-white text-sm font-bold text-center leading-snug">
+                    👀 You're in the {userPercent}% minority on this one
+                  </p>
+                  {profile?.city && (
+                    <p className="text-white/90 text-xs font-semibold text-center mt-1 leading-snug">
+                      — only {userPercent}% of {profile.city} agrees with you.
+                    </p>
+                  )}
+                </motion.div>
+              )}
+
+              {isMinority && userPercent >= 20 && step >= 5 && (
                 <motion.p
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
