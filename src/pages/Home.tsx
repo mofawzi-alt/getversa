@@ -162,16 +162,6 @@ function HomeLiveDebateCard({
     poll.percentB
   );
 
-  const insightLine = (() => {
-    const spread = Math.abs(poll.percentA - 50);
-    if (spread <= 5) return '⚡ Almost perfectly split';
-    if (poll.percentA >= 75) return `🔥 ${poll.percentA}% chose ${poll.option_a}`;
-    if (poll.percentB >= 75) return `🔥 ${poll.percentB}% chose ${poll.option_b}`;
-    const winner = poll.percentA > poll.percentB ? poll.option_a : poll.option_b;
-    const winPct = Math.max(poll.percentA, poll.percentB);
-    return `${winPct}% leaning towards ${winner}`;
-  })();
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -247,7 +237,6 @@ function HomeLiveDebateCard({
             <span className="text-sm font-bold text-option-b">{poll.percentB}%</span>
           </div>
         )}
-        <p className="text-xs text-muted-foreground italic">{insightLine}</p>
         {hasVoted && genderTeaser && (
           <motion.p
             initial={{ opacity: 0, y: 4 }}
