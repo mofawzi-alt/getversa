@@ -126,6 +126,34 @@ export default function TasteProfile() {
     enabled: !!profile,
   });
 
+  // Majority/minority ratio for dynamic subtitle
+  const { data: majorityRatio } = useQuery({
+    queryKey: ['taste-majority-ratio', profile?.id],
+    queryFn: async () => {
+      if (!profile || !allVotes?.length) return null;
+      const recentVotes = allVotes.slice(0, 200); // last 200 votes
+      if (recentVotes.length < 5) return null;
+      const pollIds = recentVotes.map(v => v.poll_id);
+      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
+      if (!results?.length) return null;
+      const resultsMap = new Map(results.map((r: any) => [r.poll_id, r]));
+      let majority = 0;
+      let minority = 0;
+      for (const vote of recentVotes) {
+        const r = resultsMap.get(vote.poll_id) as any;
+        if (!r || r.total_votes < 5) continue;
+        const userPct = vote.choice === 'A' ? r.percent_a : r.percent_b;
+        if (userPct > 50) majority++;
+        else if (userPct < 50) minority++;
+      }
+      const total = majority + minority;
+      if (total === 0) return null;
+      return { majorityPct: Math.round((majority / total) * 100), minorityPct: Math.round((minority / total) * 100) };
+    },
+    enabled: !!profile && !!allVotes?.length,
+    staleTime: 1000 * 60 * 10,
+  });
+
   // Most surprising result this week (most minority vote)
   const { data: surprisingResult } = useQuery({
     queryKey: ['taste-surprising', profile?.id],
@@ -201,6 +229,18 @@ export default function TasteProfile() {
   // Archetype
   const archetype = computeArchetype(traits || []);
 
+  // Dynamic description based on majority/minority ratio
+  const dynamicDescription = (() => {
+    if (!majorityRatio) return archetype.description;
+    if (majorityRatio.minorityPct > 25) {
+      return 'You go against the crowd more than most — classic independent thinker.';
+    }
+    if (majorityRatio.majorityPct > 75) {
+      return 'You have your finger on the pulse — you think like the majority.';
+    }
+    return "You're unpredictable — half maverick, half mainstream.";
+  })();
+
   // Most active day/time
   const mostActiveDay = getMostActiveDay(allVotes || []);
   const mostActiveTime = getMostActiveTime(allVotes || []);
@@ -229,7 +269,7 @@ export default function TasteProfile() {
         <motion.section variants={fadeUp}>
           <ShareableTasteCard
             archetype={archetype.name}
-            description={archetype.description}
+            description={dynamicDescription}
             topCategory={topCategory}
             totalVotes={totalVotes}
             streak={currentStreak}
