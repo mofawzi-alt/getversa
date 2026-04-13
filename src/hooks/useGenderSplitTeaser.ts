@@ -25,8 +25,8 @@ export function useGenderSplitTeaser(
       const male = votes.filter(v => v.voter_gender === 'Male');
       const female = votes.filter(v => v.voter_gender === 'Female');
 
-      // Need at least 20 votes per gender
-      if (male.length < 20 || female.length < 20) return null;
+      // Need at least 5 votes per gender
+      if (male.length < 5 || female.length < 5) return null;
 
       const malePercentA = Math.round((male.filter(v => v.choice === 'A').length / male.length) * 100);
       const malePercentB = 100 - malePercentA;
