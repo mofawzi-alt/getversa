@@ -65,7 +65,7 @@ export function tastePollScore(
   if (pollTags.length > 0 && taste.tags.size > 0) {
     let tagScore = 0;
     let tagMatches = 0;
-    const maxTagCount = Math.max(...taste.tags.values(), 1);
+    const maxTagCount = Math.max(...Array.from(taste.tags.values()), 1);
     for (const pt of pollTags) {
       if (taste.tags.has(pt)) {
         tagScore += taste.tags.get(pt)! / maxTagCount;
