@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Check } from 'lucide-react';
 import HeroCaughtUp from './HeroCaughtUp';
 import CinematicResults from '@/components/poll/CinematicResults';
+import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 interface HeroPoll {
   id: string;
@@ -63,6 +64,14 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     totalVotes: number;
   } | null>(null);
   const sessionShownRef = useRef(new Set<string>());
+
+  const { data: genderTeaser } = useGenderSplitTeaser(
+    poll?.id || '',
+    poll?.option_a || '',
+    poll?.option_b || '',
+    result?.percentA ?? poll?.percentA ?? 0,
+    result?.percentB ?? poll?.percentB ?? 0
+  );
 
   const startX = useRef(0);
   const startY = useRef(0);
@@ -604,6 +613,18 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                   transition={{ duration: 0.7 }}
                 />
               </div>
+
+              {/* Gender teaser */}
+              {genderTeaser && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-[11px] text-white/80 text-center"
+                >
+                  {genderTeaser.text}
+                </motion.p>
+              )}
 
               {/* Flash mode: quick one-liner */}
               {revealMode === 'flash' && (
