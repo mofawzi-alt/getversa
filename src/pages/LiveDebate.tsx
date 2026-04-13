@@ -11,6 +11,7 @@ import { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useCelebrityPresence, useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
@@ -512,6 +513,13 @@ function FullScreenCard({
   celebrityNames?: string[];
   celebrityVotes?: { username: string; choice: 'A' | 'B'; verified_category: string | null }[];
 }) {
+  const { data: genderTeaser } = useGenderSplitTeaser(
+    (phase === 'result' && result) ? poll.id : '',
+    poll.option_a,
+    poll.option_b,
+    result?.percentA ?? 0,
+    result?.percentB ?? 0
+  );
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [flyDir, setFlyDir] = useState<'left' | 'right' | null>(null);
@@ -767,6 +775,18 @@ function FullScreenCard({
                       </div>
                     ))}
                   </motion.div>
+                )}
+
+                {/* Gender teaser */}
+                {genderTeaser && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                    className="text-[11px] text-white/80 text-center"
+                  >
+                    {genderTeaser.text}
+                  </motion.p>
                 )}
               </div>
             </motion.div>
