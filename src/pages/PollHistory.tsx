@@ -51,7 +51,7 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
             {vote.userChoice === 'A' && (
               <div className="absolute inset-0 border-3 border-option-a pointer-events-none z-10" />
             )}
-            <div className="absolute bottom-3 left-3">
+            <div className="absolute bottom-10 left-3">
               <p className="text-white text-base font-extrabold drop-shadow-lg">{vote.optionA}</p>
               <span className="text-lg font-extrabold text-option-a drop-shadow-lg">{vote.percentA}%</span>
               {vote.userChoice === 'A' && (
@@ -78,7 +78,7 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
             {vote.userChoice === 'B' && (
               <div className="absolute inset-0 border-3 border-option-b pointer-events-none z-10" />
             )}
-            <div className="absolute bottom-3 right-3 text-right">
+            <div className="absolute bottom-10 right-3 text-right">
               <p className="text-white text-base font-extrabold drop-shadow-lg">{vote.optionB}</p>
               <span className="text-lg font-extrabold text-option-b drop-shadow-lg">{vote.percentB}%</span>
               {vote.userChoice === 'B' && (
