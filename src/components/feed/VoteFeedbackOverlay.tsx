@@ -81,10 +81,28 @@ function buildMajorityLine(percentA: number, percentB: number, choice: 'A' | 'B'
   return { text: `You're in the ${userPercent}% minority`, isMajority: false };
 }
 
+interface MinorityBadgeData {
+  userPercent: number;
+  cityPercent?: number | null;
+  city?: string | null;
+}
+
+function buildMinorityBadge(choice: 'A' | 'B', percentA: number, percentB: number, demoData?: DemoData | null, city?: string | null): MinorityBadgeData | null {
+  const userPercent = choice === 'A' ? percentA : percentB;
+  if (userPercent >= 20) return null;
+  
+  const cityPercent = demoData && demoData.demoTotal >= 2 && city
+    ? (choice === 'A' ? demoData.demoPercentA : demoData.demoPercentB)
+    : null;
+  
+  return { userPercent, cityPercent, city: city || null };
+}
+
 export default function VoteFeedbackOverlay({ percentA, percentB, choice, visible, userCountry, demoData }: VoteFeedbackOverlayProps) {
   const majorityInfo = buildMajorityLine(percentA, percentB, choice);
   const demoLine = demoData ? buildDemoLine(choice, demoData) : null;
   const message = pickFeedbackMessage(percentA, percentB, choice);
+  const minorityBadge = buildMinorityBadge(choice, percentA, percentB, demoData, demoData?.city);
 
   return (
     <AnimatePresence>
@@ -96,26 +114,53 @@ export default function VoteFeedbackOverlay({ percentA, percentB, choice, visibl
           transition={{ duration: 0.4 }}
           className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-2 pointer-events-none"
         >
-          {/* PRIMARY: Majority/minority line — most prominent */}
-          <motion.div
-            initial={{ opacity: 0, y: 16, scale: 0.85 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 200, delay: 0.15 }}
-            className={`px-6 py-3.5 rounded-2xl backdrop-blur-md border shadow-lg ${
-              majorityInfo.isMajority
-                ? 'bg-primary/80 border-primary/30'
-                : 'bg-destructive/80 border-destructive/30'
-            }`}
-          >
-            <p className="text-white text-lg font-display font-bold text-center leading-snug tracking-wide">
-              {majorityInfo.isMajority ? '👥 ' : '👀 '}
-              {majorityInfo.text}
-            </p>
-          </motion.div>
+          {/* MINORITY BADGE: Bold blue badge for <20% votes */}
+          {minorityBadge && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 18, stiffness: 220, delay: 0.1 }}
+              className="px-6 py-4 rounded-2xl backdrop-blur-lg border-2 shadow-xl"
+              style={{
+                background: 'linear-gradient(135deg, hsl(217, 91%, 50%), hsl(224, 76%, 48%))',
+                borderColor: 'hsl(217, 91%, 65%)',
+                boxShadow: '0 0 30px hsla(217, 91%, 50%, 0.4), 0 8px 32px hsla(217, 91%, 50%, 0.2)',
+              }}
+            >
+              <p className="text-white text-lg font-bold text-center leading-snug tracking-wide">
+                👀 You're in the {minorityBadge.userPercent}% minority on this one
+              </p>
+              {minorityBadge.cityPercent != null && minorityBadge.city && (
+                <p className="text-white/90 text-sm font-semibold text-center mt-1.5 leading-snug">
+                  — only {minorityBadge.cityPercent}% of {minorityBadge.city} agrees with you.
+                </p>
+              )}
+            </motion.div>
+          )}
 
-          {/* SECONDARY: Demographic comparison line */}
-          {demoLine && (
+          {/* PRIMARY: Majority/minority line — skip if minority badge shown */}
+          {!minorityBadge && (
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.85 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 200, delay: 0.15 }}
+              className={`px-6 py-3.5 rounded-2xl backdrop-blur-md border shadow-lg ${
+                majorityInfo.isMajority
+                  ? 'bg-primary/80 border-primary/30'
+                  : 'bg-destructive/80 border-destructive/30'
+              }`}
+            >
+              <p className="text-white text-lg font-display font-bold text-center leading-snug tracking-wide">
+                {majorityInfo.isMajority ? '👥 ' : '👀 '}
+                {majorityInfo.text}
+              </p>
+            </motion.div>
+          )}
+
+          {/* SECONDARY: Demographic comparison line (skip if minority badge already shows city) */}
+          {demoLine && !(minorityBadge?.cityPercent != null) && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
