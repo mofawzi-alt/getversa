@@ -173,52 +173,6 @@ export default function TasteProfile() {
     enabled: !!profile && !!allVotes?.length,
   });
 
-  // Taste comparison percentile
-  const { data: percentileData } = useQuery({
-    queryKey: ['taste-percentile', profile?.id, traits],
-    queryFn: async () => {
-      if (!profile || !traits?.length) return null;
-      const topTrait = traits[0]?.tag;
-      if (!topTrait) return null;
-
-      // Get user's top dimension score
-      const { data: userScores } = await supabase.from('user_dimension_scores')
-        .select('score, dimension_id')
-        .eq('user_id', profile.id)
-        .order('vote_count', { ascending: false })
-        .limit(1);
-
-      if (!userScores?.length) return null;
-      const userScore = userScores[0].score;
-      const dimId = userScores[0].dimension_id;
-
-      // Count how many users have a lower score on this dimension
-      const { count: lowerCount } = await supabase.from('user_dimension_scores')
-        .select('id', { count: 'exact', head: true })
-        .eq('dimension_id', dimId)
-        .lt('score', userScore);
-
-      const { count: totalCount } = await supabase.from('user_dimension_scores')
-        .select('id', { count: 'exact', head: true })
-        .eq('dimension_id', dimId);
-
-      if (!totalCount) return null;
-      const percentile = Math.round(((lowerCount || 0) / totalCount) * 100);
-      
-      // Get dimension name
-      const { data: dim } = await supabase.from('dimensions')
-        .select('name')
-        .eq('id', dimId)
-        .single();
-
-      return {
-        percentile,
-        traitName: TRAIT_DESCRIPTORS[topTrait]?.positive || topTrait,
-        dimensionName: dim?.name || topTrait,
-      };
-    },
-    enabled: !!profile && !!traits?.length,
-  });
 
   if (loadingVotes) {
     return (
