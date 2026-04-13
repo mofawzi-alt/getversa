@@ -269,7 +269,7 @@ export default function TasteProfile() {
         <motion.section variants={fadeUp}>
           <ShareableTasteCard
             archetype={archetype.name}
-            description={archetype.description}
+            description={dynamicDescription}
             topCategory={topCategory}
             totalVotes={totalVotes}
             streak={currentStreak}
