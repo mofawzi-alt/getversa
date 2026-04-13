@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
+import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteScoring';
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2 } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import PinButton from '@/components/poll/PinButton';
@@ -334,7 +335,30 @@ export default function Home() {
   });
 
 
-  // Check vote milestones
+  // Taste profile for personalized feed
+  const { data: userTasteProfile } = useQuery({
+    queryKey: ['user-taste-profile', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data: votes } = await supabase
+        .from('votes')
+        .select('category')
+        .eq('user_id', user.id)
+        .not('category', 'is', null);
+      const catMap = new Map<string, number>();
+      votes?.forEach(v => {
+        if (v.category) catMap.set(v.category, (catMap.get(v.category) || 0) + 1);
+      });
+      const categoryVotes = Array.from(catMap.entries()).map(([category, count]) => ({ category, count }));
+      const { data: traits } = await supabase.rpc('get_user_voting_traits', { p_user_id: user.id });
+      const traitTags = (traits || []).map((t: any) => ({ tag: t.tag, vote_count: Number(t.vote_count) }));
+      return buildTasteProfile(categoryVotes, traitTags);
+    },
+    staleTime: 1000 * 60 * 10,
+    enabled: !!user,
+  });
+
+
   useEffect(() => {
     if (voteCount > 0) {
       const m = checkVoteMilestone(voteCount);
@@ -368,7 +392,7 @@ export default function Home() {
     queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, queuePollIds.join('|')],
     queryFn: async () => {
       const now = new Date().toISOString();
-      const pollSelect = 'id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries';
+      const pollSelect = 'id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries, option_a_tag, option_b_tag, tags';
 
       const { data: rawPolls, error: rawPollsError } = await supabase
         .from('polls')
@@ -547,11 +571,14 @@ export default function Home() {
       const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
       return hasStarted && !isExpired;
     }).sort((a, b) => {
-      // Primary: weight_score (admin priority)
+      // If user has a taste profile, use blended scoring (taste + trending + admin weight)
+      if (userTasteProfile && userTasteProfile.totalVotes >= 3) {
+        return blendedPollScore(b as any, userTasteProfile, nowMs) - blendedPollScore(a as any, userTasteProfile, nowMs);
+      }
+      // Fallback for new users / guests: weight_score → time-decay
       const wA = (a as any).weight_score || 1;
       const wB = (b as any).weight_score || 1;
       if (wA !== wB) return wB - wA;
-      // Secondary: time-decay score instead of raw totalVotes
       return decayScore(b) - decayScore(a);
     });
 
@@ -645,7 +672,7 @@ export default function Home() {
     })();
 
     return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
-  }, [allPolls, votedPollIds]);
+  }, [allPolls, votedPollIds, userTasteProfile]);
 
   // Celebrity presence on live debate polls
   const livePollIds = useMemo(() => livePolls.map(p => p.id), [livePolls]);
