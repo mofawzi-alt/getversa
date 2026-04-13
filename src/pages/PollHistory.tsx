@@ -204,6 +204,18 @@ export default function PollHistory() {
     }
   }, [targetPollId, voteHistory]);
 
+  const filteredHistory = useMemo(() => {
+    if (!voteHistory) return [];
+    if (!searchText.trim()) return voteHistory;
+    const q = searchText.toLowerCase();
+    return voteHistory.filter(v =>
+      v.question.toLowerCase().includes(q) ||
+      v.optionA.toLowerCase().includes(q) ||
+      v.optionB.toLowerCase().includes(q) ||
+      (v.category && v.category.toLowerCase().includes(q))
+    );
+  }, [voteHistory, searchText]);
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
@@ -215,29 +227,42 @@ export default function PollHistory() {
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-secondary/50">
       {/* Top bar */}
-      <div className="px-3 pt-4 pb-2 flex items-center gap-3 shrink-0 border-b border-border/20">
-        <button onClick={() => navigate(-1)} className="p-1.5 rounded-full hover:bg-secondary">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <h1 className="text-lg font-display font-bold text-foreground">My Votes</h1>
-          <p className="text-[10px] text-muted-foreground">Results update in real time</p>
+      <div className="px-3 pt-4 pb-2 flex flex-col gap-2 shrink-0 border-b border-border/20">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="p-1.5 rounded-full hover:bg-secondary">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div>
+            <h1 className="text-lg font-display font-bold text-foreground">My Votes</h1>
+            <p className="text-[10px] text-muted-foreground">Results update in real time</p>
+          </div>
+        </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search polls..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="pl-10 h-9 text-sm"
+          />
         </div>
       </div>
 
       {/* TikTok-style snap scroll */}
-      {!voteHistory || voteHistory.length === 0 ? (
+      {filteredHistory.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-muted-foreground text-sm">You haven't voted on any polls yet</p>
+          <p className="text-muted-foreground text-sm">
+            {voteHistory && voteHistory.length > 0 ? 'No polls match your search' : "You haven't voted on any polls yet"}
+          </p>
         </div>
       ) : (
         <div
           ref={scrollRef}
           className="flex-1 basis-0 overflow-y-auto scrollbar-hide px-0 py-3 space-y-4"
         >
-          {voteHistory.map((vote, i) => (
+          {filteredHistory.map((vote, i) => (
             <div key={vote.pollId} className="w-full">
-              <FullScreenHistoryCard vote={vote} index={i} total={voteHistory.length} />
+              <FullScreenHistoryCard vote={vote} index={i} total={filteredHistory.length} />
             </div>
           ))}
         </div>
