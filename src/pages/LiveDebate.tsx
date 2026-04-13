@@ -776,6 +776,18 @@ function FullScreenCard({
                     ))}
                   </motion.div>
                 )}
+
+                {/* Gender teaser */}
+                {genderTeaser && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                    className="text-[11px] text-white/80 text-center"
+                  >
+                    {genderTeaser.text}
+                  </motion.p>
+                )}
               </div>
             </motion.div>
           )}
