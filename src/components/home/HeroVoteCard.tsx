@@ -65,6 +65,14 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   } | null>(null);
   const sessionShownRef = useRef(new Set<string>());
 
+  const { data: genderTeaser } = useGenderSplitTeaser(
+    poll?.id || '',
+    poll?.option_a || '',
+    poll?.option_b || '',
+    result?.percentA ?? poll?.percentA ?? 0,
+    result?.percentB ?? poll?.percentB ?? 0
+  );
+
   const startX = useRef(0);
   const startY = useRef(0);
   const currentDragX = useRef(0);
