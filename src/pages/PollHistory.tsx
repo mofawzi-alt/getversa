@@ -1,4 +1,5 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -141,8 +142,8 @@ export default function PollHistory() {
   const queryClient = useQueryClient();
   const [searchText, setSearchText] = useState('');
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const targetPollId = searchParams.get('pollId');
+  const location = useLocation();
+  const targetPollId = new URLSearchParams(location.search).get('pollId');
 
   const { data: voteHistory, isLoading } = useQuery({
     queryKey: ['my-votes', user?.id],
@@ -196,10 +197,14 @@ export default function PollHistory() {
   useEffect(() => {
     if (!targetPollId || !voteHistory || !scrollRef.current) return;
     const idx = voteHistory.findIndex(v => v.pollId === targetPollId);
-    if (idx > 0) {
-      const container = scrollRef.current;
+    if (idx >= 0) {
       requestAnimationFrame(() => {
-        container.scrollTo({ top: idx * container.clientHeight, behavior: 'smooth' });
+        const container = scrollRef.current;
+        if (!container) return;
+        const targetEl = container.children[idx] as HTMLElement;
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
     }
   }, [targetPollId, voteHistory]);

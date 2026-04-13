@@ -113,7 +113,7 @@ export default function GlobalPollSearch({ open, onClose }: GlobalPollSearchProp
     if (poll.userVoted) {
       navigate(`/history?pollId=${poll.id}`);
     } else {
-      navigate('/home');
+      navigate(`/browse?pollId=${poll.id}`);
     }
   };
 
