@@ -174,7 +174,7 @@ function HomeLiveDebateCard({
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center gap-2 mb-1.5">
           <LiveIndicator variant="badge" />
-          <span className="text-[10px] text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</span>
+          <span className="text-xs text-muted-foreground font-semibold">{poll.totalVotes.toLocaleString()} votes</span>
           {poll.ends_at && (
             <span className="text-[10px] text-muted-foreground ml-auto">{getTimeLeft(poll.ends_at)}</span>
           )}
