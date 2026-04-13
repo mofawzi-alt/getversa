@@ -398,8 +398,8 @@ export default function TasteProfile() {
           <div className="glass rounded-2xl p-5">
             <p className="text-sm text-muted-foreground mb-3">Your top decision traits:</p>
             <div className="space-y-2.5">
-              {(traits || []).slice(0, 5).map((t, i) => {
-                const maxCount = traits?.[0]?.vote_count || 1;
+              {(traits || []).filter(t => t.vote_count >= 3).slice(0, 5).map((t, i, arr) => {
+                const maxCount = arr[0]?.vote_count || 1;
                 const pct = Math.round((t.vote_count / maxCount) * 100);
                 const label = TRAIT_DESCRIPTORS[t.tag]?.positive || t.tag.replace(/_/g, ' ');
                 return (
