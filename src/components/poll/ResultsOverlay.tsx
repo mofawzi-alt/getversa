@@ -2,6 +2,7 @@ import { forwardRef, useEffect } from 'react';
 import ShareButton from './ShareButton';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 interface Poll {
   id: string;
@@ -37,6 +38,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
   const isWinnerA = result.percentA >= result.percentB;
   const userPickedWinner = (result.choice === 'A' && isWinnerA) || (result.choice === 'B' && !isWinnerA);
   const { data: celebrityVotes = [] } = useCelebrityVotes(poll.id, poll.category);
+  const { data: genderTeaser } = useGenderSplitTeaser(poll.id, poll.option_a, poll.option_b, result.percentA, result.percentB);
 
   // Auto-advance after 1.4 seconds
   useEffect(() => {
@@ -104,6 +106,9 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
                 </div>
               ))}
             </div>
+          )}
+          {genderTeaser && (
+            <p className="text-[11px] text-muted-foreground mt-1.5">{genderTeaser.text}</p>
           )}
         </div>
 
