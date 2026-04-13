@@ -614,6 +614,18 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 />
               </div>
 
+              {/* Gender teaser */}
+              {genderTeaser && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-[11px] text-white/80 text-center"
+                >
+                  {genderTeaser.text}
+                </motion.p>
+              )}
+
               {/* Flash mode: quick one-liner */}
               {revealMode === 'flash' && (
                 <motion.p
