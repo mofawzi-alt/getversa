@@ -85,16 +85,27 @@ export default function Friends() {
       <div className="p-4 space-y-6 animate-slide-up">
         {/* Header */}
         <div className="glass rounded-3xl p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-              <Users className="h-6 w-6 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-display font-bold">Friends</h1>
+                <p className="text-sm text-muted-foreground">
+                  {friendCount} friend{friendCount !== 1 ? 's' : ''}
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-display font-bold">Friends</h1>
-              <p className="text-sm text-muted-foreground">
-                {friendCount} friend{friendCount !== 1 ? 's' : ''}
-              </p>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full gap-1.5"
+              onClick={() => navigate('/compare')}
+            >
+              <Heart className="h-3.5 w-3.5" />
+              Compare
+            </Button>
           </div>
         </div>
 
