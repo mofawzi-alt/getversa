@@ -293,11 +293,19 @@ export default function UserProfile() {
 
         {/* Agreement Score */}
         {compatScore !== null && compatScore !== undefined && !isOwnProfile && (
-          <div className="glass rounded-2xl p-4 border border-primary/20 bg-primary/5">
+          <div className="glass rounded-2xl p-4 border border-primary/20 bg-primary/5 space-y-3">
             <p className="text-sm text-center text-foreground">
               You and <span className="font-bold">@{profileData?.username}</span> agree{' '}
               <span className="text-lg font-bold text-primary">{compatScore}%</span> of the time
             </p>
+            <Button
+              variant="outline"
+              className="w-full rounded-xl gap-2"
+              onClick={() => navigate('/compare')}
+            >
+              <Heart className="h-4 w-4" />
+              Compare Votes
+            </Button>
           </div>
         )}
       </div>
