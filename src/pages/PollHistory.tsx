@@ -142,8 +142,8 @@ export default function PollHistory() {
   const queryClient = useQueryClient();
   const [searchText, setSearchText] = useState('');
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const targetPollId = searchParams.get('pollId');
+  const location = useLocation();
+  const targetPollId = new URLSearchParams(location.search).get('pollId');
 
   const { data: voteHistory, isLoading } = useQuery({
     queryKey: ['my-votes', user?.id],
