@@ -40,6 +40,7 @@ import Friends from "./pages/Friends";
 import FriendComparison from "./pages/FriendComparison";
 import SharedPoll from "./pages/SharedPoll";
 import UserProfile from "./pages/UserProfile";
+import Compare from "./pages/Compare";
  import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
@@ -184,6 +185,7 @@ function AppInner() {
           <Route path="/weekly-results" element={<WeeklyTopResults />} />
           <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
           <Route path="/friends/:friendId" element={<ProtectedRoute><FriendComparison /></ProtectedRoute>} />
+          <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
           <Route path="/user/:userId" element={<UserProfile />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
