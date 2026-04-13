@@ -139,6 +139,7 @@ export default function PollHistory() {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const [searchText, setSearchText] = useState('');
 
   const searchParams = new URLSearchParams(window.location.search);
   const targetPollId = searchParams.get('pollId');
