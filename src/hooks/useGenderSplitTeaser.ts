@@ -5,6 +5,11 @@ interface GenderTeaser {
   text: string;
 }
 
+const MIN_VOTES_PER_GENDER = 5;
+const MIN_DIFF_FROM_OVERALL = 5;
+
+const normalizeGender = (value: string | null) => value?.trim().toLowerCase() ?? '';
+
 export function useGenderSplitTeaser(
   pollId: string,
   optionA: string,
@@ -13,27 +18,38 @@ export function useGenderSplitTeaser(
   overallPercentB: number
 ) {
   return useQuery<GenderTeaser | null>({
-    queryKey: ['gender-split-teaser', pollId],
+    queryKey: [
+      'gender-split-teaser',
+      pollId,
+      Math.round(overallPercentA),
+      Math.round(overallPercentB),
+    ],
+    enabled: !!pollId,
     queryFn: async () => {
       const { data: votes, error } = await supabase
         .from('votes')
         .select('choice, voter_gender')
-        .eq('poll_id', pollId);
+        .eq('poll_id', pollId)
+        .not('voter_gender', 'is', null);
 
       if (error || !votes || votes.length === 0) return null;
 
-      const male = votes.filter(v => v.voter_gender === 'Male');
-      const female = votes.filter(v => v.voter_gender === 'Female');
+      const maleVotes = votes.filter((vote) => normalizeGender(vote.voter_gender) === 'male');
+      const femaleVotes = votes.filter((vote) => normalizeGender(vote.voter_gender) === 'female');
 
-      // Need at least 5 votes per gender
-      if (male.length < 5 || female.length < 5) return null;
+      if (maleVotes.length < MIN_VOTES_PER_GENDER || femaleVotes.length < MIN_VOTES_PER_GENDER) {
+        return null;
+      }
 
-      const malePercentA = Math.round((male.filter(v => v.choice === 'A').length / male.length) * 100);
+      const malePercentA = Math.round(
+        (maleVotes.filter((vote) => vote.choice === 'A').length / maleVotes.length) * 100
+      );
+      const femalePercentA = Math.round(
+        (femaleVotes.filter((vote) => vote.choice === 'A').length / femaleVotes.length) * 100
+      );
       const malePercentB = 100 - malePercentA;
-      const femalePercentA = Math.round((female.filter(v => v.choice === 'A').length / female.length) * 100);
       const femalePercentB = 100 - femalePercentA;
 
-      // Find the most surprising split: compare each gender's percentage to overall
       const candidates = [
         { gender: 'men', percent: malePercentA, option: optionA, diff: Math.abs(malePercentA - overallPercentA) },
         { gender: 'men', percent: malePercentB, option: optionB, diff: Math.abs(malePercentB - overallPercentB) },
@@ -41,14 +57,12 @@ export function useGenderSplitTeaser(
         { gender: 'women', percent: femalePercentB, option: optionB, diff: Math.abs(femalePercentB - overallPercentB) },
       ];
 
-      // Pick the most surprising one
       const best = candidates.sort((a, b) => b.diff - a.diff)[0];
 
-      // Minimum 10% difference from overall
-      if (best.diff < 10) return null;
+      if (best.diff < MIN_DIFF_FROM_OVERALL) return null;
 
       return { text: `👀 ${best.percent}% of ${best.gender} chose ${best.option}` };
     },
-    staleTime: 60_000,
+    staleTime: 30_000,
   });
 }
