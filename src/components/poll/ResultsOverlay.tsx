@@ -38,6 +38,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
   const isWinnerA = result.percentA >= result.percentB;
   const userPickedWinner = (result.choice === 'A' && isWinnerA) || (result.choice === 'B' && !isWinnerA);
   const { data: celebrityVotes = [] } = useCelebrityVotes(poll.id, poll.category);
+  const { data: genderTeaser } = useGenderSplitTeaser(poll.id, poll.option_a, poll.option_b, result.percentA, result.percentB);
 
   // Auto-advance after 1.4 seconds
   useEffect(() => {
