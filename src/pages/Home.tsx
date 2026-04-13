@@ -571,11 +571,14 @@ export default function Home() {
       const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
       return hasStarted && !isExpired;
     }).sort((a, b) => {
-      // Primary: weight_score (admin priority)
+      // If user has a taste profile, use blended scoring (taste + trending + admin weight)
+      if (userTasteProfile && userTasteProfile.totalVotes >= 3) {
+        return blendedPollScore(b as any, userTasteProfile, nowMs) - blendedPollScore(a as any, userTasteProfile, nowMs);
+      }
+      // Fallback for new users / guests: weight_score → time-decay
       const wA = (a as any).weight_score || 1;
       const wB = (b as any).weight_score || 1;
       if (wA !== wB) return wB - wA;
-      // Secondary: time-decay score instead of raw totalVotes
       return decayScore(b) - decayScore(a);
     });
 
