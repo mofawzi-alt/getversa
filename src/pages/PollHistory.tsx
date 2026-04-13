@@ -1,8 +1,9 @@
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ArrowLeft, Users, ChevronDown } from 'lucide-react';
+import { Loader2, ArrowLeft, Users, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp as TrendUp } from 'lucide-react';
