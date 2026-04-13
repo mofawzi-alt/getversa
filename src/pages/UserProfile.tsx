@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
-import { ArrowLeft, Flame, Zap, Users, BarChart3, Sparkles } from 'lucide-react';
+import { ArrowLeft, Flame, Zap, Users, BarChart3, Sparkles, Heart } from 'lucide-react';
 import { useFollows } from '@/hooks/useFollows';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
