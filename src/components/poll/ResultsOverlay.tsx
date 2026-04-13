@@ -2,6 +2,7 @@ import { forwardRef, useEffect } from 'react';
 import ShareButton from './ShareButton';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 interface Poll {
   id: string;
