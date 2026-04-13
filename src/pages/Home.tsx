@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
+import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteScoring';
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2 } from 'lucide-react';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import PinButton from '@/components/poll/PinButton';
