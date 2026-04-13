@@ -58,7 +58,7 @@ export default function PollOptionImage({
 
   if (treatment === 'logo' && imgSrc) {
     // Logo treatment is the same for all variants — centered on brand color
-    const logoBg = variant === 'history' ? (brandColor || '#111111') : (brandColor || '#1a1a1a');
+    const logoBg = brandColor || (variant === 'history' ? '#f1f5f9' : '#1a1a1a');
     return (
       <div
         className={`w-full h-full flex items-center justify-center ${className}`}
@@ -92,7 +92,7 @@ export default function PollOptionImage({
   const photoStyles: Record<CardVariant, { objectFit: string; objectPosition: string; bg: string }> = {
     hero: { objectFit: 'cover', objectPosition: 'center', bg: 'bg-muted' },
     browse: { objectFit: 'cover', objectPosition: 'center top', bg: 'bg-muted' },
-    history: { objectFit: 'contain', objectPosition: 'center', bg: '' },
+    history: { objectFit: 'contain', objectPosition: 'center', bg: 'bg-muted' },
   };
 
   const style = photoStyles[variant];
@@ -100,7 +100,7 @@ export default function PollOptionImage({
   return (
     <div
       className={`w-full h-full relative ${className}`}
-      style={variant === 'history' ? { backgroundColor: '#111111' } : undefined}
+      style={variant === 'history' ? { backgroundColor: 'hsl(var(--muted))' } : undefined}
     >
       {showLoader && !loaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/20">
