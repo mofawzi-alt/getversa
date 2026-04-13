@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import ShareableTasteCard from '@/components/taste/ShareableTasteCard';
-import { Loader2, Flame, BarChart3, Sparkles, Calendar, TrendingUp, Eye } from 'lucide-react';
+import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // ── Archetype engine ──
@@ -243,11 +243,6 @@ export default function TasteProfile() {
   let topCatCount = 0;
   categoryCounts.forEach((count, cat) => { if (count > topCatCount) { topCatCount = count; topCategory = cat; } });
 
-  // Weekly stats
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  const weeklyVotes = allVotes?.filter(v => new Date(v.created_at) >= oneWeekAgo) || [];
-  const weeklyCategories = new Set(weeklyVotes.map(v => v.category).filter(Boolean));
 
   // Archetype
   const archetype = computeArchetype(traits || []);
