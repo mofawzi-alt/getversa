@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
+import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import VerifiedBadge from '@/components/VerifiedBadge';
 
 interface CinematicResultsProps {
@@ -337,6 +338,13 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
 
   // Celebrity votes
   const { data: celebrityVotes = [] } = useCelebrityVotes(visible ? poll.id : undefined, poll.category);
+  const { data: genderTeaser } = useGenderSplitTeaser(
+    visible ? poll.id : '',
+    poll.option_a,
+    poll.option_b,
+    percentA,
+    percentB
+  );
 
   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
   const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
@@ -349,12 +357,23 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
 
   // Fetch pattern + teaser in parallel
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      setTeaserLine(null);
+      return;
+    }
+
     if (user?.id) {
       detectPattern(user.id, poll.id, choice).then(p => setPatternLine(p?.line || null));
     }
+
     generateTeaser(poll.id, percentA, percentB).then(t => setTeaserLine(t));
   }, [visible, user?.id, poll.id, choice, percentA, percentB]);
+
+  useEffect(() => {
+    if (genderTeaser?.text) {
+      setTeaserLine(genderTeaser.text);
+    }
+  }, [genderTeaser?.text]);
 
   useEffect(() => {
     if (!visible || typeof document === 'undefined') return;
