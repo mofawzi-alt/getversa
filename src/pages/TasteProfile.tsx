@@ -325,36 +325,6 @@ export default function TasteProfile() {
           </motion.section>
         )}
 
-        {/* ── 4. YOUR WEEK IN NUMBERS ── */}
-        <motion.section variants={fadeUp}>
-          <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2 mb-3">
-            <Calendar className="h-4 w-4" /> Your Week in Numbers
-          </h3>
-          <div className="glass rounded-2xl p-5 space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Polls voted this week</span>
-              <span className="font-display font-bold text-lg">{weeklyVotes.length}</span>
-            </div>
-            <div className="h-px bg-border" />
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Categories explored</span>
-              <span className="font-display font-bold text-lg">{weeklyCategories.size}</span>
-            </div>
-            {percentileData && (
-              <>
-                <div className="h-px bg-border" />
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
-                    You're more <span className="text-foreground font-medium">{percentileData.traitName}</span>
-                  </span>
-                  <span className="font-display font-bold text-lg text-primary">
-                    than {percentileData.percentile}%
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-        </motion.section>
 
         {/* ── 5. STREAK TRACKER ── */}
         <motion.section variants={fadeUp}>
