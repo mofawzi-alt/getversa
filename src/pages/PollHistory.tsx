@@ -9,6 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp as TrendUp } from 'lucide-react';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 interface VoteHistoryItem {
   pollId: string;
@@ -29,6 +30,13 @@ interface VoteHistoryItem {
 
 function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; index: number; total: number }) {
   const winnerIsA = vote.percentA >= vote.percentB;
+  const { data: genderTeaser } = useGenderSplitTeaser(
+    vote.totalVotes >= 10 ? vote.pollId : '',
+    vote.optionA,
+    vote.optionB,
+    vote.percentA,
+    vote.percentB
+  );
 
   return (
     <div className="mx-4">
@@ -131,6 +139,9 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
       <p className="text-xs text-muted-foreground mt-2 px-1">
         {formatDistanceToNow(new Date(vote.votedAt), { addSuffix: true })}
       </p>
+      {genderTeaser && (
+        <p className="text-[11px] text-muted-foreground mt-1 px-1">{genderTeaser.text}</p>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ interface GenderTeaser {
 
 const MIN_VOTES_PER_GENDER = 5;
 const MIN_DIFF_FROM_OVERALL = 5;
+const MIN_DIFF_BETWEEN_GENDERS = 6;
 
 const normalizeGender = (value: string | null) => value?.trim().toLowerCase() ?? '';
 
@@ -51,15 +52,51 @@ export function useGenderSplitTeaser(
       const femalePercentB = 100 - femalePercentA;
 
       const candidates = [
-        { gender: 'men', percent: malePercentA, option: optionA, diff: Math.abs(malePercentA - overallPercentA) },
-        { gender: 'men', percent: malePercentB, option: optionB, diff: Math.abs(malePercentB - overallPercentB) },
-        { gender: 'women', percent: femalePercentA, option: optionA, diff: Math.abs(femalePercentA - overallPercentA) },
-        { gender: 'women', percent: femalePercentB, option: optionB, diff: Math.abs(femalePercentB - overallPercentB) },
+        {
+          gender: 'men',
+          option: optionA,
+          percent: malePercentA,
+          diffFromOverall: Math.abs(malePercentA - overallPercentA),
+          diffFromOtherGender: Math.abs(malePercentA - femalePercentA),
+        },
+        {
+          gender: 'men',
+          option: optionB,
+          percent: malePercentB,
+          diffFromOverall: Math.abs(malePercentB - overallPercentB),
+          diffFromOtherGender: Math.abs(malePercentB - femalePercentB),
+        },
+        {
+          gender: 'women',
+          option: optionA,
+          percent: femalePercentA,
+          diffFromOverall: Math.abs(femalePercentA - overallPercentA),
+          diffFromOtherGender: Math.abs(femalePercentA - malePercentA),
+        },
+        {
+          gender: 'women',
+          option: optionB,
+          percent: femalePercentB,
+          diffFromOverall: Math.abs(femalePercentB - overallPercentB),
+          diffFromOtherGender: Math.abs(femalePercentB - malePercentB),
+        },
       ];
 
-      const best = candidates.sort((a, b) => b.diff - a.diff)[0];
+      const best = [...candidates].sort((a, b) => {
+        const signalA = Math.max(a.diffFromOverall, a.diffFromOtherGender);
+        const signalB = Math.max(b.diffFromOverall, b.diffFromOtherGender);
+        if (signalB !== signalA) return signalB - signalA;
+        return b.percent - a.percent;
+      })[0];
 
-      if (best.diff < MIN_DIFF_FROM_OVERALL) return null;
+      if (!best) return null;
+
+      if (
+        best.diffFromOverall < MIN_DIFF_FROM_OVERALL &&
+        best.diffFromOtherGender < MIN_DIFF_BETWEEN_GENDERS
+      ) {
+        return null;
+      }
 
       return { text: `👀 ${best.percent}% of ${best.gender} chose ${best.option}` };
     },
