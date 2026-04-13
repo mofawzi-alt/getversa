@@ -335,7 +335,30 @@ export default function Home() {
   });
 
 
-  // Check vote milestones
+  // Taste profile for personalized feed
+  const { data: userTasteProfile } = useQuery({
+    queryKey: ['user-taste-profile', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data: votes } = await supabase
+        .from('votes')
+        .select('category')
+        .eq('user_id', user.id)
+        .not('category', 'is', null);
+      const catMap = new Map<string, number>();
+      votes?.forEach(v => {
+        if (v.category) catMap.set(v.category, (catMap.get(v.category) || 0) + 1);
+      });
+      const categoryVotes = Array.from(catMap.entries()).map(([category, count]) => ({ category, count }));
+      const { data: traits } = await supabase.rpc('get_user_voting_traits', { p_user_id: user.id });
+      const traitTags = (traits || []).map((t: any) => ({ tag: t.tag, vote_count: Number(t.vote_count) }));
+      return buildTasteProfile(categoryVotes, traitTags);
+    },
+    staleTime: 1000 * 60 * 10,
+    enabled: !!user,
+  });
+
+
   useEffect(() => {
     if (voteCount > 0) {
       const m = checkVoteMilestone(voteCount);
