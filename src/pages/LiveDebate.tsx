@@ -513,6 +513,13 @@ function FullScreenCard({
   celebrityNames?: string[];
   celebrityVotes?: { username: string; choice: 'A' | 'B'; verified_category: string | null }[];
 }) {
+  const { data: genderTeaser } = useGenderSplitTeaser(
+    (phase === 'result' && result) ? poll.id : '',
+    poll.option_a,
+    poll.option_b,
+    result?.percentA ?? 0,
+    result?.percentB ?? 0
+  );
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [flyDir, setFlyDir] = useState<'left' | 'right' | null>(null);
