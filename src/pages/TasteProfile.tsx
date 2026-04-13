@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import ShareableTasteCard from '@/components/taste/ShareableTasteCard';
-import { Loader2, Flame, BarChart3, Sparkles, Calendar, TrendingUp, Eye } from 'lucide-react';
+import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // ── Archetype engine ──
@@ -173,52 +173,6 @@ export default function TasteProfile() {
     enabled: !!profile && !!allVotes?.length,
   });
 
-  // Taste comparison percentile
-  const { data: percentileData } = useQuery({
-    queryKey: ['taste-percentile', profile?.id, traits],
-    queryFn: async () => {
-      if (!profile || !traits?.length) return null;
-      const topTrait = traits[0]?.tag;
-      if (!topTrait) return null;
-
-      // Get user's top dimension score
-      const { data: userScores } = await supabase.from('user_dimension_scores')
-        .select('score, dimension_id')
-        .eq('user_id', profile.id)
-        .order('vote_count', { ascending: false })
-        .limit(1);
-
-      if (!userScores?.length) return null;
-      const userScore = userScores[0].score;
-      const dimId = userScores[0].dimension_id;
-
-      // Count how many users have a lower score on this dimension
-      const { count: lowerCount } = await supabase.from('user_dimension_scores')
-        .select('id', { count: 'exact', head: true })
-        .eq('dimension_id', dimId)
-        .lt('score', userScore);
-
-      const { count: totalCount } = await supabase.from('user_dimension_scores')
-        .select('id', { count: 'exact', head: true })
-        .eq('dimension_id', dimId);
-
-      if (!totalCount) return null;
-      const percentile = Math.round(((lowerCount || 0) / totalCount) * 100);
-      
-      // Get dimension name
-      const { data: dim } = await supabase.from('dimensions')
-        .select('name')
-        .eq('id', dimId)
-        .single();
-
-      return {
-        percentile,
-        traitName: TRAIT_DESCRIPTORS[topTrait]?.positive || topTrait,
-        dimensionName: dim?.name || topTrait,
-      };
-    },
-    enabled: !!profile && !!traits?.length,
-  });
 
   if (loadingVotes) {
     return (
@@ -243,11 +197,6 @@ export default function TasteProfile() {
   let topCatCount = 0;
   categoryCounts.forEach((count, cat) => { if (count > topCatCount) { topCatCount = count; topCategory = cat; } });
 
-  // Weekly stats
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  const weeklyVotes = allVotes?.filter(v => new Date(v.created_at) >= oneWeekAgo) || [];
-  const weeklyCategories = new Set(weeklyVotes.map(v => v.category).filter(Boolean));
 
   // Archetype
   const archetype = computeArchetype(traits || []);
@@ -325,36 +274,6 @@ export default function TasteProfile() {
           </motion.section>
         )}
 
-        {/* ── 4. YOUR WEEK IN NUMBERS ── */}
-        <motion.section variants={fadeUp}>
-          <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2 mb-3">
-            <Calendar className="h-4 w-4" /> Your Week in Numbers
-          </h3>
-          <div className="glass rounded-2xl p-5 space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Polls voted this week</span>
-              <span className="font-display font-bold text-lg">{weeklyVotes.length}</span>
-            </div>
-            <div className="h-px bg-border" />
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Categories explored</span>
-              <span className="font-display font-bold text-lg">{weeklyCategories.size}</span>
-            </div>
-            {percentileData && (
-              <>
-                <div className="h-px bg-border" />
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
-                    You're more <span className="text-foreground font-medium">{percentileData.traitName}</span>
-                  </span>
-                  <span className="font-display font-bold text-lg text-primary">
-                    than {percentileData.percentile}%
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-        </motion.section>
 
         {/* ── 5. STREAK TRACKER ── */}
         <motion.section variants={fadeUp}>
