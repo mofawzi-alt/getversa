@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Check } from 'lucide-react';
 import HeroCaughtUp from './HeroCaughtUp';
 import CinematicResults from '@/components/poll/CinematicResults';
+import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 interface HeroPoll {
   id: string;
