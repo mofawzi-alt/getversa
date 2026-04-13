@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const VOTE_MILESTONES: { count: number; message: string }[] = [
@@ -47,7 +48,7 @@ export default function VoteMilestoneCelebration({ milestone, open, onClose }: P
     }
   }, [open, milestone.count, onClose]);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -55,7 +56,7 @@ export default function VoteMilestoneCelebration({ milestone, open, onClose }: P
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="fixed top-16 left-1/2 -translate-x-1/2 z-[90] w-[90%] max-w-sm"
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-[9999] w-[90vw] max-w-sm"
           onClick={onClose}
         >
           <div className="rounded-2xl bg-gradient-to-r from-primary/90 to-accent/90 backdrop-blur-md border border-primary/30 px-5 py-4 shadow-xl text-center">
@@ -65,6 +66,7 @@ export default function VoteMilestoneCelebration({ milestone, open, onClose }: P
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
