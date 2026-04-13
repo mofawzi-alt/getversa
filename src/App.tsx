@@ -40,6 +40,7 @@ import Friends from "./pages/Friends";
 import FriendComparison from "./pages/FriendComparison";
 import SharedPoll from "./pages/SharedPoll";
 import UserProfile from "./pages/UserProfile";
+import Compare from "./pages/Compare";
  import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
