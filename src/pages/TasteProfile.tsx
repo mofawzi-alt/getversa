@@ -229,6 +229,18 @@ export default function TasteProfile() {
   // Archetype
   const archetype = computeArchetype(traits || []);
 
+  // Dynamic description based on majority/minority ratio
+  const dynamicDescription = (() => {
+    if (!majorityRatio) return archetype.description;
+    if (majorityRatio.minorityPct > 25) {
+      return 'You go against the crowd more than most — classic independent thinker.';
+    }
+    if (majorityRatio.majorityPct > 75) {
+      return 'You have your finger on the pulse — you think like the majority.';
+    }
+    return "You're unpredictable — half maverick, half mainstream.";
+  })();
+
   // Most active day/time
   const mostActiveDay = getMostActiveDay(allVotes || []);
   const mostActiveTime = getMostActiveTime(allVotes || []);
