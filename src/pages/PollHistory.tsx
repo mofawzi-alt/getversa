@@ -196,10 +196,14 @@ export default function PollHistory() {
   useEffect(() => {
     if (!targetPollId || !voteHistory || !scrollRef.current) return;
     const idx = voteHistory.findIndex(v => v.pollId === targetPollId);
-    if (idx > 0) {
-      const container = scrollRef.current;
+    if (idx >= 0) {
       requestAnimationFrame(() => {
-        container.scrollTo({ top: idx * container.clientHeight, behavior: 'smooth' });
+        const container = scrollRef.current;
+        if (!container) return;
+        const targetEl = container.children[idx] as HTMLElement;
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
     }
   }, [targetPollId, voteHistory]);
