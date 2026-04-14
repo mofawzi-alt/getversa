@@ -8,10 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Loader2, X, Check, Upload, Target, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Image upload validation constants
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+// Media upload validation constants
+const ALLOWED_MEDIA_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'video/ogg'];
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB for images
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB for videos
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'webm', 'mov', 'ogg'];
+const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'ogg'];
 
 interface PollCreationFormProps {
   userId: string;
@@ -59,30 +61,57 @@ export default function PollCreationForm({
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
 
+  const isVideoFile = (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    return VIDEO_EXTENSIONS.includes(ext) || file.type.startsWith('video/');
+  };
+
   const handleImageSelect = (file: File, option: 'A' | 'B') => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
+    const isVideo = isVideoFile(file);
+    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+    if (file.size > maxSize) {
+      toast.error(`Max ${isVideo ? '50MB' : '5MB'} for ${isVideo ? 'videos' : 'images'}`);
+      return;
+    }
+    if (isVideo) {
+      // For videos, create an object URL for preview
+      const url = URL.createObjectURL(file);
       if (option === 'A') {
         setImageAFile(file);
-        setImageAPreview(e.target?.result as string);
+        setImageAPreview(url);
         setImageAUrl('');
       } else {
         setImageBFile(file);
-        setImageBPreview(e.target?.result as string);
+        setImageBPreview(url);
         setImageBUrl('');
       }
-    };
-    reader.readAsDataURL(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (option === 'A') {
+          setImageAFile(file);
+          setImageAPreview(e.target?.result as string);
+          setImageAUrl('');
+        } else {
+          setImageBFile(file);
+          setImageBPreview(e.target?.result as string);
+          setImageBUrl('');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      toast.error('Only image files are allowed (JPEG, PNG, GIF, WebP)');
+    if (!ALLOWED_MEDIA_TYPES.includes(file.type)) {
+      toast.error('Allowed: JPEG, PNG, GIF, WebP, MP4, WebM, MOV, OGG');
       return null;
     }
 
-    if (file.size > MAX_IMAGE_SIZE) {
-      toast.error('File size must be less than 5MB');
+    const isVideo = isVideoFile(file);
+    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+    if (file.size > maxSize) {
+      toast.error(`Max ${isVideo ? '50MB' : '5MB'}`);
       return null;
     }
 
@@ -311,7 +340,7 @@ export default function PollCreationForm({
             <Label>Image A</Label>
             <input 
               type="file" 
-              accept="image/*"
+              accept="image/*,video/mp4,video/webm,video/quicktime,video/ogg"
               ref={imageAInputRef}
               onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'A')}
               className="hidden"
@@ -350,7 +379,7 @@ export default function PollCreationForm({
             <Label>Image B</Label>
             <input 
               type="file" 
-              accept="image/*"
+              accept="image/*,video/mp4,video/webm,video/quicktime,video/ogg"
               ref={imageBInputRef}
               onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'B')}
               className="hidden"

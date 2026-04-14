@@ -78,14 +78,22 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setTargetCountries(poll.target_countries || []);
   }
 
+  const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'ogg'];
+  const isVideoFile = (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    return VIDEO_EXTENSIONS.includes(ext) || file.type.startsWith('video/');
+  };
+
   const uploadImage = async (file: File): Promise<string | null> => {
-    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'video/ogg'];
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error('Only JPEG, PNG, GIF, WebP allowed');
+      toast.error('Allowed: JPEG, PNG, GIF, WebP, MP4, WebM, MOV, OGG');
       return null;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Max 5MB');
+    const isVideo = isVideoFile(file);
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(`Max ${isVideo ? '50MB' : '5MB'}`);
       return null;
     }
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
@@ -188,7 +196,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Image A</Label>
-              <input type="file" accept="image/*" ref={imageAInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'A')} className="hidden" />
+              <input type="file" accept="image/*,video/mp4,video/webm,video/quicktime,video/ogg" ref={imageAInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'A')} className="hidden" />
               {currentImageA ? (
                 <div className="relative mt-2">
                   <img src={currentImageA} alt="A" className="w-full h-24 object-cover rounded-lg" />
@@ -207,7 +215,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             </div>
             <div>
               <Label>Image B</Label>
-              <input type="file" accept="image/*" ref={imageBInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'B')} className="hidden" />
+              <input type="file" accept="image/*,video/mp4,video/webm,video/quicktime,video/ogg" ref={imageBInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'B')} className="hidden" />
               {currentImageB ? (
                 <div className="relative mt-2">
                   <img src={currentImageB} alt="B" className="w-full h-24 object-cover rounded-lg" />
