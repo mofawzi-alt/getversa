@@ -129,6 +129,9 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
 ResultsOverlay.displayName = 'ResultsOverlay';
 export default ResultsOverlay;
 
+const isVideoUrl = (url?: string | null) =>
+  !!url && /\.(mp4|webm|mov|ogg)(\?|$)/i.test(url);
+
 /* ── Option row ── */
 function OptionRow({ label, imageUrl, percent, isWinner, isUserChoice, side }: {
   label: string;
