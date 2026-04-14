@@ -196,7 +196,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Image A</Label>
-              <input type="file" accept="image/*,video/mp4,video/webm,video/quicktime,video/ogg" ref={imageAInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'A')} className="hidden" />
+              <input type="file" accept="image/*,video/*,.mp4,.webm,.mov,.ogg" ref={imageAInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'A')} className="hidden" />
               {currentImageA ? (
                 <div className="relative mt-2">
                   <img src={currentImageA} alt="A" className="w-full h-24 object-cover rounded-lg" />
@@ -215,7 +215,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             </div>
             <div>
               <Label>Image B</Label>
-              <input type="file" accept="image/*,video/mp4,video/webm,video/quicktime,video/ogg" ref={imageBInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'B')} className="hidden" />
+              <input type="file" accept="image/*,video/*,.mp4,.webm,.mov,.ogg" ref={imageBInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'B')} className="hidden" />
               {currentImageB ? (
                 <div className="relative mt-2">
                   <img src={currentImageB} alt="B" className="w-full h-24 object-cover rounded-lg" />
