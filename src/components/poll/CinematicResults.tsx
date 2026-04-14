@@ -30,6 +30,14 @@ interface CinematicResultsProps {
   visible: boolean;
 }
 
+// ── Video detection ──
+const VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov', '.ogg'];
+function isVideoUrl(url: string | null): boolean {
+  if (!url) return false;
+  const lower = url.toLowerCase().split('?')[0];
+  return VIDEO_EXTENSIONS.some(ext => lower.endsWith(ext));
+}
+
 // ── Pattern detection ──
 interface PatternResult {
   line: string;
@@ -637,10 +645,18 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 </p>
                 <div className="flex gap-2 mb-2">
                   <div className="flex-1 rounded-xl overflow-hidden" style={{ aspectRatio: '1/1' }}>
-                    <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
+                    {isVideoUrl(imgA) ? (
+                      <video src={imgA} className="w-full h-full object-cover" autoPlay loop muted playsInline />
+                    ) : (
+                      <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
+                    )}
                   </div>
                   <div className="flex-1 rounded-xl overflow-hidden" style={{ aspectRatio: '1/1' }}>
-                    <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" />
+                    {isVideoUrl(imgB) ? (
+                      <video src={imgB} className="w-full h-full object-cover" autoPlay loop muted playsInline />
+                    ) : (
+                      <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" />
+                    )}
                   </div>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden flex mb-1.5" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
