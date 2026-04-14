@@ -129,6 +129,9 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
 ResultsOverlay.displayName = 'ResultsOverlay';
 export default ResultsOverlay;
 
+const isVideoUrl = (url?: string | null) =>
+  !!url && /\.(mp4|webm|mov|ogg)(\?|$)/i.test(url);
+
 /* ── Option row ── */
 function OptionRow({ label, imageUrl, percent, isWinner, isUserChoice, side }: {
   label: string;
@@ -147,7 +150,11 @@ function OptionRow({ label, imageUrl, percent, isWinner, isUserChoice, side }: {
         isUserChoice ? `ring-2 ring-${side === 'A' ? 'option-a' : 'option-b'}` : ''
       }`}>
         {imageUrl ? (
-          <img src={imageUrl} alt={label} className="w-full h-full object-contain bg-black" />
+          isVideoUrl(imageUrl) ? (
+            <video src={imageUrl} className="w-full h-full object-contain bg-black" autoPlay loop muted playsInline />
+          ) : (
+            <img src={imageUrl} alt={label} className="w-full h-full object-contain bg-black" />
+          )
         ) : (
           <div className={`w-full h-full ${barColor} flex items-center justify-center`}>
             <span className="text-primary-foreground font-bold text-xs">{side}</span>
