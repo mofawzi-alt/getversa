@@ -9,6 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp as TrendUp } from 'lucide-react';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import ShareButton from '@/components/poll/ShareButton';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 interface VoteHistoryItem {
@@ -131,6 +132,16 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
             }`}>
               {vote.inMajority ? 'Majority' : 'Minority'}
             </span>
+            <ShareButton
+              pollId={vote.pollId}
+              pollQuestion={vote.question}
+              optionA={vote.optionA}
+              optionB={vote.optionB}
+              percentA={vote.percentA}
+              percentB={vote.percentB}
+              showResults
+              variant="icon"
+            />
           </div>
         </div>
       </div>
