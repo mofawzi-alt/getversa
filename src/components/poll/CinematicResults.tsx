@@ -30,6 +30,14 @@ interface CinematicResultsProps {
   visible: boolean;
 }
 
+// ── Video detection ──
+const VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov', '.ogg'];
+function isVideoUrl(url: string | null): boolean {
+  if (!url) return false;
+  const lower = url.toLowerCase().split('?')[0];
+  return VIDEO_EXTENSIONS.some(ext => lower.endsWith(ext));
+}
+
 // ── Pattern detection ──
 interface PatternResult {
   line: string;
