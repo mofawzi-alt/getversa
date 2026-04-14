@@ -1,0 +1,1 @@
+UPDATE polls SET image_a_url = 'https://assets.mixkit.co/videos/45410/45410-720.mp4', image_b_url = 'https://assets.mixkit.co/videos/20115/20115-720.mp4' WHERE id = 'c427250f-1e5c-4b78-9d15-b8787a2e55aa';
