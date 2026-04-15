@@ -5,6 +5,9 @@ import CliffhangerSeries from './CliffhangerSeries';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
+import { getInsightTier } from '@/lib/streakGating';
+import { useAuth } from '@/contexts/AuthContext';
 import StreakInsightTeaser from './StreakInsightTeaser';
 
 interface Poll {
@@ -37,11 +40,15 @@ interface ResultsOverlayProps {
 const AUTO_ADVANCE_MS = 1400;
 
 const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, result, onContinue }, ref) => {
+  const { profile } = useAuth();
   const userPercent = result.choice === 'A' ? result.percentA : result.percentB;
   const isWinnerA = result.percentA >= result.percentB;
   const userPickedWinner = (result.choice === 'A' && isWinnerA) || (result.choice === 'B' && !isWinnerA);
   const { data: celebrityVotes = [] } = useCelebrityVotes(poll.id, poll.category);
+  const streak: number = (profile as any)?.current_streak ?? 0;
+  const insightTier = getInsightTier(streak);
   const { data: genderTeaser } = useGenderSplitTeaser(poll.id, poll.option_a, poll.option_b, result.percentA, result.percentB);
+  const { data: peopleLikeYou } = usePeopleLikeYou(poll.id, result.choice, poll.option_a, poll.option_b);
 
   // Auto-advance after 1.4 seconds
   useEffect(() => {
