@@ -3,6 +3,7 @@ import ShareButton from './ShareButton';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import StreakInsightTeaser from './StreakInsightTeaser';
 
 interface Poll {
   id: string;
@@ -110,7 +111,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
           {genderTeaser && (
             <p className="text-[11px] text-muted-foreground mt-1.5">{genderTeaser.text}</p>
           )}
-        </div>
+          <StreakInsightTeaser pollId={poll.id} choice={result.choice} />
 
         {/* Progress bar for auto-advance */}
         <div className="mt-4 h-0.5 bg-border rounded-full overflow-hidden">
