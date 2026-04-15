@@ -112,6 +112,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
             <p className="text-[11px] text-muted-foreground mt-1.5">{genderTeaser.text}</p>
           )}
           <StreakInsightTeaser pollId={poll.id} choice={result.choice} />
+        </div>
 
         {/* Progress bar for auto-advance */}
         <div className="mt-4 h-0.5 bg-border rounded-full overflow-hidden">
