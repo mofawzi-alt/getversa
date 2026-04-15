@@ -95,10 +95,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const submitVote = useCallback(async (choice: 'A' | 'B') => {
     if (!poll || result || isVoting) return;
     
-    // Guest gate: allow 3 free votes, then require signup
+    // Guest gate: allow 5 free votes, then require signup
     if (!user) {
       const guestVotes = parseInt(localStorage.getItem('versa_guest_votes') || '0', 10);
-      if (guestVotes >= 3) {
+      if (guestVotes >= 5) {
         try { sessionStorage.setItem('versa_vote_intent', poll.id); } catch {}
         window.location.href = '/auth?mode=signup&reason=vote';
         return;

@@ -8,8 +8,6 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SplashScreen, { isSplashSeen, markSplashSeen } from "@/components/SplashScreen";
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/components/onboarding/SwipeOverlay";
-import TrialPolls from "@/components/onboarding/TrialPolls";
-import HookMoment from "@/components/onboarding/HookMoment";
 import { AnimatePresence } from "framer-motion";
 
 import Auth from "./pages/Auth";
@@ -45,34 +43,22 @@ import Compare from "./pages/Compare";
 
 const queryClient = new QueryClient();
 
-const TRIAL_DONE_KEY = 'versa_trial_polls_done';
-
-function isTrialDone(): boolean {
-  try { return localStorage.getItem(TRIAL_DONE_KEY) === 'true'; } catch { return false; }
-}
-function markTrialDone() {
-  try { localStorage.setItem(TRIAL_DONE_KEY, 'true'); } catch {}
-}
-
-// Smart landing: Splash → Onboarding → Trial Polls → Hook → Auth → Home
-type LandingPhase = 'splash' | 'onboarding' | 'trials' | 'hook' | 'done';
+// Smart landing: Splash → Swipe Overlay → Home (vote on real polls)
+type LandingPhase = 'splash' | 'onboarding' | 'done';
 
 function SmartLanding() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [phase, setPhase] = useState<LandingPhase>('done');
 
   useEffect(() => {
-    // Logged in or completed full onboarding → go home
-    if (user || isTrialDone()) return;
+    if (user) return;
 
-    // First time: determine starting phase
     if (!isSplashSeen()) {
       setPhase('splash');
       const timer = setTimeout(() => {
         markSplashSeen();
         if (isSwipeOverlayDone()) {
-          setPhase('trials');
+          setPhase('done');
         } else {
           setPhase('onboarding');
         }
@@ -81,12 +67,11 @@ function SmartLanding() {
     } else if (!isSwipeOverlayDone()) {
       setPhase('onboarding');
     } else {
-      setPhase('trials');
+      setPhase('done');
     }
   }, [user]);
 
-  // Already done
-  if (user || isTrialDone()) {
+  if (user || phase === 'done') {
     return <Navigate to="/home" replace />;
   }
 
@@ -101,22 +86,7 @@ function SmartLanding() {
           onDismiss={() => {
             markSwipeOverlayDone();
             markWelcomeDone();
-            setPhase('trials');
-          }}
-        />
-      )}
-      {phase === 'trials' && (
-        <TrialPolls
-          key="trials"
-          onComplete={() => setPhase('hook')}
-        />
-      )}
-      {phase === 'hook' && (
-        <HookMoment
-          key="hook"
-          onJoin={() => {
-            markTrialDone();
-            navigate('/auth?mode=signup', { replace: true });
+            setPhase('done');
           }}
         />
       )}
