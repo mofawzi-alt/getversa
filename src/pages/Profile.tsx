@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Users, UserPlus, UserCheck } from 'lucide-react';
+import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Users, UserPlus, UserCheck, Target } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import { toast } from 'sonner';
@@ -30,13 +30,15 @@ export default function Profile() {
       
       const [votesResult, streakResult] = await Promise.all([
         supabase.from('votes').select('id', { count: 'exact' }).eq('user_id', profile.id),
-        supabase.from('users').select('current_streak, longest_streak').eq('id', profile.id).single(),
+        supabase.from('users').select('current_streak, longest_streak, prediction_accuracy, prediction_total').eq('id', profile.id).single(),
       ]);
       
       return {
         votes: votesResult.count || 0,
         currentStreak: streakResult.data?.current_streak || 0,
         longestStreak: streakResult.data?.longest_streak || 0,
+        predictionAccuracy: (streakResult.data as any)?.prediction_accuracy || 0,
+        predictionTotal: (streakResult.data as any)?.prediction_total || 0,
       };
     },
     enabled: !!profile,
@@ -152,7 +154,7 @@ export default function Profile() {
         <VotingInsights />
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div className="glass rounded-xl p-4 text-center">
             <div className="text-2xl font-bold">{stats?.votes || 0}</div>
             <div className="text-xs text-card-foreground/70">Total Votes</div>
@@ -160,6 +162,13 @@ export default function Profile() {
           <div className="glass rounded-xl p-4 text-center">
             <div className="text-2xl font-bold">{profile?.points || 0}</div>
             <div className="text-xs text-card-foreground/70">Insight Points</div>
+          </div>
+          <div className="glass rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <Target className="h-4 w-4 text-primary" />
+              <span className="text-2xl font-bold">{stats?.predictionAccuracy || 0}%</span>
+            </div>
+            <div className="text-xs text-card-foreground/70">Majority Rate</div>
           </div>
         </div>
 
