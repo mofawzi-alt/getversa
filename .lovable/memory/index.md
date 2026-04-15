@@ -1,0 +1,94 @@
+# Project Memory
+
+## Core
+- Pure white minimal aesthetic, no dark mode. Primary accent #E8392A.
+- Terminology: 'vote' (results), 'swipe' (instructions), 'Join'/'Sign Up' (never 'Register').
+- iOS Safari: images must be strictly .png or .webp to prevent broken data assets.
+- Interaction: Single-screen voting, gestures only. Central 'Tap to Vote' removed.
+- Demographics strictly restricted to admin/brands.
+- High-quality images required for active polls; deactivate if missing.
+- Safe-area insets and React Portals at document body used for all overlays/popups.
+
+## Memories
+- [Project Context](mem://project/identity) — Versa application context and Gen Z target audience
+- [MVP Scope](mem://features/mvp-scope) — Core architectural scope and product features
+- [Analytics Retention](mem://features/analytics-retention) — First vote and active days tracking via DB
+- [Poll Models](mem://features/cultural-index-model) — Core index vs seasonal polls scheduling
+- [Privacy Rules](mem://project/privacy) — Demographic data privacy constraints and notes
+- [Visual Aesthetic](mem://style/visual-aesthetic) — Clean minimalist white base theme rules
+- [Archive Rules](mem://features/past-perspectives-archive) — Past perspectives read-only archive
+- [Live Status](mem://features/live-status) — LIVE pulsing indicator temporal logic
+- [Explore Screen](mem://features/explore-screen) — Explore screen grid and category mappings
+- [Realtime Metrics](mem://features/realtime-updates) — 5-minute rolling window for voting counters
+- [Terminology](mem://style/terminology) — Copywriting rules for vote, swipe, and signup
+- [Live Shifts](mem://features/notifications/live-shift-detection) — Edge function for result flip detection
+- [Sound System](mem://features/sound-system) — Web Audio API categories, sounds, and timings
+- [Auth Init](mem://auth/session-initialization) — Supabase race condition handling for sessions
+- [Pull to Refresh](mem://features/pull-to-refresh) — react-query cache invalidation on iOS
+- [Content Priority](mem://features/content-prioritization) — weight_score feed sorting
+- [iOS Constraints](mem://constraints/ios-safari-images) — MIME type rules for iPhone Safari
+- [Seasonal Hubs](mem://features/seasonal-hubs) — Completion flows and sharing for themed hubs
+- [Skip Interaction](mem://features/skip-functionality) — Swipe-up skip logic and metadata capture
+- [Brand Identity](mem://style/branding) — Logo and signature red #E8392A styling rules
+- [Typography](mem://style/typography) — Poll card font sizes, weights, and readability
+- [Navigation Resolution](mem://features/navigation/target-poll-resolution) — Target poll feed sequencing
+- [Admin Filters](mem://features/admin-analytics/demographic-filtering) — Demographic analytics segmentation
+- [Interaction Model](mem://style/interaction-model) — Gesture-only polling, centralized buttons removed
+- [Mobile Overlays](mem://infrastructure/mobile-optimization) — React Portals and safe-area for UI overlays
+- [Rankings Gateway](mem://features/home/rankings-logic) — Brand rankings deep-linking to Explore
+- [Query Optimization](mem://features/category-navigation/query-optimization) — 500 limit for active category filters
+- [Feed Persistence](mem://features/navigation/feed-state-persistence) — Local state management for voted polls
+- [Insights Report](mem://features/admin-analytics/insights-report) — PDF export and AI insight generation
+- [Category Nav](mem://features/navigation/category-interaction-logic) — Smart category unvoted checks on Home
+- [Weekly Top Results](mem://features/reporting/weekly-top-results) — Social-optimized top polls weekly report
+- [Browse Feed](mem://features/browse-feed) — Multi-factor sequencing and randomization
+- [Conversion Nudges](mem://features/browse-feed/conversion-nudges) — Tiered guest signup flow in Browse
+- [Edge Reliability](mem://infrastructure/edge-functions/reliability) — JSON parsing for AI edge functions
+- [Behavioral Nudges](mem://features/engagement-loops/behavioral-nudges) — Transient badges and confirmations
+- [Image Fallbacks](mem://infrastructure/assets/image-resolution-logic) — Unsplash fallbacks for broken assets
+- [PWA Config](mem://constraints/build/pwa-configuration) — 5MB cache limit for bundle sizes
+- [Home Categories](mem://features/home/category-logic) — Case-insensitive merging
+- [Signup Implementation](mem://auth/implementation) — Unified form fields and demographic options
+- [Admin Export](mem://features/admin/poll-management-and-user-export) — Poll selectors and CSV user exports
+- [Color Standards](mem://style/color-palette-standard) — Result states and gender data coloring
+- [Realtime Injection](mem://features/home/realtime-poll-injection) — Prepending new polls automatically
+- [Personal Summary](mem://features/reporting/personal-weekly-summary) — User activity weekly stats card
+- [Vote Denormalization](mem://infrastructure/database-schema/vote-denormalization) — Demographics on votes
+- [Admin Monitor](mem://features/admin/active-polls-monitor) — 400+ poll pagination and RPC logic
+- [Push Notifications](mem://infrastructure/push-notifications) — VAPID web push architecture
+- [Caught Up Flow](mem://features/home/caught-up-celebration-and-highlights) — Empty queue state celebration
+- [Legal Compliance](mem://project/legal-compliance) — Privacy, cookies, and brand disclaimers
+- [Feed Reliability](mem://infrastructure/feed-reliability) — 300 poll fetch window and caching
+- [Realtime Sync](mem://infrastructure/realtime-sync) — React Query invalidation on UPDATE
+- [Visual Integrity](mem://project/content-strategy/visual-integrity) — Missing image deactivation rules
+- [Daily Pulse](mem://features/home/daily-pulse-strip) — Highlight strip data presentation rules
+- [Broadcasts](mem://features/admin/broadcast-notifications) — Admin custom push triggers
+- [Guest Funnel](mem://features/onboarding/guest-conversion-flow) — 3-vote limit and Flash Mode defaults
+- [Generation Conflicts](mem://infrastructure/edge-functions/poll-generation) — Edge duplicate detection
+- [Share Landing](mem://features/sharing/poll-landing-page) — Deep-link acquisition and shared flow
+- [Navigation Architecture](mem://project/architecture/navigation-model) — Single-screen structure logic
+- [Reveal Logic](mem://features/polls/result-reveal-logic) — Flash vs Cinematic results triggers
+- [Live Debates](mem://features/home/live-debates-feed) — Round-robin and blended scoring feed
+- [Public Profiles](mem://features/public-profiles) — Taste Identity archetypes and stats
+- [Following System](mem://features/social/following) — Social graph and proof integration
+- [Verified Figures](mem://features/verified-public-figures) — Blue checks and celebrity strip rules
+- [Blended Scoring](mem://features/feed-personalization/blended-scoring) — Taste, Trending, Admin formula
+- [Content Cards](mem://style/visual-standards/content-cards) — Aspect ratios and JPEG social exports
+- [Category Stories](mem://features/home/category-stories-navigation) — Horizontal thumbnail navigation
+- [Minority Badge](mem://features/notifications/minority-badge) — High-contrast blue gradient rules
+- [Gamification](mem://features/gamification) — Streak and milestone portal triggers
+- [Taste Profile](mem://features/taste-profile) — Archetype logic and trait visualization
+- [Compatibility](mem://features/social/compatibility-comparison) — Category alignment bars setup
+- [Search System](mem://features/search/global-and-history) — Global search and real-time deep linking
+- [Taste Sharing](mem://features/taste-profile/sharing-card) — Social profile card generation
+- [History Grid](mem://features/poll/history) — 4:5 muted background past votes cards
+- [Card Layouts](mem://features/poll/card-layout) — Padding and absolute text positioning
+- [Expiry Models](mem://features/poll/expiry-logic) — Evergreen, Trending, and Brand Battle rules
+- [Subtitle Support](mem://features/poll/subtitle-support) — Contextual sub-questions on polls
+- [Video Media](mem://features/poll/video-support) — Autoplaying MP4/WebM formats and specs
+- [Cinematic Results](mem://features/poll/cinematic-results) — Full-screen timed sequence UI overlay
+- [Gender Split Teasers](mem://features/poll/gender-split-teasers) — Counterintuitive trend trigger logic
+- [Daily Queue](mem://features/home/daily-queue-logic) — 9 AM Cairo timezone feed reset rules
+- [Scheduled Engagement](mem://features/notifications/scheduled-engagement) — 9 AM cron push notifications
+- [Personality Types](mem://features/personality-types) — 16 hybrid types (Versa names + MBTI codes) from voting axes
+- [Engagement Features](mem://features/engagement-features) — Streak gating, drip scheduling, Hot Take polls, streak rescue push
