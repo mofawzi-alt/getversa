@@ -438,6 +438,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         {/* Two-image split */}
         <div className={`flex h-[55vh] max-h-[420px] relative ${poll.is_hot_take ? 'ring-2 ring-[hsl(15,90%,55%)]' : ''}`}>
           {poll.is_hot_take && <HotTakeBadge />}
+          <ControversialBadge percentA={poll.percentA} percentB={poll.percentB} totalVotes={poll.totalVotes} />
           {/* Option A — left half */}
           <div
             className="w-1/2 h-full relative overflow-hidden transition-transform duration-200"
