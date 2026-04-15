@@ -4,7 +4,6 @@ import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import BrandDisclaimer from '@/components/poll/BrandDisclaimer';
-import ControversialBadge from '@/components/home/ControversialBadge';
 
 interface Poll {
   id: string;
@@ -152,14 +151,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
       </div>
 
       {/* Images — fixed height matching home screen cards */}
-      <div className="grid grid-cols-2 gap-0 h-[70vh] max-h-[600px] rounded-2xl overflow-hidden mx-2 border border-border/60 shadow-sm relative">
-        {!hasResult && (
-          <ControversialBadge
-            percentA={result?.percentA ?? 50}
-            percentB={result?.percentB ?? 50}
-            totalVotes={result?.totalVotes ?? 0}
-          />
-        )}
+      <div className="grid grid-cols-2 gap-0 h-[70vh] max-h-[600px] rounded-2xl overflow-hidden mx-2 border border-border/60 shadow-sm">
         {/* Option A */}
         <div
           className="relative overflow-hidden transition-transform duration-200"
