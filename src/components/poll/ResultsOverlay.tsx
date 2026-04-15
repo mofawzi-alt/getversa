@@ -1,6 +1,7 @@
 import { forwardRef, useEffect } from 'react';
 import ShareButton from './ShareButton';
 import ChallengeButton from './ChallengeButton';
+import CliffhangerSeries from './CliffhangerSeries';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
@@ -116,6 +117,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
           <div className="flex items-center justify-center gap-3 mt-2">
             <ChallengeButton pollId={poll.id} pollQuestion={poll.question} userChoice={result.choice} />
           </div>
+          <CliffhangerSeries currentPollId={poll.id} onPollTap={() => onContinue()} />
         </div>
 
         {/* Progress bar for auto-advance */}

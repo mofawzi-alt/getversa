@@ -795,6 +795,9 @@ export type Database = {
           organization_id: string | null
           poll_type: string
           question: string
+          series_id: string | null
+          series_order: number | null
+          series_title: string | null
           starts_at: string | null
           subtitle: string | null
           tags: string[] | null
@@ -827,6 +830,9 @@ export type Database = {
           organization_id?: string | null
           poll_type?: string
           question: string
+          series_id?: string | null
+          series_order?: number | null
+          series_title?: string | null
           starts_at?: string | null
           subtitle?: string | null
           tags?: string[] | null
@@ -859,6 +865,9 @@ export type Database = {
           organization_id?: string | null
           poll_type?: string
           question?: string
+          series_id?: string | null
+          series_order?: number | null
+          series_title?: string | null
           starts_at?: string | null
           subtitle?: string | null
           tags?: string[] | null
@@ -1128,6 +1137,51 @@ export type Database = {
           max_polls_per_month?: number | null
           name?: string
           price_monthly?: number
+        }
+        Relationships: []
+      }
+      taste_snapshots: {
+        Row: {
+          adventure_score: number | null
+          archetype: string | null
+          brand_loyalty_score: number | null
+          created_at: string
+          data: Json | null
+          id: string
+          majority_pct: number | null
+          minority_pct: number | null
+          snapshot_date: string
+          top_trait: string | null
+          total_votes: number
+          user_id: string
+        }
+        Insert: {
+          adventure_score?: number | null
+          archetype?: string | null
+          brand_loyalty_score?: number | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          majority_pct?: number | null
+          minority_pct?: number | null
+          snapshot_date?: string
+          top_trait?: string | null
+          total_votes?: number
+          user_id: string
+        }
+        Update: {
+          adventure_score?: number | null
+          archetype?: string | null
+          brand_loyalty_score?: number | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          majority_pct?: number | null
+          minority_pct?: number | null
+          snapshot_date?: string
+          top_trait?: string | null
+          total_votes?: number
+          user_id?: string
         }
         Relationships: []
       }

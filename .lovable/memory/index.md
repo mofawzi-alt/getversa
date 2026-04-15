@@ -1,3 +1,6 @@
+# Memory: index.md
+Updated: now
+
 # Project Memory
 
 ## Core
@@ -90,5 +93,6 @@
 - [Gender Split Teasers](mem://features/poll/gender-split-teasers) — Counterintuitive trend trigger logic
 - [Daily Queue](mem://features/home/daily-queue-logic) — 9 AM Cairo timezone feed reset rules
 - [Scheduled Engagement](mem://features/notifications/scheduled-engagement) — 9 AM cron push notifications
-- [Personality Types](mem://features/personality-types) — 16 hybrid types (Versa names + MBTI codes) from voting axes
-- [Engagement Features](mem://features/engagement-features) — Streak gating, drip scheduling, Hot Take polls, streak rescue push
+- [Personality Types](mem://features/personality-types) — 16 hybrid types from voting axes
+- [Engagement Features](mem://features/engagement-features) — Streak gating, drip scheduling, Hot Take, streak rescue
+- [Social Engagement V2](mem://features/social-engagement-v2) — Following Feed, Cliffhangers, Taste Evolution, Weekly Report
