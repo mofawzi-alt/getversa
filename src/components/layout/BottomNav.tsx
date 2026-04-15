@@ -6,9 +6,10 @@ import { useAuth } from '@/contexts/AuthContext';
 const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (!user) {
+  // While auth is loading, show the full authenticated nav to prevent flash
+  if (!user && !loading) {
     return (
       <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-nav border-t border-border/40 safe-area-bottom z-50">
         <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
