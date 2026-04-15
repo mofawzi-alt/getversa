@@ -347,7 +347,11 @@ export default function PollCreationForm({
             />
             {imageAPreview ? (
               <div className="relative mt-2">
-                <img src={imageAPreview} alt="Option A" className="w-full h-24 object-cover rounded-lg" />
+                {imageAFile && isVideoFile(imageAFile) ? (
+                  <video src={imageAPreview} className="w-full h-24 object-cover rounded-lg" muted autoPlay loop playsInline />
+                ) : (
+                  <img src={imageAPreview} alt="Option A" className="w-full h-24 object-cover rounded-lg" />
+                )}
                 <button 
                   onClick={() => { setImageAFile(null); setImageAPreview(''); }}
                   className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1"
@@ -386,7 +390,11 @@ export default function PollCreationForm({
             />
             {imageBPreview ? (
               <div className="relative mt-2">
-                <img src={imageBPreview} alt="Option B" className="w-full h-24 object-cover rounded-lg" />
+                {imageBFile && isVideoFile(imageBFile) ? (
+                  <video src={imageBPreview} className="w-full h-24 object-cover rounded-lg" muted autoPlay loop playsInline />
+                ) : (
+                  <img src={imageBPreview} alt="Option B" className="w-full h-24 object-cover rounded-lg" />
+                )}
                 <button 
                   onClick={() => { setImageBFile(null); setImageBPreview(''); }}
                   className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1"
