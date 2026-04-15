@@ -771,6 +771,42 @@ export type Database = {
           },
         ]
       }
+      poll_suggestions: {
+        Row: {
+          admin_notes: string | null
+          category: string | null
+          created_at: string
+          id: string
+          option_a: string
+          option_b: string
+          question: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          category?: string | null
+          created_at?: string
+          id?: string
+          option_a: string
+          option_b: string
+          question: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: string | null
+          created_at?: string
+          id?: string
+          option_a?: string
+          option_b?: string
+          question?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       polls: {
         Row: {
           category: string | null
@@ -1465,6 +1501,8 @@ export type Database = {
           last_vote_date: string | null
           longest_streak: number | null
           points: number | null
+          prediction_accuracy: number | null
+          prediction_total: number | null
           total_days_active: number | null
           username: string | null
           verified_category: string | null
@@ -1488,6 +1526,8 @@ export type Database = {
           last_vote_date?: string | null
           longest_streak?: number | null
           points?: number | null
+          prediction_accuracy?: number | null
+          prediction_total?: number | null
           total_days_active?: number | null
           username?: string | null
           verified_category?: string | null
@@ -1511,6 +1551,8 @@ export type Database = {
           last_vote_date?: string | null
           longest_streak?: number | null
           points?: number | null
+          prediction_accuracy?: number | null
+          prediction_total?: number | null
           total_days_active?: number | null
           username?: string | null
           verified_category?: string | null
@@ -1577,6 +1619,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      weekly_leaderboard: {
+        Row: {
+          created_at: string
+          id: string
+          rank: number | null
+          user_id: string
+          week_start: string
+          weekly_points: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rank?: number | null
+          user_id: string
+          week_start: string
+          weekly_points?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rank?: number | null
+          user_id?: string
+          week_start?: string
+          weekly_points?: number
+        }
+        Relationships: []
       }
     }
     Views: {
