@@ -117,6 +117,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
           <div className="flex items-center justify-center gap-3 mt-2">
             <ChallengeButton pollId={poll.id} pollQuestion={poll.question} userChoice={result.choice} />
           </div>
+          <CliffhangerSeries currentPollId={poll.id} onPollTap={() => onContinue()} />
         </div>
 
         {/* Progress bar for auto-advance */}
