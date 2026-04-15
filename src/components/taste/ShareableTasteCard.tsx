@@ -10,9 +10,11 @@ interface TasteCardProps {
   topCategory: string;
   totalVotes: number;
   streak: number;
+  personalityCode?: string;
+  personalityName?: string;
 }
 
-export default function ShareableTasteCard({ archetype, description, topCategory, totalVotes, streak }: TasteCardProps) {
+export default function ShareableTasteCard({ archetype, description, topCategory, totalVotes, streak, personalityCode, personalityName }: TasteCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [generating, setGenerating] = useState(false);
 
@@ -212,7 +214,10 @@ export default function ShareableTasteCard({ archetype, description, topCategory
         </div>
 
         <p className="text-[10px] font-semibold tracking-[4px] text-white/40 uppercase mb-3">My Taste Profile</p>
-        <h2 className="text-3xl font-display font-bold mb-2">{archetype}</h2>
+        <h2 className="text-3xl font-display font-bold mb-1">{archetype}</h2>
+        {personalityCode && personalityName && (
+          <p className="text-xs font-mono text-white/50 tracking-[3px] mb-2">{personalityCode} — {personalityName}</p>
+        )}
         <p className="text-sm text-white/70 leading-relaxed mb-5 max-w-[260px] mx-auto">{description}</p>
 
         <div className="flex justify-center gap-3">
