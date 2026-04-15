@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import HotTakeBadge from './HotTakeBadge';
+import ControversialBadge from './ControversialBadge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +12,8 @@ import { Check } from 'lucide-react';
 import HeroCaughtUp from './HeroCaughtUp';
 import CinematicResults from '@/components/poll/CinematicResults';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
+import { getInsightTier } from '@/lib/streakGating';
 import HookMoment from '@/components/onboarding/HookMoment';
 
 interface HeroPoll {
@@ -69,12 +72,24 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const sessionShownRef = useRef(new Set<string>());
   const [showHookMoment, setShowHookMoment] = useState(false);
 
+  // Gate gender teaser behind streak (Day 3+)
+  const streak: number = (profile as any)?.current_streak ?? 0;
+  const insightTier = getInsightTier(streak);
+  
   const { data: genderTeaser } = useGenderSplitTeaser(
     poll?.id || '',
     poll?.option_a || '',
     poll?.option_b || '',
     result?.percentA ?? poll?.percentA ?? 0,
     result?.percentB ?? poll?.percentB ?? 0
+  );
+
+  // "People Like You" age comparison
+  const { data: peopleLikeYou } = usePeopleLikeYou(
+    poll?.id || '',
+    result?.choice || 'A',
+    poll?.option_a || '',
+    poll?.option_b || ''
   );
 
   const startX = useRef(0);
@@ -423,6 +438,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         {/* Two-image split */}
         <div className={`flex h-[55vh] max-h-[420px] relative ${poll.is_hot_take ? 'ring-2 ring-[hsl(15,90%,55%)]' : ''}`}>
           {poll.is_hot_take && <HotTakeBadge />}
+          <ControversialBadge percentA={poll.percentA} percentB={poll.percentB} totalVotes={poll.totalVotes} />
           {/* Option A — left half */}
           <div
             className="w-1/2 h-full relative overflow-hidden transition-transform duration-200"
@@ -625,8 +641,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 />
               </div>
 
-              {/* Gender teaser */}
-              {genderTeaser && (
+              {/* Gender teaser — gated behind Day 3+ streak */}
+              {genderTeaser && insightTier !== 'none' && (
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -634,6 +650,18 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                   className="text-[11px] text-white/80 text-center"
                 >
                   {genderTeaser.text}
+                </motion.p>
+              )}
+
+              {/* "People Like You" age comparison */}
+              {peopleLikeYou && result && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-[11px] text-white/80 text-center font-medium"
+                >
+                  👥 {peopleLikeYou.text}
                 </motion.p>
               )}
 
