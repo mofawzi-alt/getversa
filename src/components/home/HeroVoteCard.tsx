@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import HotTakeBadge from './HotTakeBadge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,6 +25,7 @@ interface HeroPoll {
   totalVotes: number;
   percentA: number;
   percentB: number;
+  is_hot_take?: boolean;
 }
 
 interface HeroVoteCardProps {
