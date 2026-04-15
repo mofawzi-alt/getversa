@@ -273,7 +273,42 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
     },
   });
 
+  const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'ogg'];
+  const ALLOWED_MEDIA_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'video/ogg'];
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+  const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'webm', 'mov', 'ogg'];
+
+  const isVideoFile = (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    return VIDEO_EXTENSIONS.includes(ext) || file.type.startsWith('video/');
+  };
+
   const handleImageSelect = (file: File, option: 'A' | 'B') => {
+    const isVideo = isVideoFile(file);
+    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+
+    if (file.size > maxSize) {
+      toast.error(`Max ${isVideo ? '50MB' : '5MB'} for ${isVideo ? 'videos' : 'images'}`);
+      return;
+    }
+
+    if (isVideo) {
+      const url = URL.createObjectURL(file);
+
+      if (option === 'A') {
+        setImageAFile(file);
+        setImageAPreview(url);
+        setImageAUrl('');
+      } else {
+        setImageBFile(file);
+        setImageBPreview(url);
+        setImageBUrl('');
+      }
+
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       if (option === 'A') {
@@ -289,25 +324,19 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
     reader.readAsDataURL(file);
   };
 
-  // Image upload validation constants
-  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-  const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
-  const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
   const uploadImage = async (file: File): Promise<string | null> => {
-    // Validate file type
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      toast.error('Only image files are allowed (JPEG, PNG, GIF, WebP)');
+    if (!ALLOWED_MEDIA_TYPES.includes(file.type)) {
+      toast.error('Allowed: JPEG, PNG, GIF, WebP, MP4, WebM, MOV, OGG');
       return null;
     }
 
-    // Validate file size
-    if (file.size > MAX_IMAGE_SIZE) {
-      toast.error('File size must be less than 5MB');
+    const isVideo = isVideoFile(file);
+    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+    if (file.size > maxSize) {
+      toast.error(`Max ${isVideo ? '50MB' : '5MB'}`);
       return null;
     }
 
-    // Validate file extension
     const fileExt = file.name.split('.').pop()?.toLowerCase();
     if (!fileExt || !ALLOWED_EXTENSIONS.includes(fileExt)) {
       toast.error('Invalid file extension');
@@ -882,14 +911,18 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
                 <Label>Image A</Label>
                 <input 
                   type="file" 
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov,.ogg"
                   ref={imageAInputRef}
                   onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'A')}
                   className="hidden"
                 />
                 {imageAPreview ? (
                   <div className="relative mt-2">
-                    <img src={imageAPreview} alt="Option A" className="w-full h-24 object-cover rounded-lg" />
+                    {imageAFile && isVideoFile(imageAFile) ? (
+                      <video src={imageAPreview} className="w-full h-24 object-cover rounded-lg" muted autoPlay loop playsInline />
+                    ) : (
+                      <img src={imageAPreview} alt="Option A" className="w-full h-24 object-cover rounded-lg" />
+                    )}
                     <button 
                       onClick={() => { setImageAFile(null); setImageAPreview(''); }}
                       className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1"
@@ -921,14 +954,18 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
                 <Label>Image B</Label>
                 <input 
                   type="file" 
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov,.ogg"
                   ref={imageBInputRef}
                   onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'B')}
                   className="hidden"
                 />
                 {imageBPreview ? (
                   <div className="relative mt-2">
-                    <img src={imageBPreview} alt="Option B" className="w-full h-24 object-cover rounded-lg" />
+                    {imageBFile && isVideoFile(imageBFile) ? (
+                      <video src={imageBPreview} className="w-full h-24 object-cover rounded-lg" muted autoPlay loop playsInline />
+                    ) : (
+                      <img src={imageBPreview} alt="Option B" className="w-full h-24 object-cover rounded-lg" />
+                    )}
                     <button 
                       onClick={() => { setImageBFile(null); setImageBPreview(''); }}
                       className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1"
