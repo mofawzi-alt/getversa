@@ -34,50 +34,22 @@ import { useCelebrityPresence } from '@/hooks/useCelebrityVotes';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import VerifiedBadge from '@/components/VerifiedBadge';
 
-// FIX 4: Conversational category name mapping
-const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
-  'Platforms': 'Apps & Tech',
-  'platforms': 'Apps & Tech',
-  'Money': 'Spending & Money',
-  'money': 'Spending & Money',
-  'Food': 'Eat & Drink',
-  'food': 'Eat & Drink',
-  'Fashion': 'Style',
-  'fashion': 'Style',
-  'Lifestyle': 'Everyday Life',
-  'lifestyle': 'Everyday Life',
-  'Consumer': 'Shopping',
-  'consumer': 'Shopping',
-  'Brands': 'Brands',
-  'brands': 'Brands',
-};
+// Category display name mapping (canonical 8 categories)
+const CATEGORY_DISPLAY_NAMES: Record<string, string> = {};
 
 function getDisplayCategoryName(name: string): string {
   return CATEGORY_DISPLAY_NAMES[name] || name;
 }
 
 const CATEGORY_META: Record<string, { emoji: string; color: string; bg: string }> = {
-  money: { emoji: '💸', color: 'hsl(45, 80%, 45%)', bg: 'hsl(45, 80%, 93%)' },
-  'spending & money': { emoji: '💸', color: 'hsl(45, 80%, 45%)', bg: 'hsl(45, 80%, 93%)' },
-  business: { emoji: '🚀', color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
-  market: { emoji: '🌍', color: 'hsl(170, 60%, 40%)', bg: 'hsl(170, 60%, 92%)' },
-  platforms: { emoji: '📱', color: 'hsl(260, 60%, 55%)', bg: 'hsl(260, 60%, 93%)' },
-  'apps & tech': { emoji: '📱', color: 'hsl(260, 60%, 55%)', bg: 'hsl(260, 60%, 93%)' },
-  consumer: { emoji: '🛒', color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
-  shopping: { emoji: '🛒', color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
-  brands: { emoji: '🏷️', color: 'hsl(15, 80%, 50%)', bg: 'hsl(15, 80%, 93%)' },
-  lifestyle: { emoji: '🧠', color: 'hsl(350, 65%, 55%)', bg: 'hsl(350, 65%, 93%)' },
-  'everyday life': { emoji: '🧠', color: 'hsl(350, 65%, 55%)', bg: 'hsl(350, 65%, 93%)' },
-  fashion: { emoji: '👗', color: 'hsl(280, 60%, 50%)', bg: 'hsl(280, 60%, 93%)' },
-  style: { emoji: '👗', color: 'hsl(280, 60%, 50%)', bg: 'hsl(280, 60%, 93%)' },
-  food: { emoji: '🍔', color: 'hsl(25, 80%, 50%)', bg: 'hsl(25, 80%, 93%)' },
-  'eat & drink': { emoji: '🍔', color: 'hsl(25, 80%, 50%)', bg: 'hsl(25, 80%, 93%)' },
-  tech: { emoji: '💻', color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
-  travel: { emoji: '✈️', color: 'hsl(170, 60%, 40%)', bg: 'hsl(170, 60%, 92%)' },
-  music: { emoji: '🎵', color: 'hsl(340, 70%, 50%)', bg: 'hsl(340, 70%, 93%)' },
-  culture: { emoji: '🎨', color: 'hsl(30, 80%, 50%)', bg: 'hsl(30, 80%, 93%)' },
-  health: { emoji: '💪', color: 'hsl(145, 55%, 42%)', bg: 'hsl(145, 55%, 92%)' },
-  education: { emoji: '📚', color: 'hsl(225, 60%, 50%)', bg: 'hsl(225, 60%, 93%)' },
+  'brands': { emoji: '🏷️', color: 'hsl(15, 80%, 50%)', bg: 'hsl(15, 80%, 93%)' },
+  'business & startups': { emoji: '🚀', color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
+  'fintech & money': { emoji: '💸', color: 'hsl(45, 80%, 45%)', bg: 'hsl(45, 80%, 93%)' },
+  'style & design': { emoji: '👗', color: 'hsl(280, 60%, 50%)', bg: 'hsl(280, 60%, 93%)' },
+  'entertainment': { emoji: '🎬', color: 'hsl(260, 60%, 55%)', bg: 'hsl(260, 60%, 93%)' },
+  'sports': { emoji: '⚽', color: 'hsl(145, 55%, 42%)', bg: 'hsl(145, 55%, 92%)' },
+  'wellness & habits': { emoji: '🧠', color: 'hsl(350, 65%, 55%)', bg: 'hsl(350, 65%, 93%)' },
+  'the pulse': { emoji: '🔥', color: 'hsl(25, 80%, 50%)', bg: 'hsl(25, 80%, 93%)' },
 };
 
 function getCategoryMeta(name: string): { emoji: string; color: string; bg: string } {
