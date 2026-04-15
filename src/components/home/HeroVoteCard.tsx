@@ -65,6 +65,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     totalVotes: number;
   } | null>(null);
   const sessionShownRef = useRef(new Set<string>());
+  const [showHookMoment, setShowHookMoment] = useState(false);
 
   const { data: genderTeaser } = useGenderSplitTeaser(
     poll?.id || '',
@@ -133,9 +134,9 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         setIsVoting(false);
         setRevealMode(null);
         setShowHint(true);
-        // After 5th vote, redirect to hook/signup
+        // After 5th vote, show hook moment
         if (newGuestCount >= 5) {
-          window.location.href = '/auth?mode=signup&reason=hook';
+          setShowHookMoment(true);
           return;
         }
         onVoteComplete?.();
@@ -706,6 +707,15 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             setRevealMode(null);
             setShowHint(true);
             onVoteComplete?.();
+          }}
+        />
+      )}
+
+      {showHookMoment && (
+        <HookMoment
+          onJoin={() => {
+            setShowHookMoment(false);
+            window.location.href = '/auth?mode=signup';
           }}
         />
       )}
