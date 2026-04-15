@@ -12,7 +12,7 @@ interface StreakInsightTeaserProps {
 
 export default function StreakInsightTeaser({ pollId, choice }: StreakInsightTeaserProps) {
   const { user, profile } = useAuth();
-  const streak = profile?.current_streak ?? 0;
+  const streak: number = (profile as any)?.current_streak ?? 0;
   const tier = getInsightTier(streak);
   const nextUnlock = getNextUnlock(streak);
 
