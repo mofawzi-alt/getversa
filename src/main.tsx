@@ -30,7 +30,23 @@ const clearPreviewServiceWorkers = async () => {
 if (isPreviewHost || isInIframe) {
   void clearPreviewServiceWorkers();
 } else {
-  registerSW({ immediate: true });
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (sessionStorage.getItem("versa-sw-reloaded") === "1") return;
+      sessionStorage.setItem("versa-sw-reloaded", "1");
+      window.location.reload();
+    });
+  }
+
+  const updateServiceWorker = registerSW({
+    immediate: true,
+    onRegisteredSW(_swUrl, registration) {
+      registration?.update();
+    },
+    onNeedRefresh() {
+      void updateServiceWorker(true);
+    },
+  });
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

@@ -1,5 +1,8 @@
 /// <reference lib="WebWorker" />
 
+import { clientsClaim } from 'workbox-core';
+import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
+
 export {};
 
 type PushAction = {
@@ -17,18 +20,14 @@ declare const self: ServiceWorkerGlobalScope & {
 
 const isWindowClient = (client: Client): client is WindowClient => 'navigate' in client;
 
-self.addEventListener('install', () => {
-  self.skipWaiting();
-});
+clientsClaim();
+self.skipWaiting();
+cleanupOutdatedCaches();
+precacheAndRoute(self.__WB_MANIFEST);
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      const cacheKeys = await caches.keys();
-      await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)));
-
-      await self.clients.claim();
-
       const windowClients = await self.clients.matchAll({
         type: 'window',
         includeUncontrolled: true,
@@ -49,8 +48,6 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
-
-void self.__WB_MANIFEST;
 
 self.addEventListener('push', (event) => {
   let data: {
