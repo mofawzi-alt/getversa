@@ -23,14 +23,14 @@ export default function TasteEvolutionTimeline() {
     queryFn: async () => {
       if (!profile) return [];
       const { data, error } = await supabase
-        .from('taste_snapshots' as any)
+        .from('taste_snapshots')
         .select('*')
         .eq('user_id', profile.id)
         .order('snapshot_date', { ascending: false })
         .limit(12);
 
       if (error) return [];
-      return (data || []) as Snapshot[];
+      return (data || []) as unknown as Snapshot[];
     },
     enabled: !!profile,
   });
