@@ -104,7 +104,7 @@ type PollCard = {
   recentVotes: number;
 };
 
-const EXPLORE_THRESHOLD = 3;
+const EXPLORE_THRESHOLD = 5;
 
 // Animated counter component
 function AnimatedNumber({ value, className }: { value: number; className?: string }) {
