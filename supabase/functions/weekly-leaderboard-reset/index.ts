@@ -16,18 +16,18 @@ serve(async (req: Request): Promise<Response> => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Calculate the week that just ended (last Monday to Sunday)
+    // Calculate the week that just ended (Sunday to Saturday)
     const now = new Date();
-    const dayOfWeek = now.getUTCDay(); // 0=Sun, 1=Mon
-    const lastMonday = new Date(now);
-    lastMonday.setUTCDate(now.getUTCDate() - dayOfWeek - 6); // Previous Monday
-    lastMonday.setUTCHours(0, 0, 0, 0);
+    const dayOfWeek = now.getUTCDay(); // 0=Sun
+    const lastSunday = new Date(now);
+    lastSunday.setUTCDate(now.getUTCDate() - dayOfWeek - 7); // Previous Sunday
+    lastSunday.setUTCHours(0, 0, 0, 0);
 
-    const lastSunday = new Date(lastMonday);
-    lastSunday.setUTCDate(lastMonday.getUTCDate() + 6);
-    lastSunday.setUTCHours(23, 59, 59, 999);
+    const lastSaturday = new Date(lastSunday);
+    lastSaturday.setUTCDate(lastSunday.getUTCDate() + 6);
+    lastSaturday.setUTCHours(23, 59, 59, 999);
 
-    const weekStart = lastMonday.toISOString().split('T')[0];
+    const weekStart = lastSunday.toISOString().split('T')[0];
 
     // Check if we already have entries for this week
     const { data: existing } = await supabase
@@ -47,8 +47,8 @@ serve(async (req: Request): Promise<Response> => {
     const { data: weeklyVotes, error: voteError } = await supabase
       .from("votes")
       .select("user_id")
-      .gte("created_at", lastMonday.toISOString())
-      .lte("created_at", lastSunday.toISOString());
+      .gte("created_at", lastSunday.toISOString())
+      .lte("created_at", lastSaturday.toISOString());
 
     if (voteError) throw voteError;
 
