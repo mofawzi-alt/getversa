@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import ShareableTasteCard from '@/components/taste/ShareableTasteCard';
 import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
+import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 
 // ── Archetype engine ──
 interface TraitEntry { tag: string; vote_count: number }
@@ -275,6 +276,13 @@ export default function TasteProfile() {
             streak={currentStreak}
           />
         </motion.section>
+
+        {/* ── PERSONALITY TYPE ── */}
+        {profile && (
+          <motion.section variants={fadeUp}>
+            <PersonalityTypeCard userId={profile.id} isOwnProfile />
+          </motion.section>
+        )}
 
         {/* ── 2. TASTE STATS ── */}
         <motion.section variants={fadeUp} className="space-y-3">

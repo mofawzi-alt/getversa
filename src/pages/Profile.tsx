@@ -11,6 +11,7 @@ import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import { toast } from 'sonner';
 import ProfileDimensionsSection from '@/components/profile/ProfileDimensionsSection';
 import VotingInsights from '@/components/profile/VotingInsights';
+import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useFollows } from '@/hooks/useFollows';
 
@@ -140,6 +141,9 @@ export default function Profile() {
             </div>
           )}
         </div>
+
+        {/* Personality Type */}
+        {user && <PersonalityTypeCard userId={user.id} isOwnProfile />}
 
         {/* Your Dimensions (with quiz inside) */}
         <ProfileDimensionsSection />

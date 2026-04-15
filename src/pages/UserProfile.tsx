@@ -8,6 +8,7 @@ import { useFollows } from '@/hooks/useFollows';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
+import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 
 // Derive a taste archetype from voting trait tags
 function deriveArchetype(traits: { tag: string; vote_count: number }[]): { name: string; description: string } {
@@ -226,15 +227,8 @@ export default function UserProfile() {
           </div>
         </div>
 
-        {/* Taste Archetype */}
-        <div className="glass rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Taste Identity</span>
-          </div>
-          <h3 className="text-2xl font-display font-bold text-foreground">{archetype.name}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{archetype.description}</p>
-        </div>
+        {/* Personality Type */}
+        {userId && <PersonalityTypeCard userId={userId} />}
 
         {/* Taste Patterns */}
         {patterns.length > 0 && (
