@@ -340,7 +340,7 @@ export default function PollCreationForm({
             <Label>Image A</Label>
             <input 
               type="file" 
-              accept="image/*,video/*,.mp4,.webm,.mov,.ogg"
+              accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov,.ogg"
               ref={imageAInputRef}
               onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'A')}
               className="hidden"
@@ -383,7 +383,7 @@ export default function PollCreationForm({
             <Label>Image B</Label>
             <input 
               type="file" 
-              accept="image/*,video/*,.mp4,.webm,.mov,.ogg"
+              accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov,.ogg"
               ref={imageBInputRef}
               onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'B')}
               className="hidden"
