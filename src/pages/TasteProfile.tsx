@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import ShareableTasteCard from '@/components/taste/ShareableTasteCard';
-import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye } from 'lucide-react';
+import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye, Clock } from 'lucide-react';
+import TasteEvolutionTimeline from '@/components/taste/TasteEvolutionTimeline';
 import { motion } from 'framer-motion';
 import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 import { computePersonalityType } from '@/lib/personalityType';
@@ -361,7 +362,15 @@ export default function TasteProfile() {
           </div>
         </motion.section>
 
-        {/* ── TASTE EVOLUTION ── */}
+        {/* ── TASTE EVOLUTION TIMELINE ── */}
+        <motion.section variants={fadeUp}>
+          <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2 mb-3">
+            <Clock className="h-4 w-4" /> Your Evolution
+          </h3>
+          <TasteEvolutionTimeline />
+        </motion.section>
+
+        {/* ── TASTE TRAITS ── */}
         <motion.section variants={fadeUp}>
           <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2 mb-3">
             <TrendingUp className="h-4 w-4" /> Taste Evolution

@@ -1,6 +1,7 @@
 import { forwardRef, useEffect } from 'react';
 import ShareButton from './ShareButton';
 import ChallengeButton from './ChallengeButton';
+import CliffhangerSeries from './CliffhangerSeries';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
