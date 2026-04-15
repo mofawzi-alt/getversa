@@ -48,17 +48,17 @@ export default function Leaderboard() {
   const { data: weeklyLeaderboard, isLoading: loadingWeekly } = useQuery({
     queryKey: ['leaderboard-weekly'],
     queryFn: async () => {
-      // Get current week start (Monday)
+      // Get current week start (Sunday)
       const now = new Date();
-      const dayOfWeek = now.getUTCDay();
-      const monday = new Date(now);
-      monday.setUTCDate(now.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-      monday.setUTCHours(0, 0, 0, 0);
+      const dayOfWeek = now.getUTCDay(); // 0=Sun
+      const sunday = new Date(now);
+      sunday.setUTCDate(now.getUTCDate() - dayOfWeek);
+      sunday.setUTCHours(0, 0, 0, 0);
 
       const { data: votes } = await supabase
         .from('votes')
         .select('user_id')
-        .gte('created_at', monday.toISOString());
+        .gte('created_at', sunday.toISOString());
 
       if (!votes || votes.length === 0) return [];
 
@@ -203,10 +203,10 @@ export default function Leaderboard() {
     );
   };
 
-  // Get days remaining in week
+  // Get days remaining until next Sunday reset
   const now = new Date();
-  const dayOfWeek = now.getUTCDay();
-  const daysLeft = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+  const dayOfWeek = now.getUTCDay(); // 0=Sun
+  const daysLeft = dayOfWeek === 0 ? 7 : 7 - dayOfWeek;
 
   return (
     <AppLayout>
