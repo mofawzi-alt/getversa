@@ -1059,6 +1059,9 @@ export default function Home() {
           )}
         </section>
 
+        {/* ═══ FOLLOWING FEED ═══ */}
+        <FollowingFeedSection />
+
         {/* Weekly Top Results Banner — show on Sundays */}
         {new Date().getDay() === 0 && (
           <div className="px-3 mb-2">
