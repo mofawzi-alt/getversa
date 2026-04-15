@@ -18,10 +18,30 @@ declare const self: ServiceWorkerGlobalScope & {
   }>;
 };
 
+const isWindowClient = (client: Client): client is WindowClient => 'navigate' in client;
+
 clientsClaim();
 self.skipWaiting();
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      const windowClients = await self.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      });
+
+      await Promise.allSettled(
+        windowClients
+          .filter(isWindowClient)
+          .filter((client) => client.url.startsWith(self.location.origin))
+          .map((client) => client.navigate(client.url)),
+      );
+    })(),
+  );
+});
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
