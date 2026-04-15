@@ -222,3 +222,114 @@ export function getPersonalityExplanation(traits: TraitEntry[], result: Personal
 
   return reasons;
 }
+
+// ── Type Compatibility System ──
+
+interface CompatibilityResult {
+  score: number;          // 0-100
+  label: string;          // e.g. "Natural Allies"
+  emoji: string;
+  description: string;
+  sharedStrengths: string[];
+  tensions: string[];
+}
+
+// MBTI compatibility matrix — higher = more compatible
+const COMPAT_MATRIX: Record<string, string[]> = {
+  // "Golden pairs" and strong matches
+  INTJ: ['ENFP', 'ENTP', 'ENTJ', 'INFJ'],
+  INTP: ['ENTJ', 'ENFJ', 'ENTP', 'INFP'],
+  ENTJ: ['INTP', 'INFP', 'INTJ', 'ENTP'],
+  ENTP: ['INFJ', 'INTJ', 'ENFP', 'INTP'],
+  INFJ: ['ENTP', 'ENFP', 'INFP', 'INTJ'],
+  INFP: ['ENTJ', 'ENFJ', 'INFJ', 'ENFP'],
+  ENFJ: ['INFP', 'ISFP', 'INTP', 'ENFP'],
+  ENFP: ['INFJ', 'INTJ', 'ENFJ', 'ENTP'],
+  ISTJ: ['ESFP', 'ESTP', 'ISFJ', 'ESTJ'],
+  ISFJ: ['ESFP', 'ESTP', 'ISTJ', 'ESFJ'],
+  ESTJ: ['ISFP', 'ISTP', 'ISTJ', 'ESFJ'],
+  ESFJ: ['ISTP', 'ISFP', 'ISFJ', 'ESTJ'],
+  ISTP: ['ESFJ', 'ESTJ', 'ESTP', 'ISFP'],
+  ISFP: ['ENFJ', 'ESFJ', 'ESTJ', 'ISTP'],
+  ESTP: ['ISFJ', 'ISTJ', 'ISTP', 'ESFP'],
+  ESFP: ['ISTJ', 'ISFJ', 'ESTP', 'ESFJ'],
+};
+
+const AXIS_LABELS = {
+  ei: { same: 'Same social energy', diff: 'Complementary social styles' },
+  sn: { same: 'Think alike on decisions', diff: 'Balance each other\'s perspective' },
+  tf: { same: 'Aligned decision-making', diff: 'Challenge each other\'s reasoning' },
+  jp: { same: 'Similar lifestyle rhythm', diff: 'Push each other to grow' },
+};
+
+export function computeTypeCompatibility(
+  typeA: PersonalityResult,
+  typeB: PersonalityResult
+): CompatibilityResult | null {
+  if (!typeA.ready || !typeB.ready) return null;
+
+  // Base score from compatibility matrix
+  const goldPairs = COMPAT_MATRIX[typeA.code] || [];
+  let baseScore: number;
+  const pairIndex = goldPairs.indexOf(typeB.code);
+  if (pairIndex === 0) baseScore = 95;
+  else if (pairIndex === 1) baseScore = 85;
+  else if (pairIndex === 2) baseScore = 78;
+  else if (pairIndex === 3) baseScore = 72;
+  else {
+    // Calculate from shared letters
+    let shared = 0;
+    for (let i = 0; i < 4; i++) {
+      if (typeA.code[i] === typeB.code[i]) shared++;
+    }
+    baseScore = 40 + shared * 10;
+  }
+
+  // Same type bonus
+  if (typeA.code === typeB.code) baseScore = 88;
+
+  const score = Math.min(baseScore, 99);
+
+  // Label
+  let label: string;
+  let emoji: string;
+  if (score >= 90) { label = 'Golden Pair'; emoji = '💛'; }
+  else if (score >= 80) { label = 'Natural Allies'; emoji = '🤝'; }
+  else if (score >= 70) { label = 'Strong Match'; emoji = '⚡'; }
+  else if (score >= 55) { label = 'Interesting Dynamic'; emoji = '🔄'; }
+  else { label = 'Opposite Attract'; emoji = '🧲'; }
+
+  // Shared strengths and tensions from axis alignment
+  const sharedStrengths: string[] = [];
+  const tensions: string[] = [];
+
+  const axes: Array<{ key: keyof typeof AXIS_LABELS; a: number; b: number }> = [
+    { key: 'ei', a: typeA.axes.ei, b: typeB.axes.ei },
+    { key: 'sn', a: typeA.axes.sn, b: typeB.axes.sn },
+    { key: 'tf', a: typeA.axes.tf, b: typeB.axes.tf },
+    { key: 'jp', a: typeA.axes.jp, b: typeB.axes.jp },
+  ];
+
+  for (const axis of axes) {
+    const sameDirection = (axis.a >= 0) === (axis.b >= 0);
+    if (sameDirection) {
+      sharedStrengths.push(AXIS_LABELS[axis.key].same);
+    } else {
+      tensions.push(AXIS_LABELS[axis.key].diff);
+    }
+  }
+
+  // Description
+  const typeAInfo = PERSONALITY_TYPES[typeA.code];
+  const typeBInfo = PERSONALITY_TYPES[typeB.code];
+  let description: string;
+  if (score >= 85) {
+    description = `${typeAInfo?.name || typeA.code} and ${typeBInfo?.name || typeB.code} naturally click — you bring out the best in each other.`;
+  } else if (score >= 70) {
+    description = `${typeAInfo?.name || typeA.code} meets ${typeBInfo?.name || typeB.code} — a solid match with room to learn from each other.`;
+  } else {
+    description = `${typeAInfo?.name || typeA.code} and ${typeBInfo?.name || typeB.code} see the world differently — that friction can spark growth.`;
+  }
+
+  return { score, label, emoji, description, sharedStrengths, tensions };
+}

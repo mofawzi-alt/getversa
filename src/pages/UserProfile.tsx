@@ -9,6 +9,7 @@ import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
 import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
+import PersonalityCompatibility from '@/components/profile/PersonalityCompatibility';
 
 // Derive a taste archetype from voting trait tags
 function deriveArchetype(traits: { tag: string; vote_count: number }[]): { name: string; description: string } {
@@ -283,6 +284,11 @@ export default function UserProfile() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* Personality Type Compatibility */}
+        {user && !isOwnProfile && userId && (
+          <PersonalityCompatibility targetUserId={userId} targetUsername={profileData?.username} />
         )}
 
         {/* Agreement Score */}
