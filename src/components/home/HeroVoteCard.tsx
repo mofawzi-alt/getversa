@@ -126,11 +126,17 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
       // Guests always get flash mode
       setRevealMode('flash');
+      const newGuestCount = guestVotes + 1;
       setTimeout(() => {
         setResult(null);
         setIsVoting(false);
         setRevealMode(null);
         setShowHint(true);
+        // After 5th vote, redirect to hook/signup
+        if (newGuestCount >= 5) {
+          window.location.href = '/auth?mode=signup&reason=hook';
+          return;
+        }
         onVoteComplete?.();
       }, FLASH_RESULT_MS);
 
