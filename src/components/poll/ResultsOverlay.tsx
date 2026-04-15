@@ -117,8 +117,11 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
               ))}
             </div>
           )}
-          {genderTeaser && (
+          {genderTeaser && insightTier !== 'none' && (
             <p className="text-[11px] text-muted-foreground mt-1.5">{genderTeaser.text}</p>
+          )}
+          {peopleLikeYou && (
+            <p className="text-[11px] text-foreground/70 mt-1 font-medium">👥 {peopleLikeYou.text}</p>
           )}
           <StreakInsightTeaser pollId={poll.id} choice={result.choice} />
           <div className="flex items-center justify-center gap-3 mt-2">
