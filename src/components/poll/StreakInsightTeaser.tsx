@@ -1,4 +1,4 @@
-import { Lock, Flame, MapPin, Users, Sparkles } from 'lucide-react';
+import { Lock, Flame, MapPin, Users, Sparkles, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getInsightTier, getNextUnlock, type InsightTier } from '@/lib/streakGating';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,18 +48,41 @@ export default function StreakInsightTeaser({ pollId, choice }: StreakInsightTea
 
   if (!user) return null;
 
+  // City vs National comparison
+  const cityPercent = cityData && cityData.demo_total > 0
+    ? (choice === 'A' ? cityData.demo_percent_a : cityData.demo_percent_b)
+    : null;
+  const nationalPercent = cityData
+    ? (choice === 'A' ? cityData.percent_a : cityData.percent_b)
+    : null;
+  const cityDiff = cityPercent != null && nationalPercent != null
+    ? cityPercent - nationalPercent
+    : null;
+  const showCityComparison = tier !== 'none' && cityPercent != null && nationalPercent != null && Math.abs(cityDiff!) >= 5;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className="mt-3 space-y-2"
     >
-      {/* Unlocked insights */}
-      {tier !== 'none' && cityData && cityData.demo_total > 0 && (
+      {/* City vs National — "Your City Thinks Differently" */}
+      {showCityComparison && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/5 border border-primary/10">
+          <Globe className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+          <span className="text-[11px] text-foreground/80">
+            <span className="font-semibold">{profile?.city}</span>: {cityPercent}% chose this vs {nationalPercent}% nationally
+            {cityDiff! > 0 ? ' — your city thinks differently! 🏙️' : ''}
+          </span>
+        </div>
+      )}
+
+      {/* City split (when no big diff from national) */}
+      {tier !== 'none' && cityData && cityData.demo_total > 0 && !showCityComparison && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/5 border border-primary/10">
           <MapPin className="w-3.5 h-3.5 text-primary flex-shrink-0" />
           <span className="text-[11px] text-foreground/80">
-            In <span className="font-semibold">{profile?.city}</span>: {choice === 'A' ? cityData.demo_percent_a : cityData.demo_percent_b}% chose your pick
+            In <span className="font-semibold">{profile?.city}</span>: {cityPercent ?? (choice === 'A' ? cityData.demo_percent_a : cityData.demo_percent_b)}% chose your pick
           </span>
         </div>
       )}
