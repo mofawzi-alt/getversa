@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import HotTakeBadge from './HotTakeBadge';
+import ControversialBadge from './ControversialBadge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +12,8 @@ import { Check } from 'lucide-react';
 import HeroCaughtUp from './HeroCaughtUp';
 import CinematicResults from '@/components/poll/CinematicResults';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
+import { getInsightTier } from '@/lib/streakGating';
 import HookMoment from '@/components/onboarding/HookMoment';
 
 interface HeroPoll {
@@ -69,12 +72,24 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const sessionShownRef = useRef(new Set<string>());
   const [showHookMoment, setShowHookMoment] = useState(false);
 
+  // Gate gender teaser behind streak (Day 3+)
+  const streak: number = (profile as any)?.current_streak ?? 0;
+  const insightTier = getInsightTier(streak);
+  
   const { data: genderTeaser } = useGenderSplitTeaser(
     poll?.id || '',
     poll?.option_a || '',
     poll?.option_b || '',
     result?.percentA ?? poll?.percentA ?? 0,
     result?.percentB ?? poll?.percentB ?? 0
+  );
+
+  // "People Like You" age comparison
+  const { data: peopleLikeYou } = usePeopleLikeYou(
+    poll?.id || '',
+    result?.choice || 'A',
+    poll?.option_a || '',
+    poll?.option_b || ''
   );
 
   const startX = useRef(0);
