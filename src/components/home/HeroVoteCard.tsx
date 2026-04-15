@@ -10,6 +10,7 @@ import { Check } from 'lucide-react';
 import HeroCaughtUp from './HeroCaughtUp';
 import CinematicResults from '@/components/poll/CinematicResults';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import HookMoment from '@/components/onboarding/HookMoment';
 
 interface HeroPoll {
   id: string;
@@ -64,6 +65,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     totalVotes: number;
   } | null>(null);
   const sessionShownRef = useRef(new Set<string>());
+  const [showHookMoment, setShowHookMoment] = useState(false);
 
   const { data: genderTeaser } = useGenderSplitTeaser(
     poll?.id || '',
@@ -95,10 +97,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const submitVote = useCallback(async (choice: 'A' | 'B') => {
     if (!poll || result || isVoting) return;
     
-    // Guest gate: allow 3 free votes, then require signup
+    // Guest gate: allow 5 free votes, then require signup
     if (!user) {
       const guestVotes = parseInt(localStorage.getItem('versa_guest_votes') || '0', 10);
-      if (guestVotes >= 3) {
+      if (guestVotes >= 5) {
         try { sessionStorage.setItem('versa_vote_intent', poll.id); } catch {}
         window.location.href = '/auth?mode=signup&reason=vote';
         return;
@@ -126,11 +128,17 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
       // Guests always get flash mode
       setRevealMode('flash');
+      const newGuestCount = guestVotes + 1;
       setTimeout(() => {
         setResult(null);
         setIsVoting(false);
         setRevealMode(null);
         setShowHint(true);
+        // After 5th vote, show hook moment
+        if (newGuestCount >= 5) {
+          setShowHookMoment(true);
+          return;
+        }
         onVoteComplete?.();
       }, FLASH_RESULT_MS);
 
@@ -699,6 +707,15 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             setRevealMode(null);
             setShowHint(true);
             onVoteComplete?.();
+          }}
+        />
+      )}
+
+      {showHookMoment && (
+        <HookMoment
+          onJoin={() => {
+            setShowHookMoment(false);
+            window.location.href = '/auth?mode=signup';
           }}
         />
       )}

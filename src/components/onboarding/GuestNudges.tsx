@@ -23,8 +23,8 @@ export function WelcomeBanner() {
 
   if (dismissed) return null;
 
-  const remaining = Math.max(0, 3 - guestVotes);
-  const urgentMode = guestVotes >= 3;
+  const remaining = Math.max(0, 5 - guestVotes);
+  const urgentMode = guestVotes >= 5;
 
   return (
     <motion.div
