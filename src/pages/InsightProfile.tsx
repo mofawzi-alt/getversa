@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import { Loader2, Eye, Lock } from 'lucide-react';
 
-// Reflective labels per dimension tendency — no raw scores exposed
 const TENDENCY_LABELS: Record<string, Record<string, { label: string; description: string }>> = {
   'Tradition vs Innovation': {
     strong_a: { label: 'Rooted', description: 'You find meaning in what endures.' },
@@ -45,10 +44,54 @@ const TENDENCY_LABELS: Record<string, Record<string, { label: string; descriptio
 
 const FALLBACK_LABEL = { label: 'Emerging', description: 'This dimension is still forming.' };
 
+const DIMENSION_POLES: Record<string, [string, string]> = {
+  'Tradition vs Innovation': ['Tradition', 'Innovation'],
+  'Independence vs Community': ['Independence', 'Community'],
+  'Logic vs Intuition': ['Logic', 'Intuition'],
+  'Comfort vs Adventure': ['Comfort', 'Adventure'],
+  'Present vs Future': ['Present', 'Future'],
+};
+
 function getTendencyDisplay(dimension: string, tendency: string) {
   const dimLabels = TENDENCY_LABELS[dimension];
   if (dimLabels && dimLabels[tendency]) return dimLabels[tendency];
   return FALLBACK_LABEL;
+}
+
+/** Map raw score to 0–100 position. Score range is roughly -6 to +6. */
+function scoreToPercent(score: number): number {
+  const clamped = Math.max(-6, Math.min(6, score));
+  return ((clamped + 6) / 12) * 100;
+}
+
+function SpectrumBar({ score, poleA, poleB }: { score: number; poleA: string; poleB: string }) {
+  const pct = scoreToPercent(score);
+
+  return (
+    <div className="mt-3 space-y-1.5">
+      <div className="flex justify-between text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+        <span>{poleA}</span>
+        <span>{poleB}</span>
+      </div>
+      <div className="relative h-2 rounded-full bg-muted overflow-hidden">
+        {/* Center line */}
+        <div className="absolute left-1/2 top-0 h-full w-px bg-border z-10" />
+        {/* Filled region from center to position */}
+        <div
+          className="absolute top-0 h-full bg-primary/60 rounded-full transition-all duration-700"
+          style={{
+            left: pct < 50 ? `${pct}%` : '50%',
+            width: `${Math.abs(pct - 50)}%`,
+          }}
+        />
+        {/* Dot indicator */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-3.5 w-3.5 rounded-full bg-primary border-2 border-background shadow-sm transition-all duration-700 z-20"
+          style={{ left: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
 }
 
 export default function InsightProfile() {
@@ -99,7 +142,6 @@ export default function InsightProfile() {
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : !isUnlocked ? (
-          // Locked state
           <div className="mt-12 space-y-6">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
@@ -115,7 +157,6 @@ export default function InsightProfile() {
               </div>
             </div>
 
-            {/* Progress */}
             <div className="max-w-xs mx-auto">
               <div className="flex justify-between text-xs text-muted-foreground mb-2">
                 <span>{totalVotes} shared</span>
@@ -134,7 +175,6 @@ export default function InsightProfile() {
             </p>
           </div>
         ) : (
-          // Unlocked insight view
           <div className="space-y-4 animate-slide-up">
             <div className="flex items-center gap-2 mb-2">
               <Eye className="h-4 w-4 text-primary" />
@@ -145,19 +185,26 @@ export default function InsightProfile() {
 
             {insights && insights.length > 0 ? (
               <div className="space-y-3">
-                {insights.map((insight: { dimension_name: string; tendency: string }) => {
+                {insights.map((insight: { dimension_name: string; tendency: string; score: number; vote_count: number }) => {
                   const display = getTendencyDisplay(insight.dimension_name, insight.tendency);
+                  const poles = DIMENSION_POLES[insight.dimension_name] || ['A', 'B'];
                   return (
                     <div
                       key={insight.dimension_name}
                       className="glass rounded-2xl p-5 space-y-1"
                     >
-                      <div className="text-lg font-display font-bold text-foreground">
-                        {display.label}
+                      <div className="flex items-baseline justify-between">
+                        <div className="text-lg font-display font-bold text-foreground">
+                          {display.label}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">
+                          {insight.vote_count} votes
+                        </span>
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {display.description}
                       </p>
+                      <SpectrumBar score={insight.score} poleA={poles[0]} poleB={poles[1]} />
                     </div>
                   );
                 })}

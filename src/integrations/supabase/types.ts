@@ -1566,7 +1566,9 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: {
           dimension_name: string
+          score: number
           tendency: string
+          vote_count: number
         }[]
       }
       get_leaderboard: {
