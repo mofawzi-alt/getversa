@@ -20,6 +20,7 @@ import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/co
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 import HeroVoteCard from '@/components/home/HeroVoteCard';
 import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
+import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
 
 import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/VoteMilestoneCelebration';
 import DailyReturnBanner from '@/components/home/DailyReturnBanner';
@@ -898,6 +899,9 @@ export default function Home() {
 
         {/* ═══ PINNED POLL BANNER ═══ */}
         <PinnedPollBanner />
+
+        {/* Social proof counter */}
+        <FriendsJoinedToday />
 
         {/* ═══ DAILY PULSE STRIP ═══ */}
         <DailyPulseStrip />

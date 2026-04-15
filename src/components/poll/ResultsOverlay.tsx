@@ -1,5 +1,6 @@
 import { forwardRef, useEffect } from 'react';
 import ShareButton from './ShareButton';
+import ChallengeButton from './ChallengeButton';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
@@ -112,6 +113,9 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
             <p className="text-[11px] text-muted-foreground mt-1.5">{genderTeaser.text}</p>
           )}
           <StreakInsightTeaser pollId={poll.id} choice={result.choice} />
+          <div className="flex items-center justify-center gap-3 mt-2">
+            <ChallengeButton pollId={poll.id} pollQuestion={poll.question} userChoice={result.choice} />
+          </div>
         </div>
 
         {/* Progress bar for auto-advance */}
