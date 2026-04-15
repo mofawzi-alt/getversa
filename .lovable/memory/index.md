@@ -97,3 +97,4 @@ Updated: now
 - [Engagement Features](mem://features/engagement-features) — Streak gating, drip scheduling, Hot Take, streak rescue
 - [Social Engagement V2](mem://features/social-engagement-v2) — Following Feed, Cliffhangers, Taste Evolution, Weekly Report
 - [Re-engagement Notifications](mem://features/re-engagement-notifications) — Absence digest, result flip alerts, vote mattered push
+- [Gamification V2](mem://features/gamification-v2) — Weekly leaderboard, category badges, prediction accuracy, poll suggestions
