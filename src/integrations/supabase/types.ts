@@ -629,6 +629,53 @@ export type Database = {
         }
         Relationships: []
       }
+      poll_challenges: {
+        Row: {
+          challenged_choice: string | null
+          challenged_id: string
+          challenger_choice: string | null
+          challenger_id: string
+          created_at: string
+          id: string
+          poll_id: string
+          responded_at: string | null
+          status: string
+          taunt_message: string | null
+        }
+        Insert: {
+          challenged_choice?: string | null
+          challenged_id: string
+          challenger_choice?: string | null
+          challenger_id: string
+          created_at?: string
+          id?: string
+          poll_id: string
+          responded_at?: string | null
+          status?: string
+          taunt_message?: string | null
+        }
+        Update: {
+          challenged_choice?: string | null
+          challenged_id?: string
+          challenger_choice?: string | null
+          challenger_id?: string
+          created_at?: string
+          id?: string
+          poll_id?: string
+          responded_at?: string | null
+          status?: string
+          taunt_message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_challenges_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       poll_cycles: {
         Row: {
           created_at: string
