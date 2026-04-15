@@ -22,7 +22,7 @@ import HeroVoteCard from '@/components/home/HeroVoteCard';
 import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
 import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
 import FollowingFeedSection from '@/components/home/FollowingFeedSection';
-import PollSuggestionForm from '@/components/poll/PollSuggestionForm';
+
 
 import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/VoteMilestoneCelebration';
 import DailyReturnBanner from '@/components/home/DailyReturnBanner';
@@ -1063,12 +1063,7 @@ export default function Home() {
         {/* ═══ FOLLOWING FEED ═══ */}
         <FollowingFeedSection />
 
-        {/* ═══ POLL SUGGESTIONS ═══ */}
-        {user && (
-          <div className="px-3 mb-2">
-            <PollSuggestionForm />
-          </div>
-        )}
+
 
         {/* Weekly Top Results Banner — show on Sundays */}
         {new Date().getDay() === 0 && (
