@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
-import { Loader2, Trophy, Flame, Medal, Crown } from 'lucide-react';
+import { Loader2, Trophy, Flame, Medal, Crown, Calendar, Target } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useVerifiedUsers } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
@@ -14,6 +14,7 @@ interface LeaderboardUser {
   current_streak: number;
   longest_streak: number;
   vote_count?: number;
+  weekly_points?: number;
 }
 
 export default function Leaderboard() {
@@ -22,12 +23,10 @@ export default function Leaderboard() {
   const { data: pointsLeaderboard, isLoading: loadingPoints } = useQuery({
     queryKey: ['leaderboard-points'],
     queryFn: async () => {
-      // Use secure RPC function to get leaderboard data (no PII exposed)
       const { data, error } = await supabase.rpc('get_leaderboard', {
         order_by: 'points',
         limit_count: 50
       });
-      
       if (error) throw error;
       return data as LeaderboardUser[];
     },
@@ -36,34 +35,66 @@ export default function Leaderboard() {
   const { data: streakLeaderboard, isLoading: loadingStreak } = useQuery({
     queryKey: ['leaderboard-streak'],
     queryFn: async () => {
-      // Use secure RPC function to get leaderboard data (no PII exposed)
       const { data, error } = await supabase.rpc('get_leaderboard', {
         order_by: 'current_streak',
         limit_count: 50
       });
-      
       if (error) throw error;
       return data as LeaderboardUser[];
+    },
+  });
+
+  // Weekly leaderboard — current week's votes
+  const { data: weeklyLeaderboard, isLoading: loadingWeekly } = useQuery({
+    queryKey: ['leaderboard-weekly'],
+    queryFn: async () => {
+      // Get current week start (Monday)
+      const now = new Date();
+      const dayOfWeek = now.getUTCDay();
+      const monday = new Date(now);
+      monday.setUTCDate(now.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      monday.setUTCHours(0, 0, 0, 0);
+
+      const { data: votes } = await supabase
+        .from('votes')
+        .select('user_id')
+        .gte('created_at', monday.toISOString());
+
+      if (!votes || votes.length === 0) return [];
+
+      const pointsMap: Record<string, number> = {};
+      votes.forEach(v => {
+        pointsMap[v.user_id] = (pointsMap[v.user_id] || 0) + 5;
+      });
+
+      const topIds = Object.entries(pointsMap)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 50)
+        .map(([id]) => id);
+
+      if (topIds.length === 0) return [];
+
+      const { data: users } = await supabase.rpc('get_public_profiles', { user_ids: topIds });
+
+      return (users || [])
+        .map((u: any) => ({ ...u, weekly_points: pointsMap[u.id] || 0 }))
+        .sort((a: LeaderboardUser, b: LeaderboardUser) => (b.weekly_points || 0) - (a.weekly_points || 0)) as LeaderboardUser[];
     },
   });
 
   const { data: votesLeaderboard, isLoading: loadingVotes } = useQuery({
     queryKey: ['leaderboard-votes'],
     queryFn: async () => {
-      // Get vote counts per user
       const { data: votes, error: votesError } = await supabase
         .from('votes')
         .select('user_id');
-      
       if (votesError) throw votesError;
       
-      // Count votes per user
       const voteCounts: Record<string, number> = {};
       votes?.forEach(v => {
         voteCounts[v.user_id] = (voteCounts[v.user_id] || 0) + 1;
       });
       
-      // Get user details for top voters using secure function
       const topUserIds = Object.entries(voteCounts)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 50)
@@ -74,7 +105,6 @@ export default function Leaderboard() {
       const { data: users, error: usersError } = await supabase.rpc('get_public_profiles', {
         user_ids: topUserIds
       });
-      
       if (usersError) throw usersError;
       
       return (users || [])
@@ -83,11 +113,11 @@ export default function Leaderboard() {
     },
   });
 
-  // Collect all user IDs for verified check
   const allUserIds = [
     ...(pointsLeaderboard || []),
     ...(streakLeaderboard || []),
     ...(votesLeaderboard || []),
+    ...(weeklyLeaderboard || []),
   ].map(u => u.id);
   const { isVerified } = useVerifiedUsers([...new Set(allUserIds)]);
 
@@ -98,7 +128,7 @@ export default function Leaderboard() {
     return <span className="w-5 text-center text-sm font-bold text-muted-foreground">{rank + 1}</span>;
   };
 
-  const renderLeaderboard = (users: LeaderboardUser[] | undefined, loading: boolean, valueKey: 'points' | 'current_streak' | 'vote_count') => {
+  const renderLeaderboard = (users: LeaderboardUser[] | undefined, loading: boolean, valueKey: 'points' | 'current_streak' | 'vote_count' | 'weekly_points') => {
     if (loading) {
       return (
         <div className="flex items-center justify-center py-12">
@@ -119,7 +149,7 @@ export default function Leaderboard() {
       <div className="space-y-2">
         {users.map((user, index) => {
           const isCurrentUser = user.id === profile?.id;
-          const value = valueKey === 'vote_count' ? user.vote_count : user[valueKey];
+          const value = user[valueKey as keyof LeaderboardUser];
           
           return (
             <div
@@ -155,10 +185,12 @@ export default function Leaderboard() {
                   {valueKey === 'current_streak' ? (
                     <span className="flex items-center gap-1">
                       <Flame className="h-4 w-4 text-orange-500" />
-                      {value}
+                      {value as number}
                     </span>
                   ) : valueKey === 'vote_count' ? (
                     `${value} votes`
+                  ) : valueKey === 'weekly_points' ? (
+                    `${value} pts`
                   ) : (
                     `${value} pts`
                   )}
@@ -170,6 +202,11 @@ export default function Leaderboard() {
       </div>
     );
   };
+
+  // Get days remaining in week
+  const now = new Date();
+  const dayOfWeek = now.getUTCDay();
+  const daysLeft = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
 
   return (
     <AppLayout>
@@ -185,21 +222,34 @@ export default function Leaderboard() {
           </p>
         </header>
 
-        <Tabs defaultValue="points" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="points" className="flex items-center gap-1.5">
-              <Trophy className="h-4 w-4" />
-              Insight
+        <Tabs defaultValue="weekly" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-4">
+            <TabsTrigger value="weekly" className="flex items-center gap-1 text-xs">
+              <Calendar className="h-3.5 w-3.5" />
+              Weekly
             </TabsTrigger>
-            <TabsTrigger value="streak" className="flex items-center gap-1.5">
-              <Flame className="h-4 w-4" />
+            <TabsTrigger value="points" className="flex items-center gap-1 text-xs">
+              <Trophy className="h-3.5 w-3.5" />
+              All-Time
+            </TabsTrigger>
+            <TabsTrigger value="streak" className="flex items-center gap-1 text-xs">
+              <Flame className="h-3.5 w-3.5" />
               Streak
             </TabsTrigger>
-            <TabsTrigger value="votes" className="flex items-center gap-1.5">
-              <Medal className="h-4 w-4" />
+            <TabsTrigger value="votes" className="flex items-center gap-1 text-xs">
+              <Medal className="h-3.5 w-3.5" />
               Votes
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="weekly">
+            {daysLeft > 0 && (
+              <div className="text-center mb-4 px-4 py-2 rounded-full bg-primary/10 text-sm text-primary font-medium">
+                ⏳ {daysLeft} day{daysLeft > 1 ? 's' : ''} left this week — keep voting!
+              </div>
+            )}
+            {renderLeaderboard(weeklyLeaderboard, loadingWeekly, 'weekly_points')}
+          </TabsContent>
 
           <TabsContent value="points">
             {renderLeaderboard(pointsLeaderboard, loadingPoints, 'points')}
