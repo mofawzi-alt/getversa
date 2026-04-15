@@ -10,6 +10,7 @@ import { Check } from 'lucide-react';
 import HeroCaughtUp from './HeroCaughtUp';
 import CinematicResults from '@/components/poll/CinematicResults';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import HookMoment from '@/components/onboarding/HookMoment';
 
 interface HeroPoll {
   id: string;
