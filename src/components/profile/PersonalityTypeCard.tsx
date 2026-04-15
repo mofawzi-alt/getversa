@@ -12,6 +12,7 @@ interface Props {
 
 export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const MIN_VOTES = 30;
 
   const { data: voteCount = 0 } = useQuery({
     queryKey: ['personality-vote-count', userId],
@@ -31,12 +32,17 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
     enabled: !!userId,
   });
 
+  const hasPersonalitySignal = traits.length > 0;
+  const needsMoreVotes = voteCount < MIN_VOTES;
+  const isCalibrating = !needsMoreVotes && !hasPersonalitySignal;
+  const remainingVotes = Math.max(0, MIN_VOTES - voteCount);
+
   const result = computePersonalityType(traits, voteCount);
   const reasons = getPersonalityExplanation(traits, result);
 
   // Not ready state — show progress
   if (!result.ready) {
-    const progress = Math.min((voteCount / 30) * 100, 99);
+    const progress = isCalibrating ? 100 : Math.min((voteCount / MIN_VOTES) * 100, 99);
     return (
       <div className="glass rounded-2xl p-5 text-center">
         <div className="flex items-center justify-center gap-2 mb-3">
@@ -44,9 +50,13 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Personality Type</span>
         </div>
         <p className="text-sm text-muted-foreground mb-3">
-          {isOwnProfile
-            ? `Vote on ${30 - voteCount} more polls to unlock your personality type`
-            : 'This user needs more votes to reveal their type'}
+          {isCalibrating
+            ? isOwnProfile
+              ? 'Your votes are recorded, but we do not have enough personality signal yet to reveal your type.'
+              : 'This user has votes, but their personality type is still being calculated.'
+            : isOwnProfile
+              ? `Vote on ${remainingVotes} more polls to unlock your personality type`
+              : 'This user needs more votes to reveal their type'}
         </p>
         <div className="h-2 rounded-full bg-muted overflow-hidden">
           <div
@@ -54,7 +64,9 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
             style={{ width: `${progress}%` }}
           />
         </div>
-        <p className="text-[10px] text-muted-foreground mt-2">{voteCount}/30 votes</p>
+        <p className="text-[10px] text-muted-foreground mt-2">
+          {isCalibrating ? `${voteCount} votes recorded` : `${voteCount}/${MIN_VOTES} votes`}
+        </p>
       </div>
     );
   }
