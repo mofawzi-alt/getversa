@@ -78,6 +78,8 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setImageAFile(null);
     setImageBFile(null);
     setTargetCountries(poll.target_countries || []);
+    setTargetGender(poll.target_gender || '');
+    setTargetAgeRange(poll.target_age_range || '');
   }
 
   const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'ogg'];
