@@ -1,4 +1,5 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,15 @@ export default function FriendComparison() {
   const { friendId } = useParams<{ friendId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const focusPollId = searchParams.get('focus');
+  const focusedRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (focusPollId && focusedRef.current) {
+      focusedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [focusPollId]);
 
   // Get friend info
   const { data: friend, isLoading: loadingFriend } = useQuery({
@@ -269,14 +279,17 @@ export default function FriendComparison() {
             </div>
           ) : (
             <div className="space-y-3">
-              {sharedVotes.map((vote) => (
-                <div 
-                  key={vote.poll_id} 
-                  className={`glass rounded-xl p-4 border-l-4 ${
-                    vote.is_match 
-                      ? 'border-l-green-500 bg-green-500/5' 
+              {sharedVotes.map((vote) => {
+                const isFocused = focusPollId === vote.poll_id;
+                return (
+                <div
+                  key={vote.poll_id}
+                  ref={isFocused ? focusedRef : undefined}
+                  className={`glass rounded-xl p-4 border-l-4 transition-all ${
+                    vote.is_match
+                      ? 'border-l-green-500 bg-green-500/5'
                       : 'border-l-orange-500 bg-orange-500/5'
-                  }`}
+                  } ${isFocused ? 'ring-2 ring-primary shadow-lg' : ''}`}
                 >
                   <div className="flex items-start gap-3">
                     {/* Match indicator */}
@@ -325,7 +338,8 @@ export default function FriendComparison() {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

@@ -457,7 +457,13 @@ export default function UserProfile() {
                 return (
                   <button
                     key={p.id}
-                    onClick={() => navigate(`/poll/${p.id}`)}
+                    onClick={() => {
+                      if (!isOwnProfile && targetId) {
+                        navigate(`/friends/${targetId}/compare?focus=${p.id}`);
+                      } else {
+                        navigate(`/poll/${p.id}`);
+                      }
+                    }}
                     className="relative rounded-xl overflow-hidden bg-muted active:scale-95 transition-transform"
                     style={{ aspectRatio: '4/5' }}
                   >
