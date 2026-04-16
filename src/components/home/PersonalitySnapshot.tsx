@@ -39,7 +39,7 @@ export default function PersonalitySnapshot() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={() => navigate('/personality')}
-      className="rounded-xl border border-border bg-card p-3 cursor-pointer active:scale-[0.98] transition-transform"
+      className="rounded-xl border border-border bg-card px-3 py-2 cursor-pointer active:scale-[0.98] transition-transform"
     >
       <div className="flex items-center gap-3">
         {result.ready ? (
