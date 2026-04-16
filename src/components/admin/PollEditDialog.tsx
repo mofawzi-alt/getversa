@@ -57,6 +57,8 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
+  const [targetGender, setTargetGender] = useState('');
+  const [targetAgeRange, setTargetAgeRange] = useState('');
 
   // Sync state when poll changes
   const [lastPollId, setLastPollId] = useState<string | null>(null);
@@ -76,6 +78,8 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setImageAFile(null);
     setImageBFile(null);
     setTargetCountries(poll.target_countries || []);
+    setTargetGender(poll.target_gender || '');
+    setTargetAgeRange(poll.target_age_range || '');
   }
 
   const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'ogg'];
@@ -146,6 +150,8 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           starts_at: startsAt ? new Date(startsAt).toISOString() : null,
           ends_at: endsAt ? new Date(endsAt).toISOString() : null,
           target_countries: targetCountries.length > 0 ? targetCountries : [],
+          target_gender: targetGender || null,
+          target_age_range: targetAgeRange || null,
         })
         .eq('id', poll.id);
       if (error) throw error;
@@ -255,6 +261,48 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             <div>
               <Label className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Ends</Label>
               <Input type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className="bg-secondary text-xs" />
+            </div>
+          </div>
+
+          {/* Demographics */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Target Gender <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {['Male', 'Female'].map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setTargetGender(prev => prev === g ? '' : g)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      targetGender === g
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-secondary text-muted-foreground border-border'
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label>Target Age <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {['18-24', '25-34', '35-44', '45+'].map(a => (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() => setTargetAgeRange(prev => prev === a ? '' : a)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      targetAgeRange === a
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-secondary text-muted-foreground border-border'
+                    }`}
+                  >
+                    {a}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
