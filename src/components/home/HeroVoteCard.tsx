@@ -579,7 +579,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
         {/* Question overlay centered in middle */}
         <div className="absolute inset-0 z-10 flex items-center justify-center px-5 pointer-events-none">
-          <div className="rounded-2xl bg-black/45 backdrop-blur-sm px-4 py-3 max-w-[82%]">
+          <div className="max-w-[82%] px-2 py-1">
             <h2 className="text-white text-xl font-display font-bold drop-shadow-lg text-center leading-snug">
               {poll.question}
             </h2>

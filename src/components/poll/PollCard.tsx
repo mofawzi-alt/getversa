@@ -147,7 +147,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
 
         {/* Question overlay centered in middle of images */}
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-5 pointer-events-none">
-          <div className="bg-black/50 backdrop-blur-sm rounded-xl px-4 py-3">
+          <div className="px-2 py-1">
             <p className="text-lg font-bold text-white leading-snug text-center drop-shadow-lg">{poll.question}</p>
             {poll.subtitle && (
               <p className="text-sm text-white/80 text-center mt-0.5 drop-shadow-md">{poll.subtitle}</p>
