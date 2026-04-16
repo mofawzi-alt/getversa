@@ -338,7 +338,9 @@ export default function FriendComparison() {
                     </div>
                   </div>
                 </div>
-              ))}
+                </div>
+                );
+              })}
             </div>
           )}
         </div>
