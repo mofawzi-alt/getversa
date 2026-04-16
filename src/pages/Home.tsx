@@ -988,16 +988,6 @@ export default function Home() {
         </div>
 
 
-        {/* Personal Weekly Summary */}
-        <div className="px-3 mb-2">
-          <PersonalWeeklySummary />
-        </div>
-
-        {/* Personality & Decision Helper — compact, above categories */}
-        <div className="px-3 mb-2 space-y-1.5">
-          {user && <PersonalitySnapshot />}
-          <DecisionHelper />
-        </div>
 
         {/* ═══ Categories strip (Instagram Stories style) ═══ */}
         {(() => {
