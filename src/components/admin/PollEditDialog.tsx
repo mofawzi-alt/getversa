@@ -57,7 +57,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
-  const [targetGender, setTargetGender] = useState('');
+  const [targetGenders, setTargetGenders] = useState<string[]>([]);
   const [targetAgeRanges, setTargetAgeRanges] = useState<string[]>([]);
 
   // Sync state when poll changes
@@ -78,7 +78,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setImageAFile(null);
     setImageBFile(null);
     setTargetCountries(poll.target_countries || []);
-    setTargetGender(poll.target_gender || '');
+    setTargetGenders(poll.target_gender ? poll.target_gender.split(',') : []);
     setTargetAgeRanges(poll.target_age_range ? poll.target_age_range.split(',') : []);
   }
 
@@ -150,7 +150,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           starts_at: startsAt ? new Date(startsAt).toISOString() : null,
           ends_at: endsAt ? new Date(endsAt).toISOString() : null,
           target_countries: targetCountries.length > 0 ? targetCountries : [],
-          target_gender: targetGender || null,
+          target_gender: targetGenders.length > 0 ? targetGenders.join(',') : null,
           target_age_range: targetAgeRanges.length > 0 ? targetAgeRanges.join(',') : null,
         })
         .eq('id', poll.id);
@@ -273,9 +273,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
                   <button
                     key={g}
                     type="button"
-                    onClick={() => setTargetGender(prev => prev === g ? '' : g)}
+                    onClick={() => setTargetGenders(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g])}
                     className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
-                      targetGender === g
+                      targetGenders.includes(g)
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-secondary text-muted-foreground border-border'
                     }`}
