@@ -323,6 +323,31 @@ export default function UserProfile() {
               </Button>
             )}
           </div>
+
+          {/* Badges strip */}
+          {canViewFullProfile && earnedBadges.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-border/40 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+              {earnedBadges.slice(0, 10).map((b) => (
+                <div
+                  key={b.badge_id}
+                  className="flex flex-col items-center shrink-0 w-12"
+                  title={`${b.badge_name} — ${b.badge_description}`}
+                >
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                    <Award className="h-4 w-4 text-primary" />
+                  </div>
+                  <span className="text-[8px] font-medium text-muted-foreground line-clamp-1 mt-0.5 w-full text-center">
+                    {b.badge_name.replace(' Expert', '')}
+                  </span>
+                </div>
+              ))}
+              {earnedBadges.length > 10 && (
+                <span className="text-[10px] text-muted-foreground shrink-0 px-1">
+                  +{earnedBadges.length - 10}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Personality Type */}
