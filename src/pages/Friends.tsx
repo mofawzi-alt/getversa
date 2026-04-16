@@ -107,15 +107,31 @@ export default function Friends() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full gap-1.5"
-              onClick={() => navigate('/compare')}
-            >
-              <Heart className="h-3.5 w-3.5" />
-              Compare
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-1.5 relative"
+                onClick={() => navigate('/messages')}
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                Inbox
+                {totalUnread > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                    {totalUnread}
+                  </span>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-1.5"
+                onClick={() => navigate('/compare')}
+              >
+                <Heart className="h-3.5 w-3.5" />
+                Compare
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -206,6 +222,20 @@ export default function Friends() {
                         )}
                       </div>
                     </div>
+
+                    {/* Message Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary hover:text-primary hover:bg-primary/10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openChat(friend.friend_id);
+                      }}
+                      disabled={openConv.isPending}
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
 
                     {/* Arrow */}
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
