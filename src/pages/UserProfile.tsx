@@ -297,7 +297,7 @@ export default function UserProfile() {
               )}
 
               {personalityBio && (
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-snug">
+                <p className="text-xs text-muted-foreground mt-0.5 leading-snug break-words">
                   <span className="mr-1">{personalityBio.emoji}</span>
                   <span className="font-semibold text-foreground">{personalityBio.name}</span>
                   <span className="mx-1.5 text-muted-foreground/50">·</span>
