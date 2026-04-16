@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
@@ -9,8 +10,9 @@ import { useFriends } from '@/hooks/useFriends';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
-import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
+
 import PersonalityCompatibility from '@/components/profile/PersonalityCompatibility';
+import { computePersonalityType } from '@/lib/personalityType';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
 // Derive a taste archetype from voting trait tags
@@ -210,7 +212,7 @@ export default function UserProfile() {
         .select('poll_id, choice, created_at')
         .eq('user_id', targetId)
         .order('created_at', { ascending: false })
-        .limit(6);
+        .limit(9);
       if (!votes || votes.length === 0) return [];
       const pollIds = votes.map(v => v.poll_id);
       const { data: polls } = await supabase
@@ -233,6 +235,36 @@ export default function UserProfile() {
   const archetype = deriveArchetype(traits);
   const patterns = derivePatterns(traits);
 
+  // Compact personality bio line (uses same engine as the big card)
+  const personalityResult = computePersonalityType(traits, voteCount);
+  const personalityBio = personalityResult.ready
+    ? {
+        emoji: personalityResult.emoji,
+        name: personalityResult.name,
+        tagline: personalityResult.description,
+      }
+    : null;
+
+  // Realtime: refetch recent votes whenever this user casts a new vote
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!targetId) return;
+    const channel = supabase
+      .channel(`profile-votes-${targetId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'votes', filter: `user_id=eq.${targetId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['public-recent-votes', targetId] });
+          queryClient.invalidateQueries({ queryKey: ['public-vote-count', targetId] });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [targetId, queryClient]);
+
   return (
     <AppLayout>
       <div className="p-4 space-y-5 animate-fade-in">
@@ -244,47 +276,52 @@ export default function UserProfile() {
           <h1 className="text-lg font-display font-bold text-foreground">Profile</h1>
         </div>
 
-        {/* Profile Card */}
-        <div className="glass rounded-3xl p-6 text-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent mx-auto mb-4 flex items-center justify-center">
-            <span className="text-3xl font-display font-bold text-primary-foreground">
-              {profileData?.username?.[0]?.toUpperCase() || '?'}
-            </span>
-          </div>
-          
-          <div className="flex items-center justify-center gap-1.5">
-            <h2 className="text-xl font-display font-bold text-foreground">
-              @{profileData?.username || 'user'}
-            </h2>
-            {isVerified && <VerifiedBadge size="lg" />}
-          </div>
-          {isVerified && verifiedCategory && (
-            <p className="text-xs text-blue-500 font-medium mt-1">{verifiedCategory}</p>
-          )}
-
-          {/* Follow button for non-own profiles */}
-          {user && !isOwnProfile && targetId && (
-            <Button
-              variant={isFollowing(targetId) ? 'outline' : 'default'}
-              size="sm"
-              className="mt-3 rounded-full px-6"
-              onClick={() => toggleFollow(targetId)}
-            >
-              {isFollowing(targetId) ? 'Following' : 'Follow'}
-            </Button>
-          )}
-
-          {/* Follower / Following counts */}
-          <div className="flex items-center justify-center gap-6 mt-4">
-            <div className="flex flex-col items-center">
-              <span className="text-lg font-bold text-foreground">{followerCount}</span>
-              <span className="text-[10px] text-muted-foreground">Followers</span>
+        {/* Profile Card — IG bio style */}
+        <div className="glass rounded-2xl p-4">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
+              <span className="text-2xl font-display font-bold text-primary-foreground">
+                {profileData?.username?.[0]?.toUpperCase() || '?'}
+              </span>
             </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="flex flex-col items-center">
-              <span className="text-lg font-bold text-foreground">{followingCount}</span>
-              <span className="text-[10px] text-muted-foreground">Following</span>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-base font-display font-bold text-foreground truncate">
+                  @{profileData?.username || 'user'}
+                </h2>
+                {isVerified && <VerifiedBadge size="sm" />}
+              </div>
+              {isVerified && verifiedCategory && (
+                <p className="text-[10px] text-blue-500 font-medium">{verifiedCategory}</p>
+              )}
+
+              {personalityBio && (
+                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-snug">
+                  <span className="mr-1">{personalityBio.emoji}</span>
+                  <span className="font-semibold text-foreground">{personalityBio.name}</span>
+                  <span className="mx-1.5 text-muted-foreground/50">·</span>
+                  <span>{personalityBio.tagline}</span>
+                </p>
+              )}
+
+              <div className="flex items-center gap-4 mt-2 text-[11px]">
+                <span><span className="font-bold text-foreground">{voteCount}</span> <span className="text-muted-foreground">votes</span></span>
+                <span><span className="font-bold text-foreground">{followerCount}</span> <span className="text-muted-foreground">followers</span></span>
+                <span><span className="font-bold text-foreground">{followingCount}</span> <span className="text-muted-foreground">following</span></span>
+              </div>
             </div>
+
+            {user && !isOwnProfile && targetId && (
+              <Button
+                variant={isFollowing(targetId) ? 'outline' : 'default'}
+                size="sm"
+                className="rounded-full px-4 h-8 text-xs shrink-0"
+                onClick={() => toggleFollow(targetId)}
+              >
+                {isFollowing(targetId) ? 'Following' : 'Follow'}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -331,7 +368,7 @@ export default function UserProfile() {
         )}
 
         {/* Personality Type — friends only */}
-        {canViewFullProfile && targetId && <PersonalityTypeCard userId={targetId} />}
+        {/* Personality Type — now shown inline in the bio header above */}
 
         {/* Taste Patterns */}
         {canViewFullProfile && patterns.length > 0 && (
