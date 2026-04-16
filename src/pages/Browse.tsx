@@ -331,6 +331,7 @@ export default function Browse() {
   const targetPollId = searchParams.get('pollId');
   const { share } = useShareImage();
   const [reactedPolls, setReactedPolls] = useState<Set<string>>(new Set());
+  const [shareToFriendPoll, setShareToFriendPoll] = useState<BrowsePoll | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [bannerDismissed, setBannerDismissed] = useState(false);
