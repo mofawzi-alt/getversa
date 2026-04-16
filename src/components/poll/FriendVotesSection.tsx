@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Users, Heart, Check, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import UserAvatar from '@/components/UserAvatar';
 
 interface FriendVotesSectionProps {
   pollId: string;
@@ -95,11 +96,11 @@ export default function FriendVotesSection({
               }`}
             >
               {/* Avatar */}
-              <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-bold text-primary-foreground">
-                  {friend.friend_username?.[0]?.toUpperCase() || '?'}
-                </span>
-              </div>
+              <UserAvatar
+                url={friend.friend_avatar_url}
+                username={friend.friend_username}
+                className="w-8 h-8"
+              />
               
               {/* Info */}
               <div className="flex-1 min-w-0">

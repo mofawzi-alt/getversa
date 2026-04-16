@@ -6,6 +6,7 @@ import { Loader2, Trophy, Flame, Medal, Crown, Calendar, Target } from 'lucide-r
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useVerifiedUsers } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import UserAvatar from '@/components/UserAvatar';
 
 interface LeaderboardUser {
   id: string;
@@ -15,6 +16,7 @@ interface LeaderboardUser {
   longest_streak: number;
   vote_count?: number;
   weekly_points?: number;
+  avatar_url?: string | null;
 }
 
 export default function Leaderboard() {
@@ -166,11 +168,11 @@ export default function Leaderboard() {
                 {getRankIcon(index)}
               </div>
               
-              <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                <span className="text-sm font-bold text-primary-foreground">
-                  {user.username?.[0]?.toUpperCase() || '?'}
-                </span>
-              </div>
+              <UserAvatar
+                url={user.avatar_url}
+                username={user.username}
+                className="w-10 h-10"
+              />
               
               <div className="flex-1 min-w-0">
                 <p className={`font-semibold truncate flex items-center gap-1 ${isCurrentUser ? 'text-primary' : ''}`}>

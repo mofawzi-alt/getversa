@@ -11,6 +11,7 @@ import {
   Trophy, TrendingUp, TrendingDown, Minus, Calendar, Loader2 
 } from 'lucide-react';
 import { format } from 'date-fns';
+import UserAvatar from '@/components/UserAvatar';
 
 interface CompatibilityTrend {
   overall_score: number | null;
@@ -179,11 +180,11 @@ export default function FriendComparison() {
             </div>
             
             {/* Friend Avatar */}
-            <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center">
-              <span className="text-xl font-bold text-primary-foreground">
-                {friend.username?.[0]?.toUpperCase() || '?'}
-              </span>
-            </div>
+            <UserAvatar
+              url={(friend as any)?.avatar_url}
+              username={friend.username}
+              className="w-16 h-16"
+            />
           </div>
           
           <h2 className="text-lg font-semibold">@{friend.username}</h2>

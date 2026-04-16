@@ -9,6 +9,7 @@ import { useOpenConversation, useConversations } from '@/hooks/useMessages';
 import FollowButton from '@/components/poll/FollowButton';
 import { useAuth } from '@/contexts/AuthContext';
 import SwipeableFriendRow from '@/components/friends/SwipeableFriendRow';
+import UserAvatar from '@/components/UserAvatar';
 import { 
   Search, UserPlus, UserCheck, Users, Loader2, 
   Check, X, Heart, ChevronRight, Trophy, 
@@ -210,11 +211,11 @@ export default function Friends() {
                   >
                     <div className="flex items-center gap-4">
                       {/* Avatar */}
-                      <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                        <span className="text-lg font-bold text-primary-foreground">
-                          {friend.friend_username?.[0]?.toUpperCase() || '?'}
-                        </span>
-                      </div>
+                      <UserAvatar
+                        url={friend.friend_avatar_url}
+                        username={friend.friend_username}
+                        className="w-12 h-12"
+                      />
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
@@ -306,11 +307,11 @@ export default function Friends() {
                 {suggestedFriends.map((voter) => (
                   <div key={voter.user_id} className="glass rounded-xl p-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                        <span className="text-lg font-bold text-primary-foreground">
-                          {voter.username?.[0]?.toUpperCase() || '?'}
-                        </span>
-                      </div>
+                      <UserAvatar
+                        url={voter.avatar_url}
+                        username={voter.username}
+                        className="w-12 h-12"
+                      />
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
@@ -477,11 +478,11 @@ export default function Friends() {
                 {searchResults.map((user) => (
                   <div key={user.id} className="glass rounded-xl p-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                        <span className="text-lg font-bold text-primary-foreground">
-                          {user.username?.[0]?.toUpperCase() || '?'}
-                        </span>
-                      </div>
+                      <UserAvatar
+                        url={user.avatar_url}
+                        username={user.username}
+                        className="w-12 h-12"
+                      />
                       
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold truncate">
