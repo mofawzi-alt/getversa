@@ -351,12 +351,12 @@ export default function Friends() {
           </TabsContent>
 
           {/* Friend Requests */}
-          <TabsContent value="requests" className="space-y-3">
+          <TabsContent value="requests" className="space-y-5">
             {loadingRequests ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
-            ) : pendingRequests.length === 0 ? (
+            ) : pendingRequests.length === 0 && sentRequests.length === 0 ? (
               <div className="glass rounded-2xl p-8 text-center">
                 <UserPlus className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="font-semibold mb-2">No pending requests</h3>
@@ -365,44 +365,88 @@ export default function Friends() {
                 </p>
               </div>
             ) : (
-              pendingRequests.map((request) => (
-                <div key={request.id} className="glass rounded-xl p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg font-bold text-primary-foreground">
-                        {request.requester_username?.[0]?.toUpperCase() || '?'}
-                      </span>
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold truncate">
-                        @{request.requester_username}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        Wants to be friends
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => acceptRequest(request.id)}
-                        disabled={acceptingRequest}
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => rejectRequest(request.id)}
-                        disabled={rejectingRequest}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
+              <>
+                {/* Received */}
+                {pendingRequests.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">
+                      Received ({pendingRequests.length})
+                    </h3>
+                    {pendingRequests.map((request) => (
+                      <div key={request.id} className="glass rounded-xl p-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
+                            <span className="text-lg font-bold text-primary-foreground">
+                              {request.requester_username?.[0]?.toUpperCase() || '?'}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold truncate">
+                              @{request.requester_username}
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                              Wants to be friends
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => acceptRequest(request.id)}
+                              disabled={acceptingRequest}
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => rejectRequest(request.id)}
+                              disabled={rejectingRequest}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))
+                )}
+
+                {/* Sent */}
+                {sentRequests.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">
+                      Sent ({sentRequests.length})
+                    </h3>
+                    {sentRequests.map((request: any) => (
+                      <div key={request.id} className="glass rounded-xl p-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
+                            <span className="text-lg font-bold text-primary-foreground">
+                              {request.recipient_username?.[0]?.toUpperCase() || '?'}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold truncate">
+                              @{request.recipient_username}
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                              Awaiting response
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => cancelRequest(request.recipient_id)}
+                            disabled={cancellingRequest}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 
