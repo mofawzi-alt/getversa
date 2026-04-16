@@ -154,7 +154,6 @@ function HomeLiveDebateCard({
             <span className="text-[10px] text-muted-foreground ml-auto">{getTimeLeft(poll.ends_at)}</span>
           )}
         </div>
-        <p className="text-lg font-bold text-foreground leading-snug">{poll.question}</p>
         {celebrityVoters.length > 0 && (
           <div className="flex items-center gap-1.5 mt-1.5">
             {celebrityVoters.slice(0, 2).map((celeb, ci) => (
@@ -168,6 +167,14 @@ function HomeLiveDebateCard({
       </div>
 
       <div className="flex relative mx-2 rounded-xl overflow-hidden" style={{ aspectRatio: '4/5' }}>
+        <div className="absolute inset-0 z-20 flex items-center justify-center px-5 pointer-events-none">
+          <div className="max-w-[82%] rounded-2xl bg-black/45 backdrop-blur-sm px-4 py-3">
+            <p className="text-lg font-bold text-white leading-snug text-center drop-shadow-lg">{poll.question}</p>
+            {'subtitle' in poll && poll.subtitle && (
+              <p className="text-sm text-white/80 text-center mt-0.5 drop-shadow-md">{poll.subtitle}</p>
+            )}
+          </div>
+        </div>
         <div className="w-1/2 h-full relative overflow-hidden">
           <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
