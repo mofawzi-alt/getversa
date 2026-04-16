@@ -111,8 +111,8 @@ export function useFriends() {
     enabled: !!user,
   });
 
-  // Get sent pending requests
-  const { data: sentRequests = [] } = useQuery({
+  // Get sent pending requests (with recipient usernames)
+  const { data: sentRequests = [], isLoading: loadingSentRequests } = useQuery({
     queryKey: ['sent-friend-requests', user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -124,7 +124,20 @@ export function useFriends() {
         .eq('status', 'pending');
       
       if (error) throw error;
-      return data;
+
+      const withUsernames = await Promise.all(
+        (data || []).map(async (request) => {
+          const { data: userData } = await supabase
+            .rpc('get_public_profiles', { user_ids: [request.recipient_id] });
+          return {
+            ...request,
+            recipient_username: userData?.[0]?.username || 'Unknown',
+            recipient_points: userData?.[0]?.points || 0,
+          };
+        })
+      );
+
+      return withUsernames as (FriendRequest & { recipient_username: string; recipient_points: number })[];
     },
     enabled: !!user,
   });
