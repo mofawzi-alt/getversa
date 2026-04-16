@@ -12,6 +12,7 @@ export interface Friend {
   trend: string | null;
   trend_change: number | null;
   friendship_created_at: string;
+  friend_avatar_url?: string | null;
 }
 
 export interface FriendVote {
@@ -19,6 +20,7 @@ export interface FriendVote {
   friend_username: string | null;
   choice: string | null;
   compatibility_score: number | null;
+  friend_avatar_url?: string | null;
 }
 
 export interface SearchResult {
@@ -26,6 +28,7 @@ export interface SearchResult {
   username: string | null;
   points: number | null;
   friendship_status: string;
+  avatar_url?: string | null;
 }
 
 export interface SimilarVoter {
@@ -35,6 +38,7 @@ export interface SimilarVoter {
   shared_polls: number;
   matching_votes: number;
   similarity_score: number;
+  avatar_url?: string | null;
 }
 
 export interface FriendRequest {
@@ -44,6 +48,7 @@ export interface FriendRequest {
   status: string;
   created_at: string;
   requester_username?: string;
+  requester_avatar_url?: string | null;
 }
 
 export function useFriends() {
@@ -101,7 +106,8 @@ export function useFriends() {
             .rpc('get_public_profiles', { user_ids: [request.requester_id] });
           return {
             ...request,
-            requester_username: userData?.[0]?.username || 'Unknown'
+            requester_username: userData?.[0]?.username || 'Unknown',
+            requester_avatar_url: (userData?.[0] as any)?.avatar_url || null,
           };
         })
       );
@@ -133,11 +139,12 @@ export function useFriends() {
             ...request,
             recipient_username: userData?.[0]?.username || 'Unknown',
             recipient_points: userData?.[0]?.points || 0,
+            recipient_avatar_url: (userData?.[0] as any)?.avatar_url || null,
           };
         })
       );
 
-      return withUsernames as (FriendRequest & { recipient_username: string; recipient_points: number })[];
+      return withUsernames as (FriendRequest & { recipient_username: string; recipient_points: number; recipient_avatar_url: string | null })[];
     },
     enabled: !!user,
   });

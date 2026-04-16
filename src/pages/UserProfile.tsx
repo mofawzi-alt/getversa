@@ -9,6 +9,7 @@ import { useFollows } from '@/hooks/useFollows';
 import { useFriends } from '@/hooks/useFriends';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import UserAvatar from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 
 import PersonalityCompatibility from '@/components/profile/PersonalityCompatibility';
@@ -279,11 +280,12 @@ export default function UserProfile() {
         {/* Profile Card — IG bio style */}
         <div className="glass rounded-2xl p-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-              <span className="text-2xl font-display font-bold text-primary-foreground">
-                {profileData?.username?.[0]?.toUpperCase() || '?'}
-              </span>
-            </div>
+            <UserAvatar
+              url={(profileData as any)?.avatar_url}
+              username={profileData?.username}
+              className="w-16 h-16"
+              fallbackClassName="bg-gradient-to-br from-primary to-accent"
+            />
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">

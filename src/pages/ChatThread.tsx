@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Send, Loader2, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import PickPollToShareSheet from '@/components/messages/PickPollToShareSheet';
+import UserAvatar from '@/components/UserAvatar';
 import { toast } from 'sonner';
 
 interface PollPreview {
@@ -101,6 +102,7 @@ export default function ChatThread() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [otherUsername, setOtherUsername] = useState<string>('');
+  const [otherAvatarUrl, setOtherAvatarUrl] = useState<string | null>(null);
   const [text, setText] = useState('');
   const [pollPickerOpen, setPollPickerOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -123,6 +125,7 @@ export default function ChatThread() {
         const { data: profile } = await supabase
           .rpc('get_public_profiles', { user_ids: [otherId] });
         setOtherUsername(profile?.[0]?.username || 'Friend');
+        setOtherAvatarUrl((profile?.[0] as any)?.avatar_url || null);
       });
   }, [conversationId, user]);
 
@@ -171,9 +174,12 @@ export default function ChatThread() {
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-          {(otherUsername || '?')[0]?.toUpperCase()}
-        </div>
+        <UserAvatar
+          url={otherAvatarUrl}
+          username={otherUsername}
+          className="w-9 h-9"
+          fallbackClassName="bg-primary/10"
+        />
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{otherUsername || 'Loading…'}</p>
         </div>

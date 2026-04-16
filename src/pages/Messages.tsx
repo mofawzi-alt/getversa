@@ -4,6 +4,7 @@ import { useConversations } from '@/hooks/useMessages';
 import { MessageCircle, Loader2, ChevronRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
+import UserAvatar from '@/components/UserAvatar';
 
 export default function Messages() {
   const navigate = useNavigate();
@@ -48,9 +49,12 @@ export default function Messages() {
                 onClick={() => navigate(`/messages/${c.conversation_id}`)}
                 className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 active:bg-muted transition-colors text-left"
               >
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold shrink-0">
-                  {(c.other_username || '?')[0]?.toUpperCase()}
-                </div>
+                <UserAvatar
+                  url={c.other_avatar_url}
+                  username={c.other_username}
+                  className="w-12 h-12"
+                  fallbackClassName="bg-primary/10"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-semibold truncate">

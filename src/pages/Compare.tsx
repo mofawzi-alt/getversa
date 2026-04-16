@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFriends } from '@/hooks/useFriends';
+import UserAvatar from '@/components/UserAvatar';
 import {
   ArrowLeft, Search, Heart, Users, Loader2,
   ChevronRight, BarChart3, Trophy
@@ -178,11 +179,11 @@ export default function Compare() {
                   className="w-full glass rounded-xl p-4 flex items-center gap-3 hover:bg-secondary/50 transition-colors text-left"
                   onClick={() => setSelectedFriendId(f.friend_id)}
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-bold text-primary-foreground">
-                      {f.friend_username?.[0]?.toUpperCase() || '?'}
-                    </span>
-                  </div>
+                  <UserAvatar
+                    url={f.friend_avatar_url}
+                    username={f.friend_username}
+                    className="w-10 h-10"
+                  />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm truncate">@{f.friend_username}</h3>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -226,11 +227,11 @@ export default function Compare() {
                 </span>
               </div>
             </div>
-            <div className="w-14 h-14 rounded-full bg-gradient-primary flex items-center justify-center">
-              <span className="text-lg font-bold text-primary-foreground">
-                {selectedFriend?.friend_username?.[0]?.toUpperCase() || '?'}
-              </span>
-            </div>
+            <UserAvatar
+              url={selectedFriend?.friend_avatar_url}
+              username={selectedFriend?.friend_username}
+              className="w-14 h-14"
+            />
           </div>
 
           <h2 className="text-lg font-semibold">
