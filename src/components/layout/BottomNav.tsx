@@ -2,11 +2,13 @@ import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, User, LogIn, Compass, Clock, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useFriendsBadge } from '@/hooks/useFriendsBadge';
 
 const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const friendsBadge = useFriendsBadge();
 
   // While auth is loading, show the full authenticated nav to prevent flash
   if (!user && !loading) {
@@ -44,6 +46,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           label="Friends"
           active={location.pathname === '/friends' || location.pathname.startsWith('/friends/')}
           onClick={() => navigate('/friends')}
+          badge={friendsBadge}
         />
         <NavButton
           path="/history"
@@ -64,21 +67,29 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   );
 });
 
-function NavButton({ icon: Icon, label, active, onClick }: {
+function NavButton({ icon: Icon, label, active, onClick, badge }: {
   path: string;
   icon: any;
   label: string;
   active: boolean;
   onClick: () => void;
+  badge?: number;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-1 px-3 py-2 transition-all ${
+      className={`relative flex flex-col items-center gap-1 px-3 py-2 transition-all ${
         active ? 'text-primary' : 'text-card-foreground/70 hover:text-card-foreground'
       }`}
     >
-      <Icon className={`h-5 w-5 ${active ? 'scale-110' : ''} transition-transform`} />
+      <div className="relative">
+        <Icon className={`h-5 w-5 ${active ? 'scale-110' : ''} transition-transform`} />
+        {badge && badge > 0 ? (
+          <span className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center leading-none ring-2 ring-nav">
+            {badge > 9 ? '9+' : badge}
+          </span>
+        ) : null}
+      </div>
       <span className="text-[10px] font-medium">{label}</span>
     </button>
   );
