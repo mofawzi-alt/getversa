@@ -99,3 +99,4 @@ Updated: now
 - [Re-engagement Notifications](mem://features/re-engagement-notifications) — Absence digest, result flip alerts, vote mattered push
 - [Gamification V2](mem://features/gamification-v2) — Weekly leaderboard, category badges, prediction accuracy, poll suggestions
 - [Retention Push Notifications](mem://features/retention-push-notifications) — Friend voted push, personalized category push, weekly recap, social proof nudge
+- [Compatibility Link](mem://features/compatibility-link) — Shareable /compare/u/:userId link + QR code with blended vote/dimension/personality scoring
