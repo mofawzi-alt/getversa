@@ -153,6 +153,7 @@ function AppInner() {
           <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
           <Route path="/insights" element={<ProtectedRoute><InsightProfile /></ProtectedRoute>} />
           <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
+          <Route path="/personality" element={<ProtectedRoute><PersonalityResults /></ProtectedRoute>} />
           <Route path="/weekly-results" element={<WeeklyTopResults />} />
           <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
           <Route path="/friends/:friendId" element={<ProtectedRoute><FriendComparison /></ProtectedRoute>} />
