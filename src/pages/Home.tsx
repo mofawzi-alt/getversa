@@ -910,6 +910,9 @@ export default function Home() {
           />
         )}
 
+        {/* What's New release announcement */}
+        {user && <WhatsNewBanner />}
+
         {/* Daily return welcome banner */}
         {user && (
           <DailyReturnBanner currentStreak={userStreak?.current || 0} remainingToday={remainingToday} />
