@@ -350,6 +350,7 @@ export default function UserProfile() {
         )}
 
         {/* Stats Grid */}
+        {canViewFullProfile && (
         <div className="grid grid-cols-3 gap-2">
           <div className="glass rounded-xl p-3 text-center">
             <div className="text-xl font-bold text-foreground">{voteCount}</div>
@@ -372,7 +373,7 @@ export default function UserProfile() {
         </div>
 
         {/* Leaderboard Rank */}
-        {rankInfo?.rank && (
+        {canViewFullProfile && rankInfo?.rank && (
           <button
             onClick={() => navigate('/leaderboard')}
             className="w-full glass rounded-2xl p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors"
@@ -391,7 +392,7 @@ export default function UserProfile() {
         )}
 
         {/* Earned Badges */}
-        {earnedBadges.length > 0 && (
+        {canViewFullProfile && earnedBadges.length > 0 && (
           <div className="glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Award className="h-4 w-4 text-primary" />
@@ -424,7 +425,7 @@ export default function UserProfile() {
         )}
 
         {/* Top Categories */}
-        {topCategories.length > 0 && (
+        {canViewFullProfile && topCategories.length > 0 && (
           <div className="glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Users className="h-4 w-4 text-primary" />
@@ -441,7 +442,7 @@ export default function UserProfile() {
         )}
 
         {/* Recent Voted Polls */}
-        {recentVotes.length > 0 && (
+        {canViewFullProfile && recentVotes.length > 0 && (
           <div className="glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <BarChart3 className="h-4 w-4 text-primary" />
