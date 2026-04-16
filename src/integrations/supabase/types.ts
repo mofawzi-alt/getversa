@@ -222,6 +222,30 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
       daily_poll_queues: {
         Row: {
           created_at: string
@@ -425,6 +449,54 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          message_type: string
+          read_at: string | null
+          sender_id: string
+          shared_poll_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          read_at?: string | null
+          sender_id: string
+          shared_poll_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          read_at?: string | null
+          sender_id?: string
+          shared_poll_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_shared_poll_id_fkey"
+            columns: ["shared_poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -1764,6 +1836,10 @@ export type Database = {
           username: string
         }[]
       }
+      get_or_create_conversation: {
+        Args: { _other_user_id: string }
+        Returns: string
+      }
       get_poll_results: {
         Args: { poll_ids: string[] }
         Returns: {
@@ -1819,6 +1895,19 @@ export type Database = {
           earned_at: string
         }[]
       }
+      get_user_conversations: {
+        Args: { p_user_id: string }
+        Returns: {
+          conversation_id: string
+          last_message_at: string
+          last_message_preview: string
+          last_message_type: string
+          last_sender_id: string
+          other_user_id: string
+          other_username: string
+          unread_count: number
+        }[]
+      }
       get_user_voting_traits: {
         Args: { p_user_id: string }
         Returns: {
@@ -1831,6 +1920,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_conversation_participant: {
+        Args: { _conv_id: string; _user_id: string }
         Returns: boolean
       }
       redeem_reward: {
