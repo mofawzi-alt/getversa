@@ -35,6 +35,7 @@ export default function Friends() {
     hasPendingRequest,
     cancelRequest,
     cancellingRequest,
+    sentRequests,
   } = useFriends();
 
   const navigate = useNavigate();
