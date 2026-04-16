@@ -246,47 +246,52 @@ export default function UserProfile() {
           <h1 className="text-lg font-display font-bold text-foreground">Profile</h1>
         </div>
 
-        {/* Profile Card */}
-        <div className="glass rounded-3xl p-6 text-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent mx-auto mb-4 flex items-center justify-center">
-            <span className="text-3xl font-display font-bold text-primary-foreground">
-              {profileData?.username?.[0]?.toUpperCase() || '?'}
-            </span>
-          </div>
-          
-          <div className="flex items-center justify-center gap-1.5">
-            <h2 className="text-xl font-display font-bold text-foreground">
-              @{profileData?.username || 'user'}
-            </h2>
-            {isVerified && <VerifiedBadge size="lg" />}
-          </div>
-          {isVerified && verifiedCategory && (
-            <p className="text-xs text-blue-500 font-medium mt-1">{verifiedCategory}</p>
-          )}
-
-          {/* Follow button for non-own profiles */}
-          {user && !isOwnProfile && targetId && (
-            <Button
-              variant={isFollowing(targetId) ? 'outline' : 'default'}
-              size="sm"
-              className="mt-3 rounded-full px-6"
-              onClick={() => toggleFollow(targetId)}
-            >
-              {isFollowing(targetId) ? 'Following' : 'Follow'}
-            </Button>
-          )}
-
-          {/* Follower / Following counts */}
-          <div className="flex items-center justify-center gap-6 mt-4">
-            <div className="flex flex-col items-center">
-              <span className="text-lg font-bold text-foreground">{followerCount}</span>
-              <span className="text-[10px] text-muted-foreground">Followers</span>
+        {/* Profile Card — IG bio style */}
+        <div className="glass rounded-2xl p-4">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
+              <span className="text-2xl font-display font-bold text-primary-foreground">
+                {profileData?.username?.[0]?.toUpperCase() || '?'}
+              </span>
             </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="flex flex-col items-center">
-              <span className="text-lg font-bold text-foreground">{followingCount}</span>
-              <span className="text-[10px] text-muted-foreground">Following</span>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-base font-display font-bold text-foreground truncate">
+                  @{profileData?.username || 'user'}
+                </h2>
+                {isVerified && <VerifiedBadge size="sm" />}
+              </div>
+              {isVerified && verifiedCategory && (
+                <p className="text-[10px] text-blue-500 font-medium">{verifiedCategory}</p>
+              )}
+
+              {personalityBio && (
+                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-snug">
+                  <span className="mr-1">{personalityBio.emoji}</span>
+                  <span className="font-semibold text-foreground">{personalityBio.name}</span>
+                  <span className="mx-1.5 text-muted-foreground/50">·</span>
+                  <span>{personalityBio.tagline}</span>
+                </p>
+              )}
+
+              <div className="flex items-center gap-4 mt-2 text-[11px]">
+                <span><span className="font-bold text-foreground">{voteCount}</span> <span className="text-muted-foreground">votes</span></span>
+                <span><span className="font-bold text-foreground">{followerCount}</span> <span className="text-muted-foreground">followers</span></span>
+                <span><span className="font-bold text-foreground">{followingCount}</span> <span className="text-muted-foreground">following</span></span>
+              </div>
             </div>
+
+            {user && !isOwnProfile && targetId && (
+              <Button
+                variant={isFollowing(targetId) ? 'outline' : 'default'}
+                size="sm"
+                className="rounded-full px-4 h-8 text-xs shrink-0"
+                onClick={() => toggleFollow(targetId)}
+              >
+                {isFollowing(targetId) ? 'Following' : 'Follow'}
+              </Button>
+            )}
           </div>
         </div>
 
