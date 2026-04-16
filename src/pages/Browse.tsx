@@ -435,53 +435,59 @@ export default function Browse() {
 
     const now = Date.now();
     const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const h24Ago = now - 24 * 60 * 60 * 1000;
 
-    // Seeded pseudo-random for consistent shuffle within a session
     const seededRandom = (seed: number, index: number) => {
       const x = Math.sin(seed * 9999 + index * 7919) * 10000;
       return x - Math.floor(x);
     };
 
-    const h24Ago = now - 24 * 60 * 60 * 1000;
+    const votedIds = userVotes ? new Set(Array.from(userVotes.keys())) : new Set<string>();
+    const recencySort = <T extends { created_at: string; score: number }>(a: T, b: T) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime() || b.score - a.score;
+
+    const diversifyByCategory = <T extends { category: string | null }>(items: T[]) => {
+      const result: T[] = [];
+      const remaining = [...items];
+      let lastCategory: string | null = null;
+
+      while (remaining.length > 0) {
+        const idx = remaining.findIndex((p) => (p.category || 'Other') !== lastCategory);
+        const pick = idx >= 0 ? remaining.splice(idx, 1)[0] : remaining.splice(0, 1)[0];
+        lastCategory = pick.category || 'Other';
+        result.push(pick);
+      }
+
+      return result;
+    };
+
     const scored = feedPolls.map((p, i) => {
       const createdAt = new Date(p.created_at).getTime();
       const isToday = createdAt > h24Ago;
       const isRecent = createdAt > weekAgo;
-      // Polls from last 24h get a massive boost to appear first
       const recencyScore = isToday ? 200 : isRecent ? 30 : 0;
       const voteScore = Math.min(p.totalVotes / 10, 40);
       const debateScore = p.totalVotes >= 5 ? (50 - Math.abs(p.percentA - 50)) * 0.6 : 0;
-      // Add daily randomization (±35 points) so order differs meaningfully each day
       const randomBoost = (seededRandom(sessionSeed, i) - 0.5) * 70;
       return { ...p, score: recencyScore + voteScore + debateScore + randomBoost };
     });
 
-    // Unvoted polls first, then voted
-    const votedIds = userVotes ? new Set(Array.from(userVotes.keys())) : new Set<string>();
-    const unvoted = scored.filter(p => !votedIds.has(p.id));
-    const voted = scored.filter(p => votedIds.has(p.id));
-    unvoted.sort((a, b) => b.score - a.score);
-    voted.sort((a, b) => b.score - a.score);
+    const freshPolls = scored.filter((p) => new Date(p.created_at).getTime() > h24Ago);
+    const olderPolls = scored.filter((p) => new Date(p.created_at).getTime() <= h24Ago);
 
-    // Apply age-based sequencing
-    const combined = [...unvoted, ...voted];
-    const ageSequenced = applyAgeSequencing(combined, profile?.age_range, votedIds);
+    const freshUnvoted = freshPolls.filter((p) => !votedIds.has(p.id)).sort(recencySort);
+    const freshVoted = freshPolls.filter((p) => votedIds.has(p.id)).sort(recencySort);
 
-    // Diversify by category
-    const result: typeof ageSequenced = [];
-    const remaining = [...ageSequenced];
-    let lastCategory: string | null = null;
+    const olderUnvoted = olderPolls.filter((p) => !votedIds.has(p.id));
+    const olderVoted = olderPolls.filter((p) => votedIds.has(p.id));
+    olderUnvoted.sort((a, b) => b.score - a.score);
+    olderVoted.sort((a, b) => b.score - a.score);
 
-    while (remaining.length > 0) {
-      const idx = remaining.findIndex(p => (p.category || 'Other') !== lastCategory);
-      const pick = idx >= 0 ? remaining.splice(idx, 1)[0] : remaining.splice(0, 1)[0];
-      lastCategory = pick.category || 'Other';
-      result.push(pick);
-    }
+    const olderSequenced = applyAgeSequencing([...olderUnvoted, ...olderVoted], profile?.age_range, votedIds);
+    const result = [...freshUnvoted, ...freshVoted, ...diversifyByCategory(olderSequenced)];
 
-    // If navigated with a target poll, move it to the front
     if (targetPollId) {
-      const targetIdx = result.findIndex(p => p.id === targetPollId);
+      const targetIdx = result.findIndex((p) => p.id === targetPollId);
       if (targetIdx > 0) {
         const [target] = result.splice(targetIdx, 1);
         result.unshift(target);
