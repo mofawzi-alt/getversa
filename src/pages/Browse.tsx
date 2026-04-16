@@ -423,8 +423,12 @@ export default function Browse() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Generate a session seed that changes each time the page is visited
-  const [sessionSeed] = useState(() => Math.random());
+  // Generate a daily seed that changes each calendar day + a per-visit jitter
+  const [sessionSeed] = useState(() => {
+    const today = new Date();
+    const daySeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    return daySeed + Math.random(); // daily base + per-visit variation
+  });
 
   const sortedFeed = useMemo(() => {
     if (!feedPolls || feedPolls.length === 0) return [];
@@ -444,8 +448,8 @@ export default function Browse() {
       const recencyScore = isRecent ? 30 : 0;
       const voteScore = Math.min(p.totalVotes / 10, 40);
       const debateScore = p.totalVotes >= 5 ? (50 - Math.abs(p.percentA - 50)) * 0.6 : 0;
-      // Add randomization (±15 points) so order differs each visit
-      const randomBoost = (seededRandom(sessionSeed, i) - 0.5) * 30;
+      // Add daily randomization (±35 points) so order differs meaningfully each day
+      const randomBoost = (seededRandom(sessionSeed, i) - 0.5) * 70;
       return { ...p, score: recencyScore + voteScore + debateScore + randomBoost };
     });
 
