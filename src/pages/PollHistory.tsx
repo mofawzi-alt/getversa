@@ -135,6 +135,15 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
             }`}>
               {vote.inMajority ? 'Majority' : 'Minority'}
             </span>
+            {user && (
+              <button
+                onClick={() => setShareSheetOpen(true)}
+                className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center text-foreground hover:bg-primary/10 transition-colors"
+                aria-label="Send in chat"
+              >
+                <Send className="h-3.5 w-3.5" />
+              </button>
+            )}
             <ShareButton
               pollId={vote.pollId}
               pollQuestion={vote.question}
@@ -156,6 +165,13 @@ function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; 
       {genderTeaser && (
         <p className="text-[11px] text-muted-foreground mt-1 px-1">{genderTeaser.text}</p>
       )}
+
+      <SharePollToFriendSheet
+        pollId={vote.pollId}
+        pollQuestion={vote.question}
+        open={shareSheetOpen}
+        onOpenChange={setShareSheetOpen}
+      />
     </div>
   );
 }
