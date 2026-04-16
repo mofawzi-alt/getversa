@@ -977,6 +977,12 @@ export default function Home() {
         </div>
 
 
+        {/* Personality & Decision Helper — compact, above categories */}
+        <div className="flex gap-2 px-3 mb-2">
+          {user && <div className="flex-1"><PersonalitySnapshot /></div>}
+          <div className={user ? "flex-1" : "flex-1"}><DecisionHelper /></div>
+        </div>
+
         {/* ═══ Categories strip (Instagram Stories style) ═══ */}
         {(() => {
           const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
@@ -1118,10 +1124,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Personal Weekly Summary */}
-        <div className="px-3 mb-2">
-          <PersonalWeeklySummary />
-        </div>
 
 
 
@@ -1195,10 +1197,9 @@ export default function Home() {
           );
         })()}
 
-        {/* Personality & Decision Helper */}
-        {user && <PersonalitySnapshot />}
-        <div className="mt-3">
-          <DecisionHelper />
+        {/* Personal Weekly Summary — below categories */}
+        <div className="px-3 mb-2">
+          <PersonalWeeklySummary />
         </div>
 
         <HomeResultsModal
