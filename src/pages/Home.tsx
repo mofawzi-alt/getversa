@@ -561,8 +561,14 @@ export default function Home() {
           }
 
           let isMatch = true;
-          if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) isMatch = false;
-          if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range && p.target_age_range !== profile.age_range) isMatch = false;
+          if (p.target_gender && p.target_gender !== 'All' && profile.gender) {
+            const genders = p.target_gender.split(',').map((g: string) => g.trim());
+            if (!genders.includes(profile.gender)) isMatch = false;
+          }
+          if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range) {
+            const ages = p.target_age_range.split(',').map((a: string) => a.trim());
+            if (!ages.includes(profile.age_range)) isMatch = false;
+          }
           if (countries && countries.length > 0) {
             if (profile.country && !countries.includes(profile.country)) isMatch = false;
           } else if (p.target_country && p.target_country !== 'All' && profile.country && p.target_country !== profile.country) {
@@ -570,7 +576,7 @@ export default function Home() {
           }
 
           if (isMatch) matched.push(p);
-          else others.push(p);
+          // Exclude non-matching targeted polls entirely
         });
 
         prioritized = [...matched, ...others];
