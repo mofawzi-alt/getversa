@@ -100,6 +100,7 @@ export default function PollOptionImage({
 
     return (
       <div
+        ref={setupObserver}
         className={`w-full h-full relative ${className}`}
         style={variant === 'history' ? { backgroundColor: 'hsl(var(--muted))' } : undefined}
       >
@@ -110,7 +111,7 @@ export default function PollOptionImage({
         )}
         <video
           ref={videoRef}
-          src={imageUrl!}
+          src={videoVisible ? imageUrl! : undefined}
           className={`w-full h-full pointer-events-none transition-opacity duration-300 ${
             showLoader && !loaded ? 'opacity-0' : 'opacity-100'
           }`}
@@ -122,7 +123,7 @@ export default function PollOptionImage({
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           onLoadedData={() => setLoaded(true)}
           draggable={draggable}
         />
