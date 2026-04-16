@@ -1107,7 +1107,6 @@ export default function Home() {
                     index={i}
                     hasVoted={hasVoted}
                     chosenOptionLabel={chosenOptionLabel}
-                    celebrityVoters={celebrityPresence[poll.id] ?? []}
                     onCardClick={() => {
                       if (hasVoted) {
                         setModalPoll(poll);
