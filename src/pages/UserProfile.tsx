@@ -417,28 +417,24 @@ export default function UserProfile() {
           </div>
         )}
 
-        {/* Compare Votes — friends only (with agreement score if available) */}
+        {/* Compare Votes — friends only (compact strip with agreement score) */}
         {canViewFullProfile && !isOwnProfile && targetId && (
-          <div className="glass rounded-2xl p-4 border border-primary/20 bg-primary/5 space-y-3">
+          <button
+            onClick={() => navigate(`/friends/${targetId}/compare`)}
+            className="w-full glass rounded-full px-3 py-1.5 flex items-center gap-2 border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors"
+          >
+            <Heart className="h-3.5 w-3.5 text-primary shrink-0" />
             {compatScore !== null && compatScore !== undefined ? (
-              <p className="text-sm text-center text-foreground">
-                You and <span className="font-bold">@{profileData?.username}</span> agree{' '}
-                <span className="text-lg font-bold text-primary">{compatScore}%</span> of the time
-              </p>
+              <span className="text-[11px] text-foreground flex-1 text-left truncate">
+                You agree <span className="font-bold text-primary">{compatScore}%</span> with @{profileData?.username}
+              </span>
             ) : (
-              <p className="text-sm text-center text-foreground">
-                See how your votes compare with <span className="font-bold">@{profileData?.username}</span>
-              </p>
+              <span className="text-[11px] text-foreground flex-1 text-left truncate">
+                Compare votes with @{profileData?.username}
+              </span>
             )}
-            <Button
-              variant="outline"
-              className="w-full rounded-xl gap-2"
-              onClick={() => navigate(`/friends/${targetId}/compare`)}
-            >
-              <Heart className="h-4 w-4" />
-              Compare Votes
-            </Button>
-          </div>
+            <span className="text-[11px] font-semibold text-primary shrink-0">Compare →</span>
+          </button>
         )}
 
 
