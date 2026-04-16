@@ -708,17 +708,15 @@ export default function Home() {
       return decayScore(b) - decayScore(a);
     });
 
-    // Prioritize unvoted polls first, then diversify by category
-    const unvotedFirst = [...livePollsRaw].sort((a, b) => {
-      const aVoted = votedPollIds?.has(a.id) ? 1 : 0;
-      const bVoted = votedPollIds?.has(b.id) ? 1 : 0;
-      return aVoted - bVoted;
-    });
+    const prioritizeLiveBucket = (items: PollCard[]) => {
+      const unvoted = items.filter((p) => !votedPollIds?.has(p.id));
+      const voted = items.filter((p) => votedPollIds?.has(p.id));
+      return [...unvoted, ...voted];
+    };
 
-    // Diversify live polls by category (round-robin pick)
-    const diversifiedLive = (() => {
+    const diversifyLiveBucket = (items: PollCard[]) => {
       const byCategory = new Map<string, PollCard[]>();
-      unvotedFirst.forEach(p => {
+      items.forEach((p) => {
         const cat = p.category || 'Other';
         if (!byCategory.has(cat)) byCategory.set(cat, []);
         byCategory.get(cat)!.push(p);
@@ -727,7 +725,7 @@ export default function Home() {
       const result: PollCard[] = [];
       const usedIds = new Set<string>();
       let round = 0;
-      while (result.length < unvotedFirst.length) {
+      while (result.length < items.length) {
         let added = false;
         for (const catPolls of cats) {
           if (round < catPolls.length && !usedIds.has(catPolls[round].id)) {
@@ -740,7 +738,14 @@ export default function Home() {
         round++;
       }
       return result;
-    })();
+    };
+
+    const freshLivePolls = livePollsRaw.filter((p) => new Date(p.created_at).getTime() > h24Ago);
+    const olderLivePolls = livePollsRaw.filter((p) => new Date(p.created_at).getTime() <= h24Ago);
+    const diversifiedLive = [
+      ...diversifyLiveBucket(prioritizeLiveBucket(freshLivePolls)),
+      ...diversifyLiveBucket(prioritizeLiveBucket(olderLivePolls)),
+    ];
 
     // Trending — use decay score as primary ranking
     const trending: (PollCard & { trendBadge: string; trendHot?: boolean })[] = [];
