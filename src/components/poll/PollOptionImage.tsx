@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { getBrandColor, getImageTreatment } from '@/lib/brandDetection';
@@ -63,12 +63,31 @@ export default function PollOptionImage({
     side,
   });
 
-  // Auto-play video when it comes into view
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {});
-    }
-  }, [imgSrc]);
+  // Lazy-load & autoplay video only when visible
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [videoVisible, setVideoVisible] = useState(false);
+
+  const setupObserver = useCallback((node: HTMLDivElement | null) => {
+    if (observerRef.current) observerRef.current.disconnect();
+    if (!node) return;
+    containerRef.current = node;
+    observerRef.current = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVideoVisible(true);
+          if (videoRef.current) videoRef.current.play().catch(() => {});
+        } else {
+          setVideoVisible(false);
+          if (videoRef.current) videoRef.current.pause();
+        }
+      },
+      { threshold: 0.25 }
+    );
+    observerRef.current.observe(node);
+  }, []);
+
+  useEffect(() => () => observerRef.current?.disconnect(), []);
 
   // Video treatment
   if (isVideoUrl(imageUrl)) {
