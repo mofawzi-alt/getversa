@@ -349,10 +349,19 @@ export default function UserProfile() {
             </div>
           )}
 
-          {/* Voting Patterns strip */}
-          {canViewFullProfile && patterns.length > 0 && (
+          {/* Voting Patterns + Rank strip */}
+          {canViewFullProfile && (patterns.length > 0 || rankInfo?.rank) && (
             <div className="mt-2 pt-2 border-t border-border/40 flex items-center gap-2 overflow-x-auto scrollbar-hide">
-              <BarChart3 className="h-3 w-3 text-primary shrink-0" />
+              {rankInfo?.rank && (
+                <button
+                  onClick={() => navigate('/leaderboard')}
+                  className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 hover:bg-amber-500/25 transition-colors"
+                >
+                  <Trophy className="h-3 w-3" />
+                  <span className="text-[10px] font-bold">#{rankInfo.rank}</span>
+                </button>
+              )}
+              {patterns.length > 0 && <BarChart3 className="h-3 w-3 text-primary shrink-0" />}
               {patterns.map((p, i) => (
                 <span
                   key={i}
