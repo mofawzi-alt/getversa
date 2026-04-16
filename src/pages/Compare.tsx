@@ -229,9 +229,11 @@ export default function Compare() {
         {/* Overall Score Card */}
         <div className="glass rounded-3xl p-6 text-center">
           <div className="flex justify-center items-center gap-4 mb-4">
-            <div className="w-14 h-14 rounded-full bg-gradient-primary flex items-center justify-center">
-              <span className="text-lg font-bold text-primary-foreground">You</span>
-            </div>
+            <UserAvatar
+              url={(myProfile as any)?.avatar_url}
+              username="you"
+              className="w-14 h-14"
+            />
             <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
               <Heart className="h-8 w-8 text-white fill-current" />
               <div className="absolute -bottom-2 bg-background px-2 py-0.5 rounded-full border border-border">
