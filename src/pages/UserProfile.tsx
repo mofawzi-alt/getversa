@@ -334,7 +334,7 @@ export default function UserProfile() {
         {canViewFullProfile && targetId && <PersonalityTypeCard userId={targetId} />}
 
         {/* Taste Patterns */}
-        {patterns.length > 0 && (
+        {canViewFullProfile && patterns.length > 0 && (
           <div className="glass rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2 mb-1">
               <BarChart3 className="h-4 w-4 text-primary" />
