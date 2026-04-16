@@ -169,7 +169,7 @@ function HomeLiveDebateCard({
 
       <div className="flex relative mx-2 rounded-xl overflow-hidden" style={{ aspectRatio: '4/5' }}>
         <div className="absolute inset-0 z-20 flex items-center justify-center px-5 pointer-events-none">
-          <div className="max-w-[82%] rounded-2xl bg-black/45 backdrop-blur-sm px-4 py-3">
+          <div className="max-w-[82%] px-2 py-1">
             <p className="text-lg font-bold text-white leading-snug text-center drop-shadow-lg">{poll.question}</p>
             {'subtitle' in poll && poll.subtitle && (
               <p className="text-sm text-white/80 text-center mt-0.5 drop-shadow-md">{poll.subtitle}</p>
