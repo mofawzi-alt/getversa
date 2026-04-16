@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFriends, SearchResult } from '@/hooks/useFriends';
+import { useOpenConversation, useConversations } from '@/hooks/useMessages';
 import FollowButton from '@/components/poll/FollowButton';
 import { 
   Search, UserPlus, UserCheck, Users, Loader2, 
   Check, X, Heart, ChevronRight, Trophy, 
-  TrendingUp, TrendingDown, Minus, Sparkles
+  TrendingUp, TrendingDown, Minus, Sparkles, MessageCircle
 } from 'lucide-react';
 
 export default function Friends() {
@@ -33,9 +34,18 @@ export default function Friends() {
   } = useFriends();
 
   const navigate = useNavigate();
+  const openConv = useOpenConversation();
+  const { totalUnread } = useConversations();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  const openChat = async (friendId: string) => {
+    try {
+      const convId = await openConv.mutateAsync(friendId);
+      navigate(`/messages/${convId}`);
+    } catch {}
+  };
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
