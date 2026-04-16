@@ -408,22 +408,6 @@ export default function UserProfile() {
           </Button>
         )}
 
-        {/* Taste Patterns */}
-        {canViewFullProfile && patterns.length > 0 && (
-          <div className="glass rounded-xl p-3 space-y-1.5">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <BarChart3 className="h-3 w-3 text-primary" />
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Voting Patterns</span>
-            </div>
-            {patterns.map((p, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                <p className="text-xs text-foreground/80 leading-snug">{p}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
 
         {/* Leaderboard Rank */}
         {canViewFullProfile && rankInfo?.rank && (
