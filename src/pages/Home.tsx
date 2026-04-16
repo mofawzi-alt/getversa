@@ -24,6 +24,7 @@ import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
 import FollowingFeedSection from '@/components/home/FollowingFeedSection';
 import PersonalitySnapshot from '@/components/home/PersonalitySnapshot';
 import DecisionHelper from '@/components/home/DecisionHelper';
+import ResultFlipAlerts from '@/components/home/ResultFlipAlerts';
 
 
 import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/VoteMilestoneCelebration';
@@ -912,6 +913,9 @@ export default function Home() {
         {user && (
           <DailyReturnBanner currentStreak={userStreak?.current || 0} remainingToday={remainingToday} />
         )}
+
+        {/* Result flip alerts */}
+        {user && <ResultFlipAlerts />}
 
         {/* NUDGE 1: Welcome banner for guests */}
         {!user && <WelcomeBanner />}
