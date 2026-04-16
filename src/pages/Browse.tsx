@@ -442,10 +442,13 @@ export default function Browse() {
       return x - Math.floor(x);
     };
 
+    const h24Ago = now - 24 * 60 * 60 * 1000;
     const scored = feedPolls.map((p, i) => {
       const createdAt = new Date(p.created_at).getTime();
+      const isToday = createdAt > h24Ago;
       const isRecent = createdAt > weekAgo;
-      const recencyScore = isRecent ? 30 : 0;
+      // Polls from last 24h get a massive boost to appear first
+      const recencyScore = isToday ? 200 : isRecent ? 30 : 0;
       const voteScore = Math.min(p.totalVotes / 10, 40);
       const debateScore = p.totalVotes >= 5 ? (50 - Math.abs(p.percentA - 50)) * 0.6 : 0;
       // Add daily randomization (±35 points) so order differs meaningfully each day

@@ -686,11 +686,17 @@ export default function Home() {
       return p.totalVotes / Math.pow(ageHours + 2, 0.6);
     };
 
+    const h24Ago = nowMs - 24 * 60 * 60 * 1000;
     const livePollsRaw = allPolls.filter(p => {
       const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
       const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
       return hasStarted && !isExpired;
     }).sort((a, b) => {
+      // Polls created in last 24h always appear first
+      const aNew = new Date(a.created_at).getTime() > h24Ago ? 1 : 0;
+      const bNew = new Date(b.created_at).getTime() > h24Ago ? 1 : 0;
+      if (aNew !== bNew) return bNew - aNew;
+
       // If user has a taste profile, use blended scoring (taste + trending + admin weight)
       if (userTasteProfile && userTasteProfile.totalVotes >= 3) {
         return blendedPollScore(b as any, userTasteProfile, nowMs) - blendedPollScore(a as any, userTasteProfile, nowMs);
