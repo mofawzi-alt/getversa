@@ -978,9 +978,9 @@ export default function Home() {
 
 
         {/* Personality & Decision Helper — compact, above categories */}
-        <div className="flex gap-2 px-3 mb-2">
-          {user && <div className="flex-1"><PersonalitySnapshot /></div>}
-          <div className={user ? "flex-1" : "flex-1"}><DecisionHelper /></div>
+        <div className="px-3 mb-2 space-y-1.5">
+          {user && <PersonalitySnapshot />}
+          <DecisionHelper />
         </div>
 
         {/* ═══ Categories strip (Instagram Stories style) ═══ */}
@@ -1197,10 +1197,6 @@ export default function Home() {
           );
         })()}
 
-        {/* Personal Weekly Summary — below categories */}
-        <div className="px-3 mb-2">
-          <PersonalWeeklySummary />
-        </div>
 
         <HomeResultsModal
           open={!!modalPoll}
