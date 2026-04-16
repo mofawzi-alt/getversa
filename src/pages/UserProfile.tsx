@@ -72,58 +72,58 @@ export default function UserProfile() {
 
   // Public profile data
   const { data: profileData } = useQuery({
-    queryKey: ['public-profile', userId],
+    queryKey: ['public-profile', targetId],
     queryFn: async () => {
-      if (!userId) return null;
-      const { data } = await supabase.rpc('get_public_profiles', { user_ids: [userId] });
+      if (!targetId) return null;
+      const { data } = await supabase.rpc('get_public_profiles', { user_ids: [targetId] });
       return data?.[0] || null;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Vote count
   const { data: voteCount = 0 } = useQuery({
-    queryKey: ['public-vote-count', userId],
+    queryKey: ['public-vote-count', targetId],
     queryFn: async () => {
-      if (!userId) return 0;
-      const { count } = await supabase.from('votes').select('id', { count: 'exact' }).eq('user_id', userId);
+      if (!targetId) return 0;
+      const { count } = await supabase.from('votes').select('id', { count: 'exact' }).eq('user_id', targetId);
       return count || 0;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Voting traits for archetype
   const { data: traits = [] } = useQuery({
-    queryKey: ['public-traits', userId],
+    queryKey: ['public-traits', targetId],
     queryFn: async () => {
-      if (!userId) return [];
-      const { data } = await supabase.rpc('get_user_voting_traits', { p_user_id: userId });
+      if (!targetId) return [];
+      const { data } = await supabase.rpc('get_user_voting_traits', { p_user_id: targetId });
       return (data || []) as { tag: string; vote_count: number }[];
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Top categories
   const { data: topCategories = [] } = useQuery({
-    queryKey: ['public-top-categories', userId],
+    queryKey: ['public-top-categories', targetId],
     queryFn: async () => {
-      if (!userId) return [];
-      const { data } = await supabase.from('votes').select('category').eq('user_id', userId).not('category', 'is', null);
+      if (!targetId) return [];
+      const { data } = await supabase.from('votes').select('category').eq('user_id', targetId).not('category', 'is', null);
       if (!data) return [];
       const counts: Record<string, number> = {};
       data.forEach(v => { if (v.category) counts[v.category] = (counts[v.category] || 0) + 1; });
       return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([cat]) => cat);
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Minority vote count (votes where user was in minority)
   const { data: minorityCount = 0 } = useQuery({
-    queryKey: ['public-minority', userId],
+    queryKey: ['public-minority', targetId],
     queryFn: async () => {
-      if (!userId) return 0;
+      if (!targetId) return 0;
       // Get user's votes with poll results
-      const { data: userVotes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', userId);
+      const { data: userVotes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', targetId);
       if (!userVotes || userVotes.length === 0) return 0;
       
       const pollIds = userVotes.map(v => v.poll_id);
@@ -140,75 +140,75 @@ export default function UserProfile() {
       });
       return minority;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Compatibility score (only for logged-in users viewing someone else)
   const { data: compatScore } = useQuery({
-    queryKey: ['compat-score', user?.id, userId],
+    queryKey: ['compat-score', user?.id, targetId],
     queryFn: async () => {
-      if (!user?.id || !userId || user.id === userId) return null;
-      const { data } = await supabase.rpc('get_compatibility_score', { user_a: user.id, user_b: userId });
+      if (!user?.id || !targetId || user.id === targetId) return null;
+      const { data } = await supabase.rpc('get_compatibility_score', { user_a: user.id, user_b: targetId });
       return data as number | null;
     },
-    enabled: !!user?.id && !!userId && user?.id !== userId,
+    enabled: !!user?.id && !!targetId && user?.id !== targetId,
   });
 
   // Follower / following counts
   const { data: followerCount = 0 } = useQuery({
-    queryKey: ['public-follower-count', userId],
+    queryKey: ['public-follower-count', targetId],
     queryFn: async () => {
-      if (!userId) return 0;
-      const { count } = await supabase.from('follows').select('id', { count: 'exact' }).eq('following_id', userId);
+      if (!targetId) return 0;
+      const { count } = await supabase.from('follows').select('id', { count: 'exact' }).eq('following_id', targetId);
       return count || 0;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   const { data: followingCount = 0 } = useQuery({
-    queryKey: ['public-following-count', userId],
+    queryKey: ['public-following-count', targetId],
     queryFn: async () => {
-      if (!userId) return 0;
-      const { count } = await supabase.from('follows').select('id', { count: 'exact' }).eq('follower_id', userId);
+      if (!targetId) return 0;
+      const { count } = await supabase.from('follows').select('id', { count: 'exact' }).eq('follower_id', targetId);
       return count || 0;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Earned badges
   const { data: earnedBadges = [] } = useQuery({
-    queryKey: ['public-badges', userId],
+    queryKey: ['public-badges', targetId],
     queryFn: async () => {
-      if (!userId) return [];
-      const { data } = await supabase.rpc('get_user_badge_count', { target_user_id: userId });
+      if (!targetId) return [];
+      const { data } = await supabase.rpc('get_user_badge_count', { target_user_id: targetId });
       return (data || []) as { badge_id: string; badge_name: string; badge_description: string; earned_at: string }[];
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Global leaderboard rank (by points)
   const { data: rankInfo } = useQuery({
-    queryKey: ['public-rank', userId],
+    queryKey: ['public-rank', targetId],
     queryFn: async () => {
-      if (!userId) return null;
+      if (!targetId) return null;
       const { data } = await supabase.rpc('get_leaderboard', { order_by: 'points', limit_count: 500 });
       if (!data) return null;
-      const idx = (data as any[]).findIndex((u) => u.id === userId);
+      const idx = (data as any[]).findIndex((u) => u.id === targetId);
       if (idx === -1) return { rank: null, total: data.length };
       return { rank: idx + 1, total: data.length };
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Recent voted polls (for own profile or friends, show choice; otherwise just the poll)
   const { data: recentVotes = [] } = useQuery({
-    queryKey: ['public-recent-votes', userId, user?.id],
+    queryKey: ['public-recent-votes', targetId, user?.id],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!targetId) return [];
       const { data: votes } = await supabase
         .from('votes')
         .select('poll_id, choice, created_at')
-        .eq('user_id', userId)
+        .eq('user_id', targetId)
         .order('created_at', { ascending: false })
         .limit(6);
       if (!votes || votes.length === 0) return [];
@@ -227,7 +227,7 @@ export default function UserProfile() {
         })
         .filter(Boolean) as Array<{ id: string; question: string; option_a: string; option_b: string; image_a_url: string | null; image_b_url: string | null; choice: string }>;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   const archetype = deriveArchetype(traits);
@@ -263,14 +263,14 @@ export default function UserProfile() {
           )}
 
           {/* Follow button for non-own profiles */}
-          {user && !isOwnProfile && userId && (
+          {user && !isOwnProfile && targetId && (
             <Button
-              variant={isFollowing(userId) ? 'outline' : 'default'}
+              variant={isFollowing(targetId) ? 'outline' : 'default'}
               size="sm"
               className="mt-3 rounded-full px-6"
-              onClick={() => toggleFollow(userId)}
+              onClick={() => toggleFollow(targetId)}
             >
-              {isFollowing(userId) ? 'Following' : 'Follow'}
+              {isFollowing(targetId) ? 'Following' : 'Follow'}
             </Button>
           )}
 
@@ -289,7 +289,7 @@ export default function UserProfile() {
         </div>
 
         {/* Personality Type */}
-        {userId && <PersonalityTypeCard userId={userId} />}
+        {targetId && <PersonalityTypeCard targetId={targetId} />}
 
         {/* Taste Patterns */}
         {patterns.length > 0 && (
@@ -448,8 +448,8 @@ export default function UserProfile() {
         )}
 
         {/* Personality Type Compatibility */}
-        {user && !isOwnProfile && userId && (
-          <PersonalityCompatibility targetUserId={userId} targetUsername={profileData?.username} />
+        {user && !isOwnProfile && targetId && (
+          <PersonalityCompatibility targetUserId={targetId} targetUsername={profileData?.username} />
         )}
 
         {/* Agreement Score */}
