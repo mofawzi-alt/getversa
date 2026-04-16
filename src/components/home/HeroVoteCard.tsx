@@ -771,6 +771,13 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           }}
         />
       )}
+
+      <SharePollToFriendSheet
+        pollId={poll.id}
+        pollQuestion={poll.question}
+        open={showShareSheet}
+        onOpenChange={setShowShareSheet}
+      />
     </section>
   );
 }
