@@ -63,6 +63,7 @@ function getCategoryMeta(name: string): { emoji: string; color: string; bg: stri
 type PollCard = {
   id: string;
   question: string;
+  subtitle?: string | null;
   option_a: string;
   option_b: string;
   image_a_url: string | null;
