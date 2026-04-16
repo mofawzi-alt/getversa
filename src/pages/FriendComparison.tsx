@@ -165,9 +165,11 @@ export default function FriendComparison() {
         <div className="glass rounded-3xl p-6 text-center">
           <div className="flex justify-center items-center gap-4 mb-4">
             {/* Your Avatar */}
-            <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center">
-              <span className="text-xl font-bold text-primary-foreground">You</span>
-            </div>
+            <UserAvatar
+              url={(myProfile as any)?.avatar_url}
+              username="you"
+              className="w-16 h-16"
+            />
             
             {/* Compatibility Heart */}
             <div className={`relative w-20 h-20 rounded-full bg-gradient-to-br ${getCompatibilityGradient(compatibilityScore)} flex items-center justify-center shadow-lg`}>
