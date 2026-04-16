@@ -4,12 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio } from 'lucide-react';
+import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio, Send } from 'lucide-react';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import BottomNav from '@/components/layout/BottomNav';
+import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 
 interface BrowsePoll {
   id: string;
@@ -199,6 +200,7 @@ function BrowseCard({
   isSignedIn,
   onVote,
   onShare,
+  onSendToFriend,
   onReact,
   reacted,
 }: {
@@ -208,6 +210,7 @@ function BrowseCard({
   isSignedIn: boolean;
   onVote: () => void;
   onShare: () => void;
+  onSendToFriend: () => void;
   onReact: () => void;
   reacted: boolean;
 }) {
@@ -228,6 +231,15 @@ function BrowseCard({
 
       {/* Side action buttons */}
       <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-4">
+        {isSignedIn && (
+          <button
+            onClick={onSendToFriend}
+            className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-lg"
+            aria-label="Send in chat"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        )}
         <button onClick={onShare} className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center text-foreground hover:bg-primary/10 transition-colors">
           <Share2 className="h-4 w-4" />
         </button>
