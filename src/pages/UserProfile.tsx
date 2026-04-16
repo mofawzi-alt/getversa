@@ -350,7 +350,7 @@ export default function UserProfile() {
           )}
 
           {/* Voting Patterns + Rank strip */}
-          {canViewFullProfile && (patterns.length > 0 || rankInfo?.rank || topCategories.length > 0) && (
+          {canViewFullProfile && (patterns.length > 0 || rankInfo?.rank) && (
             <div className="mt-2 pt-2 border-t border-border/40 flex items-center gap-2 overflow-x-auto scrollbar-hide">
               {rankInfo?.rank && (
                 <button
@@ -370,19 +370,20 @@ export default function UserProfile() {
                   {p}
                 </span>
               ))}
-              {topCategories.length > 0 && (
-                <>
-                  <Users className="h-3 w-3 text-primary shrink-0 ml-1" />
-                  {topCategories.map((cat, i) => (
-                    <span
-                      key={`cat-${i}`}
-                      className="text-[10px] font-medium text-primary shrink-0 px-2 py-0.5 rounded-full bg-primary/10"
-                    >
-                      {cat}
-                    </span>
-                  ))}
-                </>
-              )}
+            </div>
+          )}
+
+          {canViewFullProfile && topCategories.length > 0 && (
+            <div className="mt-2 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+              <Users className="h-3 w-3 text-primary shrink-0" />
+              {topCategories.map((cat, i) => (
+                <span
+                  key={`cat-${i}`}
+                  className="text-[10px] font-medium text-primary shrink-0 px-2 py-0.5 rounded-full bg-primary/10"
+                >
+                  {cat}
+                </span>
+              ))}
             </div>
           )}
         </div>
