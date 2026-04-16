@@ -417,17 +417,28 @@ export default function UserProfile() {
           </div>
         )}
 
-        {/* Compare Votes CTA — friends only */}
+        {/* Compare Votes — friends only (with agreement score if available) */}
         {canViewFullProfile && !isOwnProfile && targetId && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full rounded-lg gap-1.5 h-8 text-xs"
-            onClick={() => navigate(`/friends/${targetId}/compare`)}
-          >
-            <Heart className="h-3.5 w-3.5" />
-            Compare votes with @{profileData?.username}
-          </Button>
+          <div className="glass rounded-2xl p-4 border border-primary/20 bg-primary/5 space-y-3">
+            {compatScore !== null && compatScore !== undefined ? (
+              <p className="text-sm text-center text-foreground">
+                You and <span className="font-bold">@{profileData?.username}</span> agree{' '}
+                <span className="text-lg font-bold text-primary">{compatScore}%</span> of the time
+              </p>
+            ) : (
+              <p className="text-sm text-center text-foreground">
+                See how your votes compare with <span className="font-bold">@{profileData?.username}</span>
+              </p>
+            )}
+            <Button
+              variant="outline"
+              className="w-full rounded-xl gap-2"
+              onClick={() => navigate(`/friends/${targetId}/compare`)}
+            >
+              <Heart className="h-4 w-4" />
+              Compare Votes
+            </Button>
+          </div>
         )}
 
 
