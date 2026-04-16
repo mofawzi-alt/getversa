@@ -595,6 +595,7 @@ export default function Browse() {
                 isSignedIn={!!user}
                 onVote={() => handleVote(poll.id)}
                 onShare={() => share(poll)}
+                onSendToFriend={() => setShareToFriendPoll(poll)}
                 onReact={() => handleReact(poll.id)}
                 reacted={reactedPolls.has(poll.id)}
               />
