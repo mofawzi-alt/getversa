@@ -350,7 +350,7 @@ export default function UserProfile() {
           )}
 
           {/* Voting Patterns + Rank strip */}
-          {canViewFullProfile && (patterns.length > 0 || rankInfo?.rank) && (
+          {canViewFullProfile && (patterns.length > 0 || rankInfo?.rank || topCategories.length > 0) && (
             <div className="mt-2 pt-2 border-t border-border/40 flex items-center gap-2 overflow-x-auto scrollbar-hide">
               {rankInfo?.rank && (
                 <button
