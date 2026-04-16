@@ -118,22 +118,24 @@ serve(async (req: Request): Promise<Response> => {
       }
     }
 
-    // Also store in-app notifications
-    const uniqueUserIds = [...new Set(subscriptions.map((s) => s.user_id))];
-    const notificationRecords = uniqueUserIds.map((userId) => ({
-      user_id: userId,
-      title: payload.title,
-      body: payload.body,
-      type: "new_poll",
-      data: { poll_id: payload.poll_id, url: payload.url },
-    }));
+    // Also store in-app notifications (unless caller already inserted them)
+    if (!payload.skip_in_app) {
+      const uniqueUserIds = [...new Set(subscriptions.map((s) => s.user_id))];
+      const notificationRecords = uniqueUserIds.map((userId) => ({
+        user_id: userId,
+        title: payload.title,
+        body: payload.body,
+        type: payload.notification_type || "new_poll",
+        data: { poll_id: payload.poll_id, url: payload.url },
+      }));
 
-    const { error: notifError } = await supabase
-      .from("notifications")
-      .insert(notificationRecords);
+      const { error: notifError } = await supabase
+        .from("notifications")
+        .insert(notificationRecords);
 
-    if (notifError) {
-      console.error("Error storing notifications:", notifError);
+      if (notifError) {
+        console.error("Error storing notifications:", notifError);
+      }
     }
 
     console.log(`Push results: ${sent} sent, ${failed} failed, ${expiredEndpoints.length} expired`);
