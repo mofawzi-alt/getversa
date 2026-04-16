@@ -60,12 +60,15 @@ function derivePatterns(traits: { tag: string; vote_count: number }[]): string[]
 }
 
 export default function UserProfile() {
-  const { userId } = useParams<{ userId: string }>();
+  const { userId, friendId } = useParams<{ userId: string; friendId: string }>();
+  const targetId = userId || friendId;
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isFollowing, toggleFollow } = useFollows();
-  const { isVerified, category: verifiedCategory } = useVerifiedUser(userId);
-  const isOwnProfile = user?.id === userId;
+  const { isFriend, sendRequest, sendingRequest, hasPendingRequest } = useFriends();
+  const { isVerified, category: verifiedCategory } = useVerifiedUser(targetId);
+  const isOwnProfile = user?.id === targetId;
+  const canViewFullProfile = isOwnProfile || (targetId ? isFriend(targetId) : false);
 
   // Public profile data
   const { data: profileData } = useQuery({
