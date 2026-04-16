@@ -3,13 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
-import { ArrowLeft, Flame, Zap, Users, BarChart3, Sparkles, Heart } from 'lucide-react';
+import { ArrowLeft, Flame, Zap, Users, BarChart3, Heart, Trophy, Award } from 'lucide-react';
 import { useFollows } from '@/hooks/useFollows';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
 import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 import PersonalityCompatibility from '@/components/profile/PersonalityCompatibility';
+import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
 // Derive a taste archetype from voting trait tags
 function deriveArchetype(traits: { tag: string; vote_count: number }[]): { name: string; description: string } {
