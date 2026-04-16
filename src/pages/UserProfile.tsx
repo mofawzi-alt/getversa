@@ -171,6 +171,61 @@ export default function UserProfile() {
     enabled: !!userId,
   });
 
+  // Earned badges
+  const { data: earnedBadges = [] } = useQuery({
+    queryKey: ['public-badges', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data } = await supabase.rpc('get_user_badge_count', { target_user_id: userId });
+      return (data || []) as { badge_id: string; badge_name: string; badge_description: string; earned_at: string }[];
+    },
+    enabled: !!userId,
+  });
+
+  // Global leaderboard rank (by points)
+  const { data: rankInfo } = useQuery({
+    queryKey: ['public-rank', userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data } = await supabase.rpc('get_leaderboard', { order_by: 'points', limit_count: 500 });
+      if (!data) return null;
+      const idx = (data as any[]).findIndex((u) => u.id === userId);
+      if (idx === -1) return { rank: null, total: data.length };
+      return { rank: idx + 1, total: data.length };
+    },
+    enabled: !!userId,
+  });
+
+  // Recent voted polls (for own profile or friends, show choice; otherwise just the poll)
+  const { data: recentVotes = [] } = useQuery({
+    queryKey: ['public-recent-votes', userId, user?.id],
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data: votes } = await supabase
+        .from('votes')
+        .select('poll_id, choice, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(6);
+      if (!votes || votes.length === 0) return [];
+      const pollIds = votes.map(v => v.poll_id);
+      const { data: polls } = await supabase
+        .from('polls')
+        .select('id, question, option_a, option_b, image_a_url, image_b_url')
+        .in('id', pollIds);
+      if (!polls) return [];
+      const pollMap = new Map(polls.map(p => [p.id, p]));
+      return votes
+        .map(v => {
+          const poll = pollMap.get(v.poll_id);
+          if (!poll) return null;
+          return { ...poll, choice: v.choice };
+        })
+        .filter(Boolean) as Array<{ id: string; question: string; option_a: string; option_b: string; image_a_url: string | null; image_b_url: string | null; choice: string }>;
+    },
+    enabled: !!userId,
+  });
+
   const archetype = deriveArchetype(traits);
   const patterns = derivePatterns(traits);
 
