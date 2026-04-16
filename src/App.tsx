@@ -45,6 +45,7 @@ import PersonalityResults from "./pages/PersonalityResults";
 import BrandPortal from "./pages/BrandPortal";
 import Messages from "./pages/Messages";
 import ChatThread from "./pages/ChatThread";
+import Leaderboard from "./pages/Leaderboard";
  import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
