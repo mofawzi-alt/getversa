@@ -371,6 +371,7 @@ export default function UserProfile() {
             <div className="text-[10px] text-muted-foreground">Minority</div>
           </div>
         </div>
+        )}
 
         {/* Leaderboard Rank */}
         {canViewFullProfile && rankInfo?.rank && (
