@@ -289,7 +289,49 @@ export default function UserProfile() {
         </div>
 
         {/* Personality Type */}
-        {targetId && <PersonalityTypeCard targetId={targetId} />}
+        {/* Friends-only gate for non-friends viewing someone else's profile */}
+        {!canViewFullProfile && targetId && (
+          <div className="glass rounded-2xl p-6 text-center space-y-3 border border-primary/20">
+            <div className="w-12 h-12 rounded-full bg-primary/10 mx-auto flex items-center justify-center">
+              <Lock className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-foreground">Friends only</h3>
+              <p className="text-xs text-muted-foreground mt-1 px-4">
+                Add @{profileData?.username || 'this user'} as a friend to see their badges, rank, voting patterns, and recent votes.
+              </p>
+            </div>
+            {hasPendingRequest(targetId) ? (
+              <Button variant="outline" className="rounded-full" disabled>
+                Request sent
+              </Button>
+            ) : (
+              <Button
+                className="rounded-full gap-2"
+                onClick={() => sendRequest(targetId)}
+                disabled={sendingRequest}
+              >
+                <UserPlus className="h-4 w-4" />
+                Add friend
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Compare Votes CTA — friends only */}
+        {canViewFullProfile && !isOwnProfile && targetId && (
+          <Button
+            variant="outline"
+            className="w-full rounded-xl gap-2"
+            onClick={() => navigate(`/friends/${targetId}/compare`)}
+          >
+            <Heart className="h-4 w-4" />
+            Compare votes with @{profileData?.username}
+          </Button>
+        )}
+
+        {/* Personality Type — friends only */}
+        {canViewFullProfile && targetId && <PersonalityTypeCard userId={targetId} />}
 
         {/* Taste Patterns */}
         {patterns.length > 0 && (
