@@ -38,8 +38,8 @@ export default function PersonalitySnapshot() {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      onClick={() => navigate('/profile/taste')}
-      className="mx-4 rounded-2xl border border-border bg-card p-4 cursor-pointer active:scale-[0.98] transition-transform"
+      onClick={() => navigate('/personality')}
+      className="mx-4 rounded-xl border border-border bg-card p-3 cursor-pointer active:scale-[0.98] transition-transform"
     >
       <div className="flex items-center gap-3">
         {result.ready ? (

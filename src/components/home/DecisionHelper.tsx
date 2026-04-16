@@ -11,7 +11,7 @@ export default function DecisionHelper() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
       onClick={() => navigate('/browse')}
-      className="mx-4 rounded-2xl border border-border bg-card p-4 cursor-pointer active:scale-[0.98] transition-transform"
+      className="mx-4 rounded-xl border border-border bg-card p-3 cursor-pointer active:scale-[0.98] transition-transform"
     >
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shrink-0">

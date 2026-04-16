@@ -977,6 +977,12 @@ export default function Home() {
         </div>
 
 
+        {/* Personality & Decision Helper — compact, above categories */}
+        <div className="flex gap-2 px-3 mb-2">
+          {user && <div className="flex-1"><PersonalitySnapshot /></div>}
+          <div className={user ? "flex-1" : "flex-1"}><DecisionHelper /></div>
+        </div>
+
         {/* ═══ Categories strip (Instagram Stories style) ═══ */}
         {(() => {
           const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
