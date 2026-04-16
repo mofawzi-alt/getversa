@@ -680,6 +680,13 @@ export default function Browse() {
       </AnimatePresence>
 
       <BottomNav />
+
+      <SharePollToFriendSheet
+        pollId={shareToFriendPoll?.id || ''}
+        pollQuestion={shareToFriendPoll?.question}
+        open={!!shareToFriendPoll}
+        onOpenChange={(o) => { if (!o) setShareToFriendPoll(null); }}
+      />
     </div>
   );
 }
