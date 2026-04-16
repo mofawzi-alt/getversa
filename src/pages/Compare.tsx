@@ -30,6 +30,19 @@ export default function Compare() {
 
   const selectedFriend = friends.find(f => f.friend_id === selectedFriendId);
 
+  // Current user's avatar
+  const { data: myProfile } = useQuery({
+    queryKey: ['my-profile-avatar', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .rpc('get_public_profiles', { user_ids: [user.id] });
+      if (error) throw error;
+      return data?.[0] || null;
+    },
+    enabled: !!user,
+  });
+
   // Fetch shared vote history with categories
   const { data: sharedVotes = [], isLoading: loadingVotes } = useQuery({
     queryKey: ['compare-shared-votes', user?.id, selectedFriendId],
