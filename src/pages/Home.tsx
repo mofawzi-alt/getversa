@@ -1124,10 +1124,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Personal Weekly Summary */}
-        <div className="px-3 mb-2">
-          <PersonalWeeklySummary />
-        </div>
 
 
 
@@ -1201,10 +1197,9 @@ export default function Home() {
           );
         })()}
 
-        {/* Personality & Decision Helper */}
-        {user && <PersonalitySnapshot />}
-        <div className="mt-3">
-          <DecisionHelper />
+        {/* Personal Weekly Summary — below categories */}
+        <div className="px-3 mb-2">
+          <PersonalWeeklySummary />
         </div>
 
         <HomeResultsModal
