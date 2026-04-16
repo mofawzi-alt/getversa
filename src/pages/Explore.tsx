@@ -6,7 +6,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { 
   Search, TrendingUp, ArrowUp, ArrowDown, Minus, Zap, Users, Timer, ChevronLeft, CheckCircle2,
   Flame, Star, Briefcase, DollarSign, Palette, Sparkles, Trophy, Heart, Radio, LayoutGrid,
-  Crown, Scale, ThumbsUp, UserCheck
+  Crown, Scale, ThumbsUp, UserCheck, Brain, UtensilsCrossed, UserRound, HeartHandshake, Smartphone
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Progress } from '@/components/ui/progress';
@@ -23,16 +23,23 @@ function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
 }
 
-// Category icon & color mapping — 8 canonical categories
+// Category icon & color mapping
 const CATEGORY_STYLE: Record<string, { icon: React.ReactNode; gradient: string; accent: string }> = {
   'Brands': { icon: <Star className="h-5 w-5" />, gradient: 'from-amber-500 to-yellow-400', accent: 'text-amber-500' },
   'Business & Startups': { icon: <Briefcase className="h-5 w-5" />, gradient: 'from-blue-600 to-indigo-400', accent: 'text-blue-600' },
   'Fintech & Money': { icon: <DollarSign className="h-5 w-5" />, gradient: 'from-green-600 to-emerald-400', accent: 'text-green-600' },
   'Style & Design': { icon: <Palette className="h-5 w-5" />, gradient: 'from-pink-500 to-rose-400', accent: 'text-pink-500' },
+  'Style': { icon: <Palette className="h-5 w-5" />, gradient: 'from-pink-500 to-rose-400', accent: 'text-pink-500' },
   'Entertainment': { icon: <Sparkles className="h-5 w-5" />, gradient: 'from-purple-500 to-fuchsia-400', accent: 'text-purple-500' },
   'Sports': { icon: <Trophy className="h-5 w-5" />, gradient: 'from-emerald-600 to-green-400', accent: 'text-emerald-600' },
-  'Wellness & Habits': { icon: <Heart className="h-5 w-5" />, gradient: 'from-red-500 to-pink-400', accent: 'text-red-500' },
+  'Wellness & Habits': { icon: <Brain className="h-5 w-5" />, gradient: 'from-teal-500 to-cyan-400', accent: 'text-teal-500' },
   'The Pulse': { icon: <Radio className="h-5 w-5" />, gradient: 'from-orange-500 to-amber-400', accent: 'text-orange-500' },
+  'Beauty': { icon: <Sparkles className="h-5 w-5" />, gradient: 'from-rose-400 to-pink-300', accent: 'text-rose-400' },
+  'Food & Drinks': { icon: <UtensilsCrossed className="h-5 w-5" />, gradient: 'from-orange-400 to-red-400', accent: 'text-orange-500' },
+  'Lifestyle': { icon: <Flame className="h-5 w-5" />, gradient: 'from-violet-500 to-purple-400', accent: 'text-violet-500' },
+  'Personality': { icon: <UserRound className="h-5 w-5" />, gradient: 'from-indigo-500 to-blue-400', accent: 'text-indigo-500' },
+  'Relationships': { icon: <HeartHandshake className="h-5 w-5" />, gradient: 'from-red-400 to-rose-300', accent: 'text-red-400' },
+  'Telecom': { icon: <Smartphone className="h-5 w-5" />, gradient: 'from-sky-500 to-blue-400', accent: 'text-sky-500' },
 };
 
 function getCategoryStyle(name: string) {
