@@ -49,10 +49,17 @@ const CATEGORY_META: Record<string, { emoji: string; color: string; bg: string }
   'business & startups': { emoji: '🚀', color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
   'fintech & money': { emoji: '💸', color: 'hsl(45, 80%, 45%)', bg: 'hsl(45, 80%, 93%)' },
   'style & design': { emoji: '👗', color: 'hsl(280, 60%, 50%)', bg: 'hsl(280, 60%, 93%)' },
+  'style': { emoji: '👗', color: 'hsl(280, 60%, 50%)', bg: 'hsl(280, 60%, 93%)' },
   'entertainment': { emoji: '🎬', color: 'hsl(260, 60%, 55%)', bg: 'hsl(260, 60%, 93%)' },
   'sports': { emoji: '⚽', color: 'hsl(145, 55%, 42%)', bg: 'hsl(145, 55%, 92%)' },
   'wellness & habits': { emoji: '🧠', color: 'hsl(350, 65%, 55%)', bg: 'hsl(350, 65%, 93%)' },
   'the pulse': { emoji: '🔥', color: 'hsl(25, 80%, 50%)', bg: 'hsl(25, 80%, 93%)' },
+  'beauty': { emoji: '💄', color: 'hsl(340, 70%, 55%)', bg: 'hsl(340, 70%, 93%)' },
+  'food & drinks': { emoji: '🍔', color: 'hsl(20, 75%, 50%)', bg: 'hsl(20, 75%, 93%)' },
+  'lifestyle': { emoji: '✨', color: 'hsl(270, 60%, 55%)', bg: 'hsl(270, 60%, 93%)' },
+  'personality': { emoji: '🧬', color: 'hsl(230, 65%, 55%)', bg: 'hsl(230, 65%, 93%)' },
+  'relationships': { emoji: '💕', color: 'hsl(0, 65%, 55%)', bg: 'hsl(0, 65%, 93%)' },
+  'telecom': { emoji: '📱', color: 'hsl(200, 70%, 50%)', bg: 'hsl(200, 70%, 93%)' },
 };
 
 function getCategoryMeta(name: string): { emoji: string; color: string; bg: string } {
