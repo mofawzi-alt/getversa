@@ -129,6 +129,33 @@ export default function EditProfile() {
 
         {/* Form */}
         <div className="glass rounded-2xl p-6 space-y-6">
+          {/* Avatar */}
+          <div className="flex flex-col items-center gap-3">
+            <label className="relative cursor-pointer group">
+              <Avatar className="h-24 w-24 ring-2 ring-border">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt="Profile" />}
+                <AvatarFallback className="text-2xl font-display font-bold bg-gradient-primary text-primary-foreground">
+                  {formData.username?.[0]?.toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                {uploading ? (
+                  <Loader2 className="h-6 w-6 text-white animate-spin" />
+                ) : (
+                  <Camera className="h-6 w-6 text-white" />
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarUpload}
+                disabled={uploading}
+              />
+            </label>
+            <p className="text-xs text-muted-foreground">Tap to change photo</p>
+          </div>
+
           {/* Username */}
           <div className="space-y-2">
             <Label htmlFor="username" className="text-foreground">Username</Label>
