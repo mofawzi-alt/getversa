@@ -30,6 +30,19 @@ export default function Compare() {
 
   const selectedFriend = friends.find(f => f.friend_id === selectedFriendId);
 
+  // Current user's avatar
+  const { data: myProfile } = useQuery({
+    queryKey: ['my-profile-avatar', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .rpc('get_public_profiles', { user_ids: [user.id] });
+      if (error) throw error;
+      return data?.[0] || null;
+    },
+    enabled: !!user,
+  });
+
   // Fetch shared vote history with categories
   const { data: sharedVotes = [], isLoading: loadingVotes } = useQuery({
     queryKey: ['compare-shared-votes', user?.id, selectedFriendId],
@@ -216,9 +229,11 @@ export default function Compare() {
         {/* Overall Score Card */}
         <div className="glass rounded-3xl p-6 text-center">
           <div className="flex justify-center items-center gap-4 mb-4">
-            <div className="w-14 h-14 rounded-full bg-gradient-primary flex items-center justify-center">
-              <span className="text-lg font-bold text-primary-foreground">You</span>
-            </div>
+            <UserAvatar
+              url={(myProfile as any)?.avatar_url}
+              username="you"
+              className="w-14 h-14"
+            />
             <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
               <Heart className="h-8 w-8 text-white fill-current" />
               <div className="absolute -bottom-2 bg-background px-2 py-0.5 rounded-full border border-border">

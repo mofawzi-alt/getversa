@@ -61,6 +61,19 @@ export default function FriendComparison() {
     enabled: !!friendId,
   });
 
+  // Get current user's profile (for avatar)
+  const { data: myProfile } = useQuery({
+    queryKey: ['my-profile-avatar', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .rpc('get_public_profiles', { user_ids: [user.id] });
+      if (error) throw error;
+      return data?.[0] || null;
+    },
+    enabled: !!user,
+  });
+
   // Get compatibility trend
   const { data: trendData } = useQuery({
     queryKey: ['compatibility-trend', user?.id, friendId],
@@ -165,9 +178,11 @@ export default function FriendComparison() {
         <div className="glass rounded-3xl p-6 text-center">
           <div className="flex justify-center items-center gap-4 mb-4">
             {/* Your Avatar */}
-            <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center">
-              <span className="text-xl font-bold text-primary-foreground">You</span>
-            </div>
+            <UserAvatar
+              url={(myProfile as any)?.avatar_url}
+              username="you"
+              className="w-16 h-16"
+            />
             
             {/* Compatibility Heart */}
             <div className={`relative w-20 h-20 rounded-full bg-gradient-to-br ${getCompatibilityGradient(compatibilityScore)} flex items-center justify-center shadow-lg`}>
