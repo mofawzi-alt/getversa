@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFriends, SearchResult } from '@/hooks/useFriends';
 import { useOpenConversation, useConversations } from '@/hooks/useMessages';
 import FollowButton from '@/components/poll/FollowButton';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Search, UserPlus, UserCheck, Users, Loader2, 
   Check, X, Heart, ChevronRight, Trophy, 
@@ -35,7 +36,13 @@ export default function Friends() {
 
   const navigate = useNavigate();
   const openConv = useOpenConversation();
-  const { totalUnread } = useConversations();
+  const { data: conversations = [], totalUnread } = useConversations();
+  const { user } = useAuth();
+  const unreadByFriend = new Map<string, number>(
+    conversations
+      .filter((c) => c.unread_count > 0 && c.last_sender_id !== user?.id)
+      .map((c) => [c.other_user_id, c.unread_count])
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -227,7 +234,7 @@ export default function Friends() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-primary hover:text-primary hover:bg-primary/10"
+                      className="text-primary hover:text-primary hover:bg-primary/10 relative"
                       onClick={(e) => {
                         e.stopPropagation();
                         openChat(friend.friend_id);
@@ -235,6 +242,11 @@ export default function Friends() {
                       disabled={openConv.isPending}
                     >
                       <MessageCircle className="h-4 w-4" />
+                      {(unreadByFriend.get(friend.friend_id) || 0) > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center leading-none ring-2 ring-background">
+                          {(unreadByFriend.get(friend.friend_id) || 0) > 9 ? '9+' : unreadByFriend.get(friend.friend_id)}
+                        </span>
+                      )}
                     </Button>
 
                     {/* Arrow */}
