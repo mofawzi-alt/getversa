@@ -3,8 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
-import { ArrowLeft, Flame, Zap, Users, BarChart3, Heart, Trophy, Award } from 'lucide-react';
+import { ArrowLeft, Flame, Zap, Users, BarChart3, Heart, Trophy, Award, Lock, UserPlus } from 'lucide-react';
 import { useFollows } from '@/hooks/useFollows';
+import { useFriends } from '@/hooks/useFriends';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
@@ -59,67 +60,70 @@ function derivePatterns(traits: { tag: string; vote_count: number }[]): string[]
 }
 
 export default function UserProfile() {
-  const { userId } = useParams<{ userId: string }>();
+  const { userId, friendId } = useParams<{ userId: string; friendId: string }>();
+  const targetId = userId || friendId;
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isFollowing, toggleFollow } = useFollows();
-  const { isVerified, category: verifiedCategory } = useVerifiedUser(userId);
-  const isOwnProfile = user?.id === userId;
+  const { isFriend, sendRequest, sendingRequest, hasPendingRequest } = useFriends();
+  const { isVerified, category: verifiedCategory } = useVerifiedUser(targetId);
+  const isOwnProfile = user?.id === targetId;
+  const canViewFullProfile = isOwnProfile || (targetId ? isFriend(targetId) : false);
 
   // Public profile data
   const { data: profileData } = useQuery({
-    queryKey: ['public-profile', userId],
+    queryKey: ['public-profile', targetId],
     queryFn: async () => {
-      if (!userId) return null;
-      const { data } = await supabase.rpc('get_public_profiles', { user_ids: [userId] });
+      if (!targetId) return null;
+      const { data } = await supabase.rpc('get_public_profiles', { user_ids: [targetId] });
       return data?.[0] || null;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Vote count
   const { data: voteCount = 0 } = useQuery({
-    queryKey: ['public-vote-count', userId],
+    queryKey: ['public-vote-count', targetId],
     queryFn: async () => {
-      if (!userId) return 0;
-      const { count } = await supabase.from('votes').select('id', { count: 'exact' }).eq('user_id', userId);
+      if (!targetId) return 0;
+      const { count } = await supabase.from('votes').select('id', { count: 'exact' }).eq('user_id', targetId);
       return count || 0;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Voting traits for archetype
   const { data: traits = [] } = useQuery({
-    queryKey: ['public-traits', userId],
+    queryKey: ['public-traits', targetId],
     queryFn: async () => {
-      if (!userId) return [];
-      const { data } = await supabase.rpc('get_user_voting_traits', { p_user_id: userId });
+      if (!targetId) return [];
+      const { data } = await supabase.rpc('get_user_voting_traits', { p_user_id: targetId });
       return (data || []) as { tag: string; vote_count: number }[];
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Top categories
   const { data: topCategories = [] } = useQuery({
-    queryKey: ['public-top-categories', userId],
+    queryKey: ['public-top-categories', targetId],
     queryFn: async () => {
-      if (!userId) return [];
-      const { data } = await supabase.from('votes').select('category').eq('user_id', userId).not('category', 'is', null);
+      if (!targetId) return [];
+      const { data } = await supabase.from('votes').select('category').eq('user_id', targetId).not('category', 'is', null);
       if (!data) return [];
       const counts: Record<string, number> = {};
       data.forEach(v => { if (v.category) counts[v.category] = (counts[v.category] || 0) + 1; });
       return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([cat]) => cat);
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Minority vote count (votes where user was in minority)
   const { data: minorityCount = 0 } = useQuery({
-    queryKey: ['public-minority', userId],
+    queryKey: ['public-minority', targetId],
     queryFn: async () => {
-      if (!userId) return 0;
+      if (!targetId) return 0;
       // Get user's votes with poll results
-      const { data: userVotes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', userId);
+      const { data: userVotes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', targetId);
       if (!userVotes || userVotes.length === 0) return 0;
       
       const pollIds = userVotes.map(v => v.poll_id);
@@ -136,75 +140,75 @@ export default function UserProfile() {
       });
       return minority;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Compatibility score (only for logged-in users viewing someone else)
   const { data: compatScore } = useQuery({
-    queryKey: ['compat-score', user?.id, userId],
+    queryKey: ['compat-score', user?.id, targetId],
     queryFn: async () => {
-      if (!user?.id || !userId || user.id === userId) return null;
-      const { data } = await supabase.rpc('get_compatibility_score', { user_a: user.id, user_b: userId });
+      if (!user?.id || !targetId || user.id === targetId) return null;
+      const { data } = await supabase.rpc('get_compatibility_score', { user_a: user.id, user_b: targetId });
       return data as number | null;
     },
-    enabled: !!user?.id && !!userId && user?.id !== userId,
+    enabled: !!user?.id && !!targetId && user?.id !== targetId,
   });
 
   // Follower / following counts
   const { data: followerCount = 0 } = useQuery({
-    queryKey: ['public-follower-count', userId],
+    queryKey: ['public-follower-count', targetId],
     queryFn: async () => {
-      if (!userId) return 0;
-      const { count } = await supabase.from('follows').select('id', { count: 'exact' }).eq('following_id', userId);
+      if (!targetId) return 0;
+      const { count } = await supabase.from('follows').select('id', { count: 'exact' }).eq('following_id', targetId);
       return count || 0;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   const { data: followingCount = 0 } = useQuery({
-    queryKey: ['public-following-count', userId],
+    queryKey: ['public-following-count', targetId],
     queryFn: async () => {
-      if (!userId) return 0;
-      const { count } = await supabase.from('follows').select('id', { count: 'exact' }).eq('follower_id', userId);
+      if (!targetId) return 0;
+      const { count } = await supabase.from('follows').select('id', { count: 'exact' }).eq('follower_id', targetId);
       return count || 0;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Earned badges
   const { data: earnedBadges = [] } = useQuery({
-    queryKey: ['public-badges', userId],
+    queryKey: ['public-badges', targetId],
     queryFn: async () => {
-      if (!userId) return [];
-      const { data } = await supabase.rpc('get_user_badge_count', { target_user_id: userId });
+      if (!targetId) return [];
+      const { data } = await supabase.rpc('get_user_badge_count', { target_user_id: targetId });
       return (data || []) as { badge_id: string; badge_name: string; badge_description: string; earned_at: string }[];
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Global leaderboard rank (by points)
   const { data: rankInfo } = useQuery({
-    queryKey: ['public-rank', userId],
+    queryKey: ['public-rank', targetId],
     queryFn: async () => {
-      if (!userId) return null;
+      if (!targetId) return null;
       const { data } = await supabase.rpc('get_leaderboard', { order_by: 'points', limit_count: 500 });
       if (!data) return null;
-      const idx = (data as any[]).findIndex((u) => u.id === userId);
+      const idx = (data as any[]).findIndex((u) => u.id === targetId);
       if (idx === -1) return { rank: null, total: data.length };
       return { rank: idx + 1, total: data.length };
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   // Recent voted polls (for own profile or friends, show choice; otherwise just the poll)
   const { data: recentVotes = [] } = useQuery({
-    queryKey: ['public-recent-votes', userId, user?.id],
+    queryKey: ['public-recent-votes', targetId, user?.id],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!targetId) return [];
       const { data: votes } = await supabase
         .from('votes')
         .select('poll_id, choice, created_at')
-        .eq('user_id', userId)
+        .eq('user_id', targetId)
         .order('created_at', { ascending: false })
         .limit(6);
       if (!votes || votes.length === 0) return [];
@@ -223,7 +227,7 @@ export default function UserProfile() {
         })
         .filter(Boolean) as Array<{ id: string; question: string; option_a: string; option_b: string; image_a_url: string | null; image_b_url: string | null; choice: string }>;
     },
-    enabled: !!userId,
+    enabled: !!targetId,
   });
 
   const archetype = deriveArchetype(traits);
@@ -259,14 +263,14 @@ export default function UserProfile() {
           )}
 
           {/* Follow button for non-own profiles */}
-          {user && !isOwnProfile && userId && (
+          {user && !isOwnProfile && targetId && (
             <Button
-              variant={isFollowing(userId) ? 'outline' : 'default'}
+              variant={isFollowing(targetId) ? 'outline' : 'default'}
               size="sm"
               className="mt-3 rounded-full px-6"
-              onClick={() => toggleFollow(userId)}
+              onClick={() => toggleFollow(targetId)}
             >
-              {isFollowing(userId) ? 'Following' : 'Follow'}
+              {isFollowing(targetId) ? 'Following' : 'Follow'}
             </Button>
           )}
 
@@ -285,10 +289,52 @@ export default function UserProfile() {
         </div>
 
         {/* Personality Type */}
-        {userId && <PersonalityTypeCard userId={userId} />}
+        {/* Friends-only gate for non-friends viewing someone else's profile */}
+        {!canViewFullProfile && targetId && (
+          <div className="glass rounded-2xl p-6 text-center space-y-3 border border-primary/20">
+            <div className="w-12 h-12 rounded-full bg-primary/10 mx-auto flex items-center justify-center">
+              <Lock className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-foreground">Friends only</h3>
+              <p className="text-xs text-muted-foreground mt-1 px-4">
+                Add @{profileData?.username || 'this user'} as a friend to see their badges, rank, voting patterns, and recent votes.
+              </p>
+            </div>
+            {hasPendingRequest(targetId) ? (
+              <Button variant="outline" className="rounded-full" disabled>
+                Request sent
+              </Button>
+            ) : (
+              <Button
+                className="rounded-full gap-2"
+                onClick={() => sendRequest(targetId)}
+                disabled={sendingRequest}
+              >
+                <UserPlus className="h-4 w-4" />
+                Add friend
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Compare Votes CTA — friends only */}
+        {canViewFullProfile && !isOwnProfile && targetId && (
+          <Button
+            variant="outline"
+            className="w-full rounded-xl gap-2"
+            onClick={() => navigate(`/friends/${targetId}/compare`)}
+          >
+            <Heart className="h-4 w-4" />
+            Compare votes with @{profileData?.username}
+          </Button>
+        )}
+
+        {/* Personality Type — friends only */}
+        {canViewFullProfile && targetId && <PersonalityTypeCard userId={targetId} />}
 
         {/* Taste Patterns */}
-        {patterns.length > 0 && (
+        {canViewFullProfile && patterns.length > 0 && (
           <div className="glass rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2 mb-1">
               <BarChart3 className="h-4 w-4 text-primary" />
@@ -304,6 +350,7 @@ export default function UserProfile() {
         )}
 
         {/* Stats Grid */}
+        {canViewFullProfile && (
         <div className="grid grid-cols-3 gap-2">
           <div className="glass rounded-xl p-3 text-center">
             <div className="text-xl font-bold text-foreground">{voteCount}</div>
@@ -324,9 +371,10 @@ export default function UserProfile() {
             <div className="text-[10px] text-muted-foreground">Minority</div>
           </div>
         </div>
+        )}
 
         {/* Leaderboard Rank */}
-        {rankInfo?.rank && (
+        {canViewFullProfile && rankInfo?.rank && (
           <button
             onClick={() => navigate('/leaderboard')}
             className="w-full glass rounded-2xl p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors"
@@ -345,7 +393,7 @@ export default function UserProfile() {
         )}
 
         {/* Earned Badges */}
-        {earnedBadges.length > 0 && (
+        {canViewFullProfile && earnedBadges.length > 0 && (
           <div className="glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Award className="h-4 w-4 text-primary" />
@@ -378,7 +426,7 @@ export default function UserProfile() {
         )}
 
         {/* Top Categories */}
-        {topCategories.length > 0 && (
+        {canViewFullProfile && topCategories.length > 0 && (
           <div className="glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Users className="h-4 w-4 text-primary" />
@@ -395,7 +443,7 @@ export default function UserProfile() {
         )}
 
         {/* Recent Voted Polls */}
-        {recentVotes.length > 0 && (
+        {canViewFullProfile && recentVotes.length > 0 && (
           <div className="glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <BarChart3 className="h-4 w-4 text-primary" />
@@ -444,12 +492,12 @@ export default function UserProfile() {
         )}
 
         {/* Personality Type Compatibility */}
-        {user && !isOwnProfile && userId && (
-          <PersonalityCompatibility targetUserId={userId} targetUsername={profileData?.username} />
+        {canViewFullProfile && user && !isOwnProfile && targetId && (
+          <PersonalityCompatibility targetUserId={targetId} targetUsername={profileData?.username} />
         )}
 
         {/* Agreement Score */}
-        {compatScore !== null && compatScore !== undefined && !isOwnProfile && (
+        {canViewFullProfile && compatScore !== null && compatScore !== undefined && !isOwnProfile && (
           <div className="glass rounded-2xl p-4 border border-primary/20 bg-primary/5 space-y-3">
             <p className="text-sm text-center text-foreground">
               You and <span className="font-bold">@{profileData?.username}</span> agree{' '}
