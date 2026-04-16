@@ -480,12 +480,51 @@ function ResultsView({
   const namesOf = (ids: string[]) =>
     ids.map((id) => friendMap.get(id)?.friend_username || '?').join(', ');
 
+  async function shareResults(text: string) {
+    const shareData = {
+      title: 'Versa Crew Compare',
+      text,
+      url: typeof window !== 'undefined' ? window.location.origin + '/compare/group' : '',
+    };
+    try {
+      if (typeof navigator !== 'undefined' && (navigator as any).share) {
+        await (navigator as any).share(shareData);
+        return;
+      }
+    } catch {
+      // user cancelled or share failed — fall through to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(`${text}\n${shareData.url}`);
+      toast.success('Copied to clipboard');
+    } catch {
+      toast.error('Could not share');
+    }
+  }
+
   if (stats.mode === 'vibe') {
+    const vibeShareText =
+      `🌟 Crew Vibe Check on Versa\n` +
+      `Crew: ${namesOf(vibeGroup)}\n` +
+      `${stats.alignmentPct}% aligned across ${stats.sharedPolls} shared polls.` +
+      (stats.catList?.[0] ? `\nMost aligned on: ${stats.catList[0].cat} (${stats.catList[0].pct}%)` : '');
+
     return (
       <div className="space-y-4">
-        <button onClick={onReset} className="text-xs text-muted-foreground underline">
-          ← Pick a different crew
-        </button>
+        <div className="flex items-center justify-between">
+          <button onClick={onReset} className="text-xs text-muted-foreground underline">
+            ← Pick a different crew
+          </button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full gap-1.5 h-8"
+            onClick={() => shareResults(vibeShareText)}
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            Share
+          </Button>
+        </div>
 
         <div className="glass rounded-3xl p-6 text-center space-y-2">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Your Crew</p>
