@@ -104,11 +104,19 @@ export default function Profile() {
       <div className="p-4 space-y-6 animate-slide-up">
         {/* Profile Header */}
         <div className="glass rounded-3xl p-6 text-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-primary mx-auto mb-4 flex items-center justify-center">
-            <span className="text-3xl font-display font-bold text-primary-foreground">
-              {profile?.username?.[0]?.toUpperCase() || '?'}
-            </span>
-          </div>
+          {(profile as any)?.avatar_url ? (
+            <img
+              src={(profile as any).avatar_url}
+              alt="Profile"
+              className="w-20 h-20 rounded-full mx-auto mb-4 object-cover ring-2 ring-border"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-gradient-primary mx-auto mb-4 flex items-center justify-center">
+              <span className="text-3xl font-display font-bold text-primary-foreground">
+                {profile?.username?.[0]?.toUpperCase() || '?'}
+              </span>
+            </div>
+          )}
           
           <div className="flex items-center justify-center gap-1.5">
             <h1 className="text-2xl font-display font-bold">

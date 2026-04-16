@@ -13,8 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Camera, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const AGE_RANGES = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
@@ -27,6 +28,8 @@ export default function EditProfile() {
   const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     username: '',
@@ -45,8 +48,41 @@ export default function EditProfile() {
         country: profile.country || '',
         city: profile.city || '',
       });
+      setAvatarUrl((profile.avatar_url as string) || null);
     }
   }, [profile]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+      const { error: updErr } = await supabase
+        .from('users')
+        .update({ avatar_url: publicUrl })
+        .eq('id', profile.id);
+      if (updErr) throw updErr;
+      setAvatarUrl(publicUrl);
+      await refreshProfile();
+      toast.success('Profile picture updated!');
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      toast.error('Failed to upload photo');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!profile) return;
@@ -93,6 +129,33 @@ export default function EditProfile() {
 
         {/* Form */}
         <div className="glass rounded-2xl p-6 space-y-6">
+          {/* Avatar */}
+          <div className="flex flex-col items-center gap-3">
+            <label className="relative cursor-pointer group">
+              <Avatar className="h-24 w-24 ring-2 ring-border">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt="Profile" />}
+                <AvatarFallback className="text-2xl font-display font-bold bg-gradient-primary text-primary-foreground">
+                  {formData.username?.[0]?.toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                {uploading ? (
+                  <Loader2 className="h-6 w-6 text-white animate-spin" />
+                ) : (
+                  <Camera className="h-6 w-6 text-white" />
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarUpload}
+                disabled={uploading}
+              />
+            </label>
+            <p className="text-xs text-muted-foreground">Tap to change photo</p>
+          </div>
+
           {/* Username */}
           <div className="space-y-2">
             <Label htmlFor="username" className="text-foreground">Username</Label>
