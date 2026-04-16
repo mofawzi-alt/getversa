@@ -1195,6 +1195,12 @@ export default function Home() {
           );
         })()}
 
+        {/* Personality & Decision Helper */}
+        {user && <PersonalitySnapshot />}
+        <div className="mt-3">
+          <DecisionHelper />
+        </div>
+
         <HomeResultsModal
           open={!!modalPoll}
           onOpenChange={(open) => !open && setModalPoll(null)}
