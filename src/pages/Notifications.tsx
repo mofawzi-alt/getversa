@@ -56,6 +56,7 @@ export default function Notifications() {
       case 'weekly_recap': return '📊';
       case 'social_proof': return '👫';
       case 'badge_earned': return '🏅';
+      case 'new_message': return '💬';
       default: return '🔔';
     }
   };
