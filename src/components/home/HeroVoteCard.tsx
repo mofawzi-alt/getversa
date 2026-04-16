@@ -260,7 +260,18 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     // Determine mode: Flash vs Full Reveal
     const milestoneVotes = [10, 25, 50, 100, 200, 500, 1000];
     const isMilestone = milestoneVotes.includes(voteNumber);
-    const shouldFullReveal = isMinorityVote || isCloseSplit || firstVoteToday || isMilestone;
+    const shouldFullReveal = false; // Cinematic card disabled — replaced with subtle toast
+
+    // Surface special moments as a small toast at top instead of full-screen takeover
+    if (isMinorityVote) {
+      toast('🎯 You\'re in the minority on this one', { duration: 2200 });
+    } else if (isCloseSplit) {
+      toast('⚖️ Almost a perfect split', { duration: 2200 });
+    } else if (firstVoteToday) {
+      toast('👋 First vote of the day', { duration: 2000 });
+    } else if (isMilestone) {
+      toast(`🔥 ${voteNumber} votes in`, { duration: 2200 });
+    }
 
     if (shouldFullReveal) {
       setRevealMode('full');
