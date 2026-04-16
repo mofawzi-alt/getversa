@@ -341,6 +341,7 @@ export function useFriends() {
     pendingRequests,
     loadingRequests,
     sentRequests,
+    loadingSentRequests,
     suggestedFriends,
     loadingSuggested,
     searchUsers,
