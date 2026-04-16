@@ -1793,6 +1793,7 @@ export type Database = {
         Returns: {
           choice: string
           compatibility_score: number
+          friend_avatar_url: string
           friend_id: string
           friend_username: string
         }[]
@@ -1801,6 +1802,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: {
           compatibility_score: number
+          friend_avatar_url: string
           friend_id: string
           friend_points: number
           friend_username: string
@@ -1811,6 +1813,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: {
           compatibility_score: number
+          friend_avatar_url: string
           friend_id: string
           friend_points: number
           friend_username: string
@@ -1832,6 +1835,7 @@ export type Database = {
       get_leaderboard: {
         Args: { limit_count?: number; order_by?: string }
         Returns: {
+          avatar_url: string
           current_streak: number
           id: string
           longest_streak: number
@@ -1857,6 +1861,7 @@ export type Database = {
       get_public_profiles: {
         Args: { user_ids?: string[] }
         Returns: {
+          avatar_url: string
           created_at: string
           current_streak: number
           id: string
@@ -1881,6 +1886,7 @@ export type Database = {
       get_similar_voters: {
         Args: { p_limit?: number; p_user_id: string }
         Returns: {
+          avatar_url: string
           matching_votes: number
           points: number
           shared_polls: number
@@ -1906,6 +1912,7 @@ export type Database = {
           last_message_preview: string
           last_message_type: string
           last_sender_id: string
+          other_avatar_url: string
           other_user_id: string
           other_username: string
           unread_count: number
@@ -1941,6 +1948,7 @@ export type Database = {
       search_users_by_username: {
         Args: { current_user_id: string; search_term: string }
         Returns: {
+          avatar_url: string
           friendship_status: string
           id: string
           points: number
