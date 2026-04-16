@@ -349,10 +349,19 @@ export default function UserProfile() {
             </div>
           )}
 
-          {/* Voting Patterns strip */}
-          {canViewFullProfile && patterns.length > 0 && (
+          {/* Voting Patterns + Rank strip */}
+          {canViewFullProfile && (patterns.length > 0 || rankInfo?.rank) && (
             <div className="mt-2 pt-2 border-t border-border/40 flex items-center gap-2 overflow-x-auto scrollbar-hide">
-              <BarChart3 className="h-3 w-3 text-primary shrink-0" />
+              {rankInfo?.rank && (
+                <button
+                  onClick={() => navigate('/leaderboard')}
+                  className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 hover:bg-amber-500/25 transition-colors"
+                >
+                  <Trophy className="h-3 w-3" />
+                  <span className="text-[10px] font-bold">#{rankInfo.rank}</span>
+                </button>
+              )}
+              {patterns.length > 0 && <BarChart3 className="h-3 w-3 text-primary shrink-0" />}
               {patterns.map((p, i) => (
                 <span
                   key={i}
@@ -406,26 +415,6 @@ export default function UserProfile() {
             <Heart className="h-3.5 w-3.5" />
             Compare votes with @{profileData?.username}
           </Button>
-        )}
-
-
-        {/* Leaderboard Rank */}
-        {canViewFullProfile && rankInfo?.rank && (
-          <button
-            onClick={() => navigate('/leaderboard')}
-            className="w-full glass rounded-xl p-2.5 flex items-center gap-2.5 hover:bg-muted/30 transition-colors"
-          >
-            <div className="h-8 w-8 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0">
-              <Trophy className="h-4 w-4 text-amber-500" />
-            </div>
-            <div className="flex-1 text-left">
-              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Global Rank</div>
-              <div className="text-sm font-bold text-foreground">
-                #{rankInfo.rank} <span className="text-[11px] font-normal text-muted-foreground">of {rankInfo.total}</span>
-              </div>
-            </div>
-            <span className="text-[11px] font-semibold text-primary">View →</span>
-          </button>
         )}
 
 
