@@ -174,9 +174,9 @@ export default function Friends() {
             </TabsTrigger>
             <TabsTrigger value="requests" className="relative">
               Requests
-              {pendingRequests.length > 0 && (
+              {(pendingRequests.length + sentRequests.length) > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
-                  {pendingRequests.length}
+                  {pendingRequests.length + sentRequests.length}
                 </span>
               )}
             </TabsTrigger>
