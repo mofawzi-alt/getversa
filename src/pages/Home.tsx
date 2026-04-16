@@ -939,6 +939,17 @@ export default function Home() {
         {/* Social proof counter */}
         <FriendsJoinedToday />
 
+        {/* Personal Weekly Summary */}
+        <div className="px-3 mb-2">
+          <PersonalWeeklySummary />
+        </div>
+
+        {/* Personality & Decision Helper */}
+        <div className="px-3 mb-2 space-y-1.5">
+          {user && <PersonalitySnapshot />}
+          <DecisionHelper />
+        </div>
+
         {/* ═══ DAILY PULSE STRIP ═══ */}
         <DailyPulseStrip />
 
