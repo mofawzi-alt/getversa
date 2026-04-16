@@ -8,6 +8,7 @@ import { useFriends, SearchResult } from '@/hooks/useFriends';
 import { useOpenConversation, useConversations } from '@/hooks/useMessages';
 import FollowButton from '@/components/poll/FollowButton';
 import { useAuth } from '@/contexts/AuthContext';
+import SwipeableFriendRow from '@/components/friends/SwipeableFriendRow';
 import { 
   Search, UserPlus, UserCheck, Users, Loader2, 
   Check, X, Heart, ChevronRight, Trophy, 
@@ -197,94 +198,85 @@ export default function Friends() {
               </div>
             ) : (
               friends.map((friend) => (
-                <div 
-                  key={friend.friend_id} 
-                  className="glass rounded-xl p-4 cursor-pointer hover:bg-secondary/50 transition-colors"
-                  onClick={() => navigate(`/friends/${friend.friend_id}`)}
+                <SwipeableFriendRow
+                  key={friend.friend_id}
+                  friendName={`@${friend.friend_username || 'this friend'}`}
+                  onDelete={() => removeFriend(friend.friend_id)}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg font-bold text-primary-foreground">
-                        {friend.friend_username?.[0]?.toUpperCase() || '?'}
-                      </span>
-                    </div>
-                    
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold truncate">
-                          @{friend.friend_username || 'Unknown'}
-                        </h3>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Trophy className="h-3 w-3" />
-                          {friend.friend_points || 0}
-                        </div>
+                  <div
+                    className="glass rounded-xl p-4 cursor-pointer hover:bg-secondary/50 transition-colors"
+                    onClick={() => navigate(`/friends/${friend.friend_id}`)}
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Avatar */}
+                      <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-primary-foreground">
+                          {friend.friend_username?.[0]?.toUpperCase() || '?'}
+                        </span>
                       </div>
-                      
-                      {/* Compatibility Score with Trend */}
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className={`flex items-center gap-1 ${getCompatibilityColor(friend.compatibility_score)}`}>
-                          <Heart className="h-4 w-4" />
-                          <span className="font-bold">
-                            {friend.compatibility_score !== null ? `${friend.compatibility_score}%` : '—'}
-                          </span>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold truncate">
+                            @{friend.friend_username || 'Unknown'}
+                          </h3>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Trophy className="h-3 w-3" />
+                            {friend.friend_points || 0}
+                          </div>
                         </div>
-                        
-                        {/* Trend Indicator */}
-                        {friend.trend && friend.trend !== 'neutral' && friend.trend !== 'stable' && (
-                          <div className="flex items-center gap-1">
-                            {getTrendIcon(friend.trend)}
-                            <span className={`text-xs ${friend.trend === 'up' ? 'text-green-500' : 'text-orange-500'}`}>
-                              {getTrendLabel(friend.trend, friend.trend_change)}
+
+                        {/* Compatibility Score with Trend */}
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className={`flex items-center gap-1 ${getCompatibilityColor(friend.compatibility_score)}`}>
+                            <Heart className="h-4 w-4" />
+                            <span className="font-bold">
+                              {friend.compatibility_score !== null ? `${friend.compatibility_score}%` : '—'}
                             </span>
                           </div>
-                        )}
-                        
-                        {(!friend.trend || friend.trend === 'neutral' || friend.trend === 'stable') && (
-                          <span className="text-xs text-muted-foreground">
-                            {getCompatibilityLabel(friend.compatibility_score)}
+
+                          {friend.trend && friend.trend !== 'neutral' && friend.trend !== 'stable' && (
+                            <div className="flex items-center gap-1">
+                              {getTrendIcon(friend.trend)}
+                              <span className={`text-xs ${friend.trend === 'up' ? 'text-green-500' : 'text-orange-500'}`}>
+                                {getTrendLabel(friend.trend, friend.trend_change)}
+                              </span>
+                            </div>
+                          )}
+
+                          {(!friend.trend || friend.trend === 'neutral' || friend.trend === 'stable') && (
+                            <span className="text-xs text-muted-foreground">
+                              {getCompatibilityLabel(friend.compatibility_score)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Message Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-primary hover:text-primary hover:bg-primary/10 relative"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openChat(friend.friend_id);
+                        }}
+                        disabled={openConv.isPending}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        {(unreadByFriend.get(friend.friend_id) || 0) > 0 && (
+                          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center leading-none ring-2 ring-background">
+                            {(unreadByFriend.get(friend.friend_id) || 0) > 9 ? '9+' : unreadByFriend.get(friend.friend_id)}
                           </span>
                         )}
-                      </div>
+                      </Button>
+
+                      {/* Arrow */}
+                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
                     </div>
-
-                    {/* Message Button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-primary hover:text-primary hover:bg-primary/10 relative"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openChat(friend.friend_id);
-                      }}
-                      disabled={openConv.isPending}
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      {(unreadByFriend.get(friend.friend_id) || 0) > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center leading-none ring-2 ring-background">
-                          {(unreadByFriend.get(friend.friend_id) || 0) > 9 ? '9+' : unreadByFriend.get(friend.friend_id)}
-                        </span>
-                      )}
-                    </Button>
-
-                    {/* Arrow */}
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-
-                    {/* Remove Button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFriend(friend.friend_id);
-                      }}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
                   </div>
-                </div>
+                </SwipeableFriendRow>
               ))
             )}
           </TabsContent>
