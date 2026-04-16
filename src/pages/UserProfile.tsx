@@ -325,6 +325,58 @@ export default function UserProfile() {
           </div>
         </div>
 
+        {/* Leaderboard Rank */}
+        {rankInfo?.rank && (
+          <button
+            onClick={() => navigate('/leaderboard')}
+            className="w-full glass rounded-2xl p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors"
+          >
+            <div className="h-10 w-10 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0">
+              <Trophy className="h-5 w-5 text-amber-500" />
+            </div>
+            <div className="flex-1 text-left">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Global Rank</div>
+              <div className="text-base font-bold text-foreground">
+                #{rankInfo.rank} <span className="text-xs font-normal text-muted-foreground">of {rankInfo.total}</span>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-primary">View →</span>
+          </button>
+        )}
+
+        {/* Earned Badges */}
+        {earnedBadges.length > 0 && (
+          <div className="glass rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Award className="h-4 w-4 text-primary" />
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                Badges Earned · {earnedBadges.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-4 gap-3">
+              {earnedBadges.slice(0, 8).map((b) => (
+                <div
+                  key={b.badge_id}
+                  className="flex flex-col items-center text-center"
+                  title={b.badge_description}
+                >
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-1">
+                    <Award className="h-6 w-6 text-primary" />
+                  </div>
+                  <span className="text-[9px] font-semibold text-foreground line-clamp-2 leading-tight">
+                    {b.badge_name}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {earnedBadges.length > 8 && (
+              <p className="text-[10px] text-muted-foreground text-center mt-3">
+                +{earnedBadges.length - 8} more
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Top Categories */}
         {topCategories.length > 0 && (
           <div className="glass rounded-2xl p-4">
@@ -338,6 +390,55 @@ export default function UserProfile() {
                   {cat}
                 </span>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recent Voted Polls */}
+        {recentVotes.length > 0 && (
+          <div className="glass rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="h-4 w-4 text-primary" />
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                Recent Votes
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {recentVotes.map((p) => {
+                const showChoice = isOwnProfile;
+                const chosenIsA = p.choice === 'A';
+                const chosenLabel = chosenIsA ? p.option_a : p.option_b;
+                const imgA = getPollDisplayImageSrc({ imageUrl: p.image_a_url, option: p.option_a, question: p.question, side: 'A' });
+                const imgB = getPollDisplayImageSrc({ imageUrl: p.image_b_url, option: p.option_b, question: p.question, side: 'B' });
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => navigate(`/poll/${p.id}`)}
+                    className="relative rounded-xl overflow-hidden bg-muted active:scale-95 transition-transform"
+                    style={{ aspectRatio: '4/5' }}
+                  >
+                    <div className="absolute inset-0 flex">
+                      <div className="w-1/2 h-full overflow-hidden">
+                        <img src={imgA} alt={p.option_a} className="w-full h-full object-cover" onError={(e) => handlePollImageError(e, { option: p.option_a, question: p.question, side: 'A' })} />
+                      </div>
+                      <div className="w-1/2 h-full overflow-hidden">
+                        <img src={imgB} alt={p.option_b} className="w-full h-full object-cover" onError={(e) => handlePollImageError(e, { option: p.option_b, question: p.question, side: 'B' })} />
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                    <div className="absolute bottom-1.5 left-1.5 right-1.5">
+                      <p className="text-white text-[9px] font-bold leading-tight line-clamp-2 drop-shadow-lg">
+                        {p.question}
+                      </p>
+                      {showChoice && (
+                        <p className="text-white/90 text-[8px] mt-0.5 truncate">
+                          Picked: <span className="font-semibold">{chosenLabel}</span>
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
