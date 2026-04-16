@@ -35,7 +35,13 @@ export default function Friends() {
 
   const navigate = useNavigate();
   const openConv = useOpenConversation();
-  const { totalUnread } = useConversations();
+  const { data: conversations = [], totalUnread } = useConversations();
+  const { user } = useAuth();
+  const unreadByFriend = new Map<string, number>(
+    conversations
+      .filter((c) => c.unread_count > 0 && c.last_sender_id !== user?.id)
+      .map((c) => [c.other_user_id, c.unread_count])
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
