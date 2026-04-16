@@ -442,21 +442,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           {poll.is_hot_take && <HotTakeBadge />}
           <ControversialBadge percentA={poll.percentA} percentB={poll.percentB} totalVotes={poll.totalVotes} />
 
-          {/* Send to friend button — top right */}
-          {user && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowShareSheet(true);
-              }}
-              onTouchStart={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-              aria-label="Send to friend"
-              className="absolute top-3 right-3 z-30 w-9 h-9 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform shadow-lg"
-            >
-              <Send className="w-4 h-4 text-white" strokeWidth={2.2} />
-            </button>
-          )}
+
 
           {/* Option A — left half */}
           <div
