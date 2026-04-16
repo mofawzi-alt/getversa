@@ -3,13 +3,14 @@ import { useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ArrowLeft, Users, Search } from 'lucide-react';
+import { Loader2, ArrowLeft, Users, Search, Send } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp as TrendUp } from 'lucide-react';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import ShareButton from '@/components/poll/ShareButton';
+import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 interface VoteHistoryItem {
@@ -30,6 +31,8 @@ interface VoteHistoryItem {
 }
 
 function FullScreenHistoryCard({ vote, index, total }: { vote: VoteHistoryItem; index: number; total: number }) {
+  const { user } = useAuth();
+  const [shareSheetOpen, setShareSheetOpen] = useState(false);
   const winnerIsA = vote.percentA >= vote.percentB;
   const { data: genderTeaser } = useGenderSplitTeaser(
     vote.totalVotes >= 10 ? vote.pollId : '',
