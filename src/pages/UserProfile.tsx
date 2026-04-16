@@ -212,7 +212,7 @@ export default function UserProfile() {
         .select('poll_id, choice, created_at')
         .eq('user_id', targetId)
         .order('created_at', { ascending: false })
-        .limit(6);
+        .limit(9);
       if (!votes || votes.length === 0) return [];
       const pollIds = votes.map(v => v.poll_id);
       const { data: polls } = await supabase
