@@ -268,21 +268,6 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
       )}
 
 
-      {/* Browse prompt */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <Button
-          onClick={() => navigate('/browse')}
-          className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-display font-bold rounded-xl"
-        >
-          <Compass className="mr-2 h-4 w-4" />
-          Explore all results
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </motion.div>
     </section>
   );
 }
