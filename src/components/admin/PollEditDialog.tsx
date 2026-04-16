@@ -150,6 +150,8 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           starts_at: startsAt ? new Date(startsAt).toISOString() : null,
           ends_at: endsAt ? new Date(endsAt).toISOString() : null,
           target_countries: targetCountries.length > 0 ? targetCountries : [],
+          target_gender: targetGender || null,
+          target_age_range: targetAgeRange || null,
         })
         .eq('id', poll.id);
       if (error) throw error;
