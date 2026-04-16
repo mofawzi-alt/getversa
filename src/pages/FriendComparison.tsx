@@ -35,6 +35,15 @@ export default function FriendComparison() {
   const { friendId } = useParams<{ friendId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const focusPollId = searchParams.get('focus');
+  const focusedRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (focusPollId && focusedRef.current) {
+      focusedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [focusPollId]);
 
   // Get friend info
   const { data: friend, isLoading: loadingFriend } = useQuery({
