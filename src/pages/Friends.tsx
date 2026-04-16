@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFriends, SearchResult } from '@/hooks/useFriends';
+import { useOpenConversation, useConversations } from '@/hooks/useMessages';
 import FollowButton from '@/components/poll/FollowButton';
 import { 
   Search, UserPlus, UserCheck, Users, Loader2, 
   Check, X, Heart, ChevronRight, Trophy, 
-  TrendingUp, TrendingDown, Minus, Sparkles
+  TrendingUp, TrendingDown, Minus, Sparkles, MessageCircle
 } from 'lucide-react';
 
 export default function Friends() {
@@ -33,9 +34,18 @@ export default function Friends() {
   } = useFriends();
 
   const navigate = useNavigate();
+  const openConv = useOpenConversation();
+  const { totalUnread } = useConversations();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  const openChat = async (friendId: string) => {
+    try {
+      const convId = await openConv.mutateAsync(friendId);
+      navigate(`/messages/${convId}`);
+    } catch {}
+  };
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
@@ -97,15 +107,31 @@ export default function Friends() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full gap-1.5"
-              onClick={() => navigate('/compare')}
-            >
-              <Heart className="h-3.5 w-3.5" />
-              Compare
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-1.5 relative"
+                onClick={() => navigate('/messages')}
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                Inbox
+                {totalUnread > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                    {totalUnread}
+                  </span>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-1.5"
+                onClick={() => navigate('/compare')}
+              >
+                <Heart className="h-3.5 w-3.5" />
+                Compare
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -196,6 +222,20 @@ export default function Friends() {
                         )}
                       </div>
                     </div>
+
+                    {/* Message Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary hover:text-primary hover:bg-primary/10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openChat(friend.friend_id);
+                      }}
+                      disabled={openConv.isPending}
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
 
                     {/* Arrow */}
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />

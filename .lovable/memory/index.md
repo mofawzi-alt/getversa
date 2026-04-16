@@ -100,3 +100,4 @@ Updated: now
 - [Gamification V2](mem://features/gamification-v2) — Weekly leaderboard, category badges, prediction accuracy, poll suggestions
 - [Retention Push Notifications](mem://features/retention-push-notifications) — Friend voted push, personalized category push, weekly recap, social proof nudge
 - [Compatibility Link](mem://features/compatibility-link) — Shareable /compare/u/:userId link + QR code with blended vote/dimension/personality scoring
+- [Friend Messaging](mem://features/friend-messaging) — IG-style 1-on-1 DMs between accepted friends with text + poll sharing, realtime, unread badges
