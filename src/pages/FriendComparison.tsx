@@ -61,6 +61,19 @@ export default function FriendComparison() {
     enabled: !!friendId,
   });
 
+  // Get current user's profile (for avatar)
+  const { data: myProfile } = useQuery({
+    queryKey: ['my-profile-avatar', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .rpc('get_public_profiles', { user_ids: [user.id] });
+      if (error) throw error;
+      return data?.[0] || null;
+    },
+    enabled: !!user,
+  });
+
   // Get compatibility trend
   const { data: trendData } = useQuery({
     queryKey: ['compatibility-trend', user?.id, friendId],
