@@ -10,8 +10,10 @@ import {
 } from '@/hooks/useMessages';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
+import PickPollToShareSheet from '@/components/messages/PickPollToShareSheet';
+import { toast } from 'sonner';
 
 interface PollPreview {
   id: string;
@@ -100,6 +102,7 @@ export default function ChatThread() {
   const { user } = useAuth();
   const [otherUsername, setOtherUsername] = useState<string>('');
   const [text, setText] = useState('');
+  const [pollPickerOpen, setPollPickerOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [], isLoading } = useConversationMessages(conversationId);
@@ -142,6 +145,17 @@ export default function ChatThread() {
     if (!conversationId || !text.trim()) return;
     sendMessage.mutate({ conversationId, content: text.trim() });
     setText('');
+  };
+
+  const handleSendPoll = async (pollId: string) => {
+    if (!conversationId) return;
+    try {
+      await sendMessage.mutateAsync({ conversationId, sharedPollId: pollId });
+      setPollPickerOpen(false);
+      toast.success('Poll sent!');
+    } catch {
+      // toast handled in hook
+    }
   };
 
   return (
@@ -188,6 +202,14 @@ export default function ChatThread() {
         style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
       >
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPollPickerOpen(true)}
+            className="w-10 h-10 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center shrink-0 text-foreground"
+            aria-label="Share a poll"
+          >
+            <BarChart3 className="h-4 w-4" />
+          </button>
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -214,6 +236,13 @@ export default function ChatThread() {
           </Button>
         </div>
       </div>
+
+      <PickPollToShareSheet
+        open={pollPickerOpen}
+        onOpenChange={setPollPickerOpen}
+        onPick={handleSendPoll}
+        sending={sendMessage.isPending}
+      />
     </div>
   );
 }
