@@ -41,6 +41,7 @@ import UserProfile from "./pages/UserProfile";
 import Compare from "./pages/Compare";
 import CompareUser from "./pages/CompareUser";
 import PersonalityResults from "./pages/PersonalityResults";
+import BrandPortal from "./pages/BrandPortal";
  import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
@@ -160,6 +161,7 @@ function AppInner() {
           <Route path="/friends/:friendId" element={<ProtectedRoute><FriendComparison /></ProtectedRoute>} />
           <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
           <Route path="/compare/u/:userId" element={<CompareUser />} />
+          <Route path="/brands" element={<ProtectedRoute><BrandPortal /></ProtectedRoute>} />
           <Route path="/user/:userId" element={<UserProfile />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
