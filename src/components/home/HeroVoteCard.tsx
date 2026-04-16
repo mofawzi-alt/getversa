@@ -414,7 +414,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         ref={cardRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className={`relative rounded-2xl overflow-hidden border border-border/60 shadow-xl select-none ${
+        className={`relative isolate rounded-2xl overflow-hidden border border-border/60 shadow-xl select-none ${
           !result && !isVoting ? 'cursor-pointer' : ''
         }`}
         style={{
@@ -510,6 +510,20 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           {/* Center divider */}
           <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
 
+          {/* Question overlay centered in middle */}
+          <div className="absolute inset-0 z-30 flex items-center justify-center px-5 pointer-events-none transform-gpu">
+            <div className="max-w-[82%] px-2 py-1">
+              <h2 className="text-white text-xl font-display font-bold drop-shadow-lg text-center leading-snug">
+                {poll.question}
+              </h2>
+              {poll.subtitle && (
+                <p className="text-white/80 text-sm font-medium text-center mt-0.5 drop-shadow">
+                  {poll.subtitle}
+                </p>
+              )}
+            </div>
+          </div>
+
           {/* Option B — right half */}
           <div
             className="w-1/2 h-full relative overflow-hidden transition-transform duration-200"
@@ -574,20 +588,6 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 </>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* Question overlay centered in middle */}
-        <div className="absolute inset-0 z-10 flex items-center justify-center px-5 pointer-events-none">
-          <div className="max-w-[82%] px-2 py-1">
-            <h2 className="text-white text-xl font-display font-bold drop-shadow-lg text-center leading-snug">
-              {poll.question}
-            </h2>
-            {poll.subtitle && (
-              <p className="text-white/80 text-sm font-medium text-center mt-0.5 drop-shadow">
-                {poll.subtitle}
-              </p>
-            )}
           </div>
         </div>
 
