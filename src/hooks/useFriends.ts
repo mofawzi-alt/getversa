@@ -263,6 +263,29 @@ export function useFriends() {
     },
   });
 
+  // Cancel sent friend request
+  const cancelRequestMutation = useMutation({
+    mutationFn: async (recipientId: string) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('friendships')
+        .delete()
+        .eq('requester_id', user.id)
+        .eq('recipient_id', recipientId)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sent-friend-requests'] });
+      toast.success('Friend request cancelled');
+    },
+    onError: () => {
+      toast.error('Failed to cancel request');
+    },
+  });
+
   // Remove friend
   const removeFriendMutation = useMutation({
     mutationFn: async (friendId: string) => {
@@ -315,6 +338,8 @@ export function useFriends() {
     acceptingRequest: acceptRequestMutation.isPending,
     rejectRequest: rejectRequestMutation.mutate,
     rejectingRequest: rejectRequestMutation.isPending,
+    cancelRequest: cancelRequestMutation.mutate,
+    cancellingRequest: cancelRequestMutation.isPending,
     removeFriend: removeFriendMutation.mutate,
     removingFriend: removeFriendMutation.isPending,
     isFriend,
