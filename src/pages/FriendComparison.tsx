@@ -279,14 +279,17 @@ export default function FriendComparison() {
             </div>
           ) : (
             <div className="space-y-3">
-              {sharedVotes.map((vote) => (
-                <div 
-                  key={vote.poll_id} 
-                  className={`glass rounded-xl p-4 border-l-4 ${
-                    vote.is_match 
-                      ? 'border-l-green-500 bg-green-500/5' 
+              {sharedVotes.map((vote) => {
+                const isFocused = focusPollId === vote.poll_id;
+                return (
+                <div
+                  key={vote.poll_id}
+                  ref={isFocused ? focusedRef : undefined}
+                  className={`glass rounded-xl p-4 border-l-4 transition-all ${
+                    vote.is_match
+                      ? 'border-l-green-500 bg-green-500/5'
                       : 'border-l-orange-500 bg-orange-500/5'
-                  }`}
+                  } ${isFocused ? 'ring-2 ring-primary shadow-lg' : ''}`}
                 >
                   <div className="flex items-start gap-3">
                     {/* Match indicator */}
