@@ -804,8 +804,14 @@ export default function SwipeFeed() {
 
       if (profile) {
         allPolls = allPolls.filter(p => {
-          if (p.target_gender && p.target_gender !== 'All' && profile.gender && p.target_gender !== profile.gender) return false;
-          if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range && p.target_age_range !== profile.age_range) return false;
+          if (p.target_gender && p.target_gender !== 'All' && profile.gender) {
+            const genders = p.target_gender.split(',').map((g: string) => g.trim());
+            if (!genders.includes(profile.gender)) return false;
+          }
+          if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range) {
+            const ages = p.target_age_range.split(',').map((a: string) => a.trim());
+            if (!ages.includes(profile.age_range)) return false;
+          }
           // Multi-country targeting: target_countries array takes priority over legacy target_country
           const countries = (p as any).target_countries as string[] | null;
           if (countries && countries.length > 0) {
