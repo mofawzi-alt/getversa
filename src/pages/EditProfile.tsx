@@ -28,6 +28,8 @@ export default function EditProfile() {
   const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     username: '',
@@ -46,8 +48,41 @@ export default function EditProfile() {
         country: profile.country || '',
         city: profile.city || '',
       });
+      setAvatarUrl((profile.avatar_url as string) || null);
     }
   }, [profile]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+      const { error: updErr } = await supabase
+        .from('users')
+        .update({ avatar_url: publicUrl })
+        .eq('id', profile.id);
+      if (updErr) throw updErr;
+      setAvatarUrl(publicUrl);
+      await refreshProfile();
+      toast.success('Profile picture updated!');
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      toast.error('Failed to upload photo');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!profile) return;
