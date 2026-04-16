@@ -1181,75 +1181,7 @@ export default function Home() {
 
 
 
-        {/* ═══ 🔥 WHAT PEOPLE ARE CHOOSING RIGHT NOW ═══ */}
-        {(() => {
-          const allP = polls || [];
-          if (allP.length === 0) return null;
-
-          // Aggregate votes per unique option name, weighted by recency
-          const optionMap = new Map<string, { name: string; totalVotes: number; recentVotes: number; imageUrl: string | null }>();
-          const ensure = (name: string, img: string | null) => {
-            if (!optionMap.has(name)) optionMap.set(name, { name, totalVotes: 0, recentVotes: 0, imageUrl: img });
-          };
-          for (const p of allP) {
-            if (p.totalVotes === 0) continue;
-            ensure(p.option_a, p.image_a_url);
-            ensure(p.option_b, p.image_b_url);
-            const entryA = optionMap.get(p.option_a)!;
-            entryA.totalVotes += p.votesA;
-            entryA.recentVotes += p.recentVotes > 0 ? Math.round(p.recentVotes * (p.votesA / p.totalVotes)) : 0;
-            const entryB = optionMap.get(p.option_b)!;
-            entryB.totalVotes += p.votesB;
-            entryB.recentVotes += p.recentVotes > 0 ? Math.round(p.recentVotes * (p.votesB / p.totalVotes)) : 0;
-          }
-
-          // Score = total votes + recent activity boost (recent votes × 5)
-          const topOptions = Array.from(optionMap.values())
-            .sort((a, b) => (b.totalVotes + b.recentVotes * 5) - (a.totalVotes + a.recentVotes * 5))
-            .slice(0, 5);
-
-          if (topOptions.length === 0) return null;
-          return (
-            <section className="px-3 mb-3">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Flame className="h-3.5 w-3.5 text-primary" />
-                <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">What People Are Choosing Right Now</span>
-              </div>
-              <div className="bg-card rounded-xl border border-border/60 overflow-hidden shadow-card">
-                {topOptions.map((opt, i) => (
-                  <motion.div
-                    key={opt.name}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => navigate(`/explore?search=${encodeURIComponent(opt.name)}`)}
-                    className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer active:bg-muted/50 transition-colors ${i < topOptions.length - 1 ? 'border-b border-border/40' : ''}`}
-                  >
-                    <span className="text-xs font-bold text-muted-foreground/60 w-4 text-center shrink-0">{i + 1}</span>
-                    {(() => {
-                      const resolvedImg = getPollDisplayImageSrc({ imageUrl: opt.imageUrl, option: opt.name, side: 'A' });
-                      return resolvedImg ? (
-                        <img src={resolvedImg} alt={opt.name} className="w-7 h-7 rounded-lg object-cover shrink-0" onError={(e) => handlePollImageError(e, { option: opt.name, side: 'A' })} />
-                      ) : null;
-                    })()}
-                    <span className="text-xs font-bold text-foreground line-clamp-1 flex-1">
-                      {opt.name}
-                    </span>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[10px] text-muted-foreground">{opt.totalVotes.toLocaleString()} votes</span>
-                      {opt.recentVotes > 0 && (
-                        <span className="text-[9px] font-bold text-primary px-1.5 py-0.5 rounded-full bg-primary/10">active</span>
-                      )}
-                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </section>
-          );
-        })()}
-
+        {/* Rankings ("What People Are Choosing Right Now") moved into DailyPulseStrip at the top */}
 
         <HomeResultsModal
           open={!!modalPoll}

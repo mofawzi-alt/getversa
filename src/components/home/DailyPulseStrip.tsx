@@ -7,6 +7,11 @@ import { useAuth } from '@/contexts/AuthContext';
 const SESSION_KEY = 'versa_pulse_dismissed';
 const FIRST_SESSION_KEY = 'versa_has_session';
 
+type PulseItem = {
+  text: string;
+  onClick?: () => void;
+};
+
 export default function DailyPulseStrip() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -133,16 +138,57 @@ export default function DailyPulseStrip() {
     staleTime: 1000 * 60 * 5,
   });
 
+  // Top 3 choices right now (rankings)
+  const { data: topChoices } = useQuery({
+    queryKey: ['pulse-top-choices'],
+    queryFn: async () => {
+      const now = new Date().toISOString();
+      const { data: activePolls } = await supabase
+        .from('polls')
+        .select('id, option_a, option_b')
+        .eq('is_active', true)
+        .or(`ends_at.is.null,ends_at.gt.${now}`)
+        .order('created_at', { ascending: false })
+        .limit(80);
+
+      if (!activePolls?.length) return [] as string[];
+
+      const ids = activePolls.map(p => p.id);
+      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: ids });
+      if (!results?.length) return [] as string[];
+
+      const optionMap = new Map<string, number>();
+      for (const poll of activePolls) {
+        const r = results.find((res: any) => res.poll_id === poll.id);
+        if (!r || r.total_votes === 0) continue;
+        optionMap.set(poll.option_a, (optionMap.get(poll.option_a) || 0) + r.votes_a);
+        optionMap.set(poll.option_b, (optionMap.get(poll.option_b) || 0) + r.votes_b);
+      }
+
+      return Array.from(optionMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([name]) => name);
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
   // Build items
-  const items = useMemo(() => {
-    const list: string[] = [];
-    if (newPollsCount && newPollsCount > 0) {
-      list.push(`${newPollsCount} new poll${newPollsCount !== 1 ? 's' : ''} today`);
+  const items = useMemo<PulseItem[]>(() => {
+    const list: PulseItem[] = [];
+    if (topChoices && topChoices.length > 0) {
+      list.push({
+        text: `🔥 Top now: ${topChoices.join(' · ')}`,
+        onClick: () => navigate(`/explore?search=${encodeURIComponent(topChoices[0])}`),
+      });
     }
-    if (recentDebate) list.push(recentDebate);
-    if (hottestPoll) list.push(hottestPoll);
-    return list.slice(0, 3);
-  }, [newPollsCount, recentDebate, hottestPoll]);
+    if (newPollsCount && newPollsCount > 0) {
+      list.push({ text: `${newPollsCount} new poll${newPollsCount !== 1 ? 's' : ''} today` });
+    }
+    if (recentDebate) list.push({ text: recentDebate });
+    if (hottestPoll) list.push({ text: hottestPoll });
+    return list.slice(0, 4);
+  }, [topChoices, newPollsCount, recentDebate, hottestPoll, navigate]);
 
   // Don't render if first session, dismissed, or no items
   if (isFirstSession || dismissed || items.length === 0) return null;
@@ -162,7 +208,16 @@ export default function DailyPulseStrip() {
             {items.map((item, i) => (
               <span key={i} className="text-xs text-muted-foreground">
                 {i > 0 && <span className="mx-1.5 text-muted-foreground/50">·</span>}
-                {item}
+                {item.onClick ? (
+                  <button
+                    onClick={item.onClick}
+                    className="text-foreground font-semibold hover:text-[#E8392A] transition-colors"
+                  >
+                    {item.text}
+                  </button>
+                ) : (
+                  item.text
+                )}
               </span>
             ))}
           </div>
