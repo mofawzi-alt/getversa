@@ -1557,6 +1557,7 @@ export type Database = {
       users: {
         Row: {
           age_range: string | null
+          avatar_url: string | null
           category_interests: string[] | null
           city: string | null
           country: string | null
@@ -1582,6 +1583,7 @@ export type Database = {
         }
         Insert: {
           age_range?: string | null
+          avatar_url?: string | null
           category_interests?: string[] | null
           city?: string | null
           country?: string | null
@@ -1607,6 +1609,7 @@ export type Database = {
         }
         Update: {
           age_range?: string | null
+          avatar_url?: string | null
           category_interests?: string[] | null
           city?: string | null
           country?: string | null
