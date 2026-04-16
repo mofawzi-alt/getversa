@@ -418,26 +418,6 @@ export default function UserProfile() {
         )}
 
 
-        {/* Leaderboard Rank */}
-        {canViewFullProfile && rankInfo?.rank && (
-          <button
-            onClick={() => navigate('/leaderboard')}
-            className="w-full glass rounded-xl p-2.5 flex items-center gap-2.5 hover:bg-muted/30 transition-colors"
-          >
-            <div className="h-8 w-8 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0">
-              <Trophy className="h-4 w-4 text-amber-500" />
-            </div>
-            <div className="flex-1 text-left">
-              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Global Rank</div>
-              <div className="text-sm font-bold text-foreground">
-                #{rankInfo.rank} <span className="text-[11px] font-normal text-muted-foreground">of {rankInfo.total}</span>
-              </div>
-            </div>
-            <span className="text-[11px] font-semibold text-primary">View →</span>
-          </button>
-        )}
-
-
         {/* Top Categories */}
         {canViewFullProfile && topCategories.length > 0 && (
           <div className="glass rounded-2xl p-4">
