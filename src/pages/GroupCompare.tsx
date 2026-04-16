@@ -596,31 +596,132 @@ function ResultsView({
         </Button>
       </div>
 
-      {/* Showdown */}
-      <div className="glass rounded-3xl p-5 space-y-4">
-        <div className="text-center">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Cross-crew alignment</p>
-          <div className="text-5xl font-display font-bold text-primary mt-1">
-            {stats.crossAlign}%
+      {/* Winner banner */}
+      {winner ? (
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary/80 p-5 text-primary-foreground animate-scale-in">
+          {/* Confetti dots */}
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <span
+                key={i}
+                className="absolute rounded-full bg-white animate-pulse"
+                style={{
+                  width: `${4 + (i % 3) * 3}px`,
+                  height: `${4 + (i % 3) * 3}px`,
+                  top: `${(i * 13) % 90}%`,
+                  left: `${(i * 27) % 95}%`,
+                  animationDelay: `${i * 0.15}s`,
+                }}
+              />
+            ))}
           </div>
-          <p className="text-xs text-muted-foreground">on {stats.crossShared} polls both crews voted on</p>
+          <div className="relative flex items-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0">
+              <Trophy className="h-7 w-7 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] uppercase tracking-widest opacity-80">Tightest Crew</p>
+              <p className="text-xl font-display font-bold">Group {winner} wins 🏆</p>
+              <p className="text-xs opacity-90 truncate">
+                {winner === 'A' ? namesOf(groupA) : namesOf(groupB)}
+              </p>
+            </div>
+            <div className="text-right shrink-0">
+              <div className="text-3xl font-display font-bold leading-none">
+                {winner === 'A' ? stats.a.alignmentPct : stats.b.alignmentPct}%
+              </div>
+              <p className="text-[10px] opacity-80 mt-0.5">aligned</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-3xl bg-gradient-to-br from-muted to-muted/50 p-5 text-center animate-scale-in">
+          <div className="text-3xl mb-1">🤝</div>
+          <p className="text-base font-display font-bold">It's a tie!</p>
+          <p className="text-xs text-muted-foreground">Both crews equally tight</p>
+        </div>
+      )}
+
+      {/* VS Battle visual */}
+      <div className="glass rounded-3xl p-5 space-y-4">
+        <div className="relative">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+            {/* Group A side */}
+            <div className={`text-center transition-all ${winner === 'A' ? 'scale-105' : winner === 'B' ? 'opacity-60' : ''}`}>
+              <p className="text-[10px] uppercase tracking-widest text-primary font-bold mb-1">Group A</p>
+              <div className="relative mx-auto w-16 h-16 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center">
+                <span className="text-2xl font-display font-bold text-primary">A</span>
+                {winner === 'A' && (
+                  <Trophy className="absolute -top-2 -right-2 h-5 w-5 text-primary fill-primary" />
+                )}
+              </div>
+              <div className="text-2xl font-display font-bold mt-2">{stats.a.alignmentPct}%</div>
+              <p className="text-[10px] text-muted-foreground">{stats.a.sharedPolls} polls</p>
+            </div>
+
+            {/* VS */}
+            <div className="flex flex-col items-center gap-1 px-1">
+              <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-display font-bold text-sm shadow-lg">
+                VS
+              </div>
+              <Swords className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+
+            {/* Group B side */}
+            <div className={`text-center transition-all ${winner === 'B' ? 'scale-105' : winner === 'A' ? 'opacity-60' : ''}`}>
+              <p className="text-[10px] uppercase tracking-widest text-accent-foreground font-bold mb-1">Group B</p>
+              <div className="relative mx-auto w-16 h-16 rounded-full bg-accent/30 border-2 border-accent flex items-center justify-center">
+                <span className="text-2xl font-display font-bold">B</span>
+                {winner === 'B' && (
+                  <Trophy className="absolute -top-2 -right-2 h-5 w-5 text-primary fill-primary" />
+                )}
+              </div>
+              <div className="text-2xl font-display font-bold mt-2">{stats.b.alignmentPct}%</div>
+              <p className="text-[10px] text-muted-foreground">{stats.b.sharedPolls} polls</p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <CrewCard
-            label="Group A"
-            names={namesOf(groupA)}
-            alignment={stats.a.alignmentPct}
-            shared={stats.a.sharedPolls}
-            isWinner={winner === 'A'}
-          />
-          <CrewCard
-            label="Group B"
-            names={namesOf(groupB)}
-            alignment={stats.b.alignmentPct}
-            shared={stats.b.sharedPolls}
-            isWinner={winner === 'B'}
-          />
+        {/* Head-to-head bar */}
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-[10px] uppercase tracking-wide font-bold">
+            <span className="text-primary">A {stats.a.alignmentPct}%</span>
+            <span className="text-muted-foreground">Internal alignment</span>
+            <span>B {stats.b.alignmentPct}%</span>
+          </div>
+          <div className="relative h-3 rounded-full bg-muted overflow-hidden flex">
+            <div
+              className="bg-primary transition-all duration-700 ease-out"
+              style={{
+                width: `${
+                  stats.a.alignmentPct + stats.b.alignmentPct === 0
+                    ? 50
+                    : (stats.a.alignmentPct / (stats.a.alignmentPct + stats.b.alignmentPct)) * 100
+                }%`,
+              }}
+            />
+            <div className="flex-1 bg-accent" />
+          </div>
+        </div>
+
+        {/* Cross-crew alignment dial */}
+        <div className="border-t border-border pt-4 text-center">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Cross-crew alignment</p>
+          <div className="flex items-baseline justify-center gap-1 mt-1">
+            <div className="text-4xl font-display font-bold text-primary">{stats.crossAlign}</div>
+            <div className="text-xl font-display font-bold text-primary">%</div>
+          </div>
+          <Progress value={stats.crossAlign} className="h-2 mt-2" />
+          <p className="text-[11px] text-muted-foreground mt-2 italic">
+            {stats.crossAlign >= 70
+              ? '🔥 These crews think alike'
+              : stats.crossAlign >= 40
+              ? '⚖️ Some shared ground, plenty to debate'
+              : '🌪️ Totally different worlds'}
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">
+            on {stats.crossShared} polls both crews voted on
+          </p>
         </div>
       </div>
 
