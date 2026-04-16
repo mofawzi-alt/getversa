@@ -8,6 +8,7 @@ import { useFriends, SearchResult } from '@/hooks/useFriends';
 import { useOpenConversation, useConversations } from '@/hooks/useMessages';
 import FollowButton from '@/components/poll/FollowButton';
 import { useAuth } from '@/contexts/AuthContext';
+import SwipeableFriendRow from '@/components/friends/SwipeableFriendRow';
 import { 
   Search, UserPlus, UserCheck, Users, Loader2, 
   Check, X, Heart, ChevronRight, Trophy, 
