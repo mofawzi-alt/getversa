@@ -142,16 +142,16 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
       onMouseUp={hasResult ? undefined : handleEnd}
       onMouseLeave={hasResult ? undefined : () => isDragging && handleEnd()}
     >
-      {/* Question */}
-      <div className="px-3 py-0.5 shrink-0">
-        <p className="text-lg font-bold text-foreground leading-snug text-center">{poll.question}</p>
-        {poll.subtitle && (
-          <p className="text-sm text-muted-foreground text-center -mt-0.5">{poll.subtitle}</p>
-        )}
-      </div>
-
       {/* Images — fixed height matching home screen cards */}
-      <div className="grid grid-cols-2 gap-0 h-[70vh] max-h-[600px] rounded-2xl overflow-hidden mx-2 border border-border/60 shadow-sm">
+      <div className="relative grid grid-cols-2 gap-0 h-[75vh] max-h-[650px] rounded-2xl overflow-hidden mx-2 border border-border/60 shadow-sm">
+
+        {/* Question overlay centered on top of images */}
+        <div className="absolute inset-x-0 top-0 z-20 flex flex-col items-center justify-center pt-4 pb-6 px-4 bg-gradient-to-b from-black/60 via-black/30 to-transparent pointer-events-none">
+          <p className="text-lg font-bold text-white leading-snug text-center drop-shadow-lg">{poll.question}</p>
+          {poll.subtitle && (
+            <p className="text-sm text-white/80 text-center mt-0.5 drop-shadow-md">{poll.subtitle}</p>
+          )}
+        </div>
         {/* Option A */}
         <div
           className="relative overflow-hidden transition-transform duration-200"
