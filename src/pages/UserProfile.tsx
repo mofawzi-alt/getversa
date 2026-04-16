@@ -359,28 +359,26 @@ export default function UserProfile() {
         {canViewFullProfile && !isOwnProfile && targetId && (
           <Button
             variant="outline"
-            className="w-full rounded-xl gap-2"
+            size="sm"
+            className="w-full rounded-lg gap-1.5 h-8 text-xs"
             onClick={() => navigate(`/friends/${targetId}/compare`)}
           >
-            <Heart className="h-4 w-4" />
+            <Heart className="h-3.5 w-3.5" />
             Compare votes with @{profileData?.username}
           </Button>
         )}
 
-        {/* Personality Type — friends only */}
-        {/* Personality Type — now shown inline in the bio header above */}
-
         {/* Taste Patterns */}
         {canViewFullProfile && patterns.length > 0 && (
-          <div className="glass rounded-2xl p-5 space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="h-4 w-4 text-primary" />
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Voting Patterns</span>
+          <div className="glass rounded-xl p-3 space-y-1.5">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <BarChart3 className="h-3 w-3 text-primary" />
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Voting Patterns</span>
             </div>
             {patterns.map((p, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                <p className="text-sm text-foreground/80">{p}</p>
+              <div key={i} className="flex items-start gap-2">
+                <div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                <p className="text-xs text-foreground/80 leading-snug">{p}</p>
               </div>
             ))}
           </div>
@@ -389,23 +387,23 @@ export default function UserProfile() {
         {/* Stats Grid */}
         {canViewFullProfile && (
         <div className="grid grid-cols-3 gap-2">
-          <div className="glass rounded-xl p-3 text-center">
-            <div className="text-xl font-bold text-foreground">{voteCount}</div>
-            <div className="text-[10px] text-muted-foreground">Votes</div>
+          <div className="glass rounded-lg p-2 text-center">
+            <div className="text-base font-bold text-foreground">{voteCount}</div>
+            <div className="text-[9px] text-muted-foreground">Votes</div>
           </div>
-          <div className="glass rounded-xl p-3 text-center">
+          <div className="glass rounded-lg p-2 text-center">
             <div className="flex items-center justify-center gap-1">
-              <Flame className="h-4 w-4 text-warning" />
-              <span className="text-xl font-bold text-foreground">{profileData?.current_streak || 0}</span>
+              <Flame className="h-3 w-3 text-warning" />
+              <span className="text-base font-bold text-foreground">{profileData?.current_streak || 0}</span>
             </div>
-            <div className="text-[10px] text-muted-foreground">Streak</div>
+            <div className="text-[9px] text-muted-foreground">Streak</div>
           </div>
-          <div className="glass rounded-xl p-3 text-center">
+          <div className="glass rounded-lg p-2 text-center">
             <div className="flex items-center justify-center gap-1">
-              <Zap className="h-4 w-4 text-primary" />
-              <span className="text-xl font-bold text-foreground">{minorityCount}</span>
+              <Zap className="h-3 w-3 text-primary" />
+              <span className="text-base font-bold text-foreground">{minorityCount}</span>
             </div>
-            <div className="text-[10px] text-muted-foreground">Minority</div>
+            <div className="text-[9px] text-muted-foreground">Minority</div>
           </div>
         </div>
         )}
@@ -414,18 +412,18 @@ export default function UserProfile() {
         {canViewFullProfile && rankInfo?.rank && (
           <button
             onClick={() => navigate('/leaderboard')}
-            className="w-full glass rounded-2xl p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors"
+            className="w-full glass rounded-xl p-2.5 flex items-center gap-2.5 hover:bg-muted/30 transition-colors"
           >
-            <div className="h-10 w-10 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0">
-              <Trophy className="h-5 w-5 text-amber-500" />
+            <div className="h-8 w-8 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0">
+              <Trophy className="h-4 w-4 text-amber-500" />
             </div>
             <div className="flex-1 text-left">
-              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Global Rank</div>
-              <div className="text-base font-bold text-foreground">
-                #{rankInfo.rank} <span className="text-xs font-normal text-muted-foreground">of {rankInfo.total}</span>
+              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Global Rank</div>
+              <div className="text-sm font-bold text-foreground">
+                #{rankInfo.rank} <span className="text-[11px] font-normal text-muted-foreground">of {rankInfo.total}</span>
               </div>
             </div>
-            <span className="text-xs font-semibold text-primary">View →</span>
+            <span className="text-[11px] font-semibold text-primary">View →</span>
           </button>
         )}
 
