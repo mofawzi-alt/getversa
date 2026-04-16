@@ -1,0 +1,1 @@
+UPDATE polls SET image_a_url = '/__l5e/assets-v1/4a5e796a-d3a2-4eb8-945b-d7435d741099/tiktok-option-a.mp4' WHERE id = '94456e28-e282-4b0c-9e9c-a3ce694f97c2';
