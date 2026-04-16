@@ -235,6 +235,36 @@ export default function UserProfile() {
   const archetype = deriveArchetype(traits);
   const patterns = derivePatterns(traits);
 
+  // Compact personality bio line (uses same engine as the big card)
+  const personalityResult = computePersonalityType(traits, voteCount);
+  const personalityBio = personalityResult.ready
+    ? {
+        emoji: personalityResult.emoji,
+        name: personalityResult.name,
+        tagline: personalityResult.description,
+      }
+    : null;
+
+  // Realtime: refetch recent votes whenever this user casts a new vote
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!targetId) return;
+    const channel = supabase
+      .channel(`profile-votes-${targetId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'votes', filter: `user_id=eq.${targetId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['public-recent-votes', targetId] });
+          queryClient.invalidateQueries({ queryKey: ['public-vote-count', targetId] });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [targetId, queryClient]);
+
   return (
     <AppLayout>
       <div className="p-4 space-y-5 animate-fade-in">
@@ -338,7 +368,7 @@ export default function UserProfile() {
         )}
 
         {/* Personality Type — friends only */}
-        {canViewFullProfile && targetId && <PersonalityTypeCard userId={targetId} />}
+        {/* Personality Type — now shown inline in the bio header above */}
 
         {/* Taste Patterns */}
         {canViewFullProfile && patterns.length > 0 && (
