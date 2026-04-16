@@ -32,6 +32,8 @@ export default function Friends() {
     rejectingRequest,
     removeFriend,
     hasPendingRequest,
+    cancelRequest,
+    cancellingRequest,
   } = useFriends();
 
   const navigate = useNavigate();
@@ -463,9 +465,13 @@ export default function Friends() {
                             Friends
                           </Button>
                         ) : user.friendship_status === 'pending' || hasPendingRequest(user.id) ? (
-                          <Button size="sm" variant="secondary" disabled>
-                            <Loader2 className="h-4 w-4 mr-1" />
-                            Pending
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => cancelRequest(user.id)}
+                            disabled={cancellingRequest}
+                          >
+                            Cancel
                           </Button>
                         ) : (
                           <Button
