@@ -311,18 +311,18 @@ export default function UserProfile() {
                 <span><span className="font-bold text-foreground">{followingCount}</span> <span className="text-muted-foreground">following</span></span>
               </div>
             </div>
-
-            {user && !isOwnProfile && targetId && (
-              <Button
-                variant={isFollowing(targetId) ? 'outline' : 'default'}
-                size="sm"
-                className="rounded-full px-4 h-8 text-xs shrink-0"
-                onClick={() => toggleFollow(targetId)}
-              >
-                {isFollowing(targetId) ? 'Following' : 'Follow'}
-              </Button>
-            )}
           </div>
+
+          {user && !isOwnProfile && targetId && (
+            <Button
+              variant={isFollowing(targetId) ? 'outline' : 'default'}
+              size="sm"
+              className="w-full rounded-full h-8 text-xs mt-3"
+              onClick={() => toggleFollow(targetId)}
+            >
+              {isFollowing(targetId) ? 'Following' : 'Follow'}
+            </Button>
+          )}
 
           {/* Badges strip */}
           {canViewFullProfile && earnedBadges.length > 0 && (
