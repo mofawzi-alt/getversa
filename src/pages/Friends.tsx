@@ -142,6 +142,23 @@ export default function Friends() {
           </div>
         </div>
 
+        {/* Crew Compare entry */}
+        <button
+          onClick={() => navigate('/compare/group')}
+          className="w-full glass rounded-2xl p-3.5 flex items-center gap-3 text-left hover:bg-primary/5 transition-colors border border-primary/20"
+        >
+          <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+            <Sparkles className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm leading-tight">Crew Compare</p>
+            <p className="text-[11px] text-muted-foreground truncate">
+              Battle two groups or vibe-check one crew
+            </p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </button>
+
         <Tabs defaultValue="friends" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-4">
             <TabsTrigger value="friends">Friends</TabsTrigger>
