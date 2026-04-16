@@ -10,7 +10,7 @@ import { useFriends } from '@/hooks/useFriends';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
-import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
+
 import PersonalityCompatibility from '@/components/profile/PersonalityCompatibility';
 import { computePersonalityType } from '@/lib/personalityType';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
