@@ -101,30 +101,30 @@ export default function Friends() {
     <AppLayout>
       <div className="p-4 space-y-6 animate-slide-up">
         {/* Header */}
-        <div className="glass rounded-3xl p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                <Users className="h-6 w-6 text-primary" />
+        <div className="glass rounded-3xl p-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                <Users className="h-5 w-5 text-primary" />
               </div>
-              <div>
-                <h1 className="text-2xl font-display font-bold">Friends</h1>
-                <p className="text-sm text-muted-foreground">
+              <div className="min-w-0">
+                <h1 className="text-xl font-display font-bold leading-tight truncate">Friends</h1>
+                <p className="text-xs text-muted-foreground">
                   {friendCount} friend{friendCount !== 1 ? 's' : ''}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 shrink-0">
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-full gap-1.5 relative"
+                className="rounded-full gap-1 h-8 px-3 text-xs relative"
                 onClick={() => navigate('/messages')}
               >
                 <MessageCircle className="h-3.5 w-3.5" />
                 Inbox
                 {totalUnread > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center px-1">
                     {totalUnread}
                   </span>
                 )}
@@ -132,7 +132,7 @@ export default function Friends() {
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-full gap-1.5"
+                className="rounded-full gap-1 h-8 px-3 text-xs"
                 onClick={() => navigate('/compare')}
               >
                 <Heart className="h-3.5 w-3.5" />
