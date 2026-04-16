@@ -1035,6 +1035,9 @@ export default function Home() {
 
 
 
+        {/* ═══ FOLLOWING FEED (story circles) ═══ */}
+        <FollowingFeedSection />
+
         {/* ═══ Categories strip (Instagram Stories style) ═══ */}
         {(() => {
           const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
@@ -1152,8 +1155,6 @@ export default function Home() {
           )}
         </section>
 
-        {/* ═══ FOLLOWING FEED ═══ */}
-        <FollowingFeedSection />
 
 
 
