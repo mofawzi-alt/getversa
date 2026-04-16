@@ -40,6 +40,7 @@ import SharedPoll from "./pages/SharedPoll";
 import UserProfile from "./pages/UserProfile";
 import Compare from "./pages/Compare";
 import CompareUser from "./pages/CompareUser";
+import GroupCompare from "./pages/GroupCompare";
 import PersonalityResults from "./pages/PersonalityResults";
 import BrandPortal from "./pages/BrandPortal";
 import Messages from "./pages/Messages";
@@ -163,6 +164,7 @@ function AppInner() {
           <Route path="/friends/:friendId" element={<ProtectedRoute><FriendComparison /></ProtectedRoute>} />
           <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
           <Route path="/compare/u/:userId" element={<CompareUser />} />
+          <Route path="/compare/group" element={<ProtectedRoute><GroupCompare /></ProtectedRoute>} />
           <Route path="/brands" element={<ProtectedRoute><BrandPortal /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/messages/:conversationId" element={<ProtectedRoute><ChatThread /></ProtectedRoute>} />

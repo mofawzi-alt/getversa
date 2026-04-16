@@ -126,6 +126,23 @@ export default function Compare() {
             </div>
           </div>
 
+          {/* Crew Compare entry */}
+          <button
+            onClick={() => navigate('/compare/group')}
+            className="w-full glass rounded-2xl p-4 flex items-center gap-3 text-left hover:bg-primary/5 transition-colors border border-primary/20"
+          >
+            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm">Crew Compare</p>
+              <p className="text-xs text-muted-foreground truncate">
+                Battle two groups of friends or vibe-check one crew
+              </p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+
           {/* Search filter */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
