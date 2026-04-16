@@ -22,6 +22,8 @@ import HeroVoteCard from '@/components/home/HeroVoteCard';
 import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
 import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
 import FollowingFeedSection from '@/components/home/FollowingFeedSection';
+import PersonalitySnapshot from '@/components/home/PersonalitySnapshot';
+import DecisionHelper from '@/components/home/DecisionHelper';
 
 
 import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/VoteMilestoneCelebration';
@@ -1192,6 +1194,12 @@ export default function Home() {
             </section>
           );
         })()}
+
+        {/* Personality & Decision Helper */}
+        {user && <PersonalitySnapshot />}
+        <div className="mt-3">
+          <DecisionHelper />
+        </div>
 
         <HomeResultsModal
           open={!!modalPoll}
