@@ -22,7 +22,7 @@ import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onbo
 import HeroVoteCard from '@/components/home/HeroVoteCard';
 import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
 import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
-import FollowingFeedSection from '@/components/home/FollowingFeedSection';
+
 import PersonalitySnapshot from '@/components/home/PersonalitySnapshot';
 import DecisionHelper from '@/components/home/DecisionHelper';
 import ResultFlipAlerts from '@/components/home/ResultFlipAlerts';
@@ -1017,8 +1017,6 @@ export default function Home() {
 
 
 
-        {/* ═══ FOLLOWING FEED (story circles) ═══ */}
-        <FollowingFeedSection />
 
         {/* ═══ Categories strip (Instagram Stories style) ═══ */}
         {(() => {
