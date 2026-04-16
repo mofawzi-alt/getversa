@@ -431,23 +431,6 @@ export default function UserProfile() {
         )}
 
 
-        {/* Top Categories */}
-        {canViewFullProfile && topCategories.length > 0 && (
-          <div className="glass rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Users className="h-4 w-4 text-primary" />
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Votes Most In</span>
-            </div>
-            <div className="flex gap-2">
-              {topCategories.map((cat, i) => (
-                <span key={i} className="px-3 py-1.5 rounded-full bg-primary/10 text-xs font-medium text-primary">
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Recent Voted Polls */}
         {canViewFullProfile && recentVotes.length > 0 && (
           <div className="glass rounded-2xl p-4">
