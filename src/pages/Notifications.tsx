@@ -47,9 +47,15 @@ export default function Notifications() {
       case 'vote_result': return '🗳️';
       case 'friend_voted': return '👥';
       case 'challenge': return '🏆';
+      case 'poll_challenge': return '⚔️';
       case 'new_poll': return '🔥';
       case 'streak_reminder': return '🔥';
       case 'weekly_polls': return '👀';
+      case 'result_flip': return '🔄';
+      case 'vote_mattered': return '💪';
+      case 'weekly_recap': return '📊';
+      case 'social_proof': return '👫';
+      case 'badge_earned': return '🏅';
       default: return '🔔';
     }
   };
