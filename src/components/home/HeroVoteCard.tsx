@@ -577,16 +577,18 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           </div>
         </div>
 
-        {/* Question overlay at top */}
-        <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-10 bg-gradient-to-b from-black/70 to-transparent z-10 pointer-events-none">
-          <h2 className="text-white text-xl font-display font-bold drop-shadow-lg text-center leading-snug">
-            {poll.question}
-          </h2>
-          {poll.subtitle && (
-            <p className="text-white/70 text-sm font-medium text-center mt-0.5 drop-shadow">
-              {poll.subtitle}
-            </p>
-          )}
+        {/* Question overlay centered in middle */}
+        <div className="absolute inset-0 z-10 flex items-center justify-center px-5 pointer-events-none">
+          <div className="rounded-2xl bg-black/45 backdrop-blur-sm px-4 py-3 max-w-[82%]">
+            <h2 className="text-white text-xl font-display font-bold drop-shadow-lg text-center leading-snug">
+              {poll.question}
+            </h2>
+            {poll.subtitle && (
+              <p className="text-white/80 text-sm font-medium text-center mt-0.5 drop-shadow">
+                {poll.subtitle}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Result bar overlay */}
