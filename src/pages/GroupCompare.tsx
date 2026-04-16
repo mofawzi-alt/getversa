@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useFriends, Friend } from '@/hooks/useFriends';
 import {
   ArrowLeft, Users, Loader2, Trophy, Sparkles, Check,
-  UserPlus, X, BarChart3, Swords,
+  UserPlus, X, BarChart3, Swords, Share2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -480,12 +480,51 @@ function ResultsView({
   const namesOf = (ids: string[]) =>
     ids.map((id) => friendMap.get(id)?.friend_username || '?').join(', ');
 
+  async function shareResults(text: string) {
+    const shareData = {
+      title: 'Versa Crew Compare',
+      text,
+      url: typeof window !== 'undefined' ? window.location.origin + '/compare/group' : '',
+    };
+    try {
+      if (typeof navigator !== 'undefined' && (navigator as any).share) {
+        await (navigator as any).share(shareData);
+        return;
+      }
+    } catch {
+      // user cancelled or share failed — fall through to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(`${text}\n${shareData.url}`);
+      toast.success('Copied to clipboard');
+    } catch {
+      toast.error('Could not share');
+    }
+  }
+
   if (stats.mode === 'vibe') {
+    const vibeShareText =
+      `🌟 Crew Vibe Check on Versa\n` +
+      `Crew: ${namesOf(vibeGroup)}\n` +
+      `${stats.alignmentPct}% aligned across ${stats.sharedPolls} shared polls.` +
+      (stats.catList?.[0] ? `\nMost aligned on: ${stats.catList[0].cat} (${stats.catList[0].pct}%)` : '');
+
     return (
       <div className="space-y-4">
-        <button onClick={onReset} className="text-xs text-muted-foreground underline">
-          ← Pick a different crew
-        </button>
+        <div className="flex items-center justify-between">
+          <button onClick={onReset} className="text-xs text-muted-foreground underline">
+            ← Pick a different crew
+          </button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full gap-1.5 h-8"
+            onClick={() => shareResults(vibeShareText)}
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            Share
+          </Button>
+        </div>
 
         <div className="glass rounded-3xl p-6 text-center space-y-2">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Your Crew</p>
@@ -533,11 +572,29 @@ function ResultsView({
       ? 'A'
       : 'B';
 
+  const battleShareText =
+    `⚔️ Crew Battle on Versa\n` +
+    `Group A (${namesOf(groupA)}): ${stats.a.alignmentPct}% aligned\n` +
+    `Group B (${namesOf(groupB)}): ${stats.b.alignmentPct}% aligned\n` +
+    `Cross-crew alignment: ${stats.crossAlign}% on ${stats.crossShared} shared polls.` +
+    (winner ? `\n🏆 Tightest crew: Group ${winner}` : `\n🤝 It's a tie!`);
+
   return (
     <div className="space-y-4">
-      <button onClick={onReset} className="text-xs text-muted-foreground underline">
-        ← Pick different groups
-      </button>
+      <div className="flex items-center justify-between">
+        <button onClick={onReset} className="text-xs text-muted-foreground underline">
+          ← Pick different groups
+        </button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="rounded-full gap-1.5 h-8"
+          onClick={() => shareResults(battleShareText)}
+        >
+          <Share2 className="h-3.5 w-3.5" />
+          Share
+        </Button>
+      </div>
 
       {/* Showdown */}
       <div className="glass rounded-3xl p-5 space-y-4">
