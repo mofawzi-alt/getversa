@@ -30,7 +30,7 @@ import ResultFlipAlerts from '@/components/home/ResultFlipAlerts';
 
 import VoteMilestoneCelebration, { checkVoteMilestone } from '@/components/home/VoteMilestoneCelebration';
 import DailyReturnBanner from '@/components/home/DailyReturnBanner';
-import WhatsNewBanner from '@/components/home/WhatsNewBanner';
+
 import { WelcomeBanner, TimedFloatingNudge } from '@/components/onboarding/GuestNudges';
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
 import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/NotificationPrompt';
@@ -946,9 +946,6 @@ export default function Home() {
             onClose={() => setVoteMilestone(null)}
           />
         )}
-
-        {/* What's New release announcement */}
-        {user && <WhatsNewBanner />}
 
         {/* Daily return welcome banner */}
         {user && (
