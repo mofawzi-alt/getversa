@@ -8,6 +8,7 @@ export interface Conversation {
   conversation_id: string;
   other_user_id: string;
   other_username: string | null;
+  other_avatar_url?: string | null;
   last_message_at: string;
   last_message_preview: string | null;
   last_message_type: string | null;
