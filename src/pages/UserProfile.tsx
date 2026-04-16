@@ -350,7 +350,7 @@ export default function UserProfile() {
           )}
 
           {/* Voting Patterns + Rank strip */}
-          {canViewFullProfile && (patterns.length > 0 || rankInfo?.rank) && (
+          {canViewFullProfile && (patterns.length > 0 || rankInfo?.rank || topCategories.length > 0) && (
             <div className="mt-2 pt-2 border-t border-border/40 flex items-center gap-2 overflow-x-auto scrollbar-hide">
               {rankInfo?.rank && (
                 <button
@@ -370,6 +370,19 @@ export default function UserProfile() {
                   {p}
                 </span>
               ))}
+              {topCategories.length > 0 && (
+                <>
+                  <Users className="h-3 w-3 text-primary shrink-0 ml-1" />
+                  {topCategories.map((cat, i) => (
+                    <span
+                      key={`cat-${i}`}
+                      className="text-[10px] font-medium text-primary shrink-0 px-2 py-0.5 rounded-full bg-primary/10"
+                    >
+                      {cat}
+                    </span>
+                  ))}
+                </>
+              )}
             </div>
           )}
         </div>
@@ -417,23 +430,6 @@ export default function UserProfile() {
           </Button>
         )}
 
-
-        {/* Top Categories */}
-        {canViewFullProfile && topCategories.length > 0 && (
-          <div className="glass rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Users className="h-4 w-4 text-primary" />
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Votes Most In</span>
-            </div>
-            <div className="flex gap-2">
-              {topCategories.map((cat, i) => (
-                <span key={i} className="px-3 py-1.5 rounded-full bg-primary/10 text-xs font-medium text-primary">
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Recent Voted Polls */}
         {canViewFullProfile && recentVotes.length > 0 && (
