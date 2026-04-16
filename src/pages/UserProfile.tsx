@@ -492,12 +492,12 @@ export default function UserProfile() {
         )}
 
         {/* Personality Type Compatibility */}
-        {user && !isOwnProfile && targetId && (
+        {canViewFullProfile && user && !isOwnProfile && targetId && (
           <PersonalityCompatibility targetUserId={targetId} targetUsername={profileData?.username} />
         )}
 
         {/* Agreement Score */}
-        {compatScore !== null && compatScore !== undefined && !isOwnProfile && (
+        {canViewFullProfile && compatScore !== null && compatScore !== undefined && !isOwnProfile && (
           <div className="glass rounded-2xl p-4 border border-primary/20 bg-primary/5 space-y-3">
             <p className="text-sm text-center text-foreground">
               You and <span className="font-bold">@{profileData?.username}</span> agree{' '}
