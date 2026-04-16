@@ -189,9 +189,14 @@ export default function Explore() {
 
   const categoryPolls = useMemo(() => {
     if (!selectedCategory) return [];
+    const now = Date.now();
+    const h24 = 24 * 60 * 60 * 1000;
     return polls
       .filter(p => (p.category || 'Uncategorized') === selectedCategory)
       .sort((a, b) => {
+        const aNew = (now - new Date(a.created_at).getTime()) < h24;
+        const bNew = (now - new Date(b.created_at).getTime()) < h24;
+        if (aNew !== bNew) return aNew ? -1 : 1;
         if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
         return b.totalVotes - a.totalVotes;
       });
