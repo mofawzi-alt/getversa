@@ -384,29 +384,6 @@ export default function UserProfile() {
           </div>
         )}
 
-        {/* Stats Grid */}
-        {canViewFullProfile && (
-        <div className="grid grid-cols-3 gap-2">
-          <div className="glass rounded-lg p-2 text-center">
-            <div className="text-base font-bold text-foreground">{voteCount}</div>
-            <div className="text-[9px] text-muted-foreground">Votes</div>
-          </div>
-          <div className="glass rounded-lg p-2 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <Flame className="h-3 w-3 text-warning" />
-              <span className="text-base font-bold text-foreground">{profileData?.current_streak || 0}</span>
-            </div>
-            <div className="text-[9px] text-muted-foreground">Streak</div>
-          </div>
-          <div className="glass rounded-lg p-2 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <Zap className="h-3 w-3 text-primary" />
-              <span className="text-base font-bold text-foreground">{minorityCount}</span>
-            </div>
-            <div className="text-[9px] text-muted-foreground">Minority</div>
-          </div>
-        </div>
-        )}
 
         {/* Leaderboard Rank */}
         {canViewFullProfile && rankInfo?.rank && (
