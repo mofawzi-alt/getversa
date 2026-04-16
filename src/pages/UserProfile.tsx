@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
@@ -11,6 +12,7 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 import { Button } from '@/components/ui/button';
 import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 import PersonalityCompatibility from '@/components/profile/PersonalityCompatibility';
+import { computePersonalityType } from '@/lib/personalityType';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 
 // Derive a taste archetype from voting trait tags
