@@ -1703,6 +1703,16 @@ export type Database = {
           total_votes: number
         }[]
       }
+      get_dimension_compatibility: {
+        Args: { user_a: string; user_b: string }
+        Returns: {
+          alignment: number
+          dimension_name: string
+          shared_dimensions: number
+          user_a_score: number
+          user_b_score: number
+        }[]
+      }
       get_friend_votes: {
         Args: { p_poll_id: string; p_user_id: string }
         Returns: {
