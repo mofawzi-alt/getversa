@@ -57,6 +57,8 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
+  const [targetGender, setTargetGender] = useState('');
+  const [targetAgeRange, setTargetAgeRange] = useState('');
 
   // Sync state when poll changes
   const [lastPollId, setLastPollId] = useState<string | null>(null);
