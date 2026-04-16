@@ -43,7 +43,9 @@ const CATEGORY_STYLE: Record<string, { icon: React.ReactNode; gradient: string; 
 };
 
 function getCategoryStyle(name: string) {
-  return CATEGORY_STYLE[name] || { icon: <LayoutGrid className="h-5 w-5" />, gradient: 'from-slate-500 to-slate-400', accent: 'text-muted-foreground' };
+  // Try exact match first, then title-cased match
+  const titleCased = name.replace(/\b\w/g, c => c.toUpperCase());
+  return CATEGORY_STYLE[name] || CATEGORY_STYLE[titleCased] || { icon: <LayoutGrid className="h-5 w-5" />, gradient: 'from-slate-500 to-slate-400', accent: 'text-muted-foreground' };
 }
 
 type CategoryData = {
