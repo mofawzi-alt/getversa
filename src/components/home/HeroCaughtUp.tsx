@@ -230,44 +230,22 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
   }, []);
 
   return (
-    <section className="px-3 pt-4 pb-2 space-y-3">
-      {/* Caught up banner */}
+    <section className="px-3 pt-2 pb-1">
+      {/* Compact caught up banner */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 border border-primary/25 p-4 text-center"
+        className="rounded-xl bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 border border-primary/20 px-3 py-2.5 flex items-center gap-2.5"
       >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.1 }}
-          className="text-3xl mb-1.5"
-        >
-          🔥
-        </motion.div>
-        <h2 className="text-base font-display font-bold text-foreground">All battles conquered 🔥</h2>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
-          Come back tomorrow for new battles — {countdown} until reset
-        </p>
+        <span className="text-xl">🔥</span>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-sm font-display font-bold text-foreground leading-tight">All battles conquered</h2>
+          <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+            New battles in {countdown}
+            {user && userStats ? ` · 🔥${userStats.streak} · ⚡${userStats.todayVotes} today` : ''}
+          </p>
+        </div>
       </motion.div>
-
-      {/* User stats strip */}
-      {user && userStats && (
-        <motion.div
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="flex items-center justify-center gap-3 text-xs font-medium text-muted-foreground"
-        >
-          <span>Streak 🔥 <span className="font-display font-bold text-foreground">{userStats.streak}</span></span>
-          <span className="text-muted-foreground/40">·</span>
-          <span>Today ⚡ <span className="font-display font-bold text-foreground">{userStats.todayVotes}</span></span>
-          <span className="text-muted-foreground/40">·</span>
-          <span>Points 👑 <span className="font-display font-bold text-foreground">{userStats.points.toLocaleString()}</span></span>
-        </motion.div>
-      )}
-
-
     </section>
   );
 }
