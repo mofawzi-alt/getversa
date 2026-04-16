@@ -13,6 +13,8 @@ interface NotificationPayload {
   url?: string;
   poll_id?: string;
   user_ids?: string[];
+  skip_in_app?: boolean; // when true, do not insert a row into public.notifications
+  notification_type?: string; // type to use if we do insert (default 'new_poll')
 }
 
 serve(async (req: Request): Promise<Response> => {
