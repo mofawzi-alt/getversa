@@ -348,6 +348,21 @@ export default function UserProfile() {
               )}
             </div>
           )}
+
+          {/* Voting Patterns strip */}
+          {canViewFullProfile && patterns.length > 0 && (
+            <div className="mt-2 pt-2 border-t border-border/40 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+              <BarChart3 className="h-3 w-3 text-primary shrink-0" />
+              {patterns.map((p, i) => (
+                <span
+                  key={i}
+                  className="text-[10px] text-foreground/80 leading-snug shrink-0 px-2 py-0.5 rounded-full bg-muted/40"
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Personality Type */}
