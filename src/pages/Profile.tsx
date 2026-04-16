@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import ProfileDimensionsSection from '@/components/profile/ProfileDimensionsSection';
 import VotingInsights from '@/components/profile/VotingInsights';
 import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
+import ShareCompatibilityCard from '@/components/compare/ShareCompatibilityCard';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useFollows } from '@/hooks/useFollows';
 
@@ -143,6 +144,9 @@ export default function Profile() {
             </div>
           )}
         </div>
+
+        {/* Compatibility Link */}
+        <ShareCompatibilityCard />
 
         {/* Personality Type */}
         {user && <PersonalityTypeCard userId={user.id} isOwnProfile />}
