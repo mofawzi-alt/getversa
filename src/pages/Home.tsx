@@ -244,31 +244,66 @@ function HomeLiveDebateCard({
           </motion.p>
         )}
         {hasVoted ? (
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-xs font-semibold text-primary">
+          <div className="flex items-center justify-between pt-1 gap-2">
+            <span className="text-xs font-semibold text-primary truncate">
               You voted {chosenOptionLabel && chosenOptionLabel.length > 20 ? chosenOptionLabel.slice(0, 20) + '…' : chosenOptionLabel}
             </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const pollUrl = `${window.location.origin}/poll/${poll.id}`;
-                if (navigator.share) {
-                  navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
-                } else {
-                  navigator.clipboard.writeText(pollUrl);
-                  import('sonner').then(m => m.toast.success('Link copied!'));
-                }
-              }}
-              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Share2 className="h-3 w-3" /> Share
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              {user && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShareSheetOpen(true);
+                  }}
+                  aria-label="Send to friend"
+                  className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Send className="h-3 w-3" /> Send
+                </button>
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const pollUrl = `${window.location.origin}/poll/${poll.id}`;
+                  if (navigator.share) {
+                    navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
+                  } else {
+                    navigator.clipboard.writeText(pollUrl);
+                    import('sonner').then(m => m.toast.success('Link copied!'));
+                  }
+                }}
+                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Share2 className="h-3 w-3" /> Share
+              </button>
+            </div>
           </div>
         ) : (
-          <button className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5">
-            Vote on this <ArrowRight className="h-3.5 w-3.5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5">
+              Vote on this <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+            {user && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShareSheetOpen(true);
+                }}
+                aria-label="Send to friend"
+                className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-foreground hover:bg-muted/70 transition-colors shrink-0"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         )}
+      </div>
+      <SharePollToFriendSheet
+        pollId={poll.id}
+        pollQuestion={poll.question}
+        open={shareSheetOpen}
+        onOpenChange={setShareSheetOpen}
+      />
       </div>
     </motion.div>
   );
