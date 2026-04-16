@@ -264,6 +264,48 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             </div>
           </div>
 
+          {/* Demographics */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Target Gender <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {['Male', 'Female'].map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setTargetGender(prev => prev === g ? '' : g)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      targetGender === g
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-secondary text-muted-foreground border-border'
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label>Target Age <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {['18-24', '25-34', '35-44', '45+'].map(a => (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() => setTargetAgeRange(prev => prev === a ? '' : a)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      targetAgeRange === a
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-secondary text-muted-foreground border-border'
+                    }`}
+                  >
+                    {a}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Target Countries */}
           <div>
             <Label>Target Countries <span className="text-muted-foreground text-xs">(none = all)</span></Label>
