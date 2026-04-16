@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useFriends, Friend } from '@/hooks/useFriends';
 import {
   ArrowLeft, Users, Loader2, Trophy, Sparkles, Check,
-  UserPlus, X, BarChart3, Swords,
+  UserPlus, X, BarChart3, Swords, Share2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
