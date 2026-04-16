@@ -39,9 +39,7 @@ import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useDailyQueue } from '@/hooks/useDailyQueue';
-import { useCelebrityPresence } from '@/hooks/useCelebrityVotes';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
-import VerifiedBadge from '@/components/VerifiedBadge';
 
 // Category display name mapping (canonical 8 categories)
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {};
@@ -133,14 +131,12 @@ function HomeLiveDebateCard({
   index,
   hasVoted,
   chosenOptionLabel,
-  celebrityVoters,
   onCardClick,
 }: {
   poll: PollCard;
   index: number;
   hasVoted: boolean;
   chosenOptionLabel: string | null;
-  celebrityVoters: Array<{ username: string }>;
   onCardClick: () => void;
 }) {
   const { user } = useAuth();
@@ -170,16 +166,6 @@ function HomeLiveDebateCard({
             <span className="text-[10px] text-muted-foreground ml-auto">{getTimeLeft(poll.ends_at)}</span>
           )}
         </div>
-        {celebrityVoters.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-1.5">
-            {celebrityVoters.slice(0, 2).map((celeb, ci) => (
-              <span key={ci} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10">
-                <VerifiedBadge size="sm" />
-                <span className="text-[10px] font-semibold text-foreground/80">{celeb.username} voted</span>
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="flex relative mx-2 rounded-xl overflow-hidden" style={{ aspectRatio: '4/5' }}>
@@ -861,10 +847,6 @@ export default function Home() {
 
     return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
   }, [allPolls, votedPollIds, userTasteProfile]);
-
-  // Celebrity presence on live debate polls
-  const livePollIds = useMemo(() => livePolls.map(p => p.id), [livePolls]);
-  const { data: celebrityPresence = {} } = useCelebrityPresence(livePollIds);
 
   // (auto-rotate removed — static horizontal scroll)
 
