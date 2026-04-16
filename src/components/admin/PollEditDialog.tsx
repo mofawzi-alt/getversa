@@ -57,8 +57,8 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
-  const [targetGender, setTargetGender] = useState('');
-  const [targetAgeRange, setTargetAgeRange] = useState('');
+  const [targetGenders, setTargetGenders] = useState<string[]>([]);
+  const [targetAgeRanges, setTargetAgeRanges] = useState<string[]>([]);
 
   // Sync state when poll changes
   const [lastPollId, setLastPollId] = useState<string | null>(null);
@@ -78,8 +78,8 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setImageAFile(null);
     setImageBFile(null);
     setTargetCountries(poll.target_countries || []);
-    setTargetGender(poll.target_gender || '');
-    setTargetAgeRange(poll.target_age_range || '');
+    setTargetGenders(poll.target_gender ? poll.target_gender.split(',') : []);
+    setTargetAgeRanges(poll.target_age_range ? poll.target_age_range.split(',') : []);
   }
 
   const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'ogg'];
@@ -150,8 +150,8 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           starts_at: startsAt ? new Date(startsAt).toISOString() : null,
           ends_at: endsAt ? new Date(endsAt).toISOString() : null,
           target_countries: targetCountries.length > 0 ? targetCountries : [],
-          target_gender: targetGender || null,
-          target_age_range: targetAgeRange || null,
+          target_gender: targetGenders.length > 0 ? targetGenders.join(',') : null,
+          target_age_range: targetAgeRanges.length > 0 ? targetAgeRanges.join(',') : null,
         })
         .eq('id', poll.id);
       if (error) throw error;
@@ -273,9 +273,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
                   <button
                     key={g}
                     type="button"
-                    onClick={() => setTargetGender(prev => prev === g ? '' : g)}
+                    onClick={() => setTargetGenders(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g])}
                     className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
-                      targetGender === g
+                      targetGenders.includes(g)
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-secondary text-muted-foreground border-border'
                     }`}
@@ -292,9 +292,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
                   <button
                     key={a}
                     type="button"
-                    onClick={() => setTargetAgeRange(prev => prev === a ? '' : a)}
+                    onClick={() => setTargetAgeRanges(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a])}
                     className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
-                      targetAgeRange === a
+                      targetAgeRanges.includes(a)
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-secondary text-muted-foreground border-border'
                     }`}
