@@ -79,7 +79,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setImageBFile(null);
     setTargetCountries(poll.target_countries || []);
     setTargetGender(poll.target_gender || '');
-    setTargetAgeRange(poll.target_age_range || '');
+    setTargetAgeRanges(poll.target_age_range ? poll.target_age_range.split(',') : []);
   }
 
   const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'ogg'];
@@ -151,7 +151,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           ends_at: endsAt ? new Date(endsAt).toISOString() : null,
           target_countries: targetCountries.length > 0 ? targetCountries : [],
           target_gender: targetGender || null,
-          target_age_range: targetAgeRange || null,
+          target_age_range: targetAgeRanges.length > 0 ? targetAgeRanges.join(',') : null,
         })
         .eq('id', poll.id);
       if (error) throw error;
@@ -292,9 +292,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
                   <button
                     key={a}
                     type="button"
-                    onClick={() => setTargetAgeRange(prev => prev === a ? '' : a)}
+                    onClick={() => setTargetAgeRanges(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a])}
                     className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
-                      targetAgeRange === a
+                      targetAgeRanges.includes(a)
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-secondary text-muted-foreground border-border'
                     }`}
