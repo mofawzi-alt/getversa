@@ -8,7 +8,8 @@ import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { toast } from 'sonner';
-import { Check } from 'lucide-react';
+import { Check, Send } from 'lucide-react';
+import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import HeroCaughtUp from './HeroCaughtUp';
 import CinematicResults from '@/components/poll/CinematicResults';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
@@ -71,6 +72,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   } | null>(null);
   const sessionShownRef = useRef(new Set<string>());
   const [showHookMoment, setShowHookMoment] = useState(false);
+  const [showShareSheet, setShowShareSheet] = useState(false);
 
   // Gate gender teaser behind streak (Day 3+)
   const streak: number = (profile as any)?.current_streak ?? 0;
@@ -439,6 +441,23 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         <div className={`flex h-[55vh] max-h-[420px] relative ${poll.is_hot_take ? 'ring-2 ring-[hsl(15,90%,55%)]' : ''}`}>
           {poll.is_hot_take && <HotTakeBadge />}
           <ControversialBadge percentA={poll.percentA} percentB={poll.percentB} totalVotes={poll.totalVotes} />
+
+          {/* Send to friend button — top right */}
+          {user && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowShareSheet(true);
+              }}
+              onTouchStart={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              aria-label="Send to friend"
+              className="absolute top-3 right-3 z-30 w-9 h-9 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform shadow-lg"
+            >
+              <Send className="w-4 h-4 text-white" strokeWidth={2.2} />
+            </button>
+          )}
+
           {/* Option A — left half */}
           <div
             className="w-1/2 h-full relative overflow-hidden transition-transform duration-200"
