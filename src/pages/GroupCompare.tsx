@@ -572,11 +572,29 @@ function ResultsView({
       ? 'A'
       : 'B';
 
+  const battleShareText =
+    `⚔️ Crew Battle on Versa\n` +
+    `Group A (${namesOf(groupA)}): ${stats.a.alignmentPct}% aligned\n` +
+    `Group B (${namesOf(groupB)}): ${stats.b.alignmentPct}% aligned\n` +
+    `Cross-crew alignment: ${stats.crossAlign}% on ${stats.crossShared} shared polls.` +
+    (winner ? `\n🏆 Tightest crew: Group ${winner}` : `\n🤝 It's a tie!`);
+
   return (
     <div className="space-y-4">
-      <button onClick={onReset} className="text-xs text-muted-foreground underline">
-        ← Pick different groups
-      </button>
+      <div className="flex items-center justify-between">
+        <button onClick={onReset} className="text-xs text-muted-foreground underline">
+          ← Pick different groups
+        </button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="rounded-full gap-1.5 h-8"
+          onClick={() => shareResults(battleShareText)}
+        >
+          <Share2 className="h-3.5 w-3.5" />
+          Share
+        </Button>
+      </div>
 
       {/* Showdown */}
       <div className="glass rounded-3xl p-5 space-y-4">
