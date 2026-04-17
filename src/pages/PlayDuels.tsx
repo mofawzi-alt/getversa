@@ -109,7 +109,8 @@ export default function PlayDuels() {
 
     setSending(true);
     try {
-      const pollIds = await pickDuelPollIds();
+      const categoryFilter = selectedCategory === '__random__' ? null : selectedCategory;
+      const pollIds = await pickDuelPollIds([], 5, categoryFilter);
       if (pollIds.length < 5) {
         toast.error('Not enough polls available');
         return;
