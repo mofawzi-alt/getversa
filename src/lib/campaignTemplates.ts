@@ -91,7 +91,7 @@ export function applyTemplate(
 
 function fill(s: string, vars: { brand: string; brandA?: string; brandB?: string }): string {
   return s
-    .replaceAll('{brand}', vars.brand || 'this brand')
-    .replaceAll('{brandA}', vars.brandA || vars.brand || 'Brand A')
-    .replaceAll('{brandB}', vars.brandB || 'Brand B');
+    .replace(/\{brand\}/g, vars.brand || 'this brand')
+    .replace(/\{brandA\}/g, vars.brandA || vars.brand || 'Brand A')
+    .replace(/\{brandB\}/g, vars.brandB || 'Brand B');
 }
