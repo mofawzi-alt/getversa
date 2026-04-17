@@ -138,17 +138,17 @@ export default function ShareDuelResultCard({
     ctx.font = '600 28px system-ui, -apple-system, sans-serif';
     ctx.fillText('MATCH RATE', W / 2, heroY + 100);
 
-    // Subline
+    // Subline — placed safely below the ring (ring bottom = heroY + 200 + lineWidth/2)
     ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.font = '500 30px system-ui, -apple-system, sans-serif';
     ctx.fillText(
       `Matched ${matches} of ${polls.length} polls`,
       W / 2,
-      heroY + 200
+      heroY + 260
     );
 
     // === Per-poll comparison list (max 5 visible) ===
-    const listTop = 880;
+    const listTop = 960;
     const rowH = 130;
     const padX = 80;
     const showCount = Math.min(polls.length, 5);
