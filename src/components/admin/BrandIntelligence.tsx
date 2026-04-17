@@ -12,8 +12,7 @@ import {
   Sparkles, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+// html2canvas + jspdf are dynamically imported inside the export handler to keep them out of the main bundle
 
 interface BrandPoll {
   id: string;
@@ -321,6 +320,7 @@ export default function BrandIntelligence() {
     setIsExporting(true);
     
     try {
+      const { default: jsPDF } = await import('jspdf');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = 210;
       const pageHeight = 297;

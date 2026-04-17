@@ -9,8 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Download, Users, BarChart3, Loader2 } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts';
 import { toast } from 'sonner';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+// jspdf + html2canvas are dynamically imported inside handleExportPdf to keep them out of the main bundle
 
 interface ClientCampaign {
   campaign_id: string;
@@ -103,6 +102,10 @@ export default function BrandClientPortal() {
     if (!reportRef.current || !selected) return;
     setExporting(true);
     try {
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ]);
       const canvas = await html2canvas(reportRef.current, {
         backgroundColor: '#ffffff',
         scale: 2,
