@@ -140,7 +140,7 @@ function HomeLiveDebateCard({
   const { user } = useAuth();
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
   const { data: genderTeaser } = useGenderSplitTeaser(
-    hasVoted && poll.totalVotes >= 10 ? poll.id : '',
+    hasVoted ? poll.id : '',
     poll.option_a,
     poll.option_b,
     poll.percentA,
