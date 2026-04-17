@@ -60,6 +60,27 @@ export default function PlayDuel() {
     load();
   }, [user, id]);
 
+  // Fetch national results once the user has finished — for the "see how Egypt voted" payoff
+  useEffect(() => {
+    const done = polls.length > 0 && myChoices.length === polls.length;
+    if (!done || Object.keys(results).length === polls.length) return;
+    (async () => {
+      const ids = polls.map((p) => p.id);
+      const { data } = await supabase.rpc('get_poll_results', { poll_ids: ids });
+      if (data) {
+        const map: Record<string, { percentA: number; percentB: number; totalVotes: number }> = {};
+        (data as any[]).forEach((r: any) => {
+          map[r.poll_id] = {
+            percentA: r.percent_a ?? 0,
+            percentB: r.percent_b ?? 0,
+            totalVotes: r.total_votes ?? 0,
+          };
+        });
+        setResults(map);
+      }
+    })();
+  }, [polls, myChoices, results]);
+
   const load = async () => {
     setLoading(true);
     const { data: d, error } = await supabase
