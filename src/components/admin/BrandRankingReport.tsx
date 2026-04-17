@@ -204,7 +204,7 @@ export default function BrandRankingReport() {
               Option Rankings
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              {selectedCategory === 'all' ? 'All categories' : selectedCategory} · {rankings.length} options across polls
+              {selectedCategory === 'all' ? 'All categories' : selectedCategory} · {timeRange === 'all' ? 'All time' : `Last ${timeRange} days`} · {rankings.length} options
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
