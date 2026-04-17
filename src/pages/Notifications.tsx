@@ -14,13 +14,59 @@ export default function Notifications() {
 
   const resolveNotificationRoute = (n: any): string | null => {
     const data = (n?.data ?? {}) as Record<string, any>;
-    if (n.type === 'poll_challenge') {
-      if (data.duel_id) return `/play/duels/${data.duel_id}`;
-      return '/play/duels';
-    }
+
+    // Explicit URL override always wins
     if (data.url && typeof data.url === 'string') return data.url;
-    if (data.poll_id) return `/poll/${data.poll_id}`;
-    return null;
+
+    switch (n.type) {
+      case 'poll_challenge':
+      case 'challenge':
+        if (data.duel_id) return `/play/duels/${data.duel_id}`;
+        if (data.challenge_id) return `/play/duels/${data.challenge_id}`;
+        return '/play/duels';
+
+      case 'new_message':
+        if (data.conversation_id) return `/messages/${data.conversation_id}`;
+        return '/messages';
+
+      case 'friend_request':
+      case 'friend_accepted':
+        if (data.user_id) return `/user/${data.user_id}`;
+        return '/friends';
+
+      case 'friend_voted':
+      case 'social_proof':
+        if (data.poll_id) return `/poll/${data.poll_id}`;
+        if (data.user_id) return `/user/${data.user_id}`;
+        return '/friends';
+
+      case 'new_follower':
+        if (data.user_id) return `/user/${data.user_id}`;
+        return '/profile';
+
+      case 'badge_earned':
+        return '/badges';
+
+      case 'weekly_recap':
+      case 'weekly_polls':
+        return '/weekly-results';
+
+      case 'streak_reminder':
+        return '/';
+
+      case 'vote_result':
+      case 'vote_mattered':
+      case 'result_flip':
+      case 'new_poll':
+        if (data.poll_id) return `/poll/${data.poll_id}`;
+        return '/';
+
+      default:
+        if (data.poll_id) return `/poll/${data.poll_id}`;
+        if (data.conversation_id) return `/messages/${data.conversation_id}`;
+        if (data.user_id) return `/user/${data.user_id}`;
+        return null;
+    }
   };
 
   const handleNotificationClick = (n: any) => {
