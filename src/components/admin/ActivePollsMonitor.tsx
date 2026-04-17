@@ -266,7 +266,7 @@ export default function ActivePollsMonitor() {
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0">📦 {(poll as any).batch_slot}</Badge>
                       )}
                       {(poll as any).is_hot_take && (
-                        <Badge className="text-[10px] px-1.5 py-0 bg-orange-500 text-white border-0">🔥 Hot</Badge>
+                        <Badge variant="destructive" className="text-[10px] px-1.5 py-0">🔥 Hot</Badge>
                       )}
                       {poll.target_age_range && (
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0">{poll.target_age_range}</Badge>
