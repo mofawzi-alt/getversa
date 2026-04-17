@@ -13,7 +13,7 @@ import UserAvatar from '@/components/UserAvatar';
 import { 
   Search, UserPlus, UserCheck, Users, Loader2, 
   Check, X, Heart, ChevronRight, Trophy, 
-  TrendingUp, TrendingDown, Minus, Sparkles, MessageCircle
+  TrendingUp, TrendingDown, Minus, Sparkles, MessageCircle, Swords
 } from 'lucide-react';
 
 export default function Friends() {
@@ -159,6 +159,23 @@ export default function Friends() {
             <p className="font-semibold text-sm leading-tight">Crew Compare</p>
             <p className="text-[11px] text-muted-foreground truncate">
               Battle two groups or vibe-check one crew
+            </p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </button>
+
+        {/* Versa Arena entry */}
+        <button
+          onClick={() => navigate('/play/duels')}
+          className="w-full glass rounded-2xl p-3.5 flex items-center gap-3 text-left hover:bg-primary/5 transition-colors border border-primary/20"
+        >
+          <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+            <Swords className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm leading-tight">Versa Arena</p>
+            <p className="text-[11px] text-muted-foreground truncate">
+              Challenge a friend to a live 5-poll duel
             </p>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
