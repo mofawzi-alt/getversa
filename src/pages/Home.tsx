@@ -849,8 +849,19 @@ export default function Home() {
       return uniqueIds.size;
     })();
 
-    return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
+    // ── Closing Soon: live polls expiring within 6 hours, soonest first ──
+    const sixHoursMs = 6 * 60 * 60 * 1000;
+    const closingSoon = diversifiedLive
+      .filter((p) => p.ends_at && new Date(p.ends_at).getTime() - nowMs < sixHoursMs)
+      .sort((a, b) => new Date(a.ends_at!).getTime() - new Date(b.ends_at!).getTime())
+      .slice(0, 12);
+
+    return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters, closingSoonPolls: closingSoon };
   }, [allPolls, votedPollIds, userTasteProfile]);
+
+  // ── Trending detection: which live polls have >100 votes in last 2h ──
+  const livePollIds = useMemo(() => livePolls.map((p) => p.id), [livePolls]);
+  const { data: trendingIdSet } = useTrendingPolls(livePollIds);
 
   // (auto-rotate removed — static horizontal scroll)
 
