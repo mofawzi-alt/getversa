@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Swords, Trophy, Sparkles } from 'lucide-react';
+import { ArrowLeft, Swords, Trophy, Sparkles, Home as HomeIcon, BarChart3 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import HomeResultsModal from '@/components/home/HomeResultsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -51,11 +52,34 @@ export default function PlayDuel() {
   const [myChoices, setMyChoices] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [results, setResults] = useState<Record<string, { percentA: number; percentB: number; totalVotes: number }>>({});
+  const [openResultPollId, setOpenResultPollId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || !id) return;
     load();
   }, [user, id]);
+
+  // Fetch national results once the user has finished — for the "see how Egypt voted" payoff
+  useEffect(() => {
+    const done = polls.length > 0 && myChoices.length === polls.length;
+    if (!done || Object.keys(results).length === polls.length) return;
+    (async () => {
+      const ids = polls.map((p) => p.id);
+      const { data } = await supabase.rpc('get_poll_results', { poll_ids: ids });
+      if (data) {
+        const map: Record<string, { percentA: number; percentB: number; totalVotes: number }> = {};
+        (data as any[]).forEach((r: any) => {
+          map[r.poll_id] = {
+            percentA: r.percent_a ?? 0,
+            percentB: r.percent_b ?? 0,
+            totalVotes: r.total_votes ?? 0,
+          };
+        });
+        setResults(map);
+      }
+    })();
+  }, [polls, myChoices, results]);
 
   const load = async () => {
     setLoading(true);
@@ -254,10 +278,12 @@ export default function PlayDuel() {
               const mine = myChoices[i];
               const theirs = otherChoices[i];
               const matched = theirs && mine === theirs;
+              const r = results[p.id];
               return (
-                <div
+                <button
                   key={p.id}
-                  className="p-3 rounded-2xl bg-card border border-border/40 flex items-center gap-3"
+                  onClick={() => setOpenResultPollId(p.id)}
+                  className="w-full p-3 rounded-2xl bg-card border border-border/40 flex items-center gap-3 text-left hover:border-primary/40 active:scale-[0.99] transition-all"
                 >
                   <span className="text-[10px] font-bold text-muted-foreground w-5">
                     {i + 1}
@@ -277,6 +303,12 @@ export default function PlayDuel() {
                         </>
                       )}
                     </p>
+                    {r && (
+                      <p className="text-[10px] text-primary mt-0.5 font-semibold flex items-center gap-1">
+                        <BarChart3 className="h-2.5 w-2.5" />
+                        Egypt: {r.percentA}% / {r.percentB}% · Tap to see
+                      </p>
+                    )}
                   </div>
                   {theirs && (
                     <span
@@ -289,11 +321,56 @@ export default function PlayDuel() {
                       {matched ? 'Match' : 'Diff'}
                     </span>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
+
+          {/* Bridge CTAs — funnel back into solo voting (B2B data) + game loop */}
+          <div className="mt-6 space-y-2">
+            <button
+              onClick={() => navigate('/home')}
+              className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.99] transition-transform"
+            >
+              <HomeIcon className="h-4 w-4" />
+              Continue voting
+            </button>
+            <button
+              onClick={() => navigate('/play/duels')}
+              className="w-full py-3 rounded-2xl bg-muted text-foreground font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.99] transition-transform"
+            >
+              <Swords className="h-4 w-4" />
+              Challenge another friend
+            </button>
+            <p className="text-center text-[10px] text-muted-foreground mt-2">
+              Tap any poll above to see how Egypt voted.
+            </p>
+          </div>
         </div>
+
+        <HomeResultsModal
+          open={!!openResultPollId}
+          onOpenChange={(o) => !o && setOpenResultPollId(null)}
+          poll={(() => {
+            const p = polls.find((x) => x.id === openResultPollId);
+            const r = openResultPollId ? results[openResultPollId] : null;
+            if (!p) return null;
+            return {
+              id: p.id,
+              question: p.question,
+              option_a: p.option_a,
+              option_b: p.option_b,
+              image_a_url: p.image_a_url,
+              image_b_url: p.image_b_url,
+              percentA: r?.percentA ?? 0,
+              percentB: r?.percentB ?? 0,
+              totalVotes: r?.totalVotes ?? 0,
+              category: p.category,
+            };
+          })()}
+          imageA=""
+          imageB=""
+        />
       </AppLayout>
     );
   }
