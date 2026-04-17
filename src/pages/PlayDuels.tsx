@@ -280,6 +280,15 @@ export default function PlayDuels() {
                         Play
                       </button>
                     )}
+                    {tab === 'sent' && (
+                      <button
+                        onClick={() => cancelDuel(d.id)}
+                        aria-label="Cancel challenge"
+                        className="px-2.5 py-1.5 rounded-full bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive text-xs font-bold flex-shrink-0 flex items-center gap-1 transition-colors"
+                      >
+                        <X className="h-3 w-3" /> Cancel
+                      </button>
+                    )}
                   </div>
                 </div>
               );
