@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Brain, Swords, Sparkles, Trophy, Users } from 'lucide-react';
+import { Swords, Sparkles, Trophy, Users } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
@@ -46,25 +46,17 @@ function GameCard({ icon, title, subtitle, badge, available, onClick }: GameCard
 export default function Play() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [stats, setStats] = useState({ predictions: 0, accuracy: 0, duels: 0 });
+  const [stats, setStats] = useState({ duels: 0 });
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data: preds } = await supabase
-        .from('predictions')
-        .select('is_correct', { count: 'exact' })
-        .eq('user_id', user.id);
-      const total = preds?.length || 0;
-      const correct = preds?.filter((p) => p.is_correct).length || 0;
-      const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
-
       const { count: duelCount } = await supabase
         .from('poll_challenges')
         .select('id', { count: 'exact', head: true })
         .or(`challenger_id.eq.${user.id},challenged_id.eq.${user.id}`);
 
-      setStats({ predictions: total, accuracy: acc, duels: duelCount || 0 });
+      setStats({ duels: duelCount || 0 });
     })();
   }, [user]);
 
@@ -85,18 +77,10 @@ export default function Play() {
 
         {/* Stats */}
         {user && (
-          <div className="grid grid-cols-3 gap-2 mb-6">
-            <div className="rounded-xl bg-card border border-border/40 p-3 text-center">
-              <p className="text-lg font-bold text-foreground">{stats.predictions}</p>
-              <p className="text-[10px] text-muted-foreground">Predictions</p>
-            </div>
-            <div className="rounded-xl bg-card border border-border/40 p-3 text-center">
-              <p className="text-lg font-bold text-primary">{stats.accuracy}%</p>
-              <p className="text-[10px] text-muted-foreground">Accuracy</p>
-            </div>
-            <div className="rounded-xl bg-card border border-border/40 p-3 text-center">
-              <p className="text-lg font-bold text-foreground">{stats.duels}</p>
-              <p className="text-[10px] text-muted-foreground">Duels</p>
+          <div className="mb-6">
+            <div className="rounded-xl bg-card border border-border/40 p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{stats.duels}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">Total Battles</p>
             </div>
           </div>
         )}
@@ -104,34 +88,12 @@ export default function Play() {
         {/* Games */}
         <div className="space-y-3">
           <GameCard
-            icon={<Brain className="h-6 w-6" />}
-            title="Predict the Crowd"
-            subtitle="Don't pick what you like — pick what you think the majority will choose. Score your accuracy."
-            badge="Live"
-            available
-            onClick={() => navigate('/play/predict')}
-          />
-          <GameCard
             icon={<Swords className="h-6 w-6" />}
             title="Duels"
             subtitle="Challenge a friend to 5 polls. Highest match-rate or fastest score wins."
             badge="Live"
             available
             onClick={() => navigate('/play/duels')}
-          />
-          <GameCard
-            icon={<Users className="h-6 w-6" />}
-            title="Squad Rooms"
-            subtitle="3–8 friends in a live room. Vote together, see the rebels and twins."
-            badge="Soon"
-            available={false}
-          />
-          <GameCard
-            icon={<Trophy className="h-6 w-6" />}
-            title="Tournaments"
-            subtitle="16 brands enter, one champion. Weekly bracket battles."
-            badge="Soon"
-            available={false}
           />
         </div>
 
