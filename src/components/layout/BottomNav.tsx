@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, LogIn, Compass, Clock, Users } from 'lucide-react';
+import { Home, User, LogIn, Compass, Users, Gamepad2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFriendsBadge } from '@/hooks/useFriendsBadge';
 
@@ -41,19 +41,19 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           onClick={() => navigate('/browse')}
         />
         <NavButton
+          path="/play"
+          icon={Gamepad2}
+          label="Play"
+          active={location.pathname === '/play' || location.pathname.startsWith('/play/')}
+          onClick={() => navigate('/play')}
+        />
+        <NavButton
           path="/friends"
           icon={Users}
           label="Friends"
           active={location.pathname === '/friends' || location.pathname.startsWith('/friends/')}
           onClick={() => navigate('/friends')}
           badge={friendsBadge}
-        />
-        <NavButton
-          path="/history"
-          icon={Clock}
-          label="History"
-          active={location.pathname === '/history'}
-          onClick={() => navigate('/history')}
         />
         <NavButton
           path="/profile"

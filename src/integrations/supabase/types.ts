@@ -705,11 +705,17 @@ export type Database = {
         Row: {
           challenged_choice: string | null
           challenged_id: string
+          challenged_score: number | null
           challenger_choice: string | null
           challenger_id: string
+          challenger_score: number | null
+          completed_at: string | null
           created_at: string
+          game_type: string
           id: string
+          match_rate: number | null
           poll_id: string
+          poll_ids: string[] | null
           responded_at: string | null
           status: string
           taunt_message: string | null
@@ -717,11 +723,17 @@ export type Database = {
         Insert: {
           challenged_choice?: string | null
           challenged_id: string
+          challenged_score?: number | null
           challenger_choice?: string | null
           challenger_id: string
+          challenger_score?: number | null
+          completed_at?: string | null
           created_at?: string
+          game_type?: string
           id?: string
+          match_rate?: number | null
           poll_id: string
+          poll_ids?: string[] | null
           responded_at?: string | null
           status?: string
           taunt_message?: string | null
@@ -729,11 +741,17 @@ export type Database = {
         Update: {
           challenged_choice?: string | null
           challenged_id?: string
+          challenged_score?: number | null
           challenger_choice?: string | null
           challenger_id?: string
+          challenger_score?: number | null
+          completed_at?: string | null
           created_at?: string
+          game_type?: string
           id?: string
+          match_rate?: number | null
           poll_id?: string
+          poll_ids?: string[] | null
           responded_at?: string | null
           status?: string
           taunt_message?: string | null
@@ -1001,6 +1019,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      predictions: {
+        Row: {
+          actual_majority: string | null
+          created_at: string
+          decision_time_ms: number | null
+          id: string
+          is_correct: boolean | null
+          poll_id: string
+          predicted_choice: string
+          user_id: string
+          voter_age_range: string | null
+          voter_city: string | null
+          voter_country: string | null
+          voter_gender: string | null
+        }
+        Insert: {
+          actual_majority?: string | null
+          created_at?: string
+          decision_time_ms?: number | null
+          id?: string
+          is_correct?: boolean | null
+          poll_id: string
+          predicted_choice: string
+          user_id: string
+          voter_age_range?: string | null
+          voter_city?: string | null
+          voter_country?: string | null
+          voter_gender?: string | null
+        }
+        Update: {
+          actual_majority?: string | null
+          created_at?: string
+          decision_time_ms?: number | null
+          id?: string
+          is_correct?: boolean | null
+          poll_id?: string
+          predicted_choice?: string
+          user_id?: string
+          voter_age_range?: string | null
+          voter_city?: string | null
+          voter_country?: string | null
+          voter_gender?: string | null
+        }
+        Relationships: []
       }
       profile_customizations: {
         Row: {
@@ -1640,6 +1703,7 @@ export type Database = {
           category: string | null
           choice: string
           created_at: string | null
+          game_context: string
           id: string
           is_public_vote: boolean
           poll_id: string
@@ -1654,6 +1718,7 @@ export type Database = {
           category?: string | null
           choice: string
           created_at?: string | null
+          game_context?: string
           id?: string
           is_public_vote?: boolean
           poll_id: string
@@ -1668,6 +1733,7 @@ export type Database = {
           category?: string | null
           choice?: string
           created_at?: string | null
+          game_context?: string
           id?: string
           is_public_vote?: boolean
           poll_id?: string
@@ -1846,6 +1912,18 @@ export type Database = {
       get_or_create_conversation: {
         Args: { _other_user_id: string }
         Returns: string
+      }
+      get_perception_gap: {
+        Args: { p_poll_id: string }
+        Returns: {
+          actual_a_pct: number
+          actual_b_pct: number
+          gap_a: number
+          gap_b: number
+          predicted_a_pct: number
+          predicted_b_pct: number
+          total_predictions: number
+        }[]
       }
       get_poll_results: {
         Args: { poll_ids: string[] }
