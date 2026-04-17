@@ -151,8 +151,8 @@ export default function BrandRankingReport() {
 
   return (
     <div className="space-y-4">
-      {/* Category selector + export */}
-      <div className="flex gap-2">
+      {/* Filters: category + time range + export */}
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="flex-1">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger>
@@ -163,6 +163,19 @@ export default function BrandRankingReport() {
               {categories?.map(cat => (
                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="sm:w-44">
+          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">Last 7 days</SelectItem>
+              <SelectItem value="30">Last 30 days</SelectItem>
+              <SelectItem value="90">Last 90 days</SelectItem>
+              <SelectItem value="all">All time</SelectItem>
             </SelectContent>
           </Select>
         </div>
