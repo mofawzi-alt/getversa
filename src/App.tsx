@@ -46,6 +46,9 @@ import BrandPortal from "./pages/BrandPortal";
 import Messages from "./pages/Messages";
 import ChatThread from "./pages/ChatThread";
 import Leaderboard from "./pages/Leaderboard";
+import Play from "./pages/Play";
+import PlayPredict from "./pages/PlayPredict";
+import PlayDuels from "./pages/PlayDuels";
  import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
@@ -163,6 +166,9 @@ function AppInner() {
           <Route path="/weekly-results" element={<WeeklyTopResults />} />
           <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
           <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+          <Route path="/play" element={<Play />} />
+          <Route path="/play/predict" element={<ProtectedRoute><PlayPredict /></ProtectedRoute>} />
+          <Route path="/play/duels" element={<ProtectedRoute><PlayDuels /></ProtectedRoute>} />
           <Route path="/friends/:friendId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/friends/:friendId/compare" element={<ProtectedRoute><FriendComparison /></ProtectedRoute>} />
           <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
