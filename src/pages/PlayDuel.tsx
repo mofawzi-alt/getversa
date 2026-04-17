@@ -52,6 +52,8 @@ export default function PlayDuel() {
   const [myChoices, setMyChoices] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [results, setResults] = useState<Record<string, { percentA: number; percentB: number; totalVotes: number }>>({});
+  const [openResultPollId, setOpenResultPollId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || !id) return;
