@@ -4,6 +4,7 @@ import BottomNav from './BottomNav';
 import AppHeader from './AppHeader';
 import PullToRefresh from './PullToRefresh';
 import LegalFooter from './LegalFooter';
+import { useDuelAutoOpen } from '@/hooks/useDuelAutoOpen';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, hideNav }: AppLayoutProps) {
   const queryClient = useQueryClient();
+  useDuelAutoOpen();
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries();

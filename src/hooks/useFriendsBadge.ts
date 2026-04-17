@@ -20,14 +20,18 @@ export function useFriendsBadge() {
 
     const fetchCount = async () => {
       try {
-        // Pending incoming friend requests
         const { count: requestsCount } = await supabase
           .from('friendships')
           .select('id', { count: 'exact', head: true })
           .eq('recipient_id', user.id)
           .eq('status', 'pending');
 
-        // Unread messages via conversations RPC
+        const { count: challengesCount } = await supabase
+          .from('poll_challenges')
+          .select('id', { count: 'exact', head: true })
+          .eq('challenged_id', user.id)
+          .eq('status', 'pending');
+
         const { data: convos } = await supabase.rpc('get_user_conversations', {
           p_user_id: user.id,
         });
@@ -38,7 +42,7 @@ export function useFriendsBadge() {
         );
 
         if (!cancelled) {
-          setCount((requestsCount || 0) + unreadMessages);
+          setCount((requestsCount || 0) + (challengesCount || 0) + unreadMessages);
         }
       } catch (e) {
         if (!cancelled) setCount(0);
@@ -58,6 +62,11 @@ export function useFriendsBadge() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'friendships' },
+        () => fetchCount()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'poll_challenges' },
         () => fetchCount()
       )
       .subscribe();
