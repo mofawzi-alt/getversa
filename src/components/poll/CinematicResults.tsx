@@ -10,7 +10,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import { useFirstVoterStatus } from '@/hooks/useFirstVoterStatus';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import FirstVoterBadge from './FirstVoterBadge';
 
 interface CinematicResultsProps {
   poll: {
