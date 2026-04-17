@@ -20,7 +20,7 @@ import AdminRetentionAnalytics from '@/components/admin/AdminRetentionAnalytics'
 import AdminResponseTimeAnalytics from '@/components/admin/AdminResponseTimeAnalytics';
 import AdminAnalyticsExport from '@/components/admin/AdminAnalyticsExport';
 import InsightHighlights from '@/components/admin/InsightHighlights';
-import CampaignAnalytics from '@/components/admin/CampaignAnalytics';
+import BrandCampaignBuilder from '@/components/admin/BrandCampaignBuilder';
 import CategoryAnalytics from '@/components/admin/CategoryAnalytics';
 import BrandRankingReport from '@/components/admin/BrandRankingReport';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
         </TabsList>
 
         <TabsContent value="campaigns" className="space-y-4">
-          <CampaignAnalytics />
+          <BrandCampaignBuilder />
         </TabsContent>
 
         <TabsContent value="polls" className="space-y-4">
