@@ -980,6 +980,16 @@ export default function CampaignAnalytics() {
             )}
           </div>
         )}
+
+        {/* Full Poll Analytics Dialog */}
+        <Dialog open={!!analyticsPollId} onOpenChange={(open) => !open && setAnalyticsPollId(null)}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Full Poll Analytics</DialogTitle>
+            </DialogHeader>
+            {analyticsPollId && <PollAnalytics initialPollId={analyticsPollId} />}
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
   );
