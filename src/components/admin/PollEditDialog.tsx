@@ -284,6 +284,46 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             </div>
           </div>
 
+          {/* Expiry & Batch */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Expiry Type</Label>
+              <select
+                value={expiryType}
+                onChange={(e) => setExpiryType(e.target.value as any)}
+                disabled={isHotTake}
+                className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm disabled:opacity-50"
+              >
+                <option value="evergreen">Evergreen (never expires)</option>
+                <option value="trending">Trending (48h)</option>
+                <option value="campaign">Campaign (synced)</option>
+              </select>
+            </div>
+            <div>
+              <Label>Batch Slot</Label>
+              <select
+                value={batchSlot}
+                onChange={(e) => setBatchSlot(e.target.value as any)}
+                className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm"
+              >
+                <option value="none">None (immediate)</option>
+                <option value="morning">Morning (9 AM Cairo)</option>
+                <option value="afternoon">Afternoon (2 PM Cairo)</option>
+                <option value="evening">Evening (7 PM Cairo)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="editIsHotTake"
+              checked={isHotTake}
+              onChange={(e) => setIsHotTake(e.target.checked)}
+              className="h-4 w-4 rounded border-border"
+            />
+            <Label htmlFor="editIsHotTake" className="text-sm">🔥 Hot Take (forces evergreen)</Label>
+          </div>
           {/* Demographics */}
           <div className="grid grid-cols-2 gap-3">
             <div>
