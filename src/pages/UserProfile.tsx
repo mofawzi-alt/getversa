@@ -244,6 +244,13 @@ export default function UserProfile() {
   const archetype = deriveArchetype(traits);
   const patterns = derivePatterns(traits);
 
+  // Privacy gating
+  const isPrivate = Boolean((profileData as any)?.is_private);
+  const showPrivateGate = !isOwnProfile && isPrivate && !isFriendOfTarget;
+  const canViewFullProfile = isOwnProfile || (isFriendOfTarget && !isPrivate) || (isFriendOfTarget) || (!isPrivate && !showPrivateGate ? false : false);
+  // Simpler: full content visible only to self or friends; private profiles hide full content from non-friends.
+  const canSeeContent = isOwnProfile || isFriendOfTarget;
+
   // Compact personality bio line (uses same engine as the big card)
   const personalityResult = computePersonalityType(traits, voteCount);
   const personalityBio = personalityResult.ready
