@@ -30,6 +30,7 @@ import IndustryReport from '@/components/admin/IndustryReport';
 import MonthlyLeaderboard from '@/components/admin/MonthlyLeaderboard';
 import ActivePollsMonitor from '@/components/admin/ActivePollsMonitor';
 import UserManagement from '@/components/admin/UserManagement';
+import BrandCampaignBuilder from '@/components/admin/BrandCampaignBuilder';
 import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
@@ -67,12 +68,17 @@ export default function AdminDashboard() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1">
           <TabsTrigger value="polls" className="text-xs px-4 py-2">Polls</TabsTrigger>
+          <TabsTrigger value="campaigns" className="text-xs px-4 py-2">Campaigns</TabsTrigger>
           <TabsTrigger value="analytics" className="text-xs px-4 py-2">Analytics</TabsTrigger>
           <TabsTrigger value="rewards" className="text-xs px-4 py-2">Rewards</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs px-4 py-2">Notify</TabsTrigger>
           <TabsTrigger value="daily-limit" className="text-xs px-4 py-2">Daily Limit</TabsTrigger>
           <TabsTrigger value="users" className="text-xs px-4 py-2">Users</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="campaigns" className="space-y-4">
+          <BrandCampaignBuilder />
+        </TabsContent>
 
         <TabsContent value="polls" className="space-y-4">
           <PollsTab 

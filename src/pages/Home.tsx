@@ -20,6 +20,7 @@ import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 import HeroVoteCard from '@/components/home/HeroVoteCard';
+import BrandPackBanner from '@/components/home/BrandPackBanner';
 import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
 
 
@@ -964,6 +965,9 @@ export default function Home() {
 
         {/* Social proof counter */}
         <FriendsJoinedToday />
+
+        {/* ═══ BRAND PACK BANNER ═══ */}
+        <BrandPackBanner />
 
         {/* ═══ DAILY PULSE STRIP ═══ */}
         <DailyPulseStrip />
