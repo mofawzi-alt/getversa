@@ -5,9 +5,9 @@ interface GenderTeaser {
   text: string;
 }
 
-const MIN_VOTES_PER_GENDER = 5;
-const MIN_DIFF_FROM_OVERALL = 5;
-const MIN_DIFF_BETWEEN_GENDERS = 6;
+const MIN_VOTES_PER_GENDER = 2;
+const MIN_DIFF_FROM_OVERALL = 0;
+const MIN_DIFF_BETWEEN_GENDERS = 0;
 
 const normalizeGender = (value: string | null) => value?.trim().toLowerCase() ?? '';
 
