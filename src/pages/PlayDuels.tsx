@@ -147,8 +147,11 @@ export default function PlayDuels() {
         .maybeSingle();
 
       const challengerName = meData?.username || 'A friend';
-      const pushTitle = `⚔️ ${challengerName} challenged you!`;
-      const pushBody = 'Dared you to a 5-poll duel. Tap to accept and play.';
+      const categoryLabel = categoryFilter ? ` · ${categoryFilter}` : '';
+      const pushTitle = `⚔️ ${challengerName} challenged you!${categoryLabel}`;
+      const pushBody = categoryFilter
+        ? `Dared you to a 5-poll ${categoryFilter} duel. Tap to accept and play.`
+        : 'Dared you to a 5-poll duel. Tap to accept and play.';
       const deepUrl = newDuelId ? `/play/duels/${newDuelId}` : '/play/duels';
 
       await supabase.from('notifications').insert({
