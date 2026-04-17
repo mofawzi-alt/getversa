@@ -473,6 +473,50 @@ export default function PollCreationForm({
           </Label>
         </div>
 
+        {/* Expiry behavior */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label className="text-sm font-medium">Expiry Type</Label>
+            <select
+              value={expiryType}
+              onChange={(e) => setExpiryType(e.target.value as any)}
+              disabled={isHotTake}
+              className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm disabled:opacity-50"
+            >
+              <option value="evergreen">Evergreen (never expires)</option>
+              <option value="trending">Trending (48h)</option>
+              <option value="campaign">Campaign (synced)</option>
+            </select>
+            {isHotTake && <p className="text-[10px] text-muted-foreground mt-1">Hot takes are forced to evergreen</p>}
+          </div>
+          <div>
+            <Label className="text-sm font-medium">Batch Slot</Label>
+            <select
+              value={batchSlot}
+              onChange={(e) => setBatchSlot(e.target.value as any)}
+              className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm"
+            >
+              <option value="none">None (immediate)</option>
+              <option value="morning">Morning (9 AM Cairo)</option>
+              <option value="afternoon">Afternoon (2 PM Cairo)</option>
+              <option value="evening">Evening (7 PM Cairo)</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="isHotTake"
+            checked={isHotTake}
+            onChange={(e) => setIsHotTake(e.target.checked)}
+            className="h-4 w-4 rounded border-border"
+          />
+          <Label htmlFor="isHotTake" className="text-sm">
+            🔥 Hot Take (always evergreen, prioritized)
+          </Label>
+        </div>
+
         {/* Weight Score / Priority */}
         <div>
           <Label className="text-sm font-medium">Priority (Weight Score)</Label>

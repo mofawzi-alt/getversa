@@ -30,6 +30,9 @@ interface Poll {
   target_age_range: string | null;
   target_country: string | null;
   target_countries: string[] | null;
+  expiry_type?: string | null;
+  batch_slot?: string | null;
+  is_hot_take?: boolean | null;
 }
 
 interface PollEditDialogProps {
