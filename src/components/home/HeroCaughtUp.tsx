@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Trophy, Flame, Zap, Target, TrendingUp, Crown, Clock, Compass, ArrowRight, Swords } from 'lucide-react';
+import { Trophy, Flame, Zap, Target, TrendingUp, Crown, Clock, Compass, ArrowRight, Swords, X, UserPlus } from 'lucide-react';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { Button } from '@/components/ui/button';
+import { useFriends } from '@/hooks/useFriends';
 
 interface HighlightPoll {
   id: string;
@@ -99,6 +100,18 @@ function HighlightCard({ poll, index, onTap }: { poll: HighlightPoll; index: num
 export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) => void }) {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { friends } = useFriends();
+  const [duelDismissed, setDuelDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return sessionStorage.getItem('caughtup_duel_dismissed') === '1';
+  });
+
+  const dismissDuelNudge = () => {
+    sessionStorage.setItem('caughtup_duel_dismissed', '1');
+    setDuelDismissed(true);
+  };
+
+  const hasFriends = friends && friends.length > 0;
 
   // User stats
   const { data: userStats } = useQuery({
@@ -288,6 +301,61 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
           Next drop in <span className="font-bold text-foreground">{countdown}</span>
         </p>
       </motion.div>
+
+      {/* Challenge a friend nudge */}
+      <AnimatePresence>
+        {user && !duelDismissed && (
+          <motion.div
+            key="duel-nudge"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8, height: 0, marginTop: 0 }}
+            transition={{ delay: 0.3, type: 'spring', stiffness: 240, damping: 20 }}
+            className="mt-3 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 relative"
+          >
+            <button
+              onClick={dismissDuelNudge}
+              aria-label="Dismiss"
+              className="absolute top-2 right-2 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+            >
+              <X className="h-3 w-3" />
+            </button>
+            <div className="flex items-center gap-3 pr-5">
+              <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                {hasFriends ? (
+                  <Swords className="h-4 w-4 text-primary" />
+                ) : (
+                  <UserPlus className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-xs font-bold text-foreground leading-tight">
+                  {hasFriends ? 'Keep the streak going' : 'Battle with friends'}
+                </p>
+                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                  {hasFriends
+                    ? 'Challenge a friend to a 5-poll duel ⚔️'
+                    : 'Add friends to start dueling →'}
+                </p>
+              </div>
+              <button
+                onClick={() => navigate(hasFriends ? '/play/duels' : '/friends')}
+                className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold flex items-center gap-1 flex-shrink-0"
+              >
+                {hasFriends ? (
+                  <>
+                    <Swords className="h-3 w-3" /> Duel
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="h-3 w-3" /> Add
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
