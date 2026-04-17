@@ -4,6 +4,7 @@ import { ArrowLeft, Swords, Trophy, Sparkles, Home as HomeIcon, BarChart3 } from
 import AppLayout from '@/components/layout/AppLayout';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
+import ShareDuelResultCard from '@/components/poll/ShareDuelResultCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -46,7 +47,7 @@ function parseChoices(raw: string | null): string[] {
 export default function PlayDuel() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [duel, setDuel] = useState<Duel | null>(null);
   const [polls, setPolls] = useState<Poll[]>([]);
   const [otherName, setOtherName] = useState<string>('Friend');
@@ -551,6 +552,23 @@ export default function PlayDuel() {
 
           {/* Bridge CTAs — funnel back into solo voting (B2B data) + game loop */}
           <div className="mt-6 space-y-2">
+            {rate !== null && otherDone && (
+              <ShareDuelResultCard
+                duelId={duel.id}
+                myName={profile?.username || 'You'}
+                otherName={otherName}
+                myChoices={myChoices}
+                otherChoices={otherChoices}
+                polls={polls.map((p) => ({
+                  id: p.id,
+                  question: p.question,
+                  option_a: p.option_a,
+                  option_b: p.option_b,
+                }))}
+                matchRate={rate}
+                matches={matches!}
+              />
+            )}
             <button
               onClick={() => navigate('/home')}
               className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.99] transition-transform"
