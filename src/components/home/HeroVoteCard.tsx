@@ -659,8 +659,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 />
               </div>
 
-              {/* Gender teaser — gated behind Day 3+ streak */}
-              {genderTeaser && insightTier !== 'none' && (
+              {/* Gender teaser — shown on all voted polls */}
+              {genderTeaser && (
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}

@@ -229,21 +229,75 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
     return () => clearInterval(interval);
   }, []);
 
+  const streak = userStats?.streak ?? 0;
+  const todayVotes = userStats?.todayVotes ?? 0;
+  const points = userStats?.points ?? 0;
+  const earnedToday = todayVotes * 10;
+
+  // Celebration message based on today's volume
+  const celebration =
+    todayVotes >= 20 ? { emoji: '🏆', title: 'Legendary day!', sub: `You smashed ${todayVotes} battles today` } :
+    todayVotes >= 10 ? { emoji: '🔥', title: 'On fire today!', sub: `${todayVotes} votes locked in` } :
+    todayVotes >= 5  ? { emoji: '⚡', title: 'Solid run!', sub: `${todayVotes} battles done` } :
+                       { emoji: '✨', title: 'All caught up!', sub: `${todayVotes} ${todayVotes === 1 ? 'vote' : 'votes'} today` };
+
   return (
-    <section className="px-3 pt-2 pb-1">
-      {/* Compact caught up banner */}
+    <section className="px-3 pt-2 pb-1 space-y-2">
+      {/* Celebration hero */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="rounded-xl bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 border border-primary/20 px-3 py-2.5 flex items-center gap-2.5"
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 18 }}
+        className="rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 border border-primary/30 p-4 text-center shadow-md"
       >
-        <span className="text-xl">🔥</span>
-        <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-display font-bold text-foreground leading-tight">All battles conquered</h2>
-          <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
-            New battles in {countdown}
-            {user && userStats ? ` · 🔥${userStats.streak} · ⚡${userStats.todayVotes} today` : ''}
-          </p>
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
+          transition={{ delay: 0.15, type: 'spring', stiffness: 260, damping: 14 }}
+          className="text-4xl mb-1"
+        >
+          {celebration.emoji}
+        </motion.div>
+        <h2 className="text-lg font-display font-bold text-foreground leading-tight">
+          {celebration.title}
+        </h2>
+        <p className="text-xs text-muted-foreground mt-0.5">{celebration.sub}</p>
+
+        {/* Stats grid */}
+        {user && (
+          <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-primary/15">
+            <div className="flex flex-col items-center">
+              <span className="text-base font-bold text-foreground">🔥 {streak}</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wide mt-0.5">Streak</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-base font-bold text-foreground">+{earnedToday}</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wide mt-0.5">Earned</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-base font-bold text-foreground">⭐ {points}</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wide mt-0.5">Total</span>
+            </div>
+          </div>
+        )}
+
+        <p className="text-[10px] text-muted-foreground mt-3">
+          Next batch drops in <span className="font-bold text-foreground">{countdown}</span>
+        </p>
+
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={() => navigate('/browse')}
+            className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold"
+          >
+            Browse more
+          </button>
+          <button
+            onClick={() => navigate('/profile/taste')}
+            className="flex-1 py-2 rounded-lg bg-secondary text-foreground text-xs font-bold"
+          >
+            Your taste
+          </button>
         </div>
       </motion.div>
     </section>
