@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Swords, Trophy, Sparkles } from 'lucide-react';
+import { ArrowLeft, Swords, Trophy, Sparkles, Home as HomeIcon, BarChart3 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import HomeResultsModal from '@/components/home/HomeResultsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
