@@ -212,7 +212,7 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
   });
 
   // Countdown to next batch drop (Cairo time: 9 AM, 1 PM, 5 PM)
-  const BATCH_HOURS = [9, 13, 17];
+  const BATCH_HOURS = [9, 14, 19];
   const [countdown, setCountdown] = useState('');
   useEffect(() => {
     const update = () => {
