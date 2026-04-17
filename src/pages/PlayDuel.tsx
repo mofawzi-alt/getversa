@@ -237,6 +237,37 @@ export default function PlayDuel() {
         } else {
           if (isChallenger) updates.challenger_score = next.length;
           else updates.challenged_score = next.length;
+
+          // Notify the other player: I finished, your turn to finish
+          const otherId = isChallenger ? duel.challenged_id : duel.challenger_id;
+          const otherProgress = otherChoices.length;
+          const meName =
+            (await supabase.from('users').select('username').eq('id', user!.id).maybeSingle()).data
+              ?.username || 'Your friend';
+          const title =
+            otherProgress === 0
+              ? `⚔️ ${meName} finished the duel`
+              : `⚔️ ${meName} finished — you're ${otherProgress}/${polls.length}`;
+          const body =
+            otherProgress === 0
+              ? `They're waiting for you. Tap to start the ${polls.length}-poll duel.`
+              : `Pick up where you left off and see your match rate.`;
+          await supabase.from('notifications').insert({
+            user_id: otherId,
+            title,
+            body,
+            type: 'poll_challenge',
+            data: { tab: 'duels', duel_id: duel.id, url: `/play/duels/${duel.id}` },
+          });
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              title,
+              body,
+              url: `/play/duels/${duel.id}`,
+              user_ids: [otherId],
+              skip_in_app: true,
+            },
+          });
         }
       }
 
