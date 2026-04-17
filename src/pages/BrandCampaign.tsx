@@ -186,7 +186,9 @@ export default function BrandCampaign() {
                 className="aspect-[4/5] rounded-2xl overflow-hidden bg-muted relative active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 <PollOptionImage
-                  poll={currentPoll}
+                  imageUrl={currentPoll.image_a_url}
+                  option={currentPoll.option_a}
+                  question={currentPoll.question}
                   side="A"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -200,7 +202,9 @@ export default function BrandCampaign() {
                 className="aspect-[4/5] rounded-2xl overflow-hidden bg-muted relative active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 <PollOptionImage
-                  poll={currentPoll}
+                  imageUrl={currentPoll.image_b_url}
+                  option={currentPoll.option_b}
+                  question={currentPoll.question}
                   side="B"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
