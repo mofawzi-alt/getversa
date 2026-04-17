@@ -323,12 +323,20 @@ export default function PlayDuels() {
                       </div>
                     </div>
                     {tab === 'inbox' && (
-                      <button
-                        onClick={() => toast.info('Duel play coming soon — vote on the polls in your feed!')}
-                        className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0"
-                      >
-                        Play
-                      </button>
+                      <div className="flex flex-col gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={() => respondToDuel(d, true)}
+                          className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => respondToDuel(d, false)}
+                          className="px-3 py-1.5 rounded-full bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive text-xs font-bold transition-colors"
+                        >
+                          Decline
+                        </button>
+                      </div>
                     )}
                     {tab === 'sent' && (
                       <button
