@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, Loader2, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import CampaignClientsManager from './CampaignClientsManager';
+import CampaignAnalyticsDialog from './CampaignAnalyticsDialog';
 
 interface DraftPoll {
   question: string;
