@@ -1,15 +1,53 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X, MessageCircle, Camera, ChevronRight } from 'lucide-react';
+import { Sparkles, X, ChevronRight, Swords, Users, MessageCircle, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 /**
  * What's New banner — appears on Home once per release for each user.
- * Bump CURRENT_RELEASE when launching new features. The banner re-shows
- * to everyone the next time they open Home.
+ *
+ * To ship a new "What's New" announcement:
+ *   1. Bump CURRENT_RELEASE to a new unique string.
+ *   2. Update HEADLINE + FEATURES below with the latest changes.
+ * The banner will automatically re-show to everyone on their next Home visit.
  */
-const CURRENT_RELEASE = 'v1.2-messaging-avatars';
+const CURRENT_RELEASE = 'v1.4-arena-crew-results-bridge';
+const HEADLINE = 'New ways to play with friends';
 const STORAGE_KEY = 'versa_seen_release';
+
+type FeatureItem = {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  route: string;
+};
+
+const FEATURES: FeatureItem[] = [
+  {
+    icon: <Swords className="h-4 w-4 text-primary" />,
+    title: 'Versa Arena — live duels',
+    desc: 'Challenge a friend to a 5-poll head-to-head and see who matches better.',
+    route: '/play/duels',
+  },
+  {
+    icon: <Users className="h-4 w-4 text-primary" />,
+    title: 'Crew Compare',
+    desc: 'Battle two groups or vibe-check one crew based on past votes.',
+    route: '/compare/group',
+  },
+  {
+    icon: <MessageCircle className="h-4 w-4 text-primary" />,
+    title: 'Message your friends',
+    desc: 'DM friends directly and share polls into any chat.',
+    route: '/messages',
+  },
+  {
+    icon: <Camera className="h-4 w-4 text-primary" />,
+    title: 'Add a profile picture',
+    desc: 'Upload your photo so friends recognize you.',
+    route: '/profile/edit',
+  },
+];
 
 export function hasSeenCurrentRelease(): boolean {
   try {
@@ -34,7 +72,6 @@ export default function WhatsNewBanner() {
 
   useEffect(() => {
     if (!hasSeenCurrentRelease()) {
-      // Slight delay so it appears after the hero loads
       const t = setTimeout(() => setOpen(true), 600);
       return () => clearTimeout(t);
     }
@@ -57,7 +94,6 @@ export default function WhatsNewBanner() {
         className="mx-4 mb-3"
       >
         <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-background p-4 shadow-sm">
-          {/* Dismiss */}
           <button
             onClick={dismiss}
             aria-label="Dismiss"
@@ -66,20 +102,16 @@ export default function WhatsNewBanner() {
             <X className="h-4 w-4" />
           </button>
 
-          {/* Header */}
           <div className="flex items-center gap-2 mb-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15">
               <Sparkles className="h-4 w-4 text-primary" />
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-primary">What's new</p>
-              <p className="text-sm font-bold text-foreground leading-tight">
-                Versa just got more social
-              </p>
+              <p className="text-sm font-bold text-foreground leading-tight">{HEADLINE}</p>
             </div>
           </div>
 
-          {/* Collapsed teaser */}
           {!expanded && (
             <button
               onClick={() => setExpanded(true)}
@@ -90,7 +122,6 @@ export default function WhatsNewBanner() {
             </button>
           )}
 
-          {/* Expanded feature list */}
           <AnimatePresence>
             {expanded && (
               <motion.div
@@ -101,24 +132,18 @@ export default function WhatsNewBanner() {
                 className="overflow-hidden"
               >
                 <div className="space-y-2.5 mt-3">
-                  <FeatureRow
-                    icon={<MessageCircle className="h-4 w-4 text-primary" />}
-                    title="Message your friends"
-                    desc="DM friends directly and share polls into any chat."
-                    onClick={() => {
-                      dismiss();
-                      navigate('/messages');
-                    }}
-                  />
-                  <FeatureRow
-                    icon={<Camera className="h-4 w-4 text-primary" />}
-                    title="Add a profile picture"
-                    desc="Upload your photo so friends recognize you."
-                    onClick={() => {
-                      dismiss();
-                      navigate('/profile/edit');
-                    }}
-                  />
+                  {FEATURES.map((f) => (
+                    <FeatureRow
+                      key={f.title}
+                      icon={f.icon}
+                      title={f.title}
+                      desc={f.desc}
+                      onClick={() => {
+                        dismiss();
+                        navigate(f.route);
+                      }}
+                    />
+                  ))}
                 </div>
 
                 <button
