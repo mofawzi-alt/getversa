@@ -260,6 +260,29 @@ export default function EditProfile() {
           </div>
         </div>
 
+        {/* Privacy */}
+        <div className="glass rounded-2xl p-4 flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Lock className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="private-toggle" className="text-foreground font-semibold">
+                Private profile
+              </Label>
+              <Switch
+                id="private-toggle"
+                checked={isPrivate}
+                onCheckedChange={togglePrivate}
+                disabled={savingPrivacy}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              When on, only friends can see your votes, badges, and patterns. Your username and avatar stay visible so people can still find and add you.
+            </p>
+          </div>
+        </div>
+
         {/* Save Button */}
         <Button
           onClick={handleSave}
