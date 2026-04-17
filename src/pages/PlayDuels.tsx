@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Swords, Inbox, Send, Trophy, Clock } from 'lucide-react';
+import { ArrowLeft, Swords, Inbox, Send, Trophy, Clock, X } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -140,6 +140,22 @@ export default function PlayDuels() {
     }
   };
 
+  const cancelDuel = async (duelId: string) => {
+    if (!confirm('Cancel this duel challenge?')) return;
+    const { error } = await supabase
+      .from('poll_challenges')
+      .delete()
+      .eq('id', duelId)
+      .eq('challenger_id', user!.id)
+      .eq('status', 'pending');
+    if (error) {
+      toast.error('Could not cancel');
+      return;
+    }
+    toast.success('Challenge cancelled');
+    setDuels((prev) => prev.filter((d) => d.id !== duelId));
+  };
+
   const inbox = duels.filter(
     (d) => d.challenged_id === user?.id && d.status === 'pending'
   );
@@ -262,6 +278,15 @@ export default function PlayDuels() {
                         className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0"
                       >
                         Play
+                      </button>
+                    )}
+                    {tab === 'sent' && (
+                      <button
+                        onClick={() => cancelDuel(d.id)}
+                        aria-label="Cancel challenge"
+                        className="px-2.5 py-1.5 rounded-full bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive text-xs font-bold flex-shrink-0 flex items-center gap-1 transition-colors"
+                      >
+                        <X className="h-3 w-3" /> Cancel
                       </button>
                     )}
                   </div>
