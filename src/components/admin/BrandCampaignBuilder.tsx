@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, Loader2, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import CampaignClientsManager from './CampaignClientsManager';
+import CampaignAnalyticsDialog from './CampaignAnalyticsDialog';
 
 interface DraftPoll {
   question: string;
@@ -288,6 +289,7 @@ export default function BrandCampaignBuilder() {
                     {c.brand_name || '—'} · {c.is_active ? 'Active' : 'Paused'}
                   </div>
                 </div>
+                <CampaignAnalyticsDialog campaignId={c.id} campaignName={c.name} brandName={c.brand_name} />
                 <CampaignClientsManager campaignId={c.id} campaignName={c.name} />
                 <Button size="sm" variant="ghost" onClick={() => toggleCampaignActive(c.id, c.is_active)}>
                   {c.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
