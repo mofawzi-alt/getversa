@@ -5,7 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFriends } from '@/hooks/useFriends';
-import { normalizeDuelChoices, pickDuelPollIds } from '@/lib/duels';
+import { fetchDuelCategories, normalizeDuelChoices, pickDuelPollIds } from '@/lib/duels';
 import {
   Dialog,
   DialogContent,
