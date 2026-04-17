@@ -77,6 +77,13 @@ export default function PlayDuels() {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (!showStartSheet || categories.length) return;
+    fetchDuelCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]));
+  }, [showStartSheet, categories.length]);
+
   const loadDuels = async () => {
     setLoading(true);
     const { data } = await supabase
