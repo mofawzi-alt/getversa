@@ -281,7 +281,7 @@ export default function PlayPredict() {
           {(['A', 'B'] as const).map((opt) => {
             const label = opt === 'A' ? poll.option_a : poll.option_b;
             const img = opt === 'A' ? poll.image_a_url : poll.image_b_url;
-            const src = getPollDisplayImageSrc({ imageUrl: img, option: label, question: poll.question });
+            const src = getPollDisplayImageSrc({ imageUrl: img, option: label, question: poll.question, side: opt });
             const isPicked = showingReveal && lastResult?.predicted === opt;
             const isMajority = showingReveal && lastResult?.actualMajority === opt;
             const pct = showingReveal
