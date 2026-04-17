@@ -460,6 +460,17 @@ export default function UserProfile() {
           </button>
         )}
 
+        {/* Challenge to a Duel — friends only */}
+        {canViewFullProfile && !isOwnProfile && targetId && (
+          <button
+            onClick={() => navigate('/play/duels')}
+            className="w-full rounded-full px-3 py-2 flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            <Swords className="h-3.5 w-3.5" />
+            <span className="text-[11px] font-bold">Challenge @{profileData?.username} to a Duel</span>
+          </button>
+        )}
+
 
         {/* Recent Voted Polls */}
         {canViewFullProfile && recentVotes.length > 0 && (
