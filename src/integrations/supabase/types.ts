@@ -1634,6 +1634,7 @@ export type Database = {
           id: string
           income_range: string | null
           industry: string | null
+          is_private: boolean
           last_vote_date: string | null
           longest_streak: number | null
           points: number | null
@@ -1660,6 +1661,7 @@ export type Database = {
           id: string
           income_range?: string | null
           industry?: string | null
+          is_private?: boolean
           last_vote_date?: string | null
           longest_streak?: number | null
           points?: number | null
@@ -1686,6 +1688,7 @@ export type Database = {
           id?: string
           income_range?: string | null
           industry?: string | null
+          is_private?: boolean
           last_vote_date?: string | null
           longest_streak?: number | null
           points?: number | null
@@ -1943,6 +1946,7 @@ export type Database = {
           created_at: string
           current_streak: number
           id: string
+          is_private: boolean
           longest_streak: number
           points: number
           username: string
