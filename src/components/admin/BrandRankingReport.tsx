@@ -18,8 +18,11 @@ interface OptionStat {
   imageUrl: string | null;
 }
 
+type TimeRange = '7' | '30' | '90' | 'all';
+
 export default function BrandRankingReport() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [timeRange, setTimeRange] = useState<TimeRange>('30');
 
   const { data: categories } = useQuery({
     queryKey: ['ranking-categories'],
@@ -36,7 +39,7 @@ export default function BrandRankingReport() {
   });
 
   const { data: rankings, isLoading } = useQuery({
-    queryKey: ['option-rankings', selectedCategory],
+    queryKey: ['option-rankings', selectedCategory, timeRange],
     queryFn: async () => {
       let query = supabase
         .from('polls')
@@ -52,8 +55,30 @@ export default function BrandRankingReport() {
       if (!polls || polls.length === 0) return [];
 
       const pollIds = polls.map(p => p.id);
-      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
-      const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
+
+      // Time-filtered vote aggregation (vote-level, not poll-level)
+      let votesQuery = supabase
+        .from('votes')
+        .select('poll_id, choice, created_at')
+        .in('poll_id', pollIds);
+
+      if (timeRange !== 'all') {
+        const days = parseInt(timeRange, 10);
+        const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+        votesQuery = votesQuery.gte('created_at', since);
+      }
+
+      const { data: votes, error: votesError } = await votesQuery.limit(50000);
+      if (votesError) throw votesError;
+
+      const resultsMap = new Map<string, { votes_a: number; votes_b: number; total_votes: number }>();
+      for (const v of votes || []) {
+        const r = resultsMap.get(v.poll_id) || { votes_a: 0, votes_b: 0, total_votes: 0 };
+        if (v.choice === 'A') r.votes_a++;
+        else if (v.choice === 'B') r.votes_b++;
+        r.total_votes++;
+        resultsMap.set(v.poll_id, r);
+      }
 
       const optionMap = new Map<string, OptionStat>();
 
@@ -67,7 +92,7 @@ export default function BrandRankingReport() {
         ensure(poll.option_a, poll.image_a_url);
         ensure(poll.option_b, poll.image_b_url);
 
-        const r = resultsMap.get(poll.id) as any;
+        const r = resultsMap.get(poll.id);
         if (!r || r.total_votes === 0) continue;
 
         const a = optionMap.get(poll.option_a)!;
@@ -86,7 +111,9 @@ export default function BrandRankingReport() {
         o.winRate = o.matchups > 0 ? Math.round((o.wins / o.matchups) * 100) : 0;
       }
 
-      return Array.from(optionMap.values()).sort((a, b) => b.totalVotes - a.totalVotes);
+      return Array.from(optionMap.values())
+        .filter(o => o.totalVotes > 0)
+        .sort((a, b) => b.totalVotes - a.totalVotes);
     },
     staleTime: 1000 * 60 * 5,
   });
