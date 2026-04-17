@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
-import { ArrowLeft, Flame, Zap, Users, BarChart3, Heart, Trophy, Award, Lock, UserPlus } from 'lucide-react';
+import { ArrowLeft, Flame, Zap, Users, BarChart3, Heart, Trophy, Award, Lock, UserPlus, Target, Swords } from 'lucide-react';
 import { useFollows } from '@/hooks/useFollows';
 import { useFriends } from '@/hooks/useFriends';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
@@ -157,22 +157,30 @@ export default function UserProfile() {
     enabled: !!user?.id && !!targetId && user?.id !== targetId,
   });
 
-  // Follower / following counts
-  const { data: followerCount = 0 } = useQuery({
-    queryKey: ['public-follower-count', targetId],
+  // Comparisons (accepted friendships)
+  const { data: comparisonsCount = 0 } = useQuery({
+    queryKey: ['public-comparisons-count', targetId],
     queryFn: async () => {
       if (!targetId) return 0;
-      const { count } = await supabase.from('follows').select('id', { count: 'exact' }).eq('following_id', targetId);
+      const { count } = await supabase
+        .from('friendships')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${targetId},recipient_id.eq.${targetId}`);
       return count || 0;
     },
     enabled: !!targetId,
   });
 
-  const { data: followingCount = 0 } = useQuery({
-    queryKey: ['public-following-count', targetId],
+  // Battles (poll challenges)
+  const { data: battlesCount = 0 } = useQuery({
+    queryKey: ['public-battles-count', targetId],
     queryFn: async () => {
       if (!targetId) return 0;
-      const { count } = await supabase.from('follows').select('id', { count: 'exact' }).eq('follower_id', targetId);
+      const { count } = await supabase
+        .from('poll_challenges')
+        .select('id', { count: 'exact', head: true })
+        .or(`challenger_id.eq.${targetId},challenged_id.eq.${targetId}`);
       return count || 0;
     },
     enabled: !!targetId,
@@ -308,9 +316,21 @@ export default function UserProfile() {
               )}
 
               <div className="flex items-center gap-4 mt-2 text-[11px]">
-                <span><span className="font-bold text-foreground">{voteCount}</span> <span className="text-muted-foreground">votes</span></span>
-                <span><span className="font-bold text-foreground">{followerCount}</span> <span className="text-muted-foreground">followers</span></span>
-                <span><span className="font-bold text-foreground">{followingCount}</span> <span className="text-muted-foreground">following</span></span>
+                <span className="flex items-center gap-1">
+                  <BarChart3 className="h-3 w-3 text-muted-foreground" />
+                  <span className="font-bold text-foreground">{voteCount}</span>
+                  <span className="text-muted-foreground">votes</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <Target className="h-3 w-3 text-muted-foreground" />
+                  <span className="font-bold text-foreground">{comparisonsCount}</span>
+                  <span className="text-muted-foreground">comparisons</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <Swords className="h-3 w-3 text-muted-foreground" />
+                  <span className="font-bold text-foreground">{battlesCount}</span>
+                  <span className="text-muted-foreground">battles</span>
+                </span>
               </div>
             </div>
           </div>
