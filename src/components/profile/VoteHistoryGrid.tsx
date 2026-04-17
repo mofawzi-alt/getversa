@@ -19,7 +19,7 @@ export default function VoteHistoryGrid({ userId }: Props) {
         .select('poll_id, choice, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(12);
       if (!votes?.length) return [];
       const ids = votes.map(v => v.poll_id);
       const { data: polls } = await supabase
