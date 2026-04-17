@@ -48,7 +48,6 @@ export default function PersonalitySnapshot() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Your Personality</p>
               <p className="text-base font-display font-bold text-foreground truncate">{result.name}</p>
-              <p className="text-[10px] font-mono text-primary font-bold tracking-[3px]">{result.code}</p>
             </div>
           </>
         ) : (

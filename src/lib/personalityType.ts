@@ -189,6 +189,70 @@ export function computePersonalityType(traits: TraitEntry[], voteCount: number):
   };
 }
 
+// Generate a 3-line data-driven summary directly from the user's voting traits
+// Replaces the static flavor description with sentences grounded in actual behavior.
+export function getDataDrivenSummary(traits: TraitEntry[], voteCount: number): string[] {
+  if (voteCount < 30 || !traits.length) return [];
+
+  const totalTagged = traits.reduce((s, t) => s + (t.vote_count || 0), 0) || 1;
+  const sorted = [...traits].sort((a, b) => b.vote_count - a.vote_count);
+  const topTrait = sorted[0];
+  const secondTrait = sorted[1];
+
+  // Friendly tag → human phrase mapping
+  const tagPhrase: Record<string, string> = {
+    social: 'shared, social experiences',
+    independent: 'independent, self-directed choices',
+    global: 'global, mainstream picks',
+    local: 'local and niche options',
+    brand_oriented: 'trusted brand names',
+    minimal: 'minimal, low-key choices',
+    minimalist: 'minimal, low-key choices',
+    convenience: 'convenience and ease',
+    price_sensitive: 'value and price',
+    practical: 'practical, no-nonsense options',
+    traditional: 'traditional, proven picks',
+    tradition: 'traditional, proven picks',
+    innovation: 'new and innovative options',
+    innovative: 'new and innovative options',
+    growth: 'growth and ambition',
+    adventurous: 'adventurous, bold choices',
+    quality: 'quality over hype',
+    speed: 'speed and efficiency',
+    experience: 'memorable experiences',
+    indulgent: 'indulgent, treat-yourself picks',
+    health: 'health-forward options',
+    luxury: 'premium, elevated picks',
+  };
+
+  const phraseFor = (tag: string) => tagPhrase[tag?.toLowerCase()] || tag?.replace(/_/g, ' ');
+
+  const lines: string[] = [];
+
+  // Line 1 — top trait
+  if (topTrait) {
+    const pct = Math.round((topTrait.vote_count / totalTagged) * 100);
+    lines.push(`${pct}% of your votes lean toward ${phraseFor(topTrait.tag)}.`);
+  }
+
+  // Line 2 — secondary trait or contrast
+  if (secondTrait && secondTrait.vote_count >= 2) {
+    lines.push(`You also gravitate to ${phraseFor(secondTrait.tag)} when it counts.`);
+  }
+
+  // Line 3 — axis-derived behavioral signature
+  const ei = scoreAxis(traits, AXIS_TAGS.E, AXIS_TAGS.I);
+  const jp = scoreAxis(traits, AXIS_TAGS.J, AXIS_TAGS.P);
+  let signature: string;
+  if (ei >= 0 && jp >= 0) signature = `Across ${voteCount} votes you stay loyal to what works for the people around you.`;
+  else if (ei >= 0 && jp < 0) signature = `Across ${voteCount} votes you stay social but open to switching things up.`;
+  else if (ei < 0 && jp >= 0) signature = `Across ${voteCount} votes you stick to your own taste and rarely flinch.`;
+  else signature = `Across ${voteCount} votes you trust your gut and explore freely.`;
+  lines.push(signature);
+
+  return lines.slice(0, 3);
+}
+
 // Explain why the user got this type based on their top traits
 export function getPersonalityExplanation(traits: TraitEntry[], result: PersonalityResult): string[] {
   if (!result.ready) return [];

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { computePersonalityType, getPersonalityExplanation } from '@/lib/personalityType';
+import { computePersonalityType, getPersonalityExplanation, getDataDrivenSummary } from '@/lib/personalityType';
 import { motion } from 'framer-motion';
 import { Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
@@ -108,8 +108,11 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
 
         <div className="text-4xl mb-1">{result.emoji}</div>
         <h3 className="text-2xl font-display font-bold text-foreground">{result.name}</h3>
-        <p className="text-xs font-mono text-primary font-bold mt-1 tracking-[4px]">{result.code}</p>
-        <p className="text-sm text-muted-foreground mt-3 leading-relaxed max-w-[280px] mx-auto">{result.description}</p>
+        <div className="mt-3 space-y-1.5 max-w-[300px] mx-auto">
+          {getDataDrivenSummary(traits, voteCount).map((line, i) => (
+            <p key={i} className="text-sm text-muted-foreground leading-relaxed">{line}</p>
+          ))}
+        </div>
 
         {/* Strengths */}
         {result.strengths.length > 0 && (

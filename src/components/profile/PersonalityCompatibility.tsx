@@ -76,7 +76,7 @@ export default function PersonalityCompatibility({ targetUserId, targetUsername 
         <div className="flex items-center justify-center gap-3">
           <div className="text-center">
             <div className="text-2xl">{ownType.emoji}</div>
-            <p className="text-[10px] font-bold text-foreground mt-1">{ownType.code}</p>
+            <p className="text-[10px] font-bold text-foreground mt-1">{ownType.name}</p>
             <p className="text-[9px] text-muted-foreground">You</p>
           </div>
           <div className="text-center px-3">
@@ -85,7 +85,7 @@ export default function PersonalityCompatibility({ targetUserId, targetUsername 
           </div>
           <div className="text-center">
             <div className="text-2xl">{targetType.emoji}</div>
-            <p className="text-[10px] font-bold text-foreground mt-1">{targetType.code}</p>
+            <p className="text-[10px] font-bold text-foreground mt-1">{targetType.name}</p>
             <p className="text-[9px] text-muted-foreground">@{targetUsername || 'them'}</p>
           </div>
         </div>
