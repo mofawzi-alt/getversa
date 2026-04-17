@@ -336,10 +336,11 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
       // If duplicate, return a friendly message instead of crashing
       if (insertError.code === '23505') {
         return new Response(JSON.stringify({ 
-          error: 'This poll already exists. Please try generating again.',
+          ok: false,
+          error: 'This poll already exists. Try generating again.',
           duplicate: true 
         }), {
-          status: 409,
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }

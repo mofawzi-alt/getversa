@@ -498,9 +498,13 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
         });
 
         if (error) throw error;
-        if (data?.error) throw new Error(data.error);
 
-        if (data?.poll) {
+        if (data?.duplicate) {
+          results.failed++;
+          toast.message('Skipped duplicate poll', { description: data.error });
+        } else if (data?.error) {
+          throw new Error(data.error);
+        } else if (data?.poll) {
           results.success++;
           results.polls.push(data.poll.question);
         }
