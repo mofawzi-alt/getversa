@@ -211,94 +211,82 @@ export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) =>
     staleTime: 1000 * 60 * 5,
   });
 
-  // Countdown to tomorrow 9am
+  // Countdown to next batch drop (Cairo time: 9 AM, 1 PM, 5 PM)
+  const BATCH_HOURS = [9, 13, 17];
   const [countdown, setCountdown] = useState('');
   useEffect(() => {
     const update = () => {
       const now = new Date();
-      const tomorrow9am = new Date(now);
-      tomorrow9am.setDate(tomorrow9am.getDate() + (now.getHours() >= 9 ? 1 : 0));
-      tomorrow9am.setHours(9, 0, 0, 0);
-      const diff = tomorrow9am.getTime() - now.getTime();
+      // Current time in Cairo
+      const cairoNow = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Cairo' }));
+      const offset = now.getTime() - cairoNow.getTime();
+
+      // Find next batch hour today, else first batch tomorrow
+      const next = new Date(cairoNow);
+      const nextHour = BATCH_HOURS.find(h => h > cairoNow.getHours() || (h === cairoNow.getHours() && cairoNow.getMinutes() === 0));
+      if (nextHour !== undefined) {
+        next.setHours(nextHour, 0, 0, 0);
+      } else {
+        next.setDate(next.getDate() + 1);
+        next.setHours(BATCH_HOURS[0], 0, 0, 0);
+      }
+      // Convert back to local clock for diff
+      const diff = (next.getTime() + offset) - now.getTime();
       const h = Math.floor(diff / (1000 * 60 * 60));
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      setCountdown(`${h}h ${m}m`);
+      setCountdown(h > 0 ? `${h}h ${m}m` : `${m}m`);
     };
     update();
-    const interval = setInterval(update, 60000);
+    const interval = setInterval(update, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const streak = userStats?.streak ?? 0;
   const todayVotes = userStats?.todayVotes ?? 0;
-  const points = userStats?.points ?? 0;
   const earnedToday = todayVotes * 10;
 
   // Celebration message based on today's volume
   const celebration =
-    todayVotes >= 20 ? { emoji: '🏆', title: 'Legendary day!', sub: `You smashed ${todayVotes} battles today` } :
-    todayVotes >= 10 ? { emoji: '🔥', title: 'On fire today!', sub: `${todayVotes} votes locked in` } :
-    todayVotes >= 5  ? { emoji: '⚡', title: 'Solid run!', sub: `${todayVotes} battles done` } :
-                       { emoji: '✨', title: 'All caught up!', sub: `${todayVotes} ${todayVotes === 1 ? 'vote' : 'votes'} today` };
+    todayVotes >= 20 ? { emoji: '🏆', title: 'Legendary day!' } :
+    todayVotes >= 10 ? { emoji: '🔥', title: 'On fire today!' } :
+    todayVotes >= 5  ? { emoji: '⚡', title: 'Solid run!' } :
+                       { emoji: '✨', title: 'All caught up!' };
 
   return (
-    <section className="px-3 pt-2 pb-1 space-y-2">
-      {/* Celebration hero */}
+    <section className="px-3 pt-2 pb-1">
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        initial={{ opacity: 0, scale: 0.96, y: 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 18 }}
-        className="rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 border border-primary/30 p-4 text-center shadow-md"
+        transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+        className="rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 border border-primary/30 px-3 py-3 text-center shadow-sm"
       >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
-          transition={{ delay: 0.15, type: 'spring', stiffness: 260, damping: 14 }}
-          className="text-4xl mb-1"
-        >
-          {celebration.emoji}
-        </motion.div>
-        <h2 className="text-lg font-display font-bold text-foreground leading-tight">
-          {celebration.title}
-        </h2>
-        <p className="text-xs text-muted-foreground mt-0.5">{celebration.sub}</p>
+        <div className="flex items-center justify-center gap-2">
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
+            transition={{ delay: 0.1, type: 'spring', stiffness: 260, damping: 14 }}
+            className="text-2xl"
+          >
+            {celebration.emoji}
+          </motion.span>
+          <h2 className="text-base font-display font-bold text-foreground leading-tight">
+            {celebration.title}
+          </h2>
+        </div>
 
-        {/* Stats grid */}
         {user && (
-          <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-primary/15">
-            <div className="flex flex-col items-center">
-              <span className="text-base font-bold text-foreground">🔥 {streak}</span>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-wide mt-0.5">Streak</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-base font-bold text-foreground">+{earnedToday}</span>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-wide mt-0.5">Earned</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-base font-bold text-foreground">⭐ {points}</span>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-wide mt-0.5">Total</span>
-            </div>
+          <div className="flex items-center justify-center gap-3 mt-2 text-[11px] text-foreground/80 font-semibold">
+            <span>🔥 {streak}</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span>⚡ {todayVotes} today</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span>+{earnedToday} pts</span>
           </div>
         )}
 
-        <p className="text-[10px] text-muted-foreground mt-3">
-          Next batch drops in <span className="font-bold text-foreground">{countdown}</span>
+        <p className="text-[10px] text-muted-foreground mt-1.5">
+          Next drop in <span className="font-bold text-foreground">{countdown}</span>
         </p>
-
-        <div className="flex gap-2 mt-3">
-          <button
-            onClick={() => navigate('/browse')}
-            className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold"
-          >
-            Browse more
-          </button>
-          <button
-            onClick={() => navigate('/profile/taste')}
-            className="flex-1 py-2 rounded-lg bg-secondary text-foreground text-xs font-bold"
-          >
-            Your taste
-          </button>
-        </div>
       </motion.div>
     </section>
   );
