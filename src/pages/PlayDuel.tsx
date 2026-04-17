@@ -75,6 +75,42 @@ export default function PlayDuel() {
     load();
   }, [user, id]);
 
+  // Realtime: live-update when the other player submits a vote / completes the duel
+  useEffect(() => {
+    if (!user || !id) return;
+    const channel = supabase
+      .channel(`duel-${id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'poll_challenges', filter: `id=eq.${id}` },
+        (payload) => {
+          const next = payload.new as Duel;
+          setDuel((prev) => {
+            // Detect the other side just completed
+            const isChallenger = next.challenger_id === user.id;
+            const prevOther = prev
+              ? parseChoices(isChallenger ? prev.challenged_choice : prev.challenger_choice)
+              : [];
+            const newOther = parseChoices(
+              isChallenger ? next.challenged_choice : next.challenger_choice
+            );
+            if (
+              polls.length > 0 &&
+              prevOther.length < polls.length &&
+              newOther.length === polls.length
+            ) {
+              toast.success(`${otherName} just finished — results are in! 🏆`);
+            }
+            return next;
+          });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, id, polls.length, otherName]);
+
   // Fetch national results once the user has finished — for the "see how Egypt voted" payoff
   useEffect(() => {
     const done = polls.length > 0 && myChoices.length === polls.length;

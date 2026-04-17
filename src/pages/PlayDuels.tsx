@@ -53,6 +53,28 @@ export default function PlayDuels() {
     loadDuels();
   }, [user]);
 
+  // Realtime: refresh duels list whenever a row involving me is created/updated/deleted
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`duels-list-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'poll_challenges' },
+        (payload) => {
+          const row: any = (payload.new as any) || (payload.old as any);
+          if (!row) return;
+          if (row.challenger_id === user.id || row.challenged_id === user.id) {
+            loadDuels();
+          }
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const loadDuels = async () => {
     setLoading(true);
     const { data } = await supabase
@@ -223,6 +245,7 @@ export default function PlayDuels() {
   const cancelDuel = async (duelId: string) => {
     if (!confirm('Cancel this duel challenge?')) return;
 
+    const duel = duels.find((d) => d.id === duelId);
     const { error } = await supabase
       .from('poll_challenges')
       .delete()
@@ -233,6 +256,36 @@ export default function PlayDuels() {
     if (error) {
       toast.error('Could not cancel');
       return;
+    }
+
+    // Notify the challenged friend that the duel was withdrawn
+    if (duel) {
+      const { data: meData } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', user!.id)
+        .maybeSingle();
+      const myName = meData?.username || 'Your friend';
+      const title = `❌ ${myName} cancelled the duel`;
+      const body = 'They pulled the challenge before you could play.';
+
+      await supabase.from('notifications').insert({
+        user_id: duel.challenged_id,
+        title,
+        body,
+        type: 'poll_challenge',
+        data: { tab: 'duels' },
+      });
+
+      await supabase.functions.invoke('send-push-notification', {
+        body: {
+          title,
+          body,
+          url: '/play/duels',
+          user_ids: [duel.challenged_id],
+          skip_in_app: true,
+        },
+      });
     }
 
     toast.success('Challenge cancelled');
