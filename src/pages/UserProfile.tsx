@@ -72,9 +72,6 @@ export default function UserProfile() {
   const { isVerified, category: verifiedCategory } = useVerifiedUser(targetId);
   const isOwnProfile = user?.id === targetId;
   const isFriendOfTarget = targetId ? isFriend(targetId) : false;
-  const isPrivate = Boolean((profileData as any)?.is_private);
-  const canViewFullProfile = isOwnProfile || isFriendOfTarget;
-  const showPrivateGate = !isOwnProfile && isPrivate && !isFriendOfTarget;
 
   // Public profile data
   const { data: profileData } = useQuery({
