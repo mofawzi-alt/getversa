@@ -112,6 +112,7 @@ export default function Explore() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [modalPoll, setModalPoll] = useState<PollItem | null>(null);
   const [peopleLikeYou, setPeopleLikeYou] = useState(false);
+  const [categorySort, setCategorySort] = useState<'most_voted' | 'most_recent' | 'most_controversial'>('most_voted');
 
   useEffect(() => {
     const catParam = searchParams.get('category');
@@ -191,18 +192,24 @@ export default function Explore() {
   const categoryPollsBase = useMemo(() => {
     if (!selectedCategory) return [];
     const allPolls = pollsData?.polls || [];
-    const now = Date.now();
-    const h24 = 24 * 60 * 60 * 1000;
-    return allPolls
-      .filter(p => (p.category || 'Uncategorized') === selectedCategory)
-      .sort((a, b) => {
-        const aNew = (now - new Date(a.created_at).getTime()) < h24;
-        const bNew = (now - new Date(b.created_at).getTime()) < h24;
-        if (aNew !== bNew) return aNew ? -1 : 1;
-        if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+    const filtered = allPolls.filter(p => (p.category || 'Uncategorized') === selectedCategory);
+
+    const sorted = [...filtered].sort((a, b) => {
+      if (categorySort === 'most_recent') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      if (categorySort === 'most_controversial') {
+        // Controversy = closeness to 50/50, gated by minimum votes
+        const aGap = a.totalVotes >= 5 ? Math.abs(a.percentA - 50) : 100;
+        const bGap = b.totalVotes >= 5 ? Math.abs(b.percentA - 50) : 100;
+        if (aGap !== bGap) return aGap - bGap;
         return b.totalVotes - a.totalVotes;
-      });
-  }, [selectedCategory, pollsData?.polls]);
+      }
+      // Default: most_voted
+      return b.totalVotes - a.totalVotes;
+    });
+    return sorted;
+  }, [selectedCategory, pollsData?.polls, categorySort]);
 
   const categoryPollIds = useMemo(() => categoryPollsBase.map(p => p.id), [categoryPollsBase]);
 
