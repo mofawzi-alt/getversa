@@ -510,21 +510,26 @@ export default function Friends() {
                 {searchResults.map((user) => (
                   <div key={user.id} className="glass rounded-xl p-4">
                     <div className="flex items-center gap-4">
-                      <UserAvatar
-                        url={user.avatar_url}
-                        username={user.username}
-                        className="w-12 h-12"
-                      />
-                      
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">
-                          @{user.username}
-                        </h3>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Trophy className="h-3 w-3" />
-                          {user.points || 0} points
+                      <button
+                        onClick={() => navigate(`/user/${user.id}`)}
+                        className="flex items-center gap-4 flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
+                      >
+                        <UserAvatar
+                          url={user.avatar_url}
+                          username={user.username}
+                          className="w-12 h-12"
+                        />
+
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate">
+                            @{user.username}
+                          </h3>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Trophy className="h-3 w-3" />
+                            {user.points || 0} points
+                          </div>
                         </div>
-                      </div>
+                      </button>
 
                       <div className="flex items-center gap-2">
                         <FollowButton creatorId={user.id} variant="icon" />

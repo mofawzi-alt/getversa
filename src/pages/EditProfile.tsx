@@ -13,9 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Save, Camera, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Camera, Loader2, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
 
 const AGE_RANGES = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
@@ -30,7 +31,9 @@ export default function EditProfile() {
   const [isLoading, setIsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [savingPrivacy, setSavingPrivacy] = useState(false);
+
   const [formData, setFormData] = useState({
     username: '',
     age_range: '',
@@ -49,8 +52,30 @@ export default function EditProfile() {
         city: profile.city || '',
       });
       setAvatarUrl((profile.avatar_url as string) || null);
+      setIsPrivate(Boolean((profile as any).is_private));
     }
   }, [profile]);
+
+  const togglePrivate = async (next: boolean) => {
+    if (!profile) return;
+    setSavingPrivacy(true);
+    setIsPrivate(next);
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ is_private: next } as any)
+        .eq('id', profile.id);
+      if (error) throw error;
+      await refreshProfile();
+      toast.success(next ? 'Profile is now private' : 'Profile is now public');
+    } catch (err) {
+      console.error('Privacy toggle error:', err);
+      toast.error('Failed to update privacy');
+      setIsPrivate(!next);
+    } finally {
+      setSavingPrivacy(false);
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
