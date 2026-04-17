@@ -372,26 +372,19 @@ export default function PlayDuels() {
                   We'll auto-pick 5 polls for both of you.
                 </p>
               </div>
-              <h3 className="text-base font-bold text-foreground mb-1 flex items-center gap-2">
-                <Swords className="h-4 w-4 text-primary" /> Pick a friend
-              </h3>
-              <p className="text-xs text-muted-foreground mb-3">
-                We'll auto-pick 5 polls for both of you.
-              </p>
-
-              {friends.length === 0 ? (
-                <div className="text-center py-6">
-                  <p className="text-sm text-muted-foreground mb-3">No friends yet</p>
-                  <button
-                    onClick={() => navigate('/friends')}
-                    className="text-xs font-bold text-primary"
-                  >
-                    Add friends →
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-1.5 max-h-60 overflow-y-auto mb-3">
+              <div className="flex-1 overflow-y-auto px-5">
+                {friends.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-sm text-muted-foreground mb-3">No friends yet</p>
+                    <button
+                      onClick={() => navigate('/friends')}
+                      className="text-xs font-bold text-primary"
+                    >
+                      Add friends →
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 pb-3">
                     {friends.map((f) => (
                       <button
                         key={f.friend_id}
@@ -415,6 +408,10 @@ export default function PlayDuels() {
                       </button>
                     ))}
                   </div>
+                )}
+              </div>
+              {friends.length > 0 && (
+                <div className="p-5 pt-3 border-t border-border/40 bg-background">
                   <button
                     onClick={startDuel}
                     disabled={!selectedFriend || sending}
@@ -422,7 +419,7 @@ export default function PlayDuels() {
                   >
                     {sending ? 'Starting…' : 'Start Duel'}
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>
