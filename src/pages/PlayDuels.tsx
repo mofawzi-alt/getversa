@@ -140,6 +140,56 @@ export default function PlayDuels() {
     }
   };
 
+  const respondToDuel = async (duel: Duel, accept: boolean) => {
+    const newStatus = accept ? 'accepted' : 'declined';
+    const { error } = await supabase
+      .from('poll_challenges')
+      .update({
+        status: newStatus,
+        responded_at: new Date().toISOString(),
+        ...(accept ? {} : { completed_at: new Date().toISOString() }),
+      })
+      .eq('id', duel.id)
+      .eq('challenged_id', user!.id)
+      .eq('status', 'pending');
+    if (error) {
+      toast.error('Could not respond');
+      return;
+    }
+
+    // Notify challenger
+    const { data: meData } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', user!.id)
+      .maybeSingle();
+    const myName = meData?.username || 'Your friend';
+    const title = accept ? `🔥 ${myName} accepted your duel!` : `😬 ${myName} declined your duel`;
+    const body = accept ? 'Game on — may the best taste win.' : 'Maybe next time.';
+
+    await supabase.from('notifications').insert({
+      user_id: duel.challenger_id,
+      title,
+      body,
+      type: 'poll_challenge',
+      data: { tab: 'duels', challenged_id: user!.id },
+    });
+    await supabase.functions.invoke('send-push-notification', {
+      body: {
+        title,
+        body,
+        url: '/play/duels',
+        user_ids: [duel.challenger_id],
+        skip_in_app: true,
+      },
+    });
+
+    toast.success(accept ? 'Challenge accepted! 🔥' : 'Challenge declined');
+    setDuels((prev) =>
+      prev.map((d) => (d.id === duel.id ? { ...d, status: newStatus } : d))
+    );
+  };
+
   const cancelDuel = async (duelId: string) => {
     if (!confirm('Cancel this duel challenge?')) return;
     const { error } = await supabase
