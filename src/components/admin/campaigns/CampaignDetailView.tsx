@@ -316,3 +316,111 @@ function DemographicsView({ demos }: { demos: DemoRow[] }) {
     </>
   );
 }
+
+function NarrativeTab({ campaignId }: { campaignId: string }) {
+  const [insights, setInsights] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('generate-campaign-insights', {
+        body: { campaignId },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      setInsights(data?.insights ?? '');
+    } catch (e: any) {
+      console.error(e);
+      const msg = e?.message ?? 'Failed to generate insights';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!insights && !loading && !error) {
+    return (
+      <div className="rounded-xl border border-dashed border-border p-8 text-center space-y-3">
+        <Sparkles className="w-6 h-6 text-muted-foreground mx-auto" />
+        <p className="text-sm font-semibold">AI Insights</p>
+        <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+          Generate an executive summary of headline takeaways, audience surprises, and recommended next moves for this campaign.
+        </p>
+        <Button size="sm" onClick={generate} className="gap-1.5 mt-2">
+          <Sparkles className="w-3.5 h-3.5" />
+          Generate insights
+        </Button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-border p-8 text-center space-y-3">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mx-auto" />
+        <p className="text-sm text-muted-foreground">Analyzing your campaign…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-border p-6 text-center space-y-3">
+        <p className="text-sm text-destructive">{error}</p>
+        <Button size="sm" variant="outline" onClick={generate}>Retry</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-border p-5 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <Sparkles className="w-3.5 h-3.5" />
+          AI Insights
+        </div>
+        <Button size="sm" variant="ghost" onClick={generate} className="h-7 text-xs gap-1">
+          <Sparkles className="w-3 h-3" />
+          Regenerate
+        </Button>
+      </div>
+      <div
+        className="prose prose-sm max-w-none text-sm leading-relaxed
+          [&_h2]:text-base [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-2
+          [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+          [&_strong]:font-semibold"
+        dangerouslySetInnerHTML={{ __html: simpleMarkdown(insights ?? '') }}
+      />
+    </div>
+  );
+}
+
+// Tiny inline markdown → HTML for headings, bullets, bold. Keeps bundle small.
+function simpleMarkdown(md: string): string {
+  const escape = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const lines = escape(md).split('\n');
+  let html = '';
+  let inList = false;
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (/^##\s+/.test(line)) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<h2>${line.replace(/^##\s+/, '')}</h2>`;
+    } else if (/^[-*]\s+/.test(line)) {
+      if (!inList) { html += '<ul>'; inList = true; }
+      html += `<li>${line.replace(/^[-*]\s+/, '')}</li>`;
+    } else if (line === '') {
+      if (inList) { html += '</ul>'; inList = false; }
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<p>${line}</p>`;
+    }
+  }
+  if (inList) html += '</ul>';
+  return html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+}
