@@ -352,12 +352,15 @@ export default function PlayDuels() {
                         <X className="h-3 w-3" /> Cancel
                       </button>
                     )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                    {tab === 'history' && (
+                      <button
+                        onClick={() => navigate(`/play/duels/${d.id}`)}
+                        className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 flex items-center gap-1"
+                      >
+                        <PlayIcon className="h-3 w-3" />
+                        {d.status === 'completed' ? 'View' : 'Play'}
+                      </button>
+                    )}
 
         {/* Start sheet */}
         {showStartSheet && (
