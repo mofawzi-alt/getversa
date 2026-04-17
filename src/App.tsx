@@ -50,6 +50,7 @@ import Play from "./pages/Play";
 import PlayPredict from "./pages/PlayPredict";
 import PlayDuels from "./pages/PlayDuels";
 import PlayDuel from "./pages/PlayDuel";
+import BrandCampaign from "./pages/BrandCampaign";
  import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
@@ -177,6 +178,7 @@ function AppInner() {
           <Route path="/compare/u/:userId" element={<CompareUser />} />
           <Route path="/compare/group" element={<ProtectedRoute><GroupCompare /></ProtectedRoute>} />
           <Route path="/brands" element={<ProtectedRoute><BrandPortal /></ProtectedRoute>} />
+          <Route path="/campaign/:id" element={<BrandCampaign />}/>
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/messages/:conversationId" element={<ProtectedRoute><ChatThread /></ProtectedRoute>} />
           <Route path="/user/:userId" element={<UserProfile />} />
