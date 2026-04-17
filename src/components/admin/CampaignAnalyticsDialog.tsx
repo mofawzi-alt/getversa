@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Loader2, Users, Globe, Calendar } from 'lucide-react';
+import { BarChart3, Loader2, Users, Globe, Calendar, Download } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Props {
   campaignId: string;
@@ -53,6 +54,56 @@ export default function CampaignAnalyticsDialog({ campaignId, campaignName, bran
     return <BarChart3 className="w-3.5 h-3.5" />;
   };
 
+  const handleExportCsv = () => {
+    if (!results || results.length === 0) {
+      toast.error('No data to export yet.');
+      return;
+    }
+
+    const escape = (val: any) => {
+      const s = String(val ?? '');
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    let csv = `Campaign Report: ${campaignName}\n`;
+    if (brandName) csv += `Brand: ${brandName}\n`;
+    csv += `Generated: ${new Date().toISOString()}\n`;
+    csv += `Total polls: ${results.length}\n`;
+    csv += `Total votes: ${totalVotes}\n\n`;
+
+    // Per-poll results
+    csv += 'PER-POLL RESULTS\n';
+    csv += 'Question,Option A,% A,Option B,% B,Total Votes\n';
+    results.forEach((r: any) => {
+      csv += [r.question, r.option_a, `${r.percent_a}%`, r.option_b, `${r.percent_b}%`, r.total_votes]
+        .map(escape).join(',') + '\n';
+    });
+
+    // Demographics
+    if (Object.keys(grouped).length > 0) {
+      csv += '\nDEMOGRAPHICS (combined across polls)\n';
+      Object.entries(grouped).forEach(([type, segments]: [string, any]) => {
+        csv += `\n${type.replace('_', ' ').toUpperCase()}\n`;
+        csv += 'Segment,Votes A,Votes B,Total,% A,% B\n';
+        Object.entries(segments).forEach(([seg, counts]: [string, any]) => {
+          const a = counts.A || 0;
+          const b = counts.B || 0;
+          const total = a + b;
+          const pctA = total ? Math.round((a / total) * 100) : 0;
+          csv += [seg, a, b, total, `${pctA}%`, `${100 - pctA}%`].map(escape).join(',') + '\n';
+        });
+      });
+    }
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `campaign-${campaignName.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    toast.success('Report exported');
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -63,10 +114,22 @@ export default function CampaignAnalyticsDialog({ campaignId, campaignName, bran
       </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-left">
-            {campaignName}
-            {brandName && <div className="text-xs font-normal text-muted-foreground mt-1">{brandName}</div>}
-          </DialogTitle>
+          <div className="flex items-start justify-between gap-3">
+            <DialogTitle className="text-left flex-1">
+              {campaignName}
+              {brandName && <div className="text-xs font-normal text-muted-foreground mt-1">{brandName}</div>}
+            </DialogTitle>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleExportCsv}
+              disabled={!results || results.length === 0}
+              className="gap-1.5 shrink-0"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Export CSV</span>
+            </Button>
+          </div>
         </DialogHeader>
 
         {loadingResults ? (
