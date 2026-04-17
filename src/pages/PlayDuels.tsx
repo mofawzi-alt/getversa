@@ -44,6 +44,8 @@ export default function PlayDuels() {
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [usernames, setUsernames] = useState<Record<string, string>>({});
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('__random__');
 
   useEffect(() => {
     if (!user) {
