@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
@@ -8,7 +9,25 @@ import { NotificationToggle } from '@/components/NotificationToggle';
 
 export default function Notifications() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const resolveNotificationRoute = (n: any): string | null => {
+    const data = (n?.data ?? {}) as Record<string, any>;
+    if (n.type === 'poll_challenge') {
+      if (data.duel_id) return `/play/duels/${data.duel_id}`;
+      return '/play/duels';
+    }
+    if (data.url && typeof data.url === 'string') return data.url;
+    if (data.poll_id) return `/poll/${data.poll_id}`;
+    return null;
+  };
+
+  const handleNotificationClick = (n: any) => {
+    if (!n.is_read) markReadMutation.mutate(n.id);
+    const route = resolveNotificationRoute(n);
+    if (route) navigate(route);
+  };
 
   const { data: notifications, isLoading } = useQuery({
     queryKey: ['notifications', user?.id],
@@ -80,7 +99,7 @@ export default function Notifications() {
             {notifications.map((notification) => (
               <button
                 key={notification.id}
-                onClick={() => !notification.is_read && markReadMutation.mutate(notification.id)}
+                onClick={() => handleNotificationClick(notification)}
                 className={`w-full text-left rounded-xl p-4 bg-card border border-border transition-all ${
                   notification.is_read ? 'opacity-60' : 'shadow-card'
                 }`}
