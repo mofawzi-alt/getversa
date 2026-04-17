@@ -513,6 +513,18 @@ export default function Browse() {
     return result;
   }, [feedPolls, profile?.age_range, userVotes, targetPollId, sessionSeed]);
 
+  // Apply keyword search across question + options + category
+  const visibleFeed = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return sortedFeed;
+    return sortedFeed.filter(p =>
+      p.question.toLowerCase().includes(q) ||
+      p.option_a.toLowerCase().includes(q) ||
+      p.option_b.toLowerCase().includes(q) ||
+      (p.category || '').toLowerCase().includes(q)
+    );
+  }, [sortedFeed, searchQuery]);
+
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
     if (!container) return;
