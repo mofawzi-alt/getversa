@@ -82,6 +82,38 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_clients: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_clients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "poll_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_polls: {
         Row: {
           campaign_id: string
@@ -1850,6 +1882,29 @@ export type Database = {
           starts_at: string
         }[]
       }
+      get_campaign_analytics: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          option_a: string
+          option_b: string
+          percent_a: number
+          percent_b: number
+          poll_id: string
+          question: string
+          total_votes: number
+          votes_a: number
+          votes_b: number
+        }[]
+      }
+      get_campaign_demographics: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          choice: string
+          segment_type: string
+          segment_value: string
+          vote_count: number
+        }[]
+      }
       get_compatibility_score: {
         Args: { user_a: string; user_b: string }
         Returns: number
@@ -1938,6 +1993,21 @@ export type Database = {
           longest_streak: number
           points: number
           username: string
+        }[]
+      }
+      get_my_client_campaigns: {
+        Args: never
+        Returns: {
+          brand_logo_url: string
+          brand_name: string
+          campaign_id: string
+          description: string
+          expires_at: string
+          is_active: boolean
+          name: string
+          poll_count: number
+          release_at: string
+          total_votes: number
         }[]
       }
       get_or_create_conversation: {
@@ -2042,6 +2112,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_campaign_client: {
+        Args: { _campaign_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_conversation_participant: {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
@@ -2067,7 +2141,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user" | "creator"
+      app_role: "admin" | "user" | "creator" | "brand_client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2195,7 +2269,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user", "creator"],
+      app_role: ["admin", "user", "creator", "brand_client"],
     },
   },
 } as const
