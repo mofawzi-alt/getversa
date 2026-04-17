@@ -23,7 +23,9 @@ interface Duel {
   challenger_id: string;
   challenged_id: string;
   status: string;
+  poll_id: string;
   poll_ids: string[] | null;
+  taunt_message: string | null;
   challenger_choice: string | null;
   challenged_choice: string | null;
   challenger_score: number | null;
@@ -52,6 +54,7 @@ export default function PlayDuel() {
   const [myChoices, setMyChoices] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [accepting, setAccepting] = useState(false);
   const [results, setResults] = useState<Record<string, { percentA: number; percentB: number; totalVotes: number }>>({});
   const [openResultPollId, setOpenResultPollId] = useState<string | null>(null);
   const [country, setCountry] = useState<string | null>(null);
