@@ -6,13 +6,10 @@ import { toast } from 'sonner';
 
 /**
  * Global listener: when a duel I sent transitions from `pending` → `accepted`,
- * automatically navigate me into the duel screen so both players land on it
- * at the same moment.
- *
- * Safe-guards:
- * - Only triggers for the challenger (so the challenged user isn't yanked out
- *   of an Accept screen they're already on).
- * - Does nothing if the user is already on /play/duels/:id for that duel.
+ * surface a toast nudge so the challenger can choose to enter the duel on their
+ * own time. We deliberately DO NOT auto-navigate — the sender may be doing
+ * something else on the app/phone. The push + in-app notification (created
+ * server-side in acceptChallenge) plus this toast are enough to invite them in.
  */
 export function useDuelAutoOpen() {
   const { user } = useAuth();
@@ -37,10 +34,16 @@ export function useDuelAutoOpen() {
           if (prev.status === 'accepted' || next.status !== 'accepted') return;
 
           const target = `/play/duels/${next.id}`;
+          // Already on the duel page — no nudge needed
           if (locRef.current === target) return;
 
-          toast.success('Challenge accepted! Opening duel…');
-          navigate(target);
+          toast.success('Your challenge was accepted! Tap to play', {
+            action: {
+              label: 'Enter duel',
+              onClick: () => navigate(target),
+            },
+            duration: 8000,
+          });
         }
       )
       .subscribe();
