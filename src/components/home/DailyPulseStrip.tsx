@@ -52,11 +52,14 @@ export default function DailyPulseStrip() {
     queryKey: ['pulse-new-polls-today'],
     queryFn: async () => {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const nowIso = new Date().toISOString();
       const { count } = await supabase
         .from('polls')
         .select('id', { count: 'exact', head: true })
         .eq('is_active', true)
-        .gte('created_at', since);
+        .gte('created_at', since)
+        // Exclude expired polls: keep evergreen OR not-yet-ended
+        .or(`expiry_type.eq.evergreen,ends_at.is.null,ends_at.gt.${nowIso}`);
       return count || 0;
     },
     staleTime: 1000 * 60 * 5,
