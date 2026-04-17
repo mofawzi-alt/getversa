@@ -1,6 +1,7 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Users } from 'lucide-react';
 import ShareButton from '@/components/poll/ShareButton';
+import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 interface HomeResultsModalProps {
   open: boolean;
