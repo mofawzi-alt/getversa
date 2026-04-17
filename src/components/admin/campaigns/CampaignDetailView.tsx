@@ -2,8 +2,11 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, BarChart3, Users, Globe, Calendar, Sparkles, TrendingUp, ChevronRight } from 'lucide-react';
+import { Loader2, BarChart3, Users, Globe, Calendar, Sparkles, TrendingUp, ChevronRight, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import PollAnalytics from '@/components/admin/PollAnalytics';
+import { exportCampaignPdf } from './exportCampaignPdf';
 
 interface Props {
   campaignId: string;
@@ -67,26 +70,42 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
     return <p className="text-sm text-muted-foreground py-12 text-center">No poll data yet.</p>;
   }
 
+  const handleExport = () => {
+    try {
+      exportCampaignPdf({ campaignName, brandName, results, demos });
+      toast.success('Report downloaded');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to generate PDF');
+    }
+  };
+
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="grid grid-cols-4 w-full">
-        <TabsTrigger value="overview" className="text-xs gap-1.5">
-          <TrendingUp className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Overview</span>
-        </TabsTrigger>
-        <TabsTrigger value="polls" className="text-xs gap-1.5">
-          <BarChart3 className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Polls</span>
-        </TabsTrigger>
-        <TabsTrigger value="demographics" className="text-xs gap-1.5">
-          <Users className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Demographics</span>
-        </TabsTrigger>
-        <TabsTrigger value="narrative" className="text-xs gap-1.5">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">AI Insights</span>
-        </TabsTrigger>
-      </TabsList>
+      <div className="flex items-center gap-2 mb-2">
+        <TabsList className="grid grid-cols-4 flex-1">
+          <TabsTrigger value="overview" className="text-xs gap-1.5">
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="polls" className="text-xs gap-1.5">
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Polls</span>
+          </TabsTrigger>
+          <TabsTrigger value="demographics" className="text-xs gap-1.5">
+            <Users className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Demographics</span>
+          </TabsTrigger>
+          <TabsTrigger value="narrative" className="text-xs gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">AI Insights</span>
+          </TabsTrigger>
+        </TabsList>
+        <Button size="sm" variant="outline" onClick={handleExport} className="gap-1.5 shrink-0 h-9">
+          <Download className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">PDF</span>
+        </Button>
+      </div>
 
       {/* OVERVIEW */}
       <TabsContent value="overview" className="space-y-4 mt-4">
