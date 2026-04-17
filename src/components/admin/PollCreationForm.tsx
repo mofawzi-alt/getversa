@@ -57,6 +57,9 @@ export default function PollCreationForm({
   const [showCustomIntentInput, setShowCustomIntentInput] = useState(false);
   const [customIntentName, setCustomIntentName] = useState('');
   const [entityName, setEntityName] = useState(initialEntityName || '');
+  const [expiryType, setExpiryType] = useState<'evergreen' | 'trending' | 'campaign'>('trending');
+  const [batchSlot, setBatchSlot] = useState<'morning' | 'afternoon' | 'evening' | 'none'>('none');
+  const [isHotTake, setIsHotTake] = useState(false);
   
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
@@ -162,9 +165,13 @@ export default function PollCreationForm({
         if (uploadedUrl) finalImageBUrl = uploadedUrl;
       }
       
-      // Set 24-hour window for daily polls
+      // Compute ends_at based on expiry type
       const startsAt = new Date();
-      const endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      let endsAt: Date | null = null;
+      if (expiryType === 'trending') {
+        endsAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
+      }
+      // evergreen → null, campaign → null (synced via trigger from campaign.expires_at)
       
       const { data: poll, error } = await supabase
         .from('polls')
@@ -179,7 +186,10 @@ export default function PollCreationForm({
           created_by: userId,
           is_daily_poll: isDailyPoll,
           starts_at: startsAt.toISOString(),
-          ends_at: endsAt.toISOString(),
+          ends_at: endsAt ? endsAt.toISOString() : null,
+          expiry_type: expiryType,
+          batch_slot: batchSlot,
+          is_hot_take: isHotTake,
           target_gender: targetGender || null,
           target_age_range: targetAgeRange || null,
           target_country: null,
@@ -460,6 +470,50 @@ export default function PollCreationForm({
           />
           <Label htmlFor="isDailyPoll" className="text-sm">
             Daily Poll (24-hour visibility)
+          </Label>
+        </div>
+
+        {/* Expiry behavior */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label className="text-sm font-medium">Expiry Type</Label>
+            <select
+              value={expiryType}
+              onChange={(e) => setExpiryType(e.target.value as any)}
+              disabled={isHotTake}
+              className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm disabled:opacity-50"
+            >
+              <option value="evergreen">Evergreen (never expires)</option>
+              <option value="trending">Trending (48h)</option>
+              <option value="campaign">Campaign (synced)</option>
+            </select>
+            {isHotTake && <p className="text-[10px] text-muted-foreground mt-1">Hot takes are forced to evergreen</p>}
+          </div>
+          <div>
+            <Label className="text-sm font-medium">Batch Slot</Label>
+            <select
+              value={batchSlot}
+              onChange={(e) => setBatchSlot(e.target.value as any)}
+              className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm"
+            >
+              <option value="none">None (immediate)</option>
+              <option value="morning">Morning (9 AM Cairo)</option>
+              <option value="afternoon">Afternoon (2 PM Cairo)</option>
+              <option value="evening">Evening (7 PM Cairo)</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="isHotTake"
+            checked={isHotTake}
+            onChange={(e) => setIsHotTake(e.target.checked)}
+            className="h-4 w-4 rounded border-border"
+          />
+          <Label htmlFor="isHotTake" className="text-sm">
+            🔥 Hot Take (always evergreen, prioritized)
           </Label>
         </div>
 

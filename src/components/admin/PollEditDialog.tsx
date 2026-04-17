@@ -30,6 +30,9 @@ interface Poll {
   target_age_range: string | null;
   target_country: string | null;
   target_countries: string[] | null;
+  expiry_type?: string | null;
+  batch_slot?: string | null;
+  is_hot_take?: boolean | null;
 }
 
 interface PollEditDialogProps {
@@ -59,6 +62,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
   const [targetGenders, setTargetGenders] = useState<string[]>([]);
   const [targetAgeRanges, setTargetAgeRanges] = useState<string[]>([]);
+  const [expiryType, setExpiryType] = useState<'evergreen' | 'trending' | 'campaign'>('trending');
+  const [batchSlot, setBatchSlot] = useState<'morning' | 'afternoon' | 'evening' | 'none'>('none');
+  const [isHotTake, setIsHotTake] = useState(false);
 
   // Sync state when poll changes
   const [lastPollId, setLastPollId] = useState<string | null>(null);
@@ -80,6 +86,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setTargetCountries(poll.target_countries || []);
     setTargetGenders(poll.target_gender ? poll.target_gender.split(',') : []);
     setTargetAgeRanges(poll.target_age_range ? poll.target_age_range.split(',') : []);
+    setExpiryType(((poll as any).expiry_type as any) || 'trending');
+    setBatchSlot(((poll as any).batch_slot as any) || 'none');
+    setIsHotTake(!!(poll as any).is_hot_take);
   }
 
   const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'ogg'];
@@ -137,6 +146,14 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
         if (url) finalImageB = url;
       }
 
+      // Recompute ends_at if expiry type changed to trending and no explicit endsAt
+      let computedEndsAt = endsAt ? new Date(endsAt).toISOString() : null;
+      if (expiryType === 'evergreen') {
+        computedEndsAt = null;
+      } else if (expiryType === 'trending' && !endsAt) {
+        computedEndsAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+      }
+
       const { error } = await supabase
         .from('polls')
         .update({
@@ -148,11 +165,14 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           category: category || null,
           intent_tag: intentTag || null,
           starts_at: startsAt ? new Date(startsAt).toISOString() : null,
-          ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+          ends_at: computedEndsAt,
+          expiry_type: expiryType,
+          batch_slot: batchSlot,
+          is_hot_take: isHotTake,
           target_countries: targetCountries.length > 0 ? targetCountries : [],
           target_gender: targetGenders.length > 0 ? targetGenders.join(',') : null,
           target_age_range: targetAgeRanges.length > 0 ? targetAgeRanges.join(',') : null,
-        })
+        } as any)
         .eq('id', poll.id);
       if (error) throw error;
     },
@@ -264,6 +284,46 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             </div>
           </div>
 
+          {/* Expiry & Batch */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Expiry Type</Label>
+              <select
+                value={expiryType}
+                onChange={(e) => setExpiryType(e.target.value as any)}
+                disabled={isHotTake}
+                className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm disabled:opacity-50"
+              >
+                <option value="evergreen">Evergreen (never expires)</option>
+                <option value="trending">Trending (48h)</option>
+                <option value="campaign">Campaign (synced)</option>
+              </select>
+            </div>
+            <div>
+              <Label>Batch Slot</Label>
+              <select
+                value={batchSlot}
+                onChange={(e) => setBatchSlot(e.target.value as any)}
+                className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm"
+              >
+                <option value="none">None (immediate)</option>
+                <option value="morning">Morning (9 AM Cairo)</option>
+                <option value="afternoon">Afternoon (2 PM Cairo)</option>
+                <option value="evening">Evening (7 PM Cairo)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="editIsHotTake"
+              checked={isHotTake}
+              onChange={(e) => setIsHotTake(e.target.checked)}
+              className="h-4 w-4 rounded border-border"
+            />
+            <Label htmlFor="editIsHotTake" className="text-sm">🔥 Hot Take (forces evergreen)</Label>
+          </div>
           {/* Demographics */}
           <div className="grid grid-cols-2 gap-3">
             <div>
