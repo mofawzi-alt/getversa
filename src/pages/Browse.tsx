@@ -571,56 +571,99 @@ export default function Browse() {
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
-      {/* Live filter header */}
-      {liveFilter && (
-        <div className="shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-border/40 bg-background z-30">
+      {/* Top header — search trigger + (optional) live filter */}
+      <div className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-border/40 bg-background z-30">
+        {liveFilter && (
           <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-muted/50">
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
-          <Radio className="h-4 w-4 text-destructive animate-pulse" />
-          <span className="text-sm font-display font-bold text-foreground">Live Debates</span>
-          <span className="text-xs text-muted-foreground ml-auto">{sortedFeed.length} active</span>
+        )}
+        {liveFilter ? (
+          <>
+            <Radio className="h-4 w-4 text-destructive animate-pulse" />
+            <span className="text-sm font-display font-bold text-foreground">Live Debates</span>
+          </>
+        ) : (
+          <span className="text-sm font-display font-bold text-foreground">Browse</span>
+        )}
+
+        {searchOpen ? (
+          <div className="flex-1 flex items-center gap-2 ml-1">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                autoFocus
+                placeholder="Search polls, brands, options…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 pl-8 text-xs bg-muted/40 border-border/60 rounded-lg"
+              />
+            </div>
+            <button
+              onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+              className="p-1 rounded-full hover:bg-muted/50 text-muted-foreground"
+              aria-label="Close search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 hover:bg-muted transition-colors text-muted-foreground"
+            aria-label="Search"
+          >
+            <Search className="h-3.5 w-3.5" />
+            <span className="text-[11px] font-medium">{visibleFeed.length}</span>
+          </button>
+        )}
+      </div>
+
+      {visibleFeed.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-sm text-muted-foreground">No polls match "{searchQuery}"</p>
         </div>
-      )}
-      <div
-        ref={containerRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-scroll snap-y snap-mandatory pb-16"
-        style={{ scrollSnapType: 'y mandatory' }}
-      >
-        {sortedFeed.map((poll, i) => (
-          <div key={poll.id}>
-            {/* NUDGE 2: Insert signup card after 5th card for guests */}
-            {i === 5 && !user && !feedNudgeDismissed && (
+      ) : (
+        <div
+          ref={containerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-scroll snap-y snap-mandatory pb-16"
+          style={{ scrollSnapType: 'y mandatory' }}
+        >
+          {visibleFeed.map((poll, i) => (
+            <div key={poll.id}>
+              {/* NUDGE 2: Insert signup card after 5th card for guests */}
+              {i === 5 && !user && !feedNudgeDismissed && !searchQuery && (
+                <div
+                  className="snap-start snap-always"
+                  style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 4rem)' }}
+                >
+                  <BrowseFeedNudgeCard onDismiss={() => setFeedNudgeDismissed(true)} />
+                </div>
+              )}
               <div
                 className="snap-start snap-always"
                 style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 4rem)' }}
               >
-                <BrowseFeedNudgeCard onDismiss={() => setFeedNudgeDismissed(true)} />
+                <BrowseCard
+                  poll={poll}
+                  userChoice={userVotes?.get(poll.id) || null}
+                  isActive={i === activeIndex}
+                  isSignedIn={!!user}
+                  onVote={() => handleVote(poll.id)}
+                  onShare={() => share(poll)}
+                  onSendToFriend={() => setShareToFriendPoll(poll)}
+                  onReact={() => handleReact(poll.id)}
+                  reacted={reactedPolls.has(poll.id)}
+                />
               </div>
-            )}
-            <div
-              className="snap-start snap-always"
-              style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 4rem)' }}
-            >
-              <BrowseCard
-                poll={poll}
-                userChoice={userVotes?.get(poll.id) || null}
-                isActive={i === activeIndex}
-                isSignedIn={!!user}
-                onVote={() => handleVote(poll.id)}
-                onShare={() => share(poll)}
-                onSendToFriend={() => setShareToFriendPoll(poll)}
-                onReact={() => handleReact(poll.id)}
-                reacted={reactedPolls.has(poll.id)}
-              />
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Scroll hint */}
-      {activeIndex === 0 && sortedFeed.length > 1 && (
+      {activeIndex === 0 && visibleFeed.length > 1 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
