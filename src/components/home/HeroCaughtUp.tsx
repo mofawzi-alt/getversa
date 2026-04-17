@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Trophy, Flame, Zap, Target, TrendingUp, Crown, Clock, Compass, ArrowRight, Swords } from 'lucide-react';
+import { Trophy, Flame, Zap, Target, TrendingUp, Crown, Clock, Compass, ArrowRight, Swords, X, UserPlus } from 'lucide-react';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { Button } from '@/components/ui/button';
+import { useFriends } from '@/hooks/useFriends';
 
 interface HighlightPoll {
   id: string;
