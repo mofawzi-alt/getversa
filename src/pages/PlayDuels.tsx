@@ -468,6 +468,23 @@ export default function PlayDuels() {
                 <p className="text-xs text-muted-foreground mt-2">
                   We'll auto-pick 5 polls for both of you.
                 </p>
+                <div className="mt-3">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                    Category
+                  </label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full text-sm px-3 py-2 rounded-xl bg-muted/60 border border-border/40 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="__random__">🎲 Random (any category)</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5">
