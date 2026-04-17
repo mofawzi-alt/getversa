@@ -8,6 +8,7 @@ import {
   CheckCircle2, CircleDot, ArrowRight, PlusCircle, FileEdit
 } from 'lucide-react';
 import PollCreationForm from './PollCreationForm';
+import CampaignClientsManager from './CampaignClientsManager';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -554,17 +555,23 @@ export default function CampaignAnalytics() {
                 </SelectContent>
               </Select>
               {selectedCampaignId && (
-                <Button 
-                  variant="destructive" 
-                  size="icon"
-                  onClick={() => {
-                    if (confirm('Delete this campaign?')) {
-                      deleteCampaign.mutate(selectedCampaignId);
-                    }
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <>
+                  <CampaignClientsManager
+                    campaignId={selectedCampaignId}
+                    campaignName={campaigns?.find(c => c.id === selectedCampaignId)?.name || ''}
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => {
+                      if (confirm('Delete this campaign?')) {
+                        deleteCampaign.mutate(selectedCampaignId);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
               )}
             </div>
           </CardContent>
@@ -785,6 +792,41 @@ export default function CampaignAnalytics() {
           {/* Results */}
           {results && results.length > 0 && (
             <>
+              {/* Campaign Summary */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    Campaign Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3 rounded-lg bg-secondary/50">
+                      <div className="text-xs text-muted-foreground">Polls</div>
+                      <div className="text-xl font-bold">{campaignPolls?.length || 0}</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-secondary/50">
+                      <div className="text-xs text-muted-foreground">Entities</div>
+                      <div className="text-xl font-bold">{results.length}</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-secondary/50">
+                      <div className="text-xs text-muted-foreground">Total Votes</div>
+                      <div className="text-xl font-bold">
+                        {results.reduce((sum, e) => sum + e.totalVotes, 0).toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-secondary/50">
+                      <div className="text-xs text-muted-foreground">Leader</div>
+                      <div className="text-sm font-bold truncate" title={results[0]?.name}>
+                        🏆 {results[0]?.name || '—'}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">{results[0]?.winRate || 0}% win rate</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Overall Rankings */}
               <Card>
                 <CardHeader className="pb-2">
