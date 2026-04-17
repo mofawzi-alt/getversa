@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Swords, Inbox, Send, Trophy, Clock } from 'lucide-react';
+import { ArrowLeft, Swords, Inbox, Send, Trophy, Clock, X } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
