@@ -24,6 +24,14 @@ interface HomeResultsModalProps {
 }
 
 export default function HomeResultsModal({ open, onOpenChange, poll, imageA, imageB, headerLabel }: HomeResultsModalProps) {
+  const { data: genderTeaser } = useGenderSplitTeaser(
+    poll?.id || '',
+    poll?.option_a || '',
+    poll?.option_b || '',
+    poll?.percentA || 0,
+    poll?.percentB || 0,
+  );
+
   if (!poll) return null;
 
   const isWinnerA = poll.percentA >= poll.percentB;
