@@ -10,6 +10,7 @@ import FollowButton from '@/components/poll/FollowButton';
 import { useAuth } from '@/contexts/AuthContext';
 import SwipeableFriendRow from '@/components/friends/SwipeableFriendRow';
 import UserAvatar from '@/components/UserAvatar';
+import { useIncomingDuels } from '@/hooks/useIncomingDuels';
 import { 
   Search, UserPlus, UserCheck, Users, Loader2, 
   Check, X, Heart, ChevronRight, Trophy, 
@@ -48,6 +49,7 @@ export default function Friends() {
       .filter((c) => c.unread_count > 0 && c.last_sender_id !== user?.id)
       .map((c) => [c.other_user_id, c.unread_count])
   );
+  const incomingDuels = useIncomingDuels();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -237,7 +239,7 @@ export default function Friends() {
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-semibold truncate">
                             @{friend.friend_username || 'Unknown'}
                           </h3>
@@ -245,6 +247,18 @@ export default function Friends() {
                             <Trophy className="h-3 w-3" />
                             {friend.friend_points || 0}
                           </div>
+                          {incomingDuels.has(friend.friend_id) && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/play/duels/${incomingDuels.get(friend.friend_id)}`);
+                              }}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold animate-pulse"
+                            >
+                              <Swords className="h-2.5 w-2.5" />
+                              Challenged you
+                            </button>
+                          )}
                         </div>
 
                         {/* Compatibility Score with Trend */}
