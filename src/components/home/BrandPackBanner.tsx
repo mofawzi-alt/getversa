@@ -29,7 +29,7 @@ export default function BrandPackBanner() {
       <div className="flex-1 text-left min-w-0">
         <div className="text-[11px] uppercase tracking-wider opacity-90 font-semibold">Brand Pack</div>
         <div className="text-sm font-bold truncate">
-          {brand} wants your opinion
+          {brand}
         </div>
         <div className="text-xs opacity-90">
           {campaign.unvoted_polls} quick question{campaign.unvoted_polls === 1 ? '' : 's'}
