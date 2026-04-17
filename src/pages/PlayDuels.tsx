@@ -362,8 +362,16 @@ export default function PlayDuels() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-2xl bg-background p-5 max-h-[85vh] overflow-y-auto"
+              className="w-full max-w-sm rounded-2xl bg-background flex flex-col max-h-[85vh] overflow-hidden"
             >
+              <div className="p-5 pb-3">
+                <h3 className="text-base font-bold text-foreground mb-1 flex items-center gap-2">
+                  <Swords className="h-4 w-4 text-primary" /> Pick a friend
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  We'll auto-pick 5 polls for both of you.
+                </p>
+              </div>
               <h3 className="text-base font-bold text-foreground mb-1 flex items-center gap-2">
                 <Swords className="h-4 w-4 text-primary" /> Pick a friend
               </h3>
