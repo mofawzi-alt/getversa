@@ -18,6 +18,8 @@ type SortDir = 'asc' | 'desc';
 export default function ActivePollsMonitor() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [expiryFilter, setExpiryFilter] = useState('all');
+  const [batchFilter, setBatchFilter] = useState('all');
   const [page, setPage] = useState(0);
   const [sortField, setSortField] = useState<SortField>('votes');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -28,7 +30,7 @@ export default function ActivePollsMonitor() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, category, created_at, image_a_url, image_b_url, expiry_type, ends_at, target_age_range, target_gender, weight_score')
+        .select('id, question, option_a, option_b, category, created_at, image_a_url, image_b_url, expiry_type, ends_at, batch_slot, is_hot_take, target_age_range, target_gender, weight_score')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -73,6 +75,12 @@ export default function ActivePollsMonitor() {
     if (categoryFilter !== 'all') {
       list = list.filter(p => p.category === categoryFilter);
     }
+    if (expiryFilter !== 'all') {
+      list = list.filter(p => (p as any).expiry_type === expiryFilter);
+    }
+    if (batchFilter !== 'all') {
+      list = list.filter(p => ((p as any).batch_slot || 'none') === batchFilter);
+    }
 
     // Search
     if (search.trim()) {
@@ -101,7 +109,7 @@ export default function ActivePollsMonitor() {
     });
 
     return list;
-  }, [polls, categoryFilter, search, sortField, sortDir, voteResults]);
+  }, [polls, categoryFilter, expiryFilter, batchFilter, search, sortField, sortDir, voteResults]);
 
   const totalPages = Math.ceil(processedPolls.length / PAGE_SIZE);
   const pagedPolls = processedPolls.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -180,6 +188,33 @@ export default function ActivePollsMonitor() {
         </Select>
       </div>
 
+      {/* Expiry & Batch filters */}
+      <div className="flex gap-2">
+        <Select value={expiryFilter} onValueChange={v => { setExpiryFilter(v); setPage(0); }}>
+          <SelectTrigger className="flex-1 h-9 text-xs">
+            <SelectValue placeholder="Expiry" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All expiry types</SelectItem>
+            <SelectItem value="evergreen">Evergreen</SelectItem>
+            <SelectItem value="trending">Trending (48h)</SelectItem>
+            <SelectItem value="campaign">Campaign</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={batchFilter} onValueChange={v => { setBatchFilter(v); setPage(0); }}>
+          <SelectTrigger className="flex-1 h-9 text-xs">
+            <SelectValue placeholder="Batch" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All batches</SelectItem>
+            <SelectItem value="none">None (immediate)</SelectItem>
+            <SelectItem value="morning">Morning</SelectItem>
+            <SelectItem value="afternoon">Afternoon</SelectItem>
+            <SelectItem value="evening">Evening</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Sort buttons */}
       <div className="flex gap-1.5 flex-wrap">
         {[
@@ -227,6 +262,12 @@ export default function ActivePollsMonitor() {
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{poll.category}</Badge>
                       )}
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0">{poll.expiry_type}</Badge>
+                      {(poll as any).batch_slot && (poll as any).batch_slot !== 'none' && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">📦 {(poll as any).batch_slot}</Badge>
+                      )}
+                      {(poll as any).is_hot_take && (
+                        <Badge className="text-[10px] px-1.5 py-0 bg-orange-500 text-white border-0">🔥 Hot</Badge>
+                      )}
                       {poll.target_age_range && (
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0">{poll.target_age_range}</Badge>
                       )}
