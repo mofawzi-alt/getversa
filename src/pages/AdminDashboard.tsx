@@ -30,7 +30,6 @@ import IndustryReport from '@/components/admin/IndustryReport';
 import MonthlyLeaderboard from '@/components/admin/MonthlyLeaderboard';
 import ActivePollsMonitor from '@/components/admin/ActivePollsMonitor';
 import UserManagement from '@/components/admin/UserManagement';
-import BrandCampaignBuilder from '@/components/admin/BrandCampaignBuilder';
 import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
@@ -77,7 +76,7 @@ export default function AdminDashboard() {
         </TabsList>
 
         <TabsContent value="campaigns" className="space-y-4">
-          <BrandCampaignBuilder />
+          <CampaignAnalytics />
         </TabsContent>
 
         <TabsContent value="polls" className="space-y-4">
@@ -96,7 +95,6 @@ export default function AdminDashboard() {
               <TabsTrigger value="overview" className="text-xs px-3 py-1.5">Per Poll</TabsTrigger>
               <TabsTrigger value="brands" className="text-xs px-3 py-1.5">Brands</TabsTrigger>
               <TabsTrigger value="industry" className="text-xs px-3 py-1.5">Industry</TabsTrigger>
-              <TabsTrigger value="campaigns" className="text-xs px-3 py-1.5">Campaigns</TabsTrigger>
               <TabsTrigger value="timing" className="text-xs px-3 py-1.5">Timing</TabsTrigger>
               <TabsTrigger value="retention" className="text-xs px-3 py-1.5">Retention</TabsTrigger>
               <TabsTrigger value="monitor" className="text-xs px-3 py-1.5">Monitor</TabsTrigger>
@@ -135,10 +133,6 @@ export default function AdminDashboard() {
               </div>
             </TabsContent>
             
-            <TabsContent value="campaigns">
-              <CampaignAnalytics />
-            </TabsContent>
-
             <TabsContent value="timing">
               <AdminResponseTimeAnalytics />
             </TabsContent>
