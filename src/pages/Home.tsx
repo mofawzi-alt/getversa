@@ -39,6 +39,11 @@ import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useDailyQueue } from '@/hooks/useDailyQueue';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import { useTrendingPolls } from '@/hooks/useTrendingPolls';
+import CountdownTimer from '@/components/poll/CountdownTimer';
+import TrendingBadge from '@/components/poll/TrendingBadge';
+import ClosingSoonStrip from '@/components/home/ClosingSoonStrip';
+import LiveVoterCount from '@/components/home/LiveVoterCount';
 
 // Category display name mapping (canonical 8 categories)
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {};
