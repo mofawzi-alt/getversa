@@ -100,6 +100,18 @@ function HighlightCard({ poll, index, onTap }: { poll: HighlightPoll; index: num
 export default function HeroCaughtUp({ onPollTap }: { onPollTap?: (poll: any) => void }) {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { friends } = useFriends();
+  const [duelDismissed, setDuelDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return sessionStorage.getItem('caughtup_duel_dismissed') === '1';
+  });
+
+  const dismissDuelNudge = () => {
+    sessionStorage.setItem('caughtup_duel_dismissed', '1');
+    setDuelDismissed(true);
+  };
+
+  const hasFriends = friends && friends.length > 0;
 
   // User stats
   const { data: userStats } = useQuery({
