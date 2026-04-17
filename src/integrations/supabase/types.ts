@@ -676,27 +676,45 @@ export type Database = {
       }
       poll_campaigns: {
         Row: {
+          brand_logo_url: string | null
+          brand_name: string | null
           created_at: string
           created_by: string
           description: string | null
+          expires_at: string | null
           id: string
+          is_active: boolean
           name: string
+          release_at: string | null
+          target_vote_count: number | null
           updated_at: string
         }
         Insert: {
+          brand_logo_url?: string | null
+          brand_name?: string | null
           created_at?: string
           created_by: string
           description?: string | null
+          expires_at?: string | null
           id?: string
+          is_active?: boolean
           name: string
+          release_at?: string | null
+          target_vote_count?: number | null
           updated_at?: string
         }
         Update: {
+          brand_logo_url?: string | null
+          brand_name?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
+          expires_at?: string | null
           id?: string
+          is_active?: boolean
           name?: string
+          release_at?: string | null
+          target_vote_count?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -899,6 +917,7 @@ export type Database = {
       }
       polls: {
         Row: {
+          campaign_id: string | null
           category: string | null
           created_at: string | null
           created_by: string | null
@@ -934,6 +953,7 @@ export type Database = {
           weight_score: number | null
         }
         Insert: {
+          campaign_id?: string | null
           category?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -969,6 +989,7 @@ export type Database = {
           weight_score?: number | null
         }
         Update: {
+          campaign_id?: string | null
           category?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -1004,6 +1025,13 @@ export type Database = {
           weight_score?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "polls_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "poll_campaigns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "polls_created_by_fkey"
             columns: ["created_by"]
