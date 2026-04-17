@@ -215,8 +215,8 @@ export default function ShareableTasteCard({ archetype, description, topCategory
 
         <p className="text-[10px] font-semibold tracking-[4px] text-white/40 uppercase mb-3">My Taste Profile</p>
         <h2 className="text-3xl font-display font-bold mb-1">{archetype}</h2>
-        {personalityCode && personalityName && (
-          <p className="text-xs font-mono text-white/50 tracking-[3px] mb-2">{personalityCode} — {personalityName}</p>
+        {personalityName && (
+          <p className="text-xs text-white/60 mb-2">{personalityName}</p>
         )}
         <p className="text-sm text-white/70 leading-relaxed mb-5 max-w-[260px] mx-auto">{description}</p>
 

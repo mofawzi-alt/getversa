@@ -171,7 +171,7 @@ export default function BlendedCompatibility({ userAId, userBId, userBUsername }
           <div className="flex items-center justify-between mb-3">
             <div className="text-center flex-1">
               <div className="text-xl">{typeA.emoji}</div>
-              <p className="text-[10px] font-bold mt-1">{PERSONALITY_TYPES[typeA.code]?.name || typeA.code}</p>
+              <p className="text-[10px] font-bold mt-1">{PERSONALITY_TYPES[typeA.code]?.name || typeA.name}</p>
               <p className="text-[9px] text-muted-foreground">You</p>
             </div>
             <div className="text-center px-2">
@@ -179,7 +179,7 @@ export default function BlendedCompatibility({ userAId, userBId, userBUsername }
             </div>
             <div className="text-center flex-1">
               <div className="text-xl">{typeB.emoji}</div>
-              <p className="text-[10px] font-bold mt-1">{PERSONALITY_TYPES[typeB.code]?.name || typeB.code}</p>
+              <p className="text-[10px] font-bold mt-1">{PERSONALITY_TYPES[typeB.code]?.name || typeB.name}</p>
               <p className="text-[9px] text-muted-foreground">@{userBUsername || 'them'}</p>
             </div>
           </div>

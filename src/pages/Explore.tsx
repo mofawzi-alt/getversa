@@ -112,6 +112,7 @@ export default function Explore() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [modalPoll, setModalPoll] = useState<PollItem | null>(null);
   const [peopleLikeYou, setPeopleLikeYou] = useState(false);
+  const [categorySort, setCategorySort] = useState<'most_voted' | 'most_recent' | 'most_controversial'>('most_voted');
 
   useEffect(() => {
     const catParam = searchParams.get('category');
@@ -191,18 +192,24 @@ export default function Explore() {
   const categoryPollsBase = useMemo(() => {
     if (!selectedCategory) return [];
     const allPolls = pollsData?.polls || [];
-    const now = Date.now();
-    const h24 = 24 * 60 * 60 * 1000;
-    return allPolls
-      .filter(p => (p.category || 'Uncategorized') === selectedCategory)
-      .sort((a, b) => {
-        const aNew = (now - new Date(a.created_at).getTime()) < h24;
-        const bNew = (now - new Date(b.created_at).getTime()) < h24;
-        if (aNew !== bNew) return aNew ? -1 : 1;
-        if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+    const filtered = allPolls.filter(p => (p.category || 'Uncategorized') === selectedCategory);
+
+    const sorted = [...filtered].sort((a, b) => {
+      if (categorySort === 'most_recent') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      if (categorySort === 'most_controversial') {
+        // Controversy = closeness to 50/50, gated by minimum votes
+        const aGap = a.totalVotes >= 5 ? Math.abs(a.percentA - 50) : 100;
+        const bGap = b.totalVotes >= 5 ? Math.abs(b.percentA - 50) : 100;
+        if (aGap !== bGap) return aGap - bGap;
         return b.totalVotes - a.totalVotes;
-      });
-  }, [selectedCategory, pollsData?.polls]);
+      }
+      // Default: most_voted
+      return b.totalVotes - a.totalVotes;
+    });
+    return sorted;
+  }, [selectedCategory, pollsData?.polls, categorySort]);
 
   const categoryPollIds = useMemo(() => categoryPollsBase.map(p => p.id), [categoryPollsBase]);
 
@@ -346,8 +353,29 @@ export default function Explore() {
             )}
           </div>
 
+          {/* Sort options */}
+          <div className="px-4 mt-3 mb-1 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+            {([
+              { key: 'most_voted', label: 'Most Voted' },
+              { key: 'most_recent', label: 'Most Recent' },
+              { key: 'most_controversial', label: 'Most Controversial' },
+            ] as const).map(opt => (
+              <button
+                key={opt.key}
+                onClick={() => setCategorySort(opt.key)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  categorySort === opt.key
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
           {/* Decision Hub — Top Picks */}
-          {decisionHub && !peopleLikeYou && (
+          {decisionHub && !peopleLikeYou && categorySort === 'most_voted' && (
             <div className="px-4 mb-4 space-y-4">
               {/* Clear Winners */}
               {decisionHub.clearWinners.length > 0 && (
