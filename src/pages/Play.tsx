@@ -67,9 +67,9 @@ export default function Play() {
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="h-5 w-5 text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Game Mode</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Challenge Mode</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">Play Versa</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-1">Versa Arena</h1>
           <p className="text-sm text-muted-foreground">
             Turn voting into a game. Every choice still shapes the data.
           </p>
