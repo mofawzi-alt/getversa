@@ -99,33 +99,46 @@ export default function AdminDashboard() {
               <TabsTrigger value="campaigns" className="text-xs px-3 py-1.5">Campaigns</TabsTrigger>
               <TabsTrigger value="timing" className="text-xs px-3 py-1.5">Timing</TabsTrigger>
               <TabsTrigger value="retention" className="text-xs px-3 py-1.5">Retention</TabsTrigger>
-              <TabsTrigger value="export" className="text-xs px-3 py-1.5">Export</TabsTrigger>
-              <TabsTrigger value="insights-report" className="text-xs px-3 py-1.5">Insights</TabsTrigger>
-              <TabsTrigger value="brand-intel" className="text-xs px-3 py-1.5">Brand Intel</TabsTrigger>
-              <TabsTrigger value="industry-report" className="text-xs px-3 py-1.5">Industry Report</TabsTrigger>
-              <TabsTrigger value="monthly-leaderboard" className="text-xs px-3 py-1.5">Monthly</TabsTrigger>
               <TabsTrigger value="monitor" className="text-xs px-3 py-1.5">Monitor</TabsTrigger>
+              <TabsTrigger value="export" className="text-xs px-3 py-1.5">Export</TabsTrigger>
             </TabsList>
             
             <TabsContent value="dashboard">
               <AnalyticsDashboard />
             </TabsContent>
 
-            <TabsContent value="overview">
+            <TabsContent value="overview" className="space-y-6">
               <PollAnalytics initialPollId={selectedPollId} />
+              <div className="border-t pt-6">
+                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Shareable Insights Report</h3>
+                <InsightsReport />
+              </div>
             </TabsContent>
             
-            <TabsContent value="brands">
+            <TabsContent value="brands" className="space-y-6">
               <BrandRankingReport />
+              <div className="border-t pt-6">
+                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Single Brand Deep Dive</h3>
+                <BrandIntelligence />
+              </div>
+              <div className="border-t pt-6">
+                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Monthly Leaderboard</h3>
+                <MonthlyLeaderboard />
+              </div>
             </TabsContent>
             
-            <TabsContent value="industry">
+            <TabsContent value="industry" className="space-y-6">
               <CategoryAnalytics />
+              <div className="border-t pt-6">
+                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Industry PDF Report</h3>
+                <IndustryReport />
+              </div>
             </TabsContent>
             
             <TabsContent value="campaigns">
               <CampaignAnalytics />
             </TabsContent>
+
             <TabsContent value="timing">
               <AdminResponseTimeAnalytics />
             </TabsContent>
@@ -134,28 +147,12 @@ export default function AdminDashboard() {
               <AdminRetentionAnalytics />
             </TabsContent>
             
-            <TabsContent value="export">
-              <AdminAnalyticsExport />
-            </TabsContent>
-            
-            <TabsContent value="insights-report">
-              <InsightsReport />
-            </TabsContent>
-            
-            <TabsContent value="brand-intel">
-              <BrandIntelligence />
-            </TabsContent>
-            
-            <TabsContent value="industry-report">
-              <IndustryReport />
-            </TabsContent>
-            
-            <TabsContent value="monthly-leaderboard">
-              <MonthlyLeaderboard />
-            </TabsContent>
-            
             <TabsContent value="monitor">
               <ActivePollsMonitor />
+            </TabsContent>
+            
+            <TabsContent value="export">
+              <AdminAnalyticsExport />
             </TabsContent>
           </Tabs>
         </TabsContent>
