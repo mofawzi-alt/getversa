@@ -414,50 +414,14 @@ export default function PlayDuel() {
     );
   }
 
-  // Pending challenge — show Accept gate to the challenged user
+  // Pending challenge for the challenged user — auto-accept is in flight.
+  // Show a tiny loader so they don't see an "Accept gate".
   if (duel.status === 'pending' && duel.challenged_id === user!.id) {
     return (
       <AppLayout>
-        <div className="max-w-lg mx-auto px-4 py-6">
-          <button
-            onClick={() => navigate('/play/duels')}
-            className="flex items-center gap-1 text-sm text-muted-foreground mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to Duels
-          </button>
-
-          <div className="text-center py-6">
-            <div className="inline-flex w-16 h-16 rounded-full bg-primary/10 items-center justify-center mb-4">
-              <Swords className="h-8 w-8 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground mb-1">
-              {otherName} challenged you
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {polls.length} polls · same matchups, same scoreboard
-            </p>
-            {duel.taunt_message && (
-              <p className="text-sm text-foreground italic mt-3">"{duel.taunt_message}"</p>
-            )}
-          </div>
-
-          <div className="space-y-2 mt-4">
-            <button
-              onClick={acceptChallenge}
-              disabled={accepting}
-              className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99] transition-transform"
-            >
-              <Swords className="h-4 w-4" />
-              {accepting ? 'Accepting…' : 'Accept & Play'}
-            </button>
-            <button
-              onClick={declineChallenge}
-              disabled={accepting}
-              className="w-full py-3 rounded-2xl bg-muted text-foreground font-semibold text-sm disabled:opacity-50"
-            >
-              Decline
-            </button>
-          </div>
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <p className="text-sm text-muted-foreground">Opening duel from {otherName}…</p>
         </div>
       </AppLayout>
     );
