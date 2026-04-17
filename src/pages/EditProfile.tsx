@@ -56,6 +56,23 @@ export default function EditProfile() {
     }
   }, [profile]);
 
+  // Always fetch the latest is_private directly to avoid stale AuthContext cache
+  useEffect(() => {
+    if (!profile?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('users')
+        .select('is_private')
+        .eq('id', profile.id)
+        .maybeSingle();
+      if (!cancelled && data) {
+        setIsPrivate(Boolean((data as any).is_private));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [profile?.id]);
+
   const togglePrivate = async (next: boolean) => {
     if (!profile || savingPrivacy) return;
     const previous = isPrivate;
