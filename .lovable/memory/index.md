@@ -102,3 +102,4 @@ Updated: now
 - [Compatibility Link](mem://features/compatibility-link) — Shareable /compare/u/:userId link + QR code with blended vote/dimension/personality scoring
 - [Friend Messaging](mem://features/friend-messaging) — IG-style 1-on-1 DMs between accepted friends with text + poll sharing, realtime, unread badges
 - [FOMO Phase 1](mem://features/fomo-phase-1) — Live countdowns, voter count strip, auto Trending badge, Closing Soon scroll, First Voter badge
+- [Notification Governance Phase 2](mem://features/notification-governance-phase-2) — user_notification_preferences + notification_log tables, can_send_notification gate (3/day cap, 11pm–8am Cairo quiet hours, streak displaces lowest), single send-governed-notification edge function, profile prefs UI, admin analytics
