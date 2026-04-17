@@ -62,6 +62,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
   const [targetGenders, setTargetGenders] = useState<string[]>([]);
   const [targetAgeRanges, setTargetAgeRanges] = useState<string[]>([]);
+  const [expiryType, setExpiryType] = useState<'evergreen' | 'trending' | 'campaign'>('trending');
+  const [batchSlot, setBatchSlot] = useState<'morning' | 'afternoon' | 'evening' | 'none'>('none');
+  const [isHotTake, setIsHotTake] = useState(false);
 
   // Sync state when poll changes
   const [lastPollId, setLastPollId] = useState<string | null>(null);
@@ -83,6 +86,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setTargetCountries(poll.target_countries || []);
     setTargetGenders(poll.target_gender ? poll.target_gender.split(',') : []);
     setTargetAgeRanges(poll.target_age_range ? poll.target_age_range.split(',') : []);
+    setExpiryType(((poll as any).expiry_type as any) || 'trending');
+    setBatchSlot(((poll as any).batch_slot as any) || 'none');
+    setIsHotTake(!!(poll as any).is_hot_take);
   }
 
   const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'ogg'];
