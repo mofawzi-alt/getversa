@@ -46,17 +46,23 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
         return;
       }
 
-      const { error } = await supabase.from('poll_challenges').insert({
-        challenger_id: user.id,
-        challenged_id: selectedFriend,
-        poll_id: pollIds[0],
-        poll_ids: pollIds,
-        game_type: 'duel_5',
-        taunt_message: taunt,
-        challenger_choice: JSON.stringify([userChoice]),
-      });
+      const { data: inserted, error } = await supabase
+        .from('poll_challenges')
+        .insert({
+          challenger_id: user.id,
+          challenged_id: selectedFriend,
+          poll_id: pollIds[0],
+          poll_ids: pollIds,
+          game_type: 'duel_5',
+          taunt_message: taunt,
+          challenger_choice: JSON.stringify([userChoice]),
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      const newDuelId = inserted?.id;
 
       const { data: meData } = await supabase
         .from('users')
@@ -66,21 +72,22 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
 
       const challengerName = meData?.username || 'A friend';
       const title = `⚔️ ${challengerName} challenged you!`;
-      const body = `${taunt} • 5 polls, same matchups, same scoreboard.`;
+      const body = `${taunt} • Tap to accept and play.`;
+      const deepUrl = newDuelId ? `/play/duels/${newDuelId}` : '/play/duels';
 
       await supabase.from('notifications').insert({
         user_id: selectedFriend,
         title,
         body,
         type: 'poll_challenge',
-        data: { tab: 'duels', challenger_id: user.id },
+        data: { tab: 'duels', challenger_id: user.id, duel_id: newDuelId, url: deepUrl },
       });
 
       await supabase.functions.invoke('send-push-notification', {
         body: {
           title,
           body,
-          url: '/play/duels',
+          url: deepUrl,
           user_ids: [selectedFriend],
           skip_in_app: true,
         },
