@@ -361,6 +361,12 @@ export default function PlayDuels() {
                         {d.status === 'completed' ? 'View' : 'Play'}
                       </button>
                     )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Start sheet */}
         {showStartSheet && (
