@@ -79,6 +79,16 @@ export default function PlayDuel() {
     load();
   }, [user, id]);
 
+  // Auto-accept the duel as soon as the challenged user opens it.
+  // Opening the challenge IS the acceptance — no separate gate.
+  useEffect(() => {
+    if (!user || !duel) return;
+    if (duel.status !== 'pending') return;
+    if (duel.challenged_id !== user.id) return;
+    acceptChallenge();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, duel?.id, duel?.status]);
+
   // Realtime: live-update when the other player submits a vote / completes the duel
   useEffect(() => {
     if (!user || !id) return;
