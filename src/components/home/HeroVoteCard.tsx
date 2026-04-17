@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import HotTakeBadge from './HotTakeBadge';
 import ControversialBadge from './ControversialBadge';
+import CountdownTimer from '@/components/poll/CountdownTimer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,6 +31,7 @@ interface HeroPoll {
   percentA: number;
   percentB: number;
   is_hot_take?: boolean;
+  ends_at?: string | null;
 }
 
 interface HeroVoteCardProps {
@@ -409,8 +411,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
   return (
     <section className="px-3 pt-4 pb-2">
-      {/* Unseen count badge */}
-      <div className="flex justify-center mb-2">
+      {/* Unseen count badge + live countdown */}
+      <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
         {unseenCount > 0 && (
           <motion.span
             initial={{ scale: 0.9, opacity: 0 }}
@@ -419,6 +421,9 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           >
             🔥 {unseenCount} battle{unseenCount !== 1 ? 's' : ''} left today
           </motion.span>
+        )}
+        {poll.ends_at && (
+          <CountdownTimer endsAt={poll.ends_at} size="sm" />
         )}
       </div>
 
