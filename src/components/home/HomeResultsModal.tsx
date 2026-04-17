@@ -1,6 +1,7 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Users } from 'lucide-react';
 import ShareButton from '@/components/poll/ShareButton';
+import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 interface HomeResultsModalProps {
   open: boolean;
@@ -23,6 +24,14 @@ interface HomeResultsModalProps {
 }
 
 export default function HomeResultsModal({ open, onOpenChange, poll, imageA, imageB, headerLabel }: HomeResultsModalProps) {
+  const { data: genderTeaser } = useGenderSplitTeaser(
+    poll?.id || '',
+    poll?.option_a || '',
+    poll?.option_b || '',
+    poll?.percentA || 0,
+    poll?.percentB || 0,
+  );
+
   if (!poll) return null;
 
   const isWinnerA = poll.percentA >= poll.percentB;
@@ -89,6 +98,10 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
             <Bar label={poll.option_a} percent={poll.percentA} isWinner={isWinnerA} side="A" />
             <Bar label={poll.option_b} percent={poll.percentB} isWinner={!isWinnerA} side="B" />
           </div>
+
+          {genderTeaser && (
+            <p className="text-[11px] text-muted-foreground text-center pt-1">{genderTeaser.text}</p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
