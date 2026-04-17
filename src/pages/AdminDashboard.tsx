@@ -410,8 +410,8 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
       
       if (expiryType === 'trending') {
         endsAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
-      } else if (expiryType === 'brand_battle') {
-        // End of current month
+      } else if (expiryType === 'campaign') {
+        // End of current month (default; campaigns sync via DB trigger when set)
         endsAt = new Date(startsAt.getFullYear(), startsAt.getMonth() + 1, 0, 23, 59, 59);
       } else if (isDailyPoll) {
         endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -441,7 +441,7 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-polls'] });
-      toast.success(`Poll created (${expiryType === 'evergreen' ? 'Evergreen' : expiryType === 'trending' ? '48h Trending' : '30-day Brand Battle'})!`);
+      toast.success(`Poll created (${expiryType === 'evergreen' ? 'Evergreen' : expiryType === 'trending' ? '48h Trending' : 'Campaign'})!`);
       setShowForm(false);
       setQuestion('');
       setOptionA('');
@@ -1076,9 +1076,9 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { value: 'evergreen', label: '♾️ Evergreen', desc: 'Runs forever' },
+                  { value: 'evergreen', label: '♾️ Evergreen', desc: 'Never expires' },
                   { value: 'trending', label: '⚡ Trending', desc: '48 hours' },
-                  { value: 'brand_battle', label: '🏆 Brand Battle', desc: '30-day cycles' },
+                  { value: 'campaign', label: '🏆 Campaign', desc: 'Ends with campaign' },
                 ].map(opt => (
                   <button
                     key={opt.value}
@@ -1294,9 +1294,21 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
                       <span className={`px-2 py-0.5 rounded-full text-xs ${
                         (poll as any).expiry_type === 'trending' ? 'bg-orange-500/20 text-orange-600' : 'bg-primary/20 text-primary'
                       }`}>
-                        {(poll as any).expiry_type === 'trending' ? '⚡ Trending' : '🏆 Brand Battle'}
+                        {(poll as any).expiry_type === 'trending' ? '⚡ Trending' : '🏆 Campaign'}
                       </span>
                     )}
+                    {(() => {
+                      const et = (poll as any).expiry_type;
+                      const ea = (poll as any).ends_at;
+                      if (et !== 'evergreen' && ea && new Date(ea) <= new Date()) {
+                        return (
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground border border-border">
+                            🔒 Closed
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
                     <span className={`px-2 py-0.5 rounded-full text-xs ${
                       isExpired ? 'bg-muted text-muted-foreground' :
                       isLive ? 'bg-success/20 text-success' :

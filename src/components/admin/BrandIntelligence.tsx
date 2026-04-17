@@ -76,7 +76,7 @@ export default function BrandIntelligence() {
         p.option_a.toLowerCase().includes(activeBrand.toLowerCase()) ||
         p.option_b.toLowerCase().includes(activeBrand.toLowerCase())
       );
-      const battlePollIds = brandPolls.filter((p: any) => p.expiry_type === 'brand_battle').map(p => p.id);
+      const battlePollIds = brandPolls.filter((p: any) => p.expiry_type === 'campaign' || p.expiry_type === 'brand_battle').map(p => p.id);
       if (!battlePollIds.length) return [];
       const { data, error } = await supabase
         .from('poll_cycles')

@@ -57,7 +57,7 @@ export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: 
     campaign_id: campaign.id,
     created_by: userId,
     poll_type: 'campaign',
-    expiry_type: endsAt ? 'trending' : 'evergreen',
+    expiry_type: endsAt ? 'campaign' : 'evergreen',
   }));
 
   const { data: createdPolls, error: pErr } = await supabase
