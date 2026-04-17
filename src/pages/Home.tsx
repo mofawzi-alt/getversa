@@ -39,6 +39,11 @@ import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useDailyQueue } from '@/hooks/useDailyQueue';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import { useTrendingPolls } from '@/hooks/useTrendingPolls';
+import CountdownTimer from '@/components/poll/CountdownTimer';
+import TrendingBadge from '@/components/poll/TrendingBadge';
+import ClosingSoonStrip from '@/components/home/ClosingSoonStrip';
+import LiveVoterCount from '@/components/home/LiveVoterCount';
 
 // Category display name mapping (canonical 8 categories)
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {};
@@ -130,12 +135,14 @@ function HomeLiveDebateCard({
   index,
   hasVoted,
   chosenOptionLabel,
+  isTrending = false,
   onCardClick,
 }: {
   poll: PollCard;
   index: number;
   hasVoted: boolean;
   chosenOptionLabel: string | null;
+  isTrending?: boolean;
   onCardClick: () => void;
 }) {
   const { user } = useAuth();
@@ -158,11 +165,14 @@ function HomeLiveDebateCard({
       className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-md"
     >
       <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
           <LiveIndicator variant="badge" />
+          {isTrending && <TrendingBadge size="xs" />}
           <span className="text-xs text-muted-foreground font-semibold">{poll.totalVotes.toLocaleString()} votes</span>
           {poll.ends_at && (
-            <span className="text-[10px] text-muted-foreground ml-auto">{getTimeLeft(poll.ends_at)}</span>
+            <span className="ml-auto">
+              <CountdownTimer endsAt={poll.ends_at} size="xs" showIcon={false} />
+            </span>
           )}
         </div>
       </div>
@@ -717,7 +727,7 @@ export default function Home() {
 
 
   // ── Memoized expensive computations ──
-  const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
+  const { livePolls, trendingPolls, totalLiveVoters, closingSoonPolls } = useMemo(() => {
     const now = new Date();
     const nowMs = now.getTime();
 
@@ -844,8 +854,19 @@ export default function Home() {
       return uniqueIds.size;
     })();
 
-    return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters };
+    // ── Closing Soon: live polls expiring within 6 hours, soonest first ──
+    const sixHoursMs = 6 * 60 * 60 * 1000;
+    const closingSoon = diversifiedLive
+      .filter((p) => p.ends_at && new Date(p.ends_at).getTime() - nowMs < sixHoursMs)
+      .sort((a, b) => new Date(a.ends_at!).getTime() - new Date(b.ends_at!).getTime())
+      .slice(0, 12);
+
+    return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters, closingSoonPolls: closingSoon };
   }, [allPolls, votedPollIds, userTasteProfile]);
+
+  // ── Trending detection: which live polls have >100 votes in last 2h ──
+  const livePollIds = useMemo(() => livePolls.map((p) => p.id), [livePolls]);
+  const { data: trendingIdSet } = useTrendingPolls(livePollIds);
 
   // (auto-rotate removed — static horizontal scroll)
 
@@ -988,6 +1009,9 @@ export default function Home() {
           />
         </div>
 
+        {/* Live voter count strip — "X people voted in the last hour" */}
+        <LiveVoterCount />
+
         {/* NUDGE 4: Floating timed nudge for guests */}
         {!user && <TimedFloatingNudge />}
 
@@ -1005,6 +1029,22 @@ export default function Home() {
             </span>
           )}
         </div>
+
+        {/* ═══ 🔥 CLOSING SOON ═══ */}
+        <ClosingSoonStrip
+          polls={closingSoonPolls
+            .filter((p) => !votedPollIds?.has(p.id) && p.ends_at)
+            .map((p) => ({
+              id: p.id,
+              question: p.question,
+              option_a: p.option_a,
+              option_b: p.option_b,
+              image_a_url: p.image_a_url,
+              image_b_url: p.image_b_url,
+              ends_at: p.ends_at!,
+              totalVotes: p.totalVotes,
+            }))}
+        />
 
 
 
@@ -1096,6 +1136,7 @@ export default function Home() {
                     index={i}
                     hasVoted={hasVoted}
                     chosenOptionLabel={chosenOptionLabel}
+                    isTrending={trendingIdSet?.has(poll.id) || false}
                     onCardClick={() => {
                       if (hasVoted) {
                         setModalPoll(poll);
