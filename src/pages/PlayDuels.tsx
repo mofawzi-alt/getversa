@@ -99,12 +99,34 @@ export default function PlayDuels() {
 
       if (error) throw error;
 
+      // Get challenger username for personalized push
+      const { data: meData } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', user!.id)
+        .maybeSingle();
+      const challengerName = meData?.username || 'A friend';
+      const pushTitle = `⚔️ ${challengerName} challenged you!`;
+      const pushBody = "Dared you to a 5-poll duel. Can you match their picks?";
+
+      // In-app notification
       await supabase.from('notifications').insert({
         user_id: selectedFriend,
-        title: '⚔️ Duel challenge!',
-        body: "A friend dared you to a 5-poll duel. Can you match their picks?",
+        title: pushTitle,
+        body: pushBody,
         type: 'poll_challenge',
-        data: { tab: 'duels' },
+        data: { tab: 'duels', challenger_id: user!.id },
+      });
+
+      // Web push notification (same pattern as DMs)
+      await supabase.functions.invoke('send-push-notification', {
+        body: {
+          title: pushTitle,
+          body: pushBody,
+          url: '/play/duels',
+          user_ids: [selectedFriend],
+          skip_in_app: true,
+        },
       });
 
       toast.success('Duel sent! 🔥');
