@@ -353,8 +353,29 @@ export default function Explore() {
             )}
           </div>
 
+          {/* Sort options */}
+          <div className="px-4 mt-3 mb-1 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+            {([
+              { key: 'most_voted', label: 'Most Voted' },
+              { key: 'most_recent', label: 'Most Recent' },
+              { key: 'most_controversial', label: 'Most Controversial' },
+            ] as const).map(opt => (
+              <button
+                key={opt.key}
+                onClick={() => setCategorySort(opt.key)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  categorySort === opt.key
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
           {/* Decision Hub — Top Picks */}
-          {decisionHub && !peopleLikeYou && (
+          {decisionHub && !peopleLikeYou && categorySort === 'most_voted' && (
             <div className="px-4 mb-4 space-y-4">
               {/* Clear Winners */}
               {decisionHub.clearWinners.length > 0 && (
