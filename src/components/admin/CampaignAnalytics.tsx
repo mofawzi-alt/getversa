@@ -5,10 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   Loader2, Plus, FolderOpen, BarChart3, Users, Globe, Calendar, 
   Download, Trophy, Trash2, ChevronRight, ChevronDown, Info, HelpCircle,
-  CheckCircle2, CircleDot, ArrowRight, PlusCircle, FileEdit
+  CheckCircle2, CircleDot, ArrowRight, PlusCircle, FileEdit, Eye
 } from 'lucide-react';
 import PollCreationForm from './PollCreationForm';
 import CampaignClientsManager from './CampaignClientsManager';
+import PollAnalytics from './PollAnalytics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -90,6 +91,7 @@ export default function CampaignAnalytics() {
   const [entityName, setEntityName] = useState('');
   const [expandedEntity, setExpandedEntity] = useState<string | null>(null);
   const [addPollMode, setAddPollMode] = useState<'existing' | 'create'>('existing');
+  const [analyticsPollId, setAnalyticsPollId] = useState<string | null>(null);
 
   // Fetch campaigns
   const { data: campaigns, isLoading: campaignsLoading } = useQuery({
@@ -774,14 +776,25 @@ export default function CampaignAnalytics() {
                           </span>
                           <p className="text-sm truncate mt-1">{cp.poll.question}</p>
                         </div>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-destructive"
-                          onClick={() => removePoll.mutate(cp.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8"
+                            onClick={() => setAnalyticsPollId(cp.poll_id)}
+                          >
+                            <Eye className="h-3.5 w-3.5 mr-1" />
+                            Full Analytics
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive"
+                            onClick={() => removePoll.mutate(cp.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
