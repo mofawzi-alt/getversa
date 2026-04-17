@@ -70,26 +70,42 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
     return <p className="text-sm text-muted-foreground py-12 text-center">No poll data yet.</p>;
   }
 
+  const handleExport = () => {
+    try {
+      exportCampaignPdf({ campaignName, brandName, results, demos });
+      toast.success('Report downloaded');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to generate PDF');
+    }
+  };
+
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="grid grid-cols-4 w-full">
-        <TabsTrigger value="overview" className="text-xs gap-1.5">
-          <TrendingUp className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Overview</span>
-        </TabsTrigger>
-        <TabsTrigger value="polls" className="text-xs gap-1.5">
-          <BarChart3 className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Polls</span>
-        </TabsTrigger>
-        <TabsTrigger value="demographics" className="text-xs gap-1.5">
-          <Users className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Demographics</span>
-        </TabsTrigger>
-        <TabsTrigger value="narrative" className="text-xs gap-1.5">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">AI Insights</span>
-        </TabsTrigger>
-      </TabsList>
+      <div className="flex items-center gap-2 mb-2">
+        <TabsList className="grid grid-cols-4 flex-1">
+          <TabsTrigger value="overview" className="text-xs gap-1.5">
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="polls" className="text-xs gap-1.5">
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Polls</span>
+          </TabsTrigger>
+          <TabsTrigger value="demographics" className="text-xs gap-1.5">
+            <Users className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Demographics</span>
+          </TabsTrigger>
+          <TabsTrigger value="narrative" className="text-xs gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">AI Insights</span>
+          </TabsTrigger>
+        </TabsList>
+        <Button size="sm" variant="outline" onClick={handleExport} className="gap-1.5 shrink-0 h-9">
+          <Download className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">PDF</span>
+        </Button>
+      </div>
 
       {/* OVERVIEW */}
       <TabsContent value="overview" className="space-y-4 mt-4">
