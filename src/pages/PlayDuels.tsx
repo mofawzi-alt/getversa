@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFriends } from '@/hooks/useFriends';
+import { normalizeDuelChoices, pickDuelPollIds } from '@/lib/duels';
 import { toast } from 'sonner';
 
 type Tab = 'inbox' | 'sent' | 'history';
@@ -17,6 +18,8 @@ interface Duel {
   taunt_message: string | null;
   poll_id: string;
   poll_ids: string[] | null;
+  challenger_choice: string | null;
+  challenged_choice?: string | null;
   challenger_score: number | null;
   challenged_score: number | null;
   match_rate: number | null;
@@ -55,10 +58,10 @@ export default function PlayDuels() {
     const list = (data || []) as Duel[];
     setDuels(list);
 
-    // Fetch usernames for the other party
     const otherIds = Array.from(
       new Set(list.map((d) => (d.challenger_id === user!.id ? d.challenged_id : d.challenger_id)))
     );
+
     if (otherIds.length) {
       const { data: profs } = await supabase.rpc('get_public_profiles', { user_ids: otherIds });
       const map: Record<string, string> = {};
@@ -67,24 +70,18 @@ export default function PlayDuels() {
       });
       setUsernames(map);
     }
+
     setLoading(false);
   };
 
   const startDuel = async () => {
     if (!selectedFriend) return;
+
     setSending(true);
     try {
-      // Pick 5 random active polls
-      const { data: pollData } = await supabase
-        .from('polls')
-        .select('id')
-        .eq('is_active', true)
-        .limit(60);
-      const shuffled = (pollData || []).sort(() => Math.random() - 0.5).slice(0, 5);
-      const pollIds = shuffled.map((p) => p.id);
+      const pollIds = await pickDuelPollIds();
       if (pollIds.length < 5) {
         toast.error('Not enough polls available');
-        setSending(false);
         return;
       }
 
@@ -99,17 +96,16 @@ export default function PlayDuels() {
 
       if (error) throw error;
 
-      // Get challenger username for personalized push
       const { data: meData } = await supabase
         .from('users')
         .select('username')
         .eq('id', user!.id)
         .maybeSingle();
+
       const challengerName = meData?.username || 'A friend';
       const pushTitle = `⚔️ ${challengerName} challenged you!`;
-      const pushBody = "Dared you to a 5-poll duel. Can you match their picks?";
+      const pushBody = 'Dared you to a 5-poll duel. Can you match their picks?';
 
-      // In-app notification
       await supabase.from('notifications').insert({
         user_id: selectedFriend,
         title: pushTitle,
@@ -118,7 +114,6 @@ export default function PlayDuels() {
         data: { tab: 'duels', challenger_id: user!.id },
       });
 
-      // Web push notification (same pattern as DMs)
       await supabase.functions.invoke('send-push-notification', {
         body: {
           title: pushTitle,
@@ -133,7 +128,7 @@ export default function PlayDuels() {
       setShowStartSheet(false);
       setSelectedFriend(null);
       loadDuels();
-    } catch (e) {
+    } catch {
       toast.error('Could not start duel');
     } finally {
       setSending(false);
@@ -142,83 +137,105 @@ export default function PlayDuels() {
 
   const respondToDuel = async (duel: Duel, accept: boolean) => {
     const newStatus = accept ? 'accepted' : 'declined';
-    const { error } = await supabase
-      .from('poll_challenges')
-      .update({
+
+    try {
+      const updates: Record<string, any> = {
         status: newStatus,
         responded_at: new Date().toISOString(),
         ...(accept ? {} : { completed_at: new Date().toISOString() }),
-      })
-      .eq('id', duel.id)
-      .eq('challenged_id', user!.id)
-      .eq('status', 'pending');
-    if (error) {
-      toast.error('Could not respond');
-      return;
-    }
+      };
 
-    // Notify challenger
-    const { data: meData } = await supabase
-      .from('users')
-      .select('username')
-      .eq('id', user!.id)
-      .maybeSingle();
-    const myName = meData?.username || 'Your friend';
-    const title = accept ? `🔥 ${myName} accepted your duel!` : `😬 ${myName} declined your duel`;
-    const body = accept ? 'Game on — may the best taste win.' : 'Maybe next time.';
+      if (accept) {
+        const seedPollIds = duel.poll_ids?.length ? duel.poll_ids : [duel.poll_id];
+        const pollIds = await pickDuelPollIds(seedPollIds);
 
-    await supabase.from('notifications').insert({
-      user_id: duel.challenger_id,
-      title,
-      body,
-      type: 'poll_challenge',
-      data: { tab: 'duels', challenged_id: user!.id },
-    });
-    await supabase.functions.invoke('send-push-notification', {
-      body: {
+        if (pollIds.length < 5) {
+          toast.error('Not enough polls available');
+          return;
+        }
+
+        updates.poll_id = pollIds[0];
+        updates.poll_ids = pollIds;
+        updates.game_type = 'duel_5';
+
+        const normalizedChallengerChoices = normalizeDuelChoices(duel.challenger_choice);
+        if (normalizedChallengerChoices) {
+          updates.challenger_choice = normalizedChallengerChoices;
+        }
+      }
+
+      const { error } = await supabase
+        .from('poll_challenges')
+        .update(updates)
+        .eq('id', duel.id)
+        .eq('challenged_id', user!.id)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+
+      const { data: meData } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', user!.id)
+        .maybeSingle();
+
+      const myName = meData?.username || 'Your friend';
+      const title = accept ? `🔥 ${myName} accepted your duel!` : `😬 ${myName} declined your duel`;
+      const body = accept ? 'Game on — may the best taste win.' : 'Maybe next time.';
+
+      await supabase.from('notifications').insert({
+        user_id: duel.challenger_id,
         title,
         body,
-        url: '/play/duels',
-        user_ids: [duel.challenger_id],
-        skip_in_app: true,
-      },
-    });
+        type: 'poll_challenge',
+        data: { tab: 'duels', challenged_id: user!.id },
+      });
 
-    if (accept) {
-      toast.success('Challenge accepted! 🔥');
-      navigate(`/play/duels/${duel.id}`);
-      return;
+      await supabase.functions.invoke('send-push-notification', {
+        body: {
+          title,
+          body,
+          url: '/play/duels',
+          user_ids: [duel.challenger_id],
+          skip_in_app: true,
+        },
+      });
+
+      if (accept) {
+        toast.success('Challenge accepted! 🔥');
+        navigate(`/play/duels/${duel.id}`);
+        return;
+      }
+
+      toast.success('Challenge declined');
+      setDuels((prev) => prev.map((d) => (d.id === duel.id ? { ...d, status: newStatus } : d)));
+    } catch {
+      toast.error('Could not respond');
     }
-    toast.success('Challenge declined');
-    setDuels((prev) =>
-      prev.map((d) => (d.id === duel.id ? { ...d, status: newStatus } : d))
-    );
   };
 
   const cancelDuel = async (duelId: string) => {
     if (!confirm('Cancel this duel challenge?')) return;
+
     const { error } = await supabase
       .from('poll_challenges')
       .delete()
       .eq('id', duelId)
       .eq('challenger_id', user!.id)
       .eq('status', 'pending');
+
     if (error) {
       toast.error('Could not cancel');
       return;
     }
+
     toast.success('Challenge cancelled');
     setDuels((prev) => prev.filter((d) => d.id !== duelId));
   };
 
-  const inbox = duels.filter(
-    (d) => d.challenged_id === user?.id && d.status === 'pending'
-  );
-  const sent = duels.filter(
-    (d) => d.challenger_id === user?.id && d.status === 'pending'
-  );
+  const inbox = duels.filter((d) => d.challenged_id === user?.id && d.status === 'pending');
+  const sent = duels.filter((d) => d.challenger_id === user?.id && d.status === 'pending');
   const history = duels.filter((d) => d.status !== 'pending');
-
   const list = tab === 'inbox' ? inbox : tab === 'sent' ? sent : history;
 
   return (
@@ -231,7 +248,6 @@ export default function PlayDuels() {
           <ArrowLeft className="h-4 w-4" /> Back to Play
         </button>
 
-        {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -248,7 +264,6 @@ export default function PlayDuels() {
           </button>
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-1 mb-4 p-1 bg-muted rounded-full">
           {(['inbox', 'sent', 'history'] as Tab[]).map((t) => {
             const count = t === 'inbox' ? inbox.length : t === 'sent' ? sent.length : history.length;
@@ -269,7 +284,6 @@ export default function PlayDuels() {
           })}
         </div>
 
-        {/* List */}
         {loading ? (
           <div className="flex justify-center py-10">
             <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -293,10 +307,7 @@ export default function PlayDuels() {
               const isMine = d.challenger_id === user?.id;
 
               return (
-                <div
-                  key={d.id}
-                  className="p-4 rounded-2xl bg-card border border-border/40"
-                >
+                <div key={d.id} className="p-4 rounded-2xl bg-card border border-border/40">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <span className="text-sm font-bold text-primary">
@@ -368,17 +379,16 @@ export default function PlayDuels() {
           </div>
         )}
 
-        {/* Start sheet */}
         {showStartSheet && (
           <div
-            className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-3 sm:p-4 overflow-y-auto"
             onClick={() => setShowStartSheet(false)}
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-2xl bg-background flex flex-col max-h-[85vh] overflow-hidden"
+              className="w-full max-w-sm rounded-2xl bg-background flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[85vh] overflow-hidden shadow-xl"
             >
-              <div className="p-5 pb-3">
+              <div className="p-5 pb-3 shrink-0">
                 <h3 className="text-base font-bold text-foreground mb-1 flex items-center gap-2">
                   <Swords className="h-4 w-4 text-primary" /> Pick a friend
                 </h3>
@@ -386,7 +396,7 @@ export default function PlayDuels() {
                   We'll auto-pick 5 polls for both of you.
                 </p>
               </div>
-              <div className="flex-1 overflow-y-auto px-5">
+              <div className="flex-1 overflow-y-auto px-5 min-h-0">
                 {friends.length === 0 ? (
                   <div className="text-center py-6">
                     <p className="text-sm text-muted-foreground mb-3">No friends yet</p>
@@ -398,7 +408,7 @@ export default function PlayDuels() {
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-1.5 pb-3">
+                  <div className="space-y-1.5 pb-4">
                     {friends.map((f) => (
                       <button
                         key={f.friend_id}
@@ -415,9 +425,7 @@ export default function PlayDuels() {
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {f.friend_username || 'Friend'}
-                          </p>
+                          <p className="text-sm font-medium truncate">{f.friend_username || 'Friend'}</p>
                         </div>
                       </button>
                     ))}
@@ -425,7 +433,7 @@ export default function PlayDuels() {
                 )}
               </div>
               {friends.length > 0 && (
-                <div className="p-5 pt-3 border-t border-border/40 bg-background">
+                <div className="p-5 pt-3 border-t border-border/40 bg-background safe-area-bottom shrink-0">
                   <button
                     onClick={startDuel}
                     disabled={!selectedFriend || sending}
