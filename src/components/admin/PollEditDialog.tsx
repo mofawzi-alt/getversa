@@ -146,6 +146,14 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
         if (url) finalImageB = url;
       }
 
+      // Recompute ends_at if expiry type changed to trending and no explicit endsAt
+      let computedEndsAt = endsAt ? new Date(endsAt).toISOString() : null;
+      if (expiryType === 'evergreen') {
+        computedEndsAt = null;
+      } else if (expiryType === 'trending' && !endsAt) {
+        computedEndsAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+      }
+
       const { error } = await supabase
         .from('polls')
         .update({
@@ -157,11 +165,14 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           category: category || null,
           intent_tag: intentTag || null,
           starts_at: startsAt ? new Date(startsAt).toISOString() : null,
-          ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+          ends_at: computedEndsAt,
+          expiry_type: expiryType,
+          batch_slot: batchSlot,
+          is_hot_take: isHotTake,
           target_countries: targetCountries.length > 0 ? targetCountries : [],
           target_gender: targetGenders.length > 0 ? targetGenders.join(',') : null,
           target_age_range: targetAgeRanges.length > 0 ? targetAgeRanges.join(',') : null,
-        })
+        } as any)
         .eq('id', poll.id);
       if (error) throw error;
     },
