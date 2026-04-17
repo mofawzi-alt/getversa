@@ -98,6 +98,10 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
             <Bar label={poll.option_a} percent={poll.percentA} isWinner={isWinnerA} side="A" />
             <Bar label={poll.option_b} percent={poll.percentB} isWinner={!isWinnerA} side="B" />
           </div>
+
+          {genderTeaser && (
+            <p className="text-[11px] text-muted-foreground text-center pt-1">{genderTeaser.text}</p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
