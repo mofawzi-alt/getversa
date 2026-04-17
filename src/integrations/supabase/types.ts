@@ -949,6 +949,7 @@ export type Database = {
       }
       polls: {
         Row: {
+          batch_slot: string
           campaign_id: string | null
           category: string | null
           created_at: string | null
@@ -985,6 +986,7 @@ export type Database = {
           weight_score: number | null
         }
         Insert: {
+          batch_slot?: string
           campaign_id?: string | null
           category?: string | null
           created_at?: string | null
@@ -1021,6 +1023,7 @@ export type Database = {
           weight_score?: number | null
         }
         Update: {
+          batch_slot?: string
           campaign_id?: string | null
           category?: string | null
           created_at?: string | null
@@ -2118,6 +2121,10 @@ export type Database = {
       }
       is_conversation_participant: {
         Args: { _conv_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_poll_expired: {
+        Args: { p_ends_at: string; p_expiry_type: string }
         Returns: boolean
       }
       redeem_reward: {
