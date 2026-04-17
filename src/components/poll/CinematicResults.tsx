@@ -348,6 +348,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
 
   // Celebrity votes
   const { data: celebrityVotes = [] } = useCelebrityVotes(visible ? poll.id : undefined, poll.category);
+  const { data: isFirstVoter = false } = useFirstVoterStatus(visible ? poll.id : null);
   const { data: genderTeaser } = useGenderSplitTeaser(
     visible ? poll.id : '',
     poll.option_a,
@@ -575,6 +576,17 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 >
                   The most interesting opinions are the ones nobody expects.
                 </motion.p>
+              )}
+
+              {step >= 6 && isFirstVoter && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: 'spring', damping: 18, stiffness: 220 }}
+                  className="flex justify-center"
+                >
+                  <FirstVoterBadge size="sm" />
+                </motion.div>
               )}
 
               {step >= 6 && patternLine && (
