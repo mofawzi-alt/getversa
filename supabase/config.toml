@@ -1,1 +1,4 @@
 project_id = "jfpwuzifydxlbrrcofjh"
+
+[functions.regen-poll-images]
+verify_jwt = false
