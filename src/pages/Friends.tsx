@@ -104,7 +104,7 @@ export default function Friends() {
 
   return (
     <AppLayout>
-      <div className="p-4 space-y-6 animate-slide-up">
+      <div className="p-4 space-y-4 animate-slide-up">
         {/* Header */}
         <div className="glass rounded-3xl p-4">
           <div className="flex items-center justify-between gap-2">
@@ -147,39 +147,40 @@ export default function Friends() {
           </div>
         </div>
 
-        {/* Crew Compare entry */}
-        <button
-          onClick={() => navigate('/compare/group')}
-          className="w-full glass rounded-2xl p-3.5 flex items-center gap-3 text-left hover:bg-primary/5 transition-colors border border-primary/20"
-        >
-          <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-            <Sparkles className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm leading-tight">Crew Compare</p>
-            <p className="text-[11px] text-muted-foreground truncate">
-              Battle two groups or vibe-check one crew
-            </p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </button>
+        {/* Compare + Arena entries */}
+        <div className="space-y-1.5">
+          <button
+            onClick={() => navigate('/compare/group')}
+            className="w-full glass rounded-xl px-3 py-2 flex items-center gap-2.5 text-left hover:bg-primary/5 transition-colors border border-primary/20"
+          >
+            <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-xs leading-tight">Crew Compare</p>
+              <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+                Battle two groups or vibe-check one crew
+              </p>
+            </div>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          </button>
 
-        {/* Versa Arena entry */}
-        <button
-          onClick={() => navigate('/play/duels')}
-          className="w-full glass rounded-2xl p-3.5 flex items-center gap-3 text-left hover:bg-primary/5 transition-colors border border-primary/20"
-        >
-          <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-            <Swords className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm leading-tight">Versa Arena</p>
-            <p className="text-[11px] text-muted-foreground truncate">
-              Challenge a friend to a live 5-poll duel
-            </p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </button>
+          <button
+            onClick={() => navigate('/play/duels')}
+            className="w-full glass rounded-xl px-3 py-2 flex items-center gap-2.5 text-left hover:bg-primary/5 transition-colors border border-primary/20"
+          >
+            <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <Swords className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-xs leading-tight">Versa Arena</p>
+              <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+                Challenge a friend to a live 5-poll duel
+              </p>
+            </div>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          </button>
+        </div>
 
         <Tabs defaultValue="friends" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-4">
