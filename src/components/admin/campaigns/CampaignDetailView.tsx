@@ -203,15 +203,8 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
         )}
       </TabsContent>
 
-      {/* NARRATIVE (placeholder until edge function is added) */}
       <TabsContent value="narrative" className="mt-4">
-        <div className="rounded-xl border border-dashed border-border p-8 text-center space-y-2">
-          <Sparkles className="w-6 h-6 text-muted-foreground mx-auto" />
-          <p className="text-sm font-semibold">AI Narrative coming soon</p>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            We'll generate a written summary of what this campaign revealed, demographic surprises, and recommended next moves.
-          </p>
-        </div>
+        <NarrativeTab campaignId={campaignId} />
       </TabsContent>
     </Tabs>
   );
