@@ -722,7 +722,7 @@ export default function Home() {
 
 
   // ── Memoized expensive computations ──
-  const { livePolls, trendingPolls, totalLiveVoters } = useMemo(() => {
+  const { livePolls, trendingPolls, totalLiveVoters, closingSoonPolls } = useMemo(() => {
     const now = new Date();
     const nowMs = now.getTime();
 
