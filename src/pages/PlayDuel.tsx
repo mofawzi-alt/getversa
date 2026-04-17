@@ -54,6 +54,21 @@ export default function PlayDuel() {
   const [submitting, setSubmitting] = useState(false);
   const [results, setResults] = useState<Record<string, { percentA: number; percentB: number; totalVotes: number }>>({});
   const [openResultPollId, setOpenResultPollId] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from('users')
+        .select('country')
+        .eq('id', user.id)
+        .maybeSingle();
+      setCountry(data?.country ?? null);
+    })();
+  }, [user]);
+
+  const seeHowLabel = country ? `See how ${country} voted` : 'See how everyone voted';
 
   useEffect(() => {
     if (!user || !id) return;
@@ -306,7 +321,7 @@ export default function PlayDuel() {
                     {r && (
                       <p className="text-[10px] text-primary mt-0.5 font-semibold flex items-center gap-1">
                         <BarChart3 className="h-2.5 w-2.5" />
-                        Egypt: {r.percentA}% / {r.percentB}% · Tap to see
+                        {seeHowLabel} · {r.percentA}% / {r.percentB}%
                       </p>
                     )}
                   </div>
@@ -343,7 +358,7 @@ export default function PlayDuel() {
               Challenge another friend
             </button>
             <p className="text-center text-[10px] text-muted-foreground mt-2">
-              Tap any poll above to see how Egypt voted.
+              Tap any poll above to {seeHowLabel.toLowerCase()}.
             </p>
           </div>
         </div>
@@ -351,6 +366,7 @@ export default function PlayDuel() {
         <HomeResultsModal
           open={!!openResultPollId}
           onOpenChange={(o) => !o && setOpenResultPollId(null)}
+          headerLabel={seeHowLabel}
           poll={(() => {
             const p = polls.find((x) => x.id === openResultPollId);
             const r = openResultPollId ? results[openResultPollId] : null;

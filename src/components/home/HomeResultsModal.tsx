@@ -19,9 +19,10 @@ interface HomeResultsModalProps {
   } | null;
   imageA: string;
   imageB: string;
+  headerLabel?: string;
 }
 
-export default function HomeResultsModal({ open, onOpenChange, poll, imageA, imageB }: HomeResultsModalProps) {
+export default function HomeResultsModal({ open, onOpenChange, poll, imageA, imageB, headerLabel }: HomeResultsModalProps) {
   if (!poll) return null;
 
   const isWinnerA = poll.percentA >= poll.percentB;
@@ -60,6 +61,11 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
 
         {/* Info */}
         <div className="px-4 py-3 space-y-2">
+          {headerLabel && (
+            <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
+              {headerLabel}
+            </p>
+          )}
           <h3 className="text-sm font-bold text-foreground">{poll.question}</h3>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
