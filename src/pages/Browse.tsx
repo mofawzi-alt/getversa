@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio, Send } from 'lucide-react';
+import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio, Send, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -335,6 +336,8 @@ export default function Browse() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(() => {
     if (!liveFilter) return false;
     return !localStorage.getItem('versa_live_swipe_hint_seen');
