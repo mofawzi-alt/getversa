@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Swords, Inbox, Send, Trophy, Clock, X } from 'lucide-react';
+import { ArrowLeft, Swords, Inbox, Send, Trophy, Clock, X, Play as PlayIcon } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -184,7 +184,12 @@ export default function PlayDuels() {
       },
     });
 
-    toast.success(accept ? 'Challenge accepted! 🔥' : 'Challenge declined');
+    if (accept) {
+      toast.success('Challenge accepted! 🔥');
+      navigate(`/play/duels/${duel.id}`);
+      return;
+    }
+    toast.success('Challenge declined');
     setDuels((prev) =>
       prev.map((d) => (d.id === duel.id ? { ...d, status: newStatus } : d))
     );
