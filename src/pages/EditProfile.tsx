@@ -57,21 +57,26 @@ export default function EditProfile() {
   }, [profile]);
 
   const togglePrivate = async (next: boolean) => {
-    if (!profile) return;
+    if (!profile || savingPrivacy) return;
+    const previous = isPrivate;
+    setIsPrivate(next); // optimistic
     setSavingPrivacy(true);
-    setIsPrivate(next);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('users')
         .update({ is_private: next } as any)
-        .eq('id', profile.id);
+        .eq('id', profile.id)
+        .select('is_private')
+        .maybeSingle();
       if (error) throw error;
+      const persisted = Boolean((data as any)?.is_private ?? next);
+      setIsPrivate(persisted);
       await refreshProfile();
-      toast.success(next ? 'Profile is now private' : 'Profile is now public');
+      toast.success(persisted ? 'Profile is now private' : 'Profile is now public');
     } catch (err) {
       console.error('Privacy toggle error:', err);
       toast.error('Failed to update privacy');
-      setIsPrivate(!next);
+      setIsPrivate(previous); // revert
     } finally {
       setSavingPrivacy(false);
     }
