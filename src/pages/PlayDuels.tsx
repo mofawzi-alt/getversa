@@ -165,6 +165,7 @@ export default function PlayDuels() {
       toast.success('Duel sent! 🔥');
       setShowStartSheet(false);
       setSelectedFriend(null);
+      setSelectedCategory('__random__');
       loadDuels();
     } catch {
       toast.error('Could not start duel');
