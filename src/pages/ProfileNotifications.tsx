@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import { NotificationToggle } from '@/components/NotificationToggle';
+import { NotificationPreferences } from '@/components/profile/NotificationPreferences';
 
 export default function ProfileNotifications() {
   const { profile } = useAuth();
@@ -88,6 +89,8 @@ export default function ProfileNotifications() {
         </div>
 
         <NotificationToggle />
+
+        <NotificationPreferences />
 
         <div className="glass rounded-2xl divide-y divide-border">
           <div className="p-4 flex items-center justify-between">

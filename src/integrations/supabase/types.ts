@@ -530,6 +530,42 @@ export type Database = {
           },
         ]
       }
+      notification_log: {
+        Row: {
+          channel: string
+          data: Json | null
+          id: string
+          notification_type: string
+          opened: boolean
+          opened_at: string | null
+          priority: number
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          data?: Json | null
+          id?: string
+          notification_type: string
+          opened?: boolean
+          opened_at?: string | null
+          priority?: number
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          data?: Json | null
+          id?: string
+          notification_type?: string
+          opened?: boolean
+          opened_at?: string | null
+          priority?: number
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string
@@ -1567,6 +1603,54 @@ export type Database = {
           },
         ]
       }
+      user_notification_preferences: {
+        Row: {
+          challenge_waiting: boolean
+          compatibility_change: boolean
+          controversial_poll: boolean
+          created_at: string
+          friend_activity: boolean
+          last_chance_poll: boolean
+          missed_poll: boolean
+          new_category: boolean
+          predict_reveal: boolean
+          streak_reminder: boolean
+          updated_at: string
+          user_id: string
+          weekly_taste_report: boolean
+        }
+        Insert: {
+          challenge_waiting?: boolean
+          compatibility_change?: boolean
+          controversial_poll?: boolean
+          created_at?: string
+          friend_activity?: boolean
+          last_chance_poll?: boolean
+          missed_poll?: boolean
+          new_category?: boolean
+          predict_reveal?: boolean
+          streak_reminder?: boolean
+          updated_at?: string
+          user_id: string
+          weekly_taste_report?: boolean
+        }
+        Update: {
+          challenge_waiting?: boolean
+          compatibility_change?: boolean
+          controversial_poll?: boolean
+          created_at?: string
+          friend_activity?: boolean
+          last_chance_poll?: boolean
+          missed_poll?: boolean
+          new_category?: boolean
+          predict_reveal?: boolean
+          streak_reminder?: boolean
+          updated_at?: string
+          user_id?: string
+          weekly_taste_report?: boolean
+        }
+        Relationships: []
+      }
       user_rewards: {
         Row: {
           created_at: string | null
@@ -1859,6 +1943,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_send_notification: {
+        Args: {
+          p_notification_type: string
+          p_priority: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
       generate_daily_queue: {
         Args: { p_user_id: string }
         Returns: {
@@ -2013,6 +2105,16 @@ export type Database = {
           total_votes: number
         }[]
       }
+      get_notification_analytics: {
+        Args: { p_days?: number }
+        Returns: {
+          by_type: Json
+          daily_volume: Json
+          total_period: number
+          total_today: number
+          users_disabled_all: number
+        }[]
+      }
       get_or_create_conversation: {
         Args: { _other_user_id: string }
         Returns: string
@@ -2126,6 +2228,16 @@ export type Database = {
       is_poll_expired: {
         Args: { p_ends_at: string; p_expiry_type: string }
         Returns: boolean
+      }
+      log_notification_sent: {
+        Args: {
+          p_channel?: string
+          p_data?: Json
+          p_notification_type: string
+          p_priority: number
+          p_user_id: string
+        }
+        Returns: string
       }
       redeem_reward: {
         Args: {
