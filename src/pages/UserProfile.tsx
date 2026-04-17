@@ -71,7 +71,7 @@ export default function UserProfile() {
   const { isFriend, sendRequest, sendingRequest, hasPendingRequest } = useFriends();
   const { isVerified, category: verifiedCategory } = useVerifiedUser(targetId);
   const isOwnProfile = user?.id === targetId;
-  const canViewFullProfile = isOwnProfile || (targetId ? isFriend(targetId) : false);
+  const isFriendOfTarget = targetId ? isFriend(targetId) : false;
 
   // Public profile data
   const { data: profileData } = useQuery({
@@ -243,6 +243,12 @@ export default function UserProfile() {
 
   const archetype = deriveArchetype(traits);
   const patterns = derivePatterns(traits);
+
+  // Privacy gating: full profile visible only to self or accepted friends.
+  // For private profiles, show a stronger gate to non-friends.
+  const isPrivate = Boolean((profileData as any)?.is_private);
+  const canViewFullProfile = isOwnProfile || isFriendOfTarget;
+  const showPrivateGate = !isOwnProfile && isPrivate && !isFriendOfTarget;
 
   // Compact personality bio line (uses same engine as the big card)
   const personalityResult = computePersonalityType(traits, voteCount);
@@ -418,9 +424,13 @@ export default function UserProfile() {
               <Lock className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-display font-bold text-foreground">Friends only</h3>
+              <h3 className="font-display font-bold text-foreground">
+                {showPrivateGate ? 'This profile is private' : 'Friends only'}
+              </h3>
               <p className="text-xs text-muted-foreground mt-1 px-4">
-                Add @{profileData?.username || 'this user'} as a friend to see their badges, rank, voting patterns, and recent votes.
+                {showPrivateGate
+                  ? `@${profileData?.username || 'This user'} keeps their votes, badges, and patterns private. Send them a friend request to see more.`
+                  : `Add @${profileData?.username || 'this user'} as a friend to see their badges, rank, voting patterns, and recent votes.`}
               </p>
             </div>
             {hasPendingRequest(targetId) ? (
