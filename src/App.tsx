@@ -49,6 +49,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Play from "./pages/Play";
 import PlayPredict from "./pages/PlayPredict";
 import PlayDuels from "./pages/PlayDuels";
+import PlayDuel from "./pages/PlayDuel";
  import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
@@ -169,6 +170,7 @@ function AppInner() {
           <Route path="/play" element={<Play />} />
           <Route path="/play/predict" element={<ProtectedRoute><PlayPredict /></ProtectedRoute>} />
           <Route path="/play/duels" element={<ProtectedRoute><PlayDuels /></ProtectedRoute>} />
+          <Route path="/play/duels/:id" element={<ProtectedRoute><PlayDuel /></ProtectedRoute>} />
           <Route path="/friends/:friendId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/friends/:friendId/compare" element={<ProtectedRoute><FriendComparison /></ProtectedRoute>} />
           <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />

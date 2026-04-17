@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Swords, Inbox, Send, Trophy, Clock, X } from 'lucide-react';
+import { ArrowLeft, Swords, Inbox, Send, Trophy, Clock, X, Play as PlayIcon } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -184,7 +184,12 @@ export default function PlayDuels() {
       },
     });
 
-    toast.success(accept ? 'Challenge accepted! 🔥' : 'Challenge declined');
+    if (accept) {
+      toast.success('Challenge accepted! 🔥');
+      navigate(`/play/duels/${duel.id}`);
+      return;
+    }
+    toast.success('Challenge declined');
     setDuels((prev) =>
       prev.map((d) => (d.id === duel.id ? { ...d, status: newStatus } : d))
     );
@@ -345,6 +350,15 @@ export default function PlayDuels() {
                         className="px-2.5 py-1.5 rounded-full bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive text-xs font-bold flex-shrink-0 flex items-center gap-1 transition-colors"
                       >
                         <X className="h-3 w-3" /> Cancel
+                      </button>
+                    )}
+                    {tab === 'history' && (
+                      <button
+                        onClick={() => navigate(`/play/duels/${d.id}`)}
+                        className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 flex items-center gap-1"
+                      >
+                        <PlayIcon className="h-3 w-3" />
+                        {d.status === 'completed' ? 'View' : 'Play'}
                       </button>
                     )}
                   </div>
