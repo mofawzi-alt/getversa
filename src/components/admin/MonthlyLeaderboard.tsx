@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, TrendingUp, TrendingDown, Minus, Download, Loader2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import jsPDF from 'jspdf';
+// jspdf is dynamically imported inside exportPDF to keep it out of the main bundle
 
 function getMonthRange(offset = 0) {
   const now = new Date();
@@ -144,8 +144,9 @@ export default function MonthlyLeaderboard() {
     return { topByVotes, categoryTop: Array.from(categoryTop.entries()), shifts, topPolls };
   }, [currentMonth, prevMonth]);
 
-  const exportPDF = () => {
+  const exportPDF = async () => {
     if (!analysis) return;
+    const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF('p', 'mm', 'a4');
     const W = doc.internal.pageSize.getWidth();
     let y = 20;

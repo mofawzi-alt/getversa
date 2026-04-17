@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,49 +10,52 @@ import SplashScreen, { isSplashSeen, markSplashSeen } from "@/components/SplashS
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/components/onboarding/SwipeOverlay";
 import { AnimatePresence } from "framer-motion";
 
-import Auth from "./pages/Auth";
-import Onboarding from "./pages/Onboarding";
+// Eagerly loaded — landing + most-visited routes
 import Home from "./pages/Home";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Terms from "./pages/Terms";
+import Auth from "./pages/Auth";
 import CookieConsent from "./components/CookieConsent";
 
-import PollHistory from "./pages/PollHistory";
-import PastPerspectives from "./pages/PastPerspectives";
-import Profile from "./pages/Profile";
-import EditProfile from "./pages/EditProfile";
-import ProfileNotifications from "./pages/ProfileNotifications";
-import Notifications from "./pages/Notifications";
-import AdminDashboard from "./pages/AdminDashboard";
-import Privacy from "./pages/Privacy";
-import InsightProfile from "./pages/InsightProfile";
-import Explore from "./pages/Explore";
-import Browse from "./pages/Browse";
-import LiveDebate from "./pages/LiveDebate";
-import SeasonalHub from "./pages/SeasonalHub";
-import NotFound from "./pages/NotFound";
-import TasteProfile from "./pages/TasteProfile";
-import WeeklyTopResults from "./pages/WeeklyTopResults";
-import JoinOrganization from "./pages/JoinOrganization";
-import Friends from "./pages/Friends";
-import FriendComparison from "./pages/FriendComparison";
-import SharedPoll from "./pages/SharedPoll";
-import UserProfile from "./pages/UserProfile";
-import Compare from "./pages/Compare";
-import CompareUser from "./pages/CompareUser";
-import GroupCompare from "./pages/GroupCompare";
-import PersonalityResults from "./pages/PersonalityResults";
-import BrandPortal from "./pages/BrandPortal";
-import Messages from "./pages/Messages";
-import ChatThread from "./pages/ChatThread";
-import Leaderboard from "./pages/Leaderboard";
-import Play from "./pages/Play";
-import PlayPredict from "./pages/PlayPredict";
-import PlayDuels from "./pages/PlayDuels";
-import PlayDuel from "./pages/PlayDuel";
-import BrandCampaign from "./pages/BrandCampaign";
-import BrandClientPortal from "./pages/BrandClientPortal";
- import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
+// Lazy-loaded — keep these out of the initial bundle
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const PollHistory = lazy(() => import("./pages/PollHistory"));
+const PastPerspectives = lazy(() => import("./pages/PastPerspectives"));
+const Profile = lazy(() => import("./pages/Profile"));
+const EditProfile = lazy(() => import("./pages/EditProfile"));
+const ProfileNotifications = lazy(() => import("./pages/ProfileNotifications"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const InsightProfile = lazy(() => import("./pages/InsightProfile"));
+const Explore = lazy(() => import("./pages/Explore"));
+const Browse = lazy(() => import("./pages/Browse"));
+const LiveDebate = lazy(() => import("./pages/LiveDebate"));
+const SeasonalHub = lazy(() => import("./pages/SeasonalHub"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const TasteProfile = lazy(() => import("./pages/TasteProfile"));
+const WeeklyTopResults = lazy(() => import("./pages/WeeklyTopResults"));
+const JoinOrganization = lazy(() => import("./pages/JoinOrganization"));
+const Friends = lazy(() => import("./pages/Friends"));
+const FriendComparison = lazy(() => import("./pages/FriendComparison"));
+const SharedPoll = lazy(() => import("./pages/SharedPoll"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
+const Compare = lazy(() => import("./pages/Compare"));
+const CompareUser = lazy(() => import("./pages/CompareUser"));
+const GroupCompare = lazy(() => import("./pages/GroupCompare"));
+const PersonalityResults = lazy(() => import("./pages/PersonalityResults"));
+const BrandPortal = lazy(() => import("./pages/BrandPortal"));
+const Messages = lazy(() => import("./pages/Messages"));
+const ChatThread = lazy(() => import("./pages/ChatThread"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const Play = lazy(() => import("./pages/Play"));
+const PlayPredict = lazy(() => import("./pages/PlayPredict"));
+const PlayDuels = lazy(() => import("./pages/PlayDuels"));
+const PlayDuel = lazy(() => import("./pages/PlayDuel"));
+const BrandCampaign = lazy(() => import("./pages/BrandCampaign"));
+const BrandClientPortal = lazy(() => import("./pages/BrandClientPortal"));
+
+import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +115,15 @@ function DemographicsGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Lightweight fallback shown while a lazy route chunk loads
+function RouteFallback() {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-background">
+      <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    </div>
+  );
+}
+
 function AppInner() {
   const { loading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
@@ -145,50 +157,52 @@ function AppInner() {
       <CookieConsent />
       
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<SmartLanding />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><Onboarding /></ProtectedRoute>} />
-          <Route path="/vote" element={<Navigate to="/home" replace />} />
-          <Route path="/home" element={<DemographicsGuard><Home /></DemographicsGuard>} />
-          <Route path="/explore" element={<DemographicsGuard><Explore /></DemographicsGuard>} />
-          <Route path="/browse" element={<Browse />} />
-          <Route path="/poll/:id" element={<SharedPoll />} />
-          <Route path="/live-debate" element={<DemographicsGuard><LiveDebate /></DemographicsGuard>} />
-          <Route path="/seasonal/:slug" element={<SeasonalHub />} />
-          <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
-          <Route path="/archive" element={<PastPerspectives />} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
-          <Route path="/profile/notifications" element={<ProtectedRoute><ProfileNotifications /></ProtectedRoute>} />
-          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/insights" element={<ProtectedRoute><InsightProfile /></ProtectedRoute>} />
-          <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
-          <Route path="/personality" element={<ProtectedRoute><PersonalityResults /></ProtectedRoute>} />
-          <Route path="/weekly-results" element={<WeeklyTopResults />} />
-          <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-          <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-          <Route path="/play" element={<Play />} />
-          <Route path="/play/predict" element={<ProtectedRoute><PlayPredict /></ProtectedRoute>} />
-          <Route path="/play/duels" element={<ProtectedRoute><PlayDuels /></ProtectedRoute>} />
-          <Route path="/play/duels/:id" element={<ProtectedRoute><PlayDuel /></ProtectedRoute>} />
-          <Route path="/friends/:friendId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-          <Route path="/friends/:friendId/compare" element={<ProtectedRoute><FriendComparison /></ProtectedRoute>} />
-          <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
-          <Route path="/compare/u/:userId" element={<CompareUser />} />
-          <Route path="/compare/group" element={<ProtectedRoute><GroupCompare /></ProtectedRoute>} />
-          <Route path="/brands" element={<ProtectedRoute><BrandPortal /></ProtectedRoute>} />
-          <Route path="/brand/portal" element={<ProtectedRoute><BrandClientPortal /></ProtectedRoute>} />
-          <Route path="/campaign/:id" element={<BrandCampaign />}/>
-          <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-          <Route path="/messages/:conversationId" element={<ProtectedRoute><ChatThread /></ProtectedRoute>} />
-          <Route path="/user/:userId" element={<UserProfile />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<SmartLanding />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><Onboarding /></ProtectedRoute>} />
+            <Route path="/vote" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<DemographicsGuard><Home /></DemographicsGuard>} />
+            <Route path="/explore" element={<DemographicsGuard><Explore /></DemographicsGuard>} />
+            <Route path="/browse" element={<Browse />} />
+            <Route path="/poll/:id" element={<SharedPoll />} />
+            <Route path="/live-debate" element={<DemographicsGuard><LiveDebate /></DemographicsGuard>} />
+            <Route path="/seasonal/:slug" element={<SeasonalHub />} />
+            <Route path="/history" element={<ProtectedRoute><PollHistory /></ProtectedRoute>} />
+            <Route path="/archive" element={<PastPerspectives />} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+            <Route path="/profile/notifications" element={<ProtectedRoute><ProfileNotifications /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/insights" element={<ProtectedRoute><InsightProfile /></ProtectedRoute>} />
+            <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
+            <Route path="/personality" element={<ProtectedRoute><PersonalityResults /></ProtectedRoute>} />
+            <Route path="/weekly-results" element={<WeeklyTopResults />} />
+            <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+            <Route path="/play" element={<Play />} />
+            <Route path="/play/predict" element={<ProtectedRoute><PlayPredict /></ProtectedRoute>} />
+            <Route path="/play/duels" element={<ProtectedRoute><PlayDuels /></ProtectedRoute>} />
+            <Route path="/play/duels/:id" element={<ProtectedRoute><PlayDuel /></ProtectedRoute>} />
+            <Route path="/friends/:friendId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+            <Route path="/friends/:friendId/compare" element={<ProtectedRoute><FriendComparison /></ProtectedRoute>} />
+            <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
+            <Route path="/compare/u/:userId" element={<CompareUser />} />
+            <Route path="/compare/group" element={<ProtectedRoute><GroupCompare /></ProtectedRoute>} />
+            <Route path="/brands" element={<ProtectedRoute><BrandPortal /></ProtectedRoute>} />
+            <Route path="/brand/portal" element={<ProtectedRoute><BrandClientPortal /></ProtectedRoute>} />
+            <Route path="/campaign/:id" element={<BrandCampaign />}/>
+            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/messages/:conversationId" element={<ProtectedRoute><ChatThread /></ProtectedRoute>} />
+            <Route path="/user/:userId" element={<UserProfile />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </>
   );

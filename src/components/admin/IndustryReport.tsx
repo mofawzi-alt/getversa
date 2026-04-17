@@ -18,7 +18,7 @@ import {
   ChevronUp, Building2, Target
 } from 'lucide-react';
 import { toast } from 'sonner';
-import jsPDF from 'jspdf';
+// jspdf is dynamically imported inside handleExportPDF to keep it out of the main bundle
 
 interface BrandPerformance {
   name: string;
@@ -207,6 +207,7 @@ export default function IndustryReport() {
     if (!industryData || !selectedCategory) return;
     setIsExporting(true);
     try {
+      const { default: jsPDF } = await import('jspdf');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pw = 210, ph = 297, m = 15, cw = pw - m * 2;
       let y = m;
