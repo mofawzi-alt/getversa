@@ -25,8 +25,9 @@ export async function pickDuelPollIds(
 
   const combined = [...uniqueSeedIds, ...categoryIds];
 
-  // Top up with random polls if we don't have enough
-  if (combined.length < desiredCount) {
+  // Top up with random polls only if NO category was specified.
+  // When a category is selected, all polls must belong to that category.
+  if (combined.length < desiredCount && !category) {
     const { data, error } = await supabase
       .from('polls')
       .select('id')
