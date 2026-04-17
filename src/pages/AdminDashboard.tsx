@@ -30,6 +30,7 @@ import IndustryReport from '@/components/admin/IndustryReport';
 import MonthlyLeaderboard from '@/components/admin/MonthlyLeaderboard';
 import ActivePollsMonitor from '@/components/admin/ActivePollsMonitor';
 import UserManagement from '@/components/admin/UserManagement';
+import { NotificationAnalytics } from '@/components/admin/NotificationAnalytics';
 import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
@@ -159,8 +160,11 @@ export default function AdminDashboard() {
           />
         </TabsContent>
 
-        <TabsContent value="notifications" className="space-y-4">
-          <NotificationsTab />
+        <TabsContent value="notifications" className="space-y-6">
+          <NotificationAnalytics />
+          <div className="border-t pt-6">
+            <NotificationsTab />
+          </div>
         </TabsContent>
 
         <TabsContent value="daily-limit" className="space-y-4">
