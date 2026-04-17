@@ -140,6 +140,22 @@ export default function PlayDuels() {
     }
   };
 
+  const cancelDuel = async (duelId: string) => {
+    if (!confirm('Cancel this duel challenge?')) return;
+    const { error } = await supabase
+      .from('poll_challenges')
+      .delete()
+      .eq('id', duelId)
+      .eq('challenger_id', user!.id)
+      .eq('status', 'pending');
+    if (error) {
+      toast.error('Could not cancel');
+      return;
+    }
+    toast.success('Challenge cancelled');
+    setDuels((prev) => prev.filter((d) => d.id !== duelId));
+  };
+
   const inbox = duels.filter(
     (d) => d.challenged_id === user?.id && d.status === 'pending'
   );
