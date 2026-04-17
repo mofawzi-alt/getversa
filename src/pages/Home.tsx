@@ -20,10 +20,8 @@ import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 import HeroVoteCard from '@/components/home/HeroVoteCard';
-import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
 import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
 
-import PersonalitySnapshot from '@/components/home/PersonalitySnapshot';
 import DecisionHelper from '@/components/home/DecisionHelper';
 import ResultFlipAlerts from '@/components/home/ResultFlipAlerts';
 
@@ -967,14 +965,8 @@ export default function Home() {
         {/* Social proof counter */}
         <FriendsJoinedToday />
 
-        {/* Personal Weekly Summary */}
+        {/* Decision Helper */}
         <div className="px-3 mb-2">
-          <PersonalWeeklySummary />
-        </div>
-
-        {/* Personality & Decision Helper */}
-        <div className="px-3 mb-2 space-y-1.5">
-          {user && <PersonalitySnapshot />}
           <DecisionHelper />
         </div>
 
