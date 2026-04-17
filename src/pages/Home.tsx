@@ -135,12 +135,14 @@ function HomeLiveDebateCard({
   index,
   hasVoted,
   chosenOptionLabel,
+  isTrending = false,
   onCardClick,
 }: {
   poll: PollCard;
   index: number;
   hasVoted: boolean;
   chosenOptionLabel: string | null;
+  isTrending?: boolean;
   onCardClick: () => void;
 }) {
   const { user } = useAuth();
@@ -163,11 +165,14 @@ function HomeLiveDebateCard({
       className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-md"
     >
       <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
           <LiveIndicator variant="badge" />
+          {isTrending && <TrendingBadge size="xs" />}
           <span className="text-xs text-muted-foreground font-semibold">{poll.totalVotes.toLocaleString()} votes</span>
           {poll.ends_at && (
-            <span className="text-[10px] text-muted-foreground ml-auto">{getTimeLeft(poll.ends_at)}</span>
+            <span className="ml-auto">
+              <CountdownTimer endsAt={poll.ends_at} size="xs" showIcon={false} />
+            </span>
           )}
         </div>
       </div>
