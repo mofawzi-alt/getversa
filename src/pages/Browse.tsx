@@ -22,6 +22,9 @@ interface BrowsePoll {
   image_b_url: string | null;
   category: string | null;
   created_at: string;
+  expiry_type?: string | null;
+  ends_at?: string | null;
+  isClosed?: boolean;
   totalVotes: number;
   votesA: number;
   votesB: number;
@@ -223,11 +226,18 @@ function BrowseCard({
       {/* Question overlay at top */}
       <div className="shrink-0 px-4 py-2.5 bg-gradient-to-b from-background via-background/90 to-transparent z-20">
         <p className="font-display font-bold text-sm leading-tight pr-10">{poll.question}</p>
-        {poll.category && (
-          <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium">
-            {poll.category}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+          {poll.category && (
+            <span className="inline-block px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium">
+              {poll.category}
+            </span>
+          )}
+          {poll.isClosed && (
+            <span className="inline-block px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-medium border border-border">
+              🔒 Voting Closed
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Side action buttons */}
@@ -310,14 +320,19 @@ function BrowseCard({
           <div className="bg-accent h-full transition-all duration-500" style={{ width: `${poll.percentB}%` }} />
         </div>
 
-        {/* Nudge: Vote from Home for unvoted polls */}
-        {!userChoice && (
+        {/* Nudge: Vote from Home for unvoted polls (hide when closed) */}
+        {!userChoice && !poll.isClosed && (
           <button
             onClick={onVote}
             className="w-full text-center text-xs text-primary/80 hover:text-primary transition-colors py-0.5"
           >
             Vote on today's battles from Home →
           </button>
+        )}
+        {poll.isClosed && (
+          <p className="w-full text-center text-[11px] text-muted-foreground py-0.5">
+            Results only — voting has ended
+          </p>
         )}
       </div>
     </div>
@@ -362,7 +377,7 @@ export default function Browse() {
       const now = new Date().toISOString();
       const { data: polls, error: pollsError } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score')
+        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, expiry_type')
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
@@ -399,8 +414,10 @@ export default function Browse() {
         const votesB = r?.votes_b || 0;
         const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
         const pctB = 100 - pctA;
+        const isClosed = (p as any).expiry_type !== 'evergreen' && p.ends_at && new Date(p.ends_at) <= new Date();
         return {
           ...p,
+          isClosed,
           totalVotes: total,
           votesA,
           votesB,
