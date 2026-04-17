@@ -69,66 +69,66 @@ export default function Profile() {
     <AppLayout>
       <div className="p-4 space-y-6 animate-slide-up">
         {/* Profile Header */}
-        <div className="glass rounded-3xl p-6 text-center">
+        <div className="glass rounded-2xl p-4 text-center">
           {(profile as any)?.avatar_url ? (
             <img
               src={(profile as any).avatar_url}
               alt="Profile"
-              className="w-20 h-20 rounded-full mx-auto mb-4 object-cover ring-2 ring-border"
+              className="w-14 h-14 rounded-full mx-auto mb-2 object-cover ring-2 ring-border"
             />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-gradient-primary mx-auto mb-4 flex items-center justify-center">
-              <span className="text-3xl font-display font-bold text-primary-foreground">
+            <div className="w-14 h-14 rounded-full bg-gradient-primary mx-auto mb-2 flex items-center justify-center">
+              <span className="text-xl font-display font-bold text-primary-foreground">
                 {profile?.username?.[0]?.toUpperCase() || '?'}
               </span>
             </div>
           )}
 
           <div className="flex items-center justify-center gap-1.5">
-            <h1 className="text-2xl font-display font-bold">
+            <h1 className="text-lg font-display font-bold">
               @{profile?.username || 'user'}
             </h1>
-            {selfVerified && <VerifiedBadge size="lg" />}
+            {selfVerified && <VerifiedBadge size="sm" />}
           </div>
           {selfVerified && selfCategory && (
-            <p className="text-xs text-blue-500 font-medium mt-0.5">{selfCategory}</p>
+            <p className="text-[11px] text-blue-500 font-medium mt-0.5">{selfCategory}</p>
           )}
 
-          <p className="text-card-foreground/70 text-sm mt-1">
+          <p className="text-card-foreground/70 text-xs mt-0.5">
             {profile?.country || 'Unknown location'}
           </p>
 
           {/* Votes / Comparisons / Battles */}
-          <div className="flex items-center justify-center gap-6 mt-4">
+          <div className="flex items-center justify-center gap-4 mt-3">
             <button onClick={() => navigate('/history')} className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-1">
-                <BarChart3 className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-lg font-bold text-foreground">{stats?.votes || 0}</span>
+                <BarChart3 className="h-3 w-3 text-muted-foreground" />
+                <span className="text-sm font-bold text-foreground">{stats?.votes || 0}</span>
               </div>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Votes</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Votes</span>
             </button>
-            <div className="w-px h-9 bg-border" />
+            <div className="w-px h-7 bg-border" />
             <button onClick={() => navigate('/compare')} className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-1">
-                <Target className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-lg font-bold text-foreground">{stats?.comparisons || 0}</span>
+                <Target className="h-3 w-3 text-muted-foreground" />
+                <span className="text-sm font-bold text-foreground">{stats?.comparisons || 0}</span>
               </div>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Comparisons</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Comparisons</span>
             </button>
-            <div className="w-px h-9 bg-border" />
+            <div className="w-px h-7 bg-border" />
             <button onClick={() => navigate('/play/duels')} className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-1">
-                <Swords className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-lg font-bold text-foreground">{stats?.battles || 0}</span>
+                <Swords className="h-3 w-3 text-muted-foreground" />
+                <span className="text-sm font-bold text-foreground">{stats?.battles || 0}</span>
               </div>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Battles</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Battles</span>
             </button>
           </div>
 
           {stats?.currentStreak !== undefined && stats.currentStreak > 0 && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-warning/20 mt-4">
-              <Flame className="h-4 w-4 text-warning" />
-              <span className="font-bold text-warning">{stats.currentStreak} day streak</span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warning/20 mt-3">
+              <Flame className="h-3 w-3 text-warning" />
+              <span className="text-xs font-bold text-warning">{stats.currentStreak} day streak</span>
             </div>
           )}
         </div>
