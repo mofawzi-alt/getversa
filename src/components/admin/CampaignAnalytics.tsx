@@ -555,17 +555,23 @@ export default function CampaignAnalytics() {
                 </SelectContent>
               </Select>
               {selectedCampaignId && (
-                <Button 
-                  variant="destructive" 
-                  size="icon"
-                  onClick={() => {
-                    if (confirm('Delete this campaign?')) {
-                      deleteCampaign.mutate(selectedCampaignId);
-                    }
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <>
+                  <CampaignClientsManager
+                    campaignId={selectedCampaignId}
+                    campaignName={campaigns?.find(c => c.id === selectedCampaignId)?.name || ''}
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => {
+                      if (confirm('Delete this campaign?')) {
+                        deleteCampaign.mutate(selectedCampaignId);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
               )}
             </div>
           </CardContent>
