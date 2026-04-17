@@ -424,9 +424,13 @@ export default function UserProfile() {
               <Lock className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-display font-bold text-foreground">Friends only</h3>
+              <h3 className="font-display font-bold text-foreground">
+                {showPrivateGate ? 'This profile is private' : 'Friends only'}
+              </h3>
               <p className="text-xs text-muted-foreground mt-1 px-4">
-                Add @{profileData?.username || 'this user'} as a friend to see their badges, rank, voting patterns, and recent votes.
+                {showPrivateGate
+                  ? `@${profileData?.username || 'This user'} keeps their votes, badges, and patterns private. Send them a friend request to see more.`
+                  : `Add @${profileData?.username || 'this user'} as a friend to see their badges, rank, voting patterns, and recent votes.`}
               </p>
             </div>
             {hasPendingRequest(targetId) ? (
