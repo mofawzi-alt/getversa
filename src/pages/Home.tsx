@@ -22,7 +22,7 @@ import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onbo
 import HeroVoteCard from '@/components/home/HeroVoteCard';
 import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
 
-import DecisionHelper from '@/components/home/DecisionHelper';
+
 import ResultFlipAlerts from '@/components/home/ResultFlipAlerts';
 
 
@@ -964,11 +964,6 @@ export default function Home() {
 
         {/* Social proof counter */}
         <FriendsJoinedToday />
-
-        {/* Decision Helper */}
-        <div className="px-3 mb-2">
-          <DecisionHelper />
-        </div>
 
         {/* ═══ DAILY PULSE STRIP ═══ */}
         <DailyPulseStrip />
