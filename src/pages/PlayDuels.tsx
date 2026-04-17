@@ -5,7 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFriends } from '@/hooks/useFriends';
-import { normalizeDuelChoices, pickDuelPollIds } from '@/lib/duels';
+import { fetchDuelCategories, normalizeDuelChoices, pickDuelPollIds } from '@/lib/duels';
 import {
   Dialog,
   DialogContent,
@@ -44,6 +44,8 @@ export default function PlayDuels() {
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [usernames, setUsernames] = useState<Record<string, string>>({});
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('__random__');
 
   useEffect(() => {
     if (!user) {
@@ -74,6 +76,13 @@ export default function PlayDuels() {
       supabase.removeChannel(channel);
     };
   }, [user]);
+
+  useEffect(() => {
+    if (!showStartSheet || categories.length) return;
+    fetchDuelCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]));
+  }, [showStartSheet, categories.length]);
 
   const loadDuels = async () => {
     setLoading(true);
@@ -107,7 +116,8 @@ export default function PlayDuels() {
 
     setSending(true);
     try {
-      const pollIds = await pickDuelPollIds();
+      const categoryFilter = selectedCategory === '__random__' ? null : selectedCategory;
+      const pollIds = await pickDuelPollIds([], 5, categoryFilter);
       if (pollIds.length < 5) {
         toast.error('Not enough polls available');
         return;
@@ -162,6 +172,7 @@ export default function PlayDuels() {
       toast.success('Duel sent! 🔥');
       setShowStartSheet(false);
       setSelectedFriend(null);
+      setSelectedCategory('__random__');
       loadDuels();
     } catch {
       toast.error('Could not start duel');
@@ -457,6 +468,23 @@ export default function PlayDuels() {
                 <p className="text-xs text-muted-foreground mt-2">
                   We'll auto-pick 5 polls for both of you.
                 </p>
+                <div className="mt-3">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                    Category
+                  </label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full text-sm px-3 py-2 rounded-xl bg-muted/60 border border-border/40 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="__random__">🎲 Random (any category)</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5">
