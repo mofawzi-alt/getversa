@@ -8,6 +8,7 @@ import {
   CheckCircle2, CircleDot, ArrowRight, PlusCircle, FileEdit
 } from 'lucide-react';
 import PollCreationForm from './PollCreationForm';
+import CampaignClientsManager from './CampaignClientsManager';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
