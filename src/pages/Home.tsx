@@ -1004,6 +1004,9 @@ export default function Home() {
           />
         </div>
 
+        {/* Live voter count strip — "X people voted in the last hour" */}
+        <LiveVoterCount />
+
         {/* NUDGE 4: Floating timed nudge for guests */}
         {!user && <TimedFloatingNudge />}
 
@@ -1021,6 +1024,22 @@ export default function Home() {
             </span>
           )}
         </div>
+
+        {/* ═══ 🔥 CLOSING SOON ═══ */}
+        <ClosingSoonStrip
+          polls={closingSoonPolls
+            .filter((p) => !votedPollIds?.has(p.id) && p.ends_at)
+            .map((p) => ({
+              id: p.id,
+              question: p.question,
+              option_a: p.option_a,
+              option_b: p.option_b,
+              image_a_url: p.image_a_url,
+              image_b_url: p.image_b_url,
+              ends_at: p.ends_at!,
+              totalVotes: p.totalVotes,
+            }))}
+        />
 
 
 
@@ -1112,6 +1131,7 @@ export default function Home() {
                     index={i}
                     hasVoted={hasVoted}
                     chosenOptionLabel={chosenOptionLabel}
+                    isTrending={trendingIdSet?.has(poll.id) || false}
                     onCardClick={() => {
                       if (hasVoted) {
                         setModalPoll(poll);
