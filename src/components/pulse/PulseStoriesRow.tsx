@@ -15,6 +15,7 @@ import {
   useWeeklyVerdict, useNewThisWeek, useLastVisit,
 } from '@/hooks/usePulseCircles';
 import { useBreakdownFindings, type BreakdownFinding } from '@/hooks/useBreakdownFindings';
+import BreakdownShareCard from './BreakdownShareCard';
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
 
