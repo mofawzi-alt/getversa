@@ -23,6 +23,8 @@ import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 import HeroVoteCard from '@/components/home/HeroVoteCard';
+import CategoriesSheet from '@/components/home/CategoriesSheet';
+import { LayoutGrid } from 'lucide-react';
 import BrandPackBanner from '@/components/home/BrandPackBanner';
 import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
 
