@@ -19,11 +19,19 @@ export default function BrandCampaignBuilder() {
     queryFn: async () => {
       const { data } = await supabase
         .from('poll_campaigns')
-        .select('id, name, brand_name, is_active, release_at, expires_at, created_at')
+        .select('id, name, brand_name, is_active, release_at, expires_at, visibility_mode, created_at')
         .order('created_at', { ascending: false });
       return data || [];
     },
   });
+
+  const updateVisibilityMode = async (id: string, mode: string) => {
+    const { error } = await supabase.from('poll_campaigns').update({ visibility_mode: mode }).eq('id', id);
+    if (error) return toast.error(error.message);
+    toast.success('Visibility updated');
+    refetchCampaigns();
+    queryClient.invalidateQueries({ queryKey: ['active-brand-campaign'] });
+  };
 
   const onLaunched = () => {
     refetchCampaigns();
