@@ -279,7 +279,15 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
       toast(`🔥 ${voteNumber} votes in`, { duration: 2200 });
     }
 
-    if (shouldFullReveal) {
+    // Campaign feedback prompt: only for campaign polls with config enabled
+    if (feedbackConfig && (feedbackConfig.config.enabled || feedbackConfig.config.verbatim)) {
+      const optionLabel = choice === 'A' ? poll.option_a : poll.option_b;
+      // Delay slightly so flash result registers first
+      setTimeout(() => {
+        setFeedbackPrompt({ pollId: poll.id, choice, optionLabel });
+      }, FLASH_RESULT_MS + 300);
+    }
+
       setRevealMode('full');
       setTimeout(() => {
         setCinematicData({
