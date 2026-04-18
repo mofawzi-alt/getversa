@@ -77,6 +77,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const sessionShownRef = useRef(new Set<string>());
   const [showHookMoment, setShowHookMoment] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
+  const [feedbackPrompt, setFeedbackPrompt] = useState<{ pollId: string; choice: 'A' | 'B'; optionLabel: string } | null>(null);
+  const { data: feedbackConfig } = useCampaignFeedbackConfig(poll?.id);
 
   // Gate gender teaser behind streak (Day 3+)
   const streak: number = (profile as any)?.current_streak ?? 0;
