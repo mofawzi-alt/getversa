@@ -21,7 +21,7 @@ export default function BrandCampaignBuilder() {
     queryFn: async () => {
       const { data } = await supabase
         .from('poll_campaigns')
-        .select('id, name, brand_name, is_active, release_at, expires_at, visibility_mode, created_at')
+        .select('id, name, brand_name, campaign_type, is_active, release_at, expires_at, visibility_mode, created_at')
         .order('created_at', { ascending: false });
       return data || [];
     },
@@ -122,7 +122,7 @@ export default function BrandCampaignBuilder() {
                     Where polls appear
                   </div>
                   <Select
-                    value={c.visibility_mode || 'mixed'}
+                    value={c.visibility_mode || (c.campaign_type === 'focus_group' ? 'panel_only' : 'mixed')}
                     onValueChange={(v) => updateVisibilityMode(c.id, v)}
                   >
                     <SelectTrigger className="h-8 text-xs">
