@@ -353,8 +353,11 @@ export default function Explore() {
           {/* All Polls in Category */}
           <div className="px-3 space-y-2.5">
             {(() => {
-              const visiblePolls = unvotedOnly
-                ? categoryPollsBase.filter(p => !votedPollIds?.has(p.id))
+              const votedReady = votedPollIds !== undefined;
+              const visiblePolls = unvotedOnly && votedReady
+                ? categoryPollsBase.filter(p => !votedPollIds.has(p.id))
+                : unvotedOnly && !votedReady
+                ? []
                 : categoryPollsBase;
               if (visiblePolls.length === 0) {
                 return (
