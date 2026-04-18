@@ -801,6 +801,65 @@ export type Database = {
           },
         ]
       }
+      poll_attribute_ratings: {
+        Row: {
+          choice: string
+          created_at: string
+          ease: number | null
+          id: string
+          poll_id: string
+          quality: number | null
+          taste: number | null
+          uniqueness: number | null
+          user_id: string
+          versatility: number | null
+          voter_age_range: string | null
+          voter_city: string | null
+          voter_country: string | null
+          voter_gender: string | null
+        }
+        Insert: {
+          choice: string
+          created_at?: string
+          ease?: number | null
+          id?: string
+          poll_id: string
+          quality?: number | null
+          taste?: number | null
+          uniqueness?: number | null
+          user_id: string
+          versatility?: number | null
+          voter_age_range?: string | null
+          voter_city?: string | null
+          voter_country?: string | null
+          voter_gender?: string | null
+        }
+        Update: {
+          choice?: string
+          created_at?: string
+          ease?: number | null
+          id?: string
+          poll_id?: string
+          quality?: number | null
+          taste?: number | null
+          uniqueness?: number | null
+          user_id?: string
+          versatility?: number | null
+          voter_age_range?: string | null
+          voter_city?: string | null
+          voter_country?: string | null
+          voter_gender?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_attribute_ratings_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       poll_boosts: {
         Row: {
           boost_type: string
@@ -844,6 +903,7 @@ export type Database = {
       }
       poll_campaigns: {
         Row: {
+          attribute_config: Json
           brand_logo_url: string | null
           brand_name: string | null
           created_at: string
@@ -858,6 +918,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attribute_config?: Json
           brand_logo_url?: string | null
           brand_name?: string | null
           created_at?: string
@@ -872,6 +933,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attribute_config?: Json
           brand_logo_url?: string | null
           brand_name?: string | null
           created_at?: string
@@ -1082,6 +1144,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      poll_verbatim_feedback: {
+        Row: {
+          choice: string
+          created_at: string
+          feedback: string
+          id: string
+          poll_id: string
+          user_id: string
+          voter_age_range: string | null
+          voter_city: string | null
+          voter_country: string | null
+          voter_gender: string | null
+        }
+        Insert: {
+          choice: string
+          created_at?: string
+          feedback: string
+          id?: string
+          poll_id: string
+          user_id: string
+          voter_age_range?: string | null
+          voter_city?: string | null
+          voter_country?: string | null
+          voter_gender?: string | null
+        }
+        Update: {
+          choice?: string
+          created_at?: string
+          feedback?: string
+          id?: string
+          poll_id?: string
+          user_id?: string
+          voter_age_range?: string | null
+          voter_city?: string | null
+          voter_country?: string | null
+          voter_gender?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_verbatim_feedback_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       polls: {
         Row: {
@@ -2163,6 +2272,17 @@ export type Database = {
           votes_b: number
         }[]
       }
+      get_campaign_attribute_scores: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          attribute: string
+          mean_score: number
+          poll_id: string
+          question: string
+          t2b_score: number
+          total_responses: number
+        }[]
+      }
       get_campaign_demographics: {
         Args: { p_campaign_id: string }
         Returns: {
@@ -2170,6 +2290,34 @@ export type Database = {
           segment_type: string
           segment_value: string
           vote_count: number
+        }[]
+      }
+      get_campaign_rank_matrix: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          baseline_pct_a: number
+          delta: number
+          pct_a: number
+          poll_id: string
+          question: string
+          segment_type: string
+          segment_value: string
+          significant: boolean
+          total_in_segment: number
+        }[]
+      }
+      get_campaign_verbatims: {
+        Args: { p_campaign_id: string; p_limit_per_poll?: number }
+        Returns: {
+          choice: string
+          created_at: string
+          feedback: string
+          option_label: string
+          poll_id: string
+          question: string
+          voter_age_range: string
+          voter_city: string
+          voter_gender: string
         }[]
       }
       get_compatibility_score: {
