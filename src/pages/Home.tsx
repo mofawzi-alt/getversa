@@ -3,7 +3,7 @@ import HomeResultsModal from '@/components/home/HomeResultsModal';
 import DailyPulseStrip from '@/components/home/DailyPulseStrip';
 import PulseStoriesRow from '@/components/pulse/PulseStoriesRow';
 import MorningPulseTrigger from '@/components/pulse/MorningPulseTrigger';
-import EveningVerdictTrigger from '@/components/pulse/EveningVerdictTrigger';
+
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -998,7 +998,6 @@ export default function Home() {
 
         {/* Auto-triggered full-screen sequences */}
         <MorningPulseTrigger />
-        <EveningVerdictTrigger />
 
         {/* ═══ INFINITE HERO VOTE CARD ═══ */}
         <div ref={heroRef}>
