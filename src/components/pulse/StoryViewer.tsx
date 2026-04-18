@@ -166,8 +166,12 @@ export default function StoryViewer({
         onDragEnd={(_, info) => { if (info.offset.y > 100) { onClose(); } }}
       >
         <div
-          className="relative w-full max-w-[420px] rounded-2xl sm:rounded-3xl overflow-hidden bg-black shadow-2xl mx-auto"
-          style={{ height: 'min(100%, calc(100dvh - 16px))', aspectRatio: '9 / 16', maxHeight: 'calc(100dvh - 16px)' }}
+          className="relative w-auto rounded-2xl sm:rounded-3xl overflow-hidden bg-black shadow-2xl"
+          style={{
+            height: 'min(calc(100dvh - 32px), calc((100vw - 16px) * 16 / 9))',
+            aspectRatio: '9 / 16',
+            maxWidth: 'calc(100vw - 16px)',
+          }}
         >
         {/* Progress bars */}
         <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2 pt-3">
