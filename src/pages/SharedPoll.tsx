@@ -432,8 +432,14 @@ export default function SharedPoll() {
               </Button>
             </div>
             <button
+              onClick={() => navigate('/auth?mode=signup')}
+              className="block mx-auto text-white/70 text-sm font-semibold underline underline-offset-4 hover:text-white transition-colors"
+            >
+              Sign up with email
+            </button>
+            <button
               onClick={() => setShowNudge(false)}
-              className="text-white/40 text-sm hover:text-white/60"
+              className="block mx-auto text-white/40 text-sm hover:text-white/60"
             >
               Keep voting
             </button>
