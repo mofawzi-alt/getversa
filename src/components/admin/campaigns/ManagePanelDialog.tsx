@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UserPlus, Loader2 } from 'lucide-react';
+import { UserPlus, Loader2, Search, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import FocusGroupPanelTab from './FocusGroupPanelTab';
 
@@ -20,6 +20,50 @@ export default function ManagePanelDialog({ campaignId, campaignName, defaultSiz
   const [gender, setGender] = useState('any');
   const [city, setCity] = useState('');
   const [busy, setBusy] = useState(false);
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState<Array<{ id: string; username: string | null; email: string | null; city: string | null; age_range: string | null }>>([]);
+  const [searching, setSearching] = useState(false);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
+
+  const runSearch = async () => {
+    const q = search.trim();
+    if (q.length < 2) return toast.error('Type at least 2 characters');
+    setSearching(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, username, email, city, age_range')
+        .or(`username.ilike.%${q}%,email.ilike.%${q}%`)
+        .limit(20);
+      if (error) throw error;
+      setResults((data as any) ?? []);
+      if (!data?.length) toast.info('No users found');
+    } catch (e: any) {
+      toast.error(e.message || 'Search failed');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const inviteOne = async (userId: string) => {
+    setInvitingId(userId);
+    try {
+      const { error } = await supabase
+        .from('campaign_panelists')
+        .insert({ campaign_id: campaignId, user_id: userId, status: 'invited' });
+      if (error) {
+        if (error.code === '23505') toast.info('Already invited');
+        else throw error;
+      } else {
+        toast.success('Invited');
+        qc.invalidateQueries({ queryKey: ['focus-group-stats', campaignId] });
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to invite');
+    } finally {
+      setInvitingId(null);
+    }
+  };
 
   const invite = async () => {
     const n = parseInt(size, 10);
@@ -57,6 +101,50 @@ export default function ManagePanelDialog({ campaignId, campaignName, defaultSiz
         </DialogHeader>
 
         <FocusGroupPanelTab campaignId={campaignId} />
+
+        <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3 mt-2">
+          <div>
+            <h4 className="text-sm font-semibold flex items-center gap-1.5">
+              <Search className="w-4 h-4 text-primary" /> Invite specific users
+            </h4>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Search by username or email and invite individually.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && runSearch()}
+              placeholder="username or email"
+            />
+            <Button onClick={runSearch} disabled={searching} size="sm">
+              {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            </Button>
+          </div>
+          {results.length > 0 && (
+            <div className="space-y-1.5 max-h-56 overflow-y-auto">
+              {results.map((u) => (
+                <div key={u.id} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium truncate">{u.username || u.email || u.id.slice(0, 8)}</div>
+                    <div className="text-[10px] text-muted-foreground truncate">
+                      {[u.email, u.city, u.age_range].filter(Boolean).join(' · ')}
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => inviteOne(u.id)}
+                    disabled={invitingId === u.id}
+                  >
+                    {invitingId === u.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3 mt-2">
           <div>
