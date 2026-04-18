@@ -16,6 +16,7 @@ import {
 } from '@/hooks/usePulseCircles';
 import { useBreakdownFindings, type BreakdownFinding } from '@/hooks/useBreakdownFindings';
 import BreakdownShareCard from './BreakdownShareCard';
+import { getPollDisplayImageSrc } from '@/lib/pollImages';
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
 
@@ -423,8 +424,14 @@ export default function PulseStoriesRow() {
         label: 'Friends',
         cards: friendsData.map((f: any) => {
           const choseLabel = f.choice === 'A' ? f.poll.option_a : f.poll.option_b;
+          const bg = getPollDisplayImageSrc({
+            imageUrl: f.choice === 'A' ? f.poll.image_a_url : f.poll.image_b_url,
+            option: choseLabel,
+            question: f.poll.question,
+            side: f.choice,
+          });
           return {
-            backgroundImage: f.choice === 'A' ? f.poll.image_a_url : f.poll.image_b_url,
+            backgroundImage: bg,
             label: `${f.friendName} just voted`,
             categoryEmoji: '👥',
             headline: f.poll.question,
