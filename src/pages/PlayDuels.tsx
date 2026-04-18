@@ -117,8 +117,8 @@ export default function PlayDuels() {
     setSending(true);
     try {
       const categoryFilter = selectedCategory === '__random__' ? null : selectedCategory;
-      const pollIds = await pickDuelPollIds([], 5, categoryFilter);
-      if (pollIds.length < 5) {
+      const pollIds = await pickDuelPollIds([], 10, categoryFilter);
+      if (pollIds.length < 10) {
         toast.error('Not enough polls available');
         return;
       }
@@ -130,7 +130,7 @@ export default function PlayDuels() {
           challenged_id: selectedFriend,
           poll_id: pollIds[0],
           poll_ids: pollIds,
-          game_type: 'duel_5',
+          game_type: 'duel_10',
           taunt_message: "Bet you can't match my picks 😏",
         })
         .select('id')
@@ -150,8 +150,8 @@ export default function PlayDuels() {
       const categoryLabel = categoryFilter ? ` · ${categoryFilter}` : '';
       const pushTitle = `⚔️ ${challengerName} challenged you!${categoryLabel}`;
       const pushBody = categoryFilter
-        ? `Dared you to a 5-poll ${categoryFilter} duel. Tap to accept and play.`
-        : 'Dared you to a 5-poll duel. Tap to accept and play.';
+        ? `Dared you to a 10-poll ${categoryFilter} duel. Tap to accept and play.`
+        : 'Dared you to a 10-poll duel. Tap to accept and play.';
       const deepUrl = newDuelId ? `/play/duels/${newDuelId}` : '/play/duels';
 
       await supabase.from('notifications').insert({
@@ -198,14 +198,14 @@ export default function PlayDuels() {
         const seedPollIds = duel.poll_ids?.length ? duel.poll_ids : [duel.poll_id];
         const pollIds = await pickDuelPollIds(seedPollIds);
 
-        if (pollIds.length < 5) {
+        if (pollIds.length < 10) {
           toast.error('Not enough polls available');
           return;
         }
 
         updates.poll_id = pollIds[0];
         updates.poll_ids = pollIds;
-        updates.game_type = 'duel_5';
+        updates.game_type = 'duel_10';
 
         const normalizedChallengerChoices = normalizeDuelChoices(duel.challenger_choice);
         if (normalizedChallengerChoices) {
