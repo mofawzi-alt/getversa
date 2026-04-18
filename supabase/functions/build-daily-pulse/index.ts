@@ -171,7 +171,7 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
 
   // Cairo: top 3 filtered to Cairo voters
   const cairoSorted = ranked
-    .filter((x) => x.t.cairo_total >= 10)
+    .filter((x) => x.t.cairo_total >= 2)
     .map((x) => ({ poll: x.poll, t: { ...x.t, a: x.t.cairo_a, b: x.t.cairo_b, total: x.t.cairo_total } }))
     .sort((a, b) => b.t.total - a.t.total)
     .slice(0, 3);
