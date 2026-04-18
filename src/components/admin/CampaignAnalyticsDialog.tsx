@@ -21,7 +21,7 @@ export default function CampaignAnalyticsDialog({ campaignId, campaignName, bran
           <span className="hidden sm:inline">Analytics</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[calc(100vw-1rem)] sm:max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="max-w-[calc(100vw-1rem)] sm:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6 w-[calc(100vw-1rem)]">
         <DialogHeader>
           <DialogTitle className="text-left">
             {campaignName}
