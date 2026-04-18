@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Eye, EyeOff, Layers, Wand2, Zap } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Layers, Wand2, Zap, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import CampaignClientsManager from './CampaignClientsManager';
 import CampaignAnalyticsDialog from './CampaignAnalyticsDialog';
@@ -33,6 +33,30 @@ export default function BrandCampaignBuilder() {
     const { error } = await supabase.from('poll_campaigns').update({ is_active: !current }).eq('id', id);
     if (error) return toast.error(error.message);
     toast.success(!current ? 'Campaign activated' : 'Campaign paused');
+    refetchCampaigns();
+    queryClient.invalidateQueries({ queryKey: ['active-brand-campaign'] });
+  };
+
+  const deleteCampaign = async (id: string, name: string) => {
+    const alsoDeletePolls = confirm(
+      `Delete campaign "${name}"?\n\nClick OK to ALSO delete all polls in this campaign.\nClick Cancel to keep the polls (they'll be unlinked) — then confirm again to delete just the campaign.`
+    );
+    if (alsoDeletePolls) {
+      const { data: cps } = await supabase.from('campaign_polls').select('poll_id').eq('campaign_id', id);
+      const pollIds = (cps || []).map((c: any) => c.poll_id);
+      if (pollIds.length) {
+        await supabase.from('campaign_polls').delete().eq('campaign_id', id);
+        const { error: pErr } = await supabase.from('polls').delete().in('id', pollIds);
+        if (pErr) return toast.error(`Failed to delete polls: ${pErr.message}`);
+      }
+    } else {
+      if (!confirm(`Delete just the campaign "${name}" and keep its polls?`)) return;
+      await supabase.from('campaign_polls').delete().eq('campaign_id', id);
+      await supabase.from('polls').update({ campaign_id: null }).eq('campaign_id', id);
+    }
+    const { error } = await supabase.from('poll_campaigns').delete().eq('id', id);
+    if (error) return toast.error(error.message);
+    toast.success('Campaign deleted');
     refetchCampaigns();
     queryClient.invalidateQueries({ queryKey: ['active-brand-campaign'] });
   };
@@ -81,6 +105,9 @@ export default function BrandCampaignBuilder() {
                 <CampaignClientsManager campaignId={c.id} campaignName={c.name} />
                 <Button size="sm" variant="ghost" onClick={() => toggleCampaignActive(c.id, c.is_active)}>
                   {c.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => deleteCampaign(c.id, c.name)} className="text-destructive hover:text-destructive">
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             ))}
