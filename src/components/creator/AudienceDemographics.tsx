@@ -168,7 +168,7 @@ export default function AudienceDemographics() {
                     cx="50%"
                     cy="50%"
                     outerRadius={70}
-                    label={({ name, percentage }) => `${name}: ${percentage}%`}
+                    label={(props: any) => `${props.name}: ${props.percentage}%`}
                     labelLine={false}
                   >
                     {data.gender.map((entry, index) => (
