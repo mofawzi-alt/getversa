@@ -164,6 +164,7 @@ export default function PulseStoriesRow() {
   const { data: closingData } = useClosingSoon();
   const { data: weeklyData } = useWeeklyVerdict();
   const { data: newPollsData } = useNewThisWeek(lastVisit);
+  const { data: breakdownData } = useBreakdownFindings();
 
   const circles: CircleSpec[] = useMemo(() => {
     if (!pulse) return [];
@@ -424,9 +425,20 @@ export default function PulseStoriesRow() {
       });
     }
 
+    // ── The Breakdown (BLUE dot when has new findings)
+    if (breakdownData && breakdownData.length > 0) {
+      list.push({
+        topic: 'breakdown',
+        label: 'Breakdown',
+        cards: breakdownData.map((f) => breakdownToCard(f)),
+        dot: hasSeenLocally('breakdown') ? null : 'blue',
+        priority: 35,
+      });
+    }
+
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pulse, settings, battleData, updatesData, friendsData, categoriesData, predictData, closingData, weeklyData, newPollsData, user, bump]);
+  }, [pulse, settings, battleData, updatesData, friendsData, categoriesData, predictData, closingData, weeklyData, newPollsData, breakdownData, user, bump]);
 
   // Sort: fixedPosition first (egypt=0, battle=1, updates=2), then by dot priority then by priority field
   const sorted = useMemo(() => {
