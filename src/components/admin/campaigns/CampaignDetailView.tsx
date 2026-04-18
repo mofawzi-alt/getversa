@@ -399,13 +399,12 @@ function ResultBar({
 
 function DemographicsView({ demos }: { demos: DemoRow[] }) {
   const grouped = useMemo(() => {
-    const acc: Record<string, Record<string, { A: number; B: number }>> = {};
+    const acc: Record<string, Record<string, number>> = {};
     demos.forEach((row) => {
       const key = row.segment_type;
       if (!acc[key]) acc[key] = {};
       const seg = row.segment_value || 'Unknown';
-      if (!acc[key][seg]) acc[key][seg] = { A: 0, B: 0 };
-      acc[key][seg][row.choice as 'A' | 'B'] = (acc[key][seg][row.choice as 'A' | 'B'] || 0) + Number(row.vote_count);
+      acc[key][seg] = (acc[key][seg] || 0) + Number(row.vote_count);
     });
     return acc;
   }, [demos]);
@@ -423,20 +422,26 @@ function DemographicsView({ demos }: { demos: DemoRow[] }) {
 
   return (
     <>
+      <p className="text-[11px] text-muted-foreground -mb-1">
+        Audience reach: each person counted once per segment.
+      </p>
       {Object.entries(grouped).map(([type, segments]) => {
         const isPie = type === 'gender';
         const segArr = Object.entries(segments)
-          .map(([seg, counts]) => ({ seg, total: counts.A + counts.B, A: counts.A, B: counts.B }))
+          .map(([seg, total]) => ({ seg, total }))
           .sort((a, b) => b.total - a.total);
+        const grandTotal = segArr.reduce((s, x) => s + x.total, 0);
 
         return (
           <div key={type} className="rounded-xl bg-muted/30 p-3">
-            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-              {segmentIcon(type)}
-              {type.replace('_', ' ')}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {segmentIcon(type)}
+                {type.replace('_', ' ')}
+              </div>
+              <span className="text-[11px] text-muted-foreground">{grandTotal} people</span>
             </div>
 
-            {/* Distribution chart */}
             {isPie ? (
               <div className="h-[180px] mb-3">
                 <ResponsiveContainer width="100%" height="100%">
@@ -455,6 +460,7 @@ function DemographicsView({ demos }: { demos: DemoRow[] }) {
                       ))}
                     </Pie>
                     <Tooltip
+                      formatter={(v: any) => [`${v} people`, 'Reach']}
                       contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
                     />
                   </PieChart>
@@ -463,35 +469,31 @@ function DemographicsView({ demos }: { demos: DemoRow[] }) {
             ) : (
               <div className="h-[180px] mb-3">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={segArr.slice(0, 8).map((s) => ({ name: s.seg, A: s.A, B: s.B }))}>
+                  <BarChart data={segArr.slice(0, 8).map((s) => ({ name: s.seg, People: s.total }))}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-15} textAnchor="end" height={50} />
-                    <YAxis tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                     <Tooltip
+                      formatter={(v: any) => [`${v} people`, 'Reach']}
                       contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
                     />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="A" stackId="d" fill={COLOR_A} name="Option A" />
-                    <Bar dataKey="B" stackId="d" fill={COLOR_B} name="Option B" />
+                    <Bar dataKey="People" fill={COLOR_A} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             )}
 
-            {/* Per-segment A vs B detail */}
             <div className="space-y-1.5">
-              {segArr.map(({ seg, A, B }) => {
-                const total = A + B;
-                const pctA = total ? Math.round((A / total) * 100) : 0;
+              {segArr.map(({ seg, total }) => {
+                const pct = grandTotal ? Math.round((total / grandTotal) * 100) : 0;
                 return (
                   <div key={seg} className="flex items-center gap-2 text-xs">
                     <span className="w-24 truncate">{seg}</span>
-                    <div className="flex-1 h-1.5 bg-background rounded-full overflow-hidden flex">
-                      <div className="bg-green-500" style={{ width: `${pctA}%` }} />
-                      <div className="bg-blue-500" style={{ width: `${100 - pctA}%` }} />
+                    <div className="flex-1 h-1.5 bg-background rounded-full overflow-hidden">
+                      <div className="bg-primary h-full" style={{ width: `${pct}%` }} />
                     </div>
                     <span className="w-20 text-right text-muted-foreground">
-                      {pctA}% / {100 - pctA}% · {total}
+                      {total} · {pct}%
                     </span>
                   </div>
                 );
