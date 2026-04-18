@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Eye, EyeOff, Layers, Wand2, Zap, Trash2 } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Layers, Wand2, Zap, Trash2, Users } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import CampaignClientsManager from './CampaignClientsManager';
@@ -11,6 +11,7 @@ import CampaignFeedbackConfigDialog from './campaigns/CampaignFeedbackConfigDial
 import QuickLaunchForm from './campaigns/QuickLaunchForm';
 import TemplatesForm from './campaigns/TemplatesForm';
 import AIDraftForm from './campaigns/AIDraftForm';
+import FocusGroupForm from './campaigns/FocusGroupForm';
 
 export default function BrandCampaignBuilder() {
   const queryClient = useQueryClient();
@@ -80,10 +81,11 @@ export default function BrandCampaignBuilder() {
         </div>
 
         <Tabs defaultValue="quick">
-          <TabsList className="grid grid-cols-3 w-full">
-            <TabsTrigger value="quick" className="gap-1.5"><Zap className="w-3.5 h-3.5" />Quick</TabsTrigger>
-            <TabsTrigger value="templates" className="gap-1.5"><Layers className="w-3.5 h-3.5" />Templates</TabsTrigger>
-            <TabsTrigger value="ai" className="gap-1.5"><Wand2 className="w-3.5 h-3.5" />AI Draft</TabsTrigger>
+          <TabsList className="grid grid-cols-4 w-full">
+            <TabsTrigger value="quick" className="gap-1 text-xs"><Zap className="w-3 h-3" />Quick</TabsTrigger>
+            <TabsTrigger value="templates" className="gap-1 text-xs"><Layers className="w-3 h-3" />Tmpl</TabsTrigger>
+            <TabsTrigger value="ai" className="gap-1 text-xs"><Wand2 className="w-3 h-3" />AI</TabsTrigger>
+            <TabsTrigger value="focus" className="gap-1 text-xs"><Users className="w-3 h-3" />Panel</TabsTrigger>
           </TabsList>
           <TabsContent value="quick" className="pt-4">
             <QuickLaunchForm onLaunched={onLaunched} />
@@ -93,6 +95,9 @@ export default function BrandCampaignBuilder() {
           </TabsContent>
           <TabsContent value="ai" className="pt-4">
             <AIDraftForm onLaunched={onLaunched} />
+          </TabsContent>
+          <TabsContent value="focus" className="pt-4">
+            <FocusGroupForm onLaunched={onLaunched} />
           </TabsContent>
         </Tabs>
       </div>
