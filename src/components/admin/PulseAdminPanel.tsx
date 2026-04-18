@@ -146,9 +146,9 @@ export default function PulseAdminPanel() {
       </Card>
 
       <Card className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Today's cache</h4>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" onClick={() => rebuild('morning')} disabled={rebuilding !== null}>
               {rebuilding === 'morning' ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCcw className="w-3 h-3" />}
               <span className="ml-1.5">Rebuild morning</span>
