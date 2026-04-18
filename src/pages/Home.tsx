@@ -1059,63 +1059,30 @@ export default function Home() {
 
 
 
-        {/* ═══ Categories strip (Instagram Stories style) ═══ */}
-        {(() => {
-          const categoryMap = new Map<string, { count: number; unseen: number; thumbnail: string | null }>();
-          for (const p of allPolls) {
-            const rawCat = p.category || 'Other';
-            const displayCat = getDisplayCategoryName(rawCat);
-            const existing = categoryMap.get(displayCat) || { count: 0, unseen: 0, thumbnail: null };
-            existing.count++;
-            if (!votedPollIds?.has(p.id)) existing.unseen++;
-            if (!existing.thumbnail) {
-              existing.thumbnail = getPollDisplayImageSrc({ imageUrl: p.image_a_url, option: p.option_a, question: p.question, side: 'A' });
-            }
-            categoryMap.set(displayCat, existing);
-          }
-          const categories = Array.from(categoryMap.entries()).sort((a, b) => b[1].count - a[1].count);
-          if (categories.length === 0) return null;
-
-          return (
-            <div className="flex gap-3 overflow-x-auto px-3 scrollbar-hide pb-2 mb-1">
-              {/* Trending entry */}
-              {trendingPolls.length > 0 && (
-                <div
-                  className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
-                  onClick={() => navigate('/explore?tab=trending')}
-                >
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500/25 to-red-500/15 border-2 border-orange-400 flex items-center justify-center">
-                    <Flame className="h-6 w-6 text-orange-500" />
-                  </div>
-                  <span className="text-[10px] font-bold text-foreground">Trending</span>
-                </div>
-              )}
-              {categories.map(([catName, info]) => {
-                const displayName = getDisplayCategoryName(catName);
-                const meta = getCategoryMeta(displayName.toLowerCase());
-                const hasUnseen = info.unseen > 0;
-                return (
-                  <div
-                    key={catName}
-                    className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
-                    onClick={() => handleCategoryTap(catName)}
-                  >
-                    <div className={`w-16 h-16 rounded-full overflow-hidden border-2 ${hasUnseen ? 'border-primary' : 'border-border/60'}`}>
-                      {info.thumbnail ? (
-                        <img src={info.thumbnail} alt={displayName} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center" style={{ background: meta.bg }}>
-                          <span className="text-xl">{meta.emoji}</span>
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-[10px] font-medium text-foreground truncate max-w-[64px] text-center">{displayName}</span>
-                  </div>
-                );
-              })}
+        {/* ═══ Single Categories link (replaces full strip) ═══ */}
+        <div className="flex gap-3 px-3 pb-2 mb-1">
+          {trendingPolls.length > 0 && (
+            <div
+              className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+              onClick={() => navigate('/explore?tab=trending')}
+            >
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500/25 to-red-500/15 border-2 border-orange-400 flex items-center justify-center">
+                <Flame className="h-6 w-6 text-orange-500" />
+              </div>
+              <span className="text-[10px] font-bold text-foreground">Trending</span>
             </div>
-          );
-        })()}
+          )}
+          <div
+            className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+            onClick={() => navigate('/explore')}
+          >
+            <div className="w-16 h-16 rounded-full bg-muted border-2 border-border/60 flex items-center justify-center">
+              <span className="text-2xl">🗂️</span>
+            </div>
+            <span className="text-[10px] font-medium text-foreground">Categories</span>
+          </div>
+        </div>
+
 
         {/* ═══ 🔴 LIVE DEBATES ═══ */}
         <section className="mb-3">
