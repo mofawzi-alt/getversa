@@ -52,9 +52,6 @@ export default function FocusGroupForm({ onLaunched }: Props) {
     }
     setSubmitting(true);
     try {
-      console.log('[FocusGroup] Creating campaign as user:', user.id);
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      console.log('[FocusGroup] Auth user from supabase:', authUser?.id);
       const { data: campaign, error: cErr } = await supabase
         .from('poll_campaigns')
         .insert({
@@ -66,7 +63,7 @@ export default function FocusGroupForm({ onLaunched }: Props) {
           panel_size_target: sizeNum,
           panel_incentive_points: incNum,
           is_active: true,
-          created_by: user.id,
+          created_by: authUser.id,
         })
         .select()
         .single();
@@ -79,7 +76,7 @@ export default function FocusGroupForm({ onLaunched }: Props) {
         category: 'focus_group',
         is_active: true,
         campaign_id: campaign.id,
-        created_by: user.id,
+        created_by: authUser.id,
         poll_type: 'campaign',
         expiry_type: 'evergreen',
       }));
