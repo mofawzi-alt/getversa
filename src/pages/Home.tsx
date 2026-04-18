@@ -1037,6 +1037,25 @@ export default function Home() {
           />
         </div>
 
+        {/* Ask Versa — AI search entry */}
+        <div className="px-3 mt-3">
+          <button
+            onClick={() => navigate('/ask')}
+            className="group w-full flex items-center gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-3 active:scale-[0.99] transition"
+          >
+            <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 text-left min-w-0">
+              <p className="text-[13px] font-bold text-foreground leading-tight">Ask Versa</p>
+              <p className="text-[11px] text-muted-foreground leading-tight truncate">
+                "Most controversial Ramadan debates…"
+              </p>
+            </div>
+            <ArrowRight className="h-4 w-4 text-primary shrink-0" />
+          </button>
+        </div>
+
         {/* Categories shortcut button */}
         <div className="px-3 mt-2 mb-1 flex justify-center">
           <button
