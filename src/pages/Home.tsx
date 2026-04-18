@@ -232,9 +232,26 @@ function HomeLiveDebateCard({
           <motion.div className="h-full bg-option-b rounded-r-full" initial={{ width: '50%' }} animate={{ width: hasVoted ? `${poll.percentB}%` : '50%' }} transition={{ duration: 0.8, ease: 'easeOut' }} />
         </div>
         {hasVoted && (
-          <div className="flex justify-between">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
             <span className="text-sm font-bold text-option-a">{poll.percentA}%</span>
-            <span className="text-sm font-bold text-option-b">{poll.percentB}%</span>
+            {poll.category ? (
+              <CategoryBadge
+                category={mapToVersaCategory(poll.category)}
+                size="xs"
+                className="justify-self-center"
+              />
+            ) : (
+              <span />
+            )}
+            <span className="text-sm font-bold text-option-b justify-self-end">{poll.percentB}%</span>
+          </div>
+        )}
+        {!hasVoted && poll.category && (
+          <div className="flex justify-center pt-0.5">
+            <CategoryBadge
+              category={mapToVersaCategory(poll.category)}
+              size="xs"
+            />
           </div>
         )}
         {hasVoted && genderTeaser && (
@@ -245,14 +262,6 @@ function HomeLiveDebateCard({
           >
             {genderTeaser.text}
           </motion.p>
-        )}
-        {poll.category && (
-          <div className="pt-0.5">
-            <CategoryBadge
-              category={mapToVersaCategory(poll.category)}
-              size="xs"
-            />
-          </div>
         )}
         {hasVoted ? (
           <div className="flex items-center justify-between pt-1 gap-2">
