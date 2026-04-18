@@ -1377,26 +1377,6 @@ export default function SwipeFeed() {
 
 
       {/* CinematicResults removed — inline results in feed cards are used instead */}
-          percentA={cinematicData.percentA}
-          percentB={cinematicData.percentB}
-          totalVotes={cinematicData.totalVotes}
-          visible={!!cinematicData}
-          onNext={() => {
-            const pollId = cinematicData.poll.id;
-            setCinematicData(null);
-            // Scroll to next unvoted card
-            if (polls) {
-              const idx = polls.findIndex(p => p.id === pollId);
-              const unvotedAfter = polls.filter((p, i) => i > idx && !votedResults.has(p.id));
-              const nextPoll = unvotedAfter[0];
-              if (nextPoll) {
-                const nextEl = cardRefs.current.get(nextPoll.id);
-                nextEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
-            }
-          }}
-        />
-      )}
     </div>
   );
 }
