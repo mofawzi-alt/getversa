@@ -331,35 +331,28 @@ export default function Explore() {
               </div>
             </div>
 
-            {/* Unvoted / All filter */}
-            <div className="mt-3 inline-flex items-center gap-1 p-1 rounded-full bg-muted">
-              <button
-                onClick={() => setUnvotedOnly(true)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  unvotedOnly ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                }`}
-              >
-                Unvoted
-              </button>
-              <button
-                onClick={() => setUnvotedOnly(false)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  !unvotedOnly ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                }`}
-              >
-                All
-              </button>
+            {/* Search within category */}
+            <div className="mt-3 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={`Search in ${selectedCategory}…`}
+                value={categorySearch}
+                onChange={e => setCategorySearch(e.target.value)}
+                className="pl-9 bg-card border-border/60 rounded-xl text-sm h-10"
+              />
             </div>
           </div>
 
           {/* All Polls in Category */}
           <div className="px-3 space-y-2.5">
             {(() => {
-              const votedReady = votedPollIds !== undefined;
-              const visiblePolls = unvotedOnly && votedReady
-                ? categoryPollsBase.filter(p => !votedPollIds.has(p.id))
-                : unvotedOnly && !votedReady
-                ? []
+              const q = categorySearch.trim().toLowerCase();
+              const visiblePolls = q
+                ? categoryPollsBase.filter(p =>
+                    p.question.toLowerCase().includes(q) ||
+                    p.option_a.toLowerCase().includes(q) ||
+                    p.option_b.toLowerCase().includes(q)
+                  )
                 : categoryPollsBase;
               if (visiblePolls.length === 0) {
                 return (
@@ -368,21 +361,13 @@ export default function Explore() {
                       <CheckCircle2 className="h-6 w-6" />
                     </div>
                     <p className="text-sm font-display font-bold text-foreground mb-1">
-                      {unvotedOnly && categoryPollsBase.length > 0 ? "You're all caught up" : 'No active polls'}
+                      {q ? 'No polls match your search' : 'No active polls'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {unvotedOnly && categoryPollsBase.length > 0
-                        ? `You've voted on every poll in ${selectedCategory}`
+                      {q
+                        ? `Try different keywords in ${selectedCategory}`
                         : 'Check back soon for new polls in this category'}
                     </p>
-                    {unvotedOnly && categoryPollsBase.length > 0 && (
-                      <button
-                        onClick={() => setUnvotedOnly(false)}
-                        className="mt-4 px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-bold"
-                      >
-                        See all polls
-                      </button>
-                    )}
                   </div>
                 );
               }
