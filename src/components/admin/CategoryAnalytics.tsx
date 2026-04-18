@@ -134,27 +134,30 @@ export default function CategoryAnalytics() {
 
       votes?.forEach(vote => {
         const user = vote.users as any;
-        
+
         // Gender
-        const gender = user?.gender || 'Unknown';
-        const genderStats = genderMap.get(gender) || { a: 0, b: 0 };
-        if (vote.choice === 'A') genderStats.a++;
-        else genderStats.b++;
-        genderMap.set(gender, genderStats);
+        if (user?.gender) {
+          const genderStats = genderMap.get(user.gender) || { a: 0, b: 0 };
+          if (vote.choice === 'A') genderStats.a++;
+          else genderStats.b++;
+          genderMap.set(user.gender, genderStats);
+        }
 
         // Age
-        const age = user?.age_range || 'Unknown';
-        const ageStats = ageMap.get(age) || { a: 0, b: 0 };
-        if (vote.choice === 'A') ageStats.a++;
-        else ageStats.b++;
-        ageMap.set(age, ageStats);
+        if (user?.age_range) {
+          const ageStats = ageMap.get(user.age_range) || { a: 0, b: 0 };
+          if (vote.choice === 'A') ageStats.a++;
+          else ageStats.b++;
+          ageMap.set(user.age_range, ageStats);
+        }
 
         // Country
-        const country = user?.country || 'Unknown';
-        const countryStats = countryMap.get(country) || { a: 0, b: 0 };
-        if (vote.choice === 'A') countryStats.a++;
-        else countryStats.b++;
-        countryMap.set(country, countryStats);
+        if (user?.country) {
+          const countryStats = countryMap.get(user.country) || { a: 0, b: 0 };
+          if (vote.choice === 'A') countryStats.a++;
+          else countryStats.b++;
+          countryMap.set(user.country, countryStats);
+        }
       });
 
       const mapToBreakdown = (map: Map<string, { a: number; b: number }>): DemographicBreakdown[] => {
