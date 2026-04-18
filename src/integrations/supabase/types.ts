@@ -909,6 +909,9 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          drip_enabled: boolean
+          drip_polls_per_day: number | null
+          drip_start_date: string | null
           expires_at: string | null
           id: string
           is_active: boolean
@@ -925,6 +928,9 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          drip_enabled?: boolean
+          drip_polls_per_day?: number | null
+          drip_start_date?: string | null
           expires_at?: string | null
           id?: string
           is_active?: boolean
@@ -941,6 +947,9 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          drip_enabled?: boolean
+          drip_polls_per_day?: number | null
+          drip_start_date?: string | null
           expires_at?: string | null
           id?: string
           is_active?: boolean
@@ -2227,6 +2236,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_campaign_drip_schedule: {
+        Args: { p_campaign_id: string }
+        Returns: Json
+      }
       can_send_notification: {
         Args: {
           p_notification_type: string
@@ -2293,6 +2306,18 @@ export type Database = {
           segment_type: string
           segment_value: string
           vote_count: number
+        }[]
+      }
+      get_campaign_drip_preview: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          is_active: boolean
+          poll_id: string
+          question: string
+          release_date: string
+          release_day: number
+          series_order: number
+          starts_at: string
         }[]
       }
       get_campaign_rank_matrix: {
