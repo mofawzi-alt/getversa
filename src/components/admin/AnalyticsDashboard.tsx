@@ -127,9 +127,9 @@ export default function AnalyticsDashboard() {
       const ageMap = new Map<string, number>();
       const countryMap = new Map<string, number>();
       users.forEach(u => {
-        genderMap.set(u.gender || 'Unknown', (genderMap.get(u.gender || 'Unknown') || 0) + 1);
-        ageMap.set(u.age_range || 'Unknown', (ageMap.get(u.age_range || 'Unknown') || 0) + 1);
-        countryMap.set(u.country || 'Unknown', (countryMap.get(u.country || 'Unknown') || 0) + 1);
+        if (u.gender) genderMap.set(u.gender, (genderMap.get(u.gender) || 0) + 1);
+        if (u.age_range) ageMap.set(u.age_range, (ageMap.get(u.age_range) || 0) + 1);
+        if (u.country) countryMap.set(u.country, (countryMap.get(u.country) || 0) + 1);
       });
 
       const toChartData = (map: Map<string, number>) =>

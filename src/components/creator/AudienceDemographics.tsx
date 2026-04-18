@@ -64,40 +64,43 @@ export default function AudienceDemographics() {
         return { gender: [], ageRange: [], country: [], totalVoters: 0 };
       }
 
-      // Get unique voters
-      const uniqueVoters = new Map<string, { gender: string; age_range: string; country: string }>();
+      // Get unique voters (only those with full demographic data)
+      const uniqueVoters = new Map<string, { gender: string | null; age_range: string | null; country: string | null }>();
       votes.forEach(vote => {
         if (!uniqueVoters.has(vote.user_id)) {
           uniqueVoters.set(vote.user_id, {
-            gender: (vote.users as any)?.gender || 'Unknown',
-            age_range: (vote.users as any)?.age_range || 'Unknown',
-            country: (vote.users as any)?.country || 'Unknown',
+            gender: (vote.users as any)?.gender || null,
+            age_range: (vote.users as any)?.age_range || null,
+            country: (vote.users as any)?.country || null,
           });
         }
       });
 
       const totalVoters = uniqueVoters.size;
 
-      // Aggregate demographics
+      // Aggregate demographics — skip voters missing the field
       const genderCounts = new Map<string, number>();
       const ageCounts = new Map<string, number>();
       const countryCounts = new Map<string, number>();
 
       uniqueVoters.forEach(voter => {
-        genderCounts.set(voter.gender, (genderCounts.get(voter.gender) || 0) + 1);
-        ageCounts.set(voter.age_range, (ageCounts.get(voter.age_range) || 0) + 1);
-        countryCounts.set(voter.country, (countryCounts.get(voter.country) || 0) + 1);
+        if (voter.gender) genderCounts.set(voter.gender, (genderCounts.get(voter.gender) || 0) + 1);
+        if (voter.age_range) ageCounts.set(voter.age_range, (ageCounts.get(voter.age_range) || 0) + 1);
+        if (voter.country) countryCounts.set(voter.country, (countryCounts.get(voter.country) || 0) + 1);
       });
 
-      const toArray = (map: Map<string, number>) =>
-        Array.from(map.entries())
+      const toArray = (map: Map<string, number>) => {
+        const total = Array.from(map.values()).reduce((s, n) => s + n, 0);
+        if (total === 0) return [];
+        return Array.from(map.entries())
           .map(([name, value]) => ({
-            name: name || 'Unknown',
+            name,
             value,
-            percentage: Math.round((value / totalVoters) * 100),
+            percentage: Math.round((value / total) * 100),
           }))
           .sort((a, b) => b.value - a.value)
           .slice(0, 10);
+      };
 
       return {
         gender: toArray(genderCounts),

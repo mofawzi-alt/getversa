@@ -225,26 +225,29 @@ export default function CampaignAnalytics() {
           const votedForEntity = (isOptionA && vote.choice === 'A') || (isOptionB && vote.choice === 'B') || 
                                   (!isOptionA && !isOptionB && vote.choice === 'A');
 
-          // Gender demographics
-          const gender = user?.gender || 'Unknown';
-          const genderStats = entity.demographics.byGender.get(gender) || { wins: 0, total: 0 };
-          genderStats.total++;
-          if (votedForEntity) genderStats.wins++;
-          entity.demographics.byGender.set(gender, genderStats);
+          // Gender demographics — skip if missing
+          if (user?.gender) {
+            const genderStats = entity.demographics.byGender.get(user.gender) || { wins: 0, total: 0 };
+            genderStats.total++;
+            if (votedForEntity) genderStats.wins++;
+            entity.demographics.byGender.set(user.gender, genderStats);
+          }
 
-          // Age demographics
-          const age = user?.age_range || 'Unknown';
-          const ageStats = entity.demographics.byAge.get(age) || { wins: 0, total: 0 };
-          ageStats.total++;
-          if (votedForEntity) ageStats.wins++;
-          entity.demographics.byAge.set(age, ageStats);
+          // Age demographics — skip if missing
+          if (user?.age_range) {
+            const ageStats = entity.demographics.byAge.get(user.age_range) || { wins: 0, total: 0 };
+            ageStats.total++;
+            if (votedForEntity) ageStats.wins++;
+            entity.demographics.byAge.set(user.age_range, ageStats);
+          }
 
-          // Country demographics
-          const country = user?.country || 'Unknown';
-          const countryStats = entity.demographics.byCountry.get(country) || { wins: 0, total: 0 };
-          countryStats.total++;
-          if (votedForEntity) countryStats.wins++;
-          entity.demographics.byCountry.set(country, countryStats);
+          // Country demographics — skip if missing
+          if (user?.country) {
+            const countryStats = entity.demographics.byCountry.get(user.country) || { wins: 0, total: 0 };
+            countryStats.total++;
+            if (votedForEntity) countryStats.wins++;
+            entity.demographics.byCountry.set(user.country, countryStats);
+          }
         });
       });
 

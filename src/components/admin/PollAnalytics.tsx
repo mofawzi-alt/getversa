@@ -156,7 +156,8 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
     function groupBy(field: keyof RawVote): DemographicBreakdown[] {
       const groups = new Map<string, { a: number; b: number }>();
       votes.forEach(v => {
-        const label = (v[field] as string) || 'Unknown';
+        const label = v[field] as string;
+        if (!label) return; // skip votes without demographic data
         const cur = groups.get(label) || { a: 0, b: 0 };
         if (v.choice === 'A') cur.a++; else cur.b++;
         groups.set(label, cur);
