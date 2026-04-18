@@ -6,11 +6,24 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const KNOWN_CATEGORIES = [
-  "brands", "business & startups", "fintech & money", "style & design",
-  "entertainment", "sports", "wellness & habits", "the pulse",
-  "beauty", "food & drinks", "lifestyle", "personality", "relationships", "telecom",
-];
+// AI-facing simple labels mapped to actual DB category values
+const CATEGORY_MAP: Record<string, string[]> = {
+  "brands": ["Retail & E-commerce", "FMCG & Food"],
+  "business & startups": ["Financial Services"],
+  "fintech & money": ["Financial Services"],
+  "style & design": ["Beauty & Personal Care", "Lifestyle & Society"],
+  "entertainment": ["Media & Entertainment"],
+  "sports": ["Media & Entertainment"],
+  "wellness & habits": ["Lifestyle & Society"],
+  "the pulse": ["The Pulse"],
+  "beauty": ["Beauty & Personal Care"],
+  "food & drinks": ["FMCG & Food", "Food Delivery & Dining"],
+  "lifestyle": ["Lifestyle & Society"],
+  "personality": ["Lifestyle & Society"],
+  "relationships": ["Lifestyle & Society"],
+  "telecom": ["Telco & Tech"],
+};
+const KNOWN_CATEGORIES = Object.keys(CATEGORY_MAP);
 
 const FILTER_TOOL = {
   type: "function",
@@ -115,34 +128,46 @@ serve(async (req) => {
     const filters = JSON.parse(toolCall.function.arguments);
     const { keywords = [], category, gender, age_range, controversial, intent_summary } = filters;
 
-    // 2. Query polls
-    let pollQuery = supabase
-      .from("polls")
-      .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at")
-      .eq("is_active", true)
-      .limit(60);
+    // 2. Query polls — try progressively looser filters until we get results
+    const buildQuery = (useCategory: boolean, useKeywords: boolean) => {
+      let q = supabase
+        .from("polls")
+        .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(60);
 
-    if (category && category !== "any") {
-      pollQuery = pollQuery.ilike("category", category);
-    }
-
-    if (keywords.length > 0) {
-      // OR across keywords on question/option_a/option_b
-      const orFilters: string[] = [];
-      for (const kw of keywords.slice(0, 5)) {
-        const safe = kw.replace(/[%,()]/g, "");
-        if (safe.length < 2) continue;
-        orFilters.push(`question.ilike.%${safe}%`);
-        orFilters.push(`option_a.ilike.%${safe}%`);
-        orFilters.push(`option_b.ilike.%${safe}%`);
+      if (useCategory && category && category !== "any") {
+        const dbCats = CATEGORY_MAP[category.toLowerCase()] || [];
+        if (dbCats.length > 0) q = q.in("category", dbCats);
       }
-      if (orFilters.length > 0) pollQuery = pollQuery.or(orFilters.join(","));
+
+      if (useKeywords && keywords.length > 0) {
+        const orFilters: string[] = [];
+        for (const kw of keywords.slice(0, 5)) {
+          const safe = kw.replace(/[%,()]/g, "").trim();
+          if (safe.length < 2) continue;
+          orFilters.push(`question.ilike.%${safe}%`);
+          orFilters.push(`option_a.ilike.%${safe}%`);
+          orFilters.push(`option_b.ilike.%${safe}%`);
+          orFilters.push(`subtitle.ilike.%${safe}%`);
+          orFilters.push(`category.ilike.%${safe}%`);
+        }
+        if (orFilters.length > 0) q = q.or(orFilters.join(","));
+      }
+      return q;
+    };
+
+    // Try strict (category + keywords) → keywords only → category only → recent fallback
+    let polls: any[] = [];
+    const attempts: Array<[boolean, boolean]> = [[true, true], [false, true], [true, false], [false, false]];
+    for (const [useCat, useKw] of attempts) {
+      const { data, error } = await buildQuery(useCat, useKw);
+      if (error) throw error;
+      if (data && data.length > 0) { polls = data; break; }
     }
 
-    const { data: polls, error: pollErr } = await pollQuery;
-    if (pollErr) throw pollErr;
-
-    let matchedPolls = polls || [];
+    let matchedPolls = polls;
 
     // 3. If demographic filter set, score polls by vote splits matching the filter
     if ((gender && gender !== "any") || (age_range && age_range !== "any") || controversial) {
