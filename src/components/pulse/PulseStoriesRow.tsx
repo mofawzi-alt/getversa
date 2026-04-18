@@ -220,18 +220,7 @@ export default function PulseStoriesRow() {
       });
     }
 
-    // 3-6 — User top categories (or defaults for guests/new users)
-    const cats = (userTopCats?.length ? userTopCats : DEFAULT_CATEGORIES).slice(0, 4);
-    for (const cat of cats) {
-      const c = pulse.by_category?.[cat];
-      if (!c) continue;
-      list.push({
-        topic: `category:${cat}`,
-        label: cat.split(' ')[0].replace(/^\w/, (s) => s.toUpperCase()),
-        emoji: emojiFor(cat),
-        cards: [pulseCardToStory(c, cat.toUpperCase(), emojiFor(cat))],
-      });
-    }
+    // Categories moved out — single "Browse" entry point added below
 
     // 7 — Updates (real per-poll diffs)
     if (user && (updates?.length || 0) > 0) {
@@ -323,6 +312,21 @@ export default function PulseStoriesRow() {
               </button>
             );
           })}
+          {/* Browse all categories — link to /explore */}
+          <button
+            type="button"
+            onClick={() => { window.location.href = '/explore'; }}
+            className="flex flex-col items-center gap-1 w-16 active:scale-95 transition-transform"
+          >
+            <div className="w-16 h-16 rounded-full p-[2px] bg-muted">
+              <div className="w-full h-full rounded-full bg-background flex items-center justify-center text-2xl">
+                🗂️
+              </div>
+            </div>
+            <span className="text-[10px] font-medium text-foreground/80 truncate w-full text-center">
+              Categories
+            </span>
+          </button>
         </div>
       </div>
 
