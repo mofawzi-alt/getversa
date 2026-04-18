@@ -993,9 +993,6 @@ export default function Home() {
         {/* ═══ BRAND PACK BANNER ═══ */}
         <BrandPackBanner />
 
-        {/* ═══ PULSE STORIES ROW (IG-style circles) ═══ */}
-        <PulseStoriesRow />
-
         {/* ═══ DAILY PULSE STRIP ═══ */}
         <DailyPulseStrip />
 
@@ -1018,6 +1015,9 @@ export default function Home() {
             onPollTap={(poll) => setModalPoll(poll)}
           />
         </div>
+
+        {/* ═══ PULSE STORIES ROW (IG-style circles) — below hero ═══ */}
+        <PulseStoriesRow />
 
         {/* Live voter count strip — "X people voted in the last hour" */}
         <LiveVoterCount />
