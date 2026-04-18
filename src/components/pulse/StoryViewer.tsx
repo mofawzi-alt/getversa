@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Share2, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -149,7 +150,7 @@ export default function StoryViewer({
   if (!open || cards.length === 0) return null;
   const card = cards[index];
 
-  return (
+  const content = (
     <AnimatePresence>
       <motion.div
         key="story-backdrop"
@@ -173,119 +174,113 @@ export default function StoryViewer({
             maxWidth: 'calc(100vw - 16px)',
           }}
         >
-        {/* Progress bars */}
-        <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2 pt-3">
-          {cards.map((_, i) => (
-            <div key={i} className="flex-1 h-0.5 rounded-full bg-white/30 overflow-hidden">
-              <div
-                className="h-full bg-white rounded-full transition-[width]"
-                style={{
-                  width: i < index ? '100%' : i === index ? `${progress * 100}%` : '0%',
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Top bar */}
-        <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
-          {card.shareable !== false && (
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); handleShare(card); }}
-              className="w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white"
-              aria-label="Share"
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onClose(); }}
-            className="w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Tap regions */}
-        <div className="absolute inset-0" onClick={handleTap} />
-
-        {/* Card content */}
-        <motion.div
-          key={index}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.25 }}
-          className="absolute inset-0 pointer-events-none"
-        >
-          {card.backgroundImage ? (
-            <img
-              src={card.backgroundImage}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-black" />
-          )}
-          {/* Dark overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/85" />
-
-          {/* Top label */}
-          {card.label && (
-            <div className="absolute top-12 left-0 right-0 text-center px-6 pointer-events-none">
-              <p className="text-white/90 text-sm font-medium tracking-wide uppercase">
-                {card.categoryEmoji ? `${card.categoryEmoji} ` : ''}{card.label}
-              </p>
-            </div>
-          )}
-
-          {/* Center content */}
-          <div className="absolute inset-x-0 bottom-32 px-6 text-white text-center">
-            <h2 className="text-2xl font-bold leading-tight mb-4 drop-shadow-lg">
-              {card.headline}
-            </h2>
-            {card.primaryText && (
-              <p className="text-3xl font-extrabold tracking-tight mb-2 drop-shadow-lg">
-                {card.primaryText}
-              </p>
-            )}
-            {card.secondaryText && (
-              <p className="text-sm text-white/80">{card.secondaryText}</p>
-            )}
-
-            {(card.splitA && card.splitB) && (
-              <div className="mt-5 space-y-2 pointer-events-none">
-                <SplitBar label={card.splitA.label} pct={card.splitA.pct} highlight={card.splitA.pct >= card.splitB.pct} />
-                <SplitBar label={card.splitB.label} pct={card.splitB.pct} highlight={card.splitB.pct > card.splitA.pct} />
+          <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2 pt-3">
+            {cards.map((_, i) => (
+              <div key={i} className="flex-1 h-0.5 rounded-full bg-white/30 overflow-hidden">
+                <div
+                  className="h-full bg-white rounded-full transition-[width]"
+                  style={{
+                    width: i < index ? '100%' : i === index ? `${progress * 100}%` : '0%',
+                  }}
+                />
               </div>
-            )}
+            ))}
           </div>
 
-          {/* Bottom CTA */}
-          {(card.votePollId || card.cta) && (
-            <div className="absolute bottom-8 left-0 right-0 px-6 pointer-events-auto">
+          <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+            {card.shareable !== false && (
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (card.cta) { card.cta.onClick(); return; }
-                  handleVote(card);
-                }}
-                className="w-full h-12 rounded-full bg-white text-black font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                onClick={(e) => { e.stopPropagation(); handleShare(card); }}
+                className="w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white"
+                aria-label="Share"
               >
-                {card.cta?.label || 'Vote Now'}
-                <ChevronRight className="w-4 h-4" />
+                <Share2 className="w-4 h-4" />
               </button>
+            )}
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onClose(); }}
+              className="w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="absolute inset-0" onClick={handleTap} />
+
+          <motion.div
+            key={index}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
+            className="absolute inset-0 pointer-events-none"
+          >
+            {card.backgroundImage ? (
+              <img
+                src={card.backgroundImage}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-black" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/85" />
+
+            {card.label && (
+              <div className="absolute top-12 left-0 right-0 text-center px-5 pointer-events-none">
+                <p className="text-white/90 text-sm font-medium tracking-wide uppercase">
+                  {card.categoryEmoji ? `${card.categoryEmoji} ` : ''}{card.label}
+                </p>
+              </div>
+            )}
+
+            <div className="absolute inset-x-0 bottom-24 px-5 text-white text-center">
+              <h2 className="text-[clamp(1.6rem,4vw,2.25rem)] font-bold leading-tight mb-3 drop-shadow-lg text-balance">
+                {card.headline}
+              </h2>
+              {card.primaryText && (
+                <p className="text-[clamp(2rem,6vw,3.25rem)] font-extrabold tracking-tight mb-2 drop-shadow-lg text-balance">
+                  {card.primaryText}
+                </p>
+              )}
+              {card.secondaryText && (
+                <p className="text-sm text-white/80 text-balance">{card.secondaryText}</p>
+              )}
+
+              {(card.splitA && card.splitB) && (
+                <div className="mt-4 space-y-2 pointer-events-none">
+                  <SplitBar label={card.splitA.label} pct={card.splitA.pct} highlight={card.splitA.pct >= card.splitB.pct} />
+                  <SplitBar label={card.splitB.label} pct={card.splitB.pct} highlight={card.splitB.pct > card.splitA.pct} />
+                </div>
+              )}
             </div>
-          )}
-        </motion.div>
+
+            {(card.votePollId || card.cta) && (
+              <div className="absolute bottom-6 left-0 right-0 px-5 pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (card.cta) { card.cta.onClick(); return; }
+                    handleVote(card);
+                  }}
+                  className="w-full h-12 rounded-full bg-white text-black font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                >
+                  {card.cta?.label || 'Vote Now'}
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </motion.div>
         </div>
       </motion.div>
     </AnimatePresence>
   );
+
+  return typeof document !== 'undefined' ? createPortal(content, document.body) : content;
 }
 
 function SplitBar({ label, pct, highlight }: { label: string; pct: number; highlight: boolean }) {
