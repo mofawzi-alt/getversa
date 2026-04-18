@@ -61,19 +61,27 @@ export default function SharedPoll() {
     })();
   }, [id]);
 
-  // If user is logged in and already voted, redirect to home
+  // If user is logged in and already voted, show results with their previous choice
   useEffect(() => {
     if (!user || !id) return;
-    supabase
-      .from('votes')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('poll_id', id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) navigate('/home', { replace: true });
-      });
-  }, [user, id, navigate]);
+    (async () => {
+      const { data: existing } = await supabase
+        .from('votes')
+        .select('choice')
+        .eq('user_id', user.id)
+        .eq('poll_id', id)
+        .maybeSingle();
+      if (!existing) return;
+      setMyChoice(existing.choice as 'A' | 'B');
+      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: [id] });
+      if (results?.[0]) {
+        setPercentA(results[0].percent_a);
+        setPercentB(results[0].percent_b);
+        setTotalVotes(results[0].total_votes);
+      }
+      setPhase('results');
+    })();
+  }, [user, id]);
 
   const handleVote = useCallback(async (choice: 'A' | 'B') => {
     if (!poll || isVoting) return;
