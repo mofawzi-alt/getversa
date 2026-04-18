@@ -215,7 +215,7 @@ serve(async (req) => {
           messages: [
             {
               role: "system",
-              content: "You write 1-2 punchy sentences summarizing what these Egyptian Gen Z polls reveal. No bullet points. Direct, confident, culturally aware.",
+              content: "You write 1-2 punchy sentences summarizing what these Egyptian opinion polls reveal. No bullet points. Direct, confident, culturally aware. Do not mention 'Gen Z' or any specific generation.",
             },
             {
               role: "user",
