@@ -1059,30 +1059,6 @@ export default function Home() {
 
 
 
-        {/* ═══ Single Categories link (replaces full strip) ═══ */}
-        <div className="flex gap-3 px-3 pb-2 mb-1">
-          {trendingPolls.length > 0 && (
-            <div
-              className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
-              onClick={() => navigate('/explore?tab=trending')}
-            >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500/25 to-red-500/15 border-2 border-orange-400 flex items-center justify-center">
-                <Flame className="h-6 w-6 text-orange-500" />
-              </div>
-              <span className="text-[10px] font-bold text-foreground">Trending</span>
-            </div>
-          )}
-          <div
-            className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
-            onClick={() => navigate('/explore')}
-          >
-            <div className="w-16 h-16 rounded-full bg-muted border-2 border-border/60 flex items-center justify-center">
-              <span className="text-2xl">🗂️</span>
-            </div>
-            <span className="text-[10px] font-medium text-foreground">Categories</span>
-          </div>
-        </div>
-
 
         {/* ═══ 🔴 LIVE DEBATES ═══ */}
         <section className="mb-3">
