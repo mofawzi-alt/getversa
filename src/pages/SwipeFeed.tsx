@@ -6,7 +6,7 @@ import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame } from 'lucide-
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import ShareImageCard from '@/components/poll/ShareImageCard';
-import CinematicResults from '@/components/poll/CinematicResults';
+
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -1376,31 +1376,7 @@ export default function SwipeFeed() {
       </AnimatePresence>
 
 
-      {/* Cinematic Results Screen */}
-      {cinematicData && (
-        <CinematicResults
-          poll={cinematicData.poll}
-          choice={cinematicData.choice}
-          percentA={cinematicData.percentA}
-          percentB={cinematicData.percentB}
-          totalVotes={cinematicData.totalVotes}
-          visible={!!cinematicData}
-          onNext={() => {
-            const pollId = cinematicData.poll.id;
-            setCinematicData(null);
-            // Scroll to next unvoted card
-            if (polls) {
-              const idx = polls.findIndex(p => p.id === pollId);
-              const unvotedAfter = polls.filter((p, i) => i > idx && !votedResults.has(p.id));
-              const nextPoll = unvotedAfter[0];
-              if (nextPoll) {
-                const nextEl = cardRefs.current.get(nextPoll.id);
-                nextEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
-            }
-          }}
-        />
-      )}
+      {/* CinematicResults removed — inline results in feed cards are used instead */}
     </div>
   );
 }

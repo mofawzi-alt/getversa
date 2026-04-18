@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, ArrowRight, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { lovable } from '@/integrations/lovable/index';
-import CinematicResults from '@/components/poll/CinematicResults';
+
 
 interface Poll {
   id: string;
@@ -260,18 +260,28 @@ export default function SharedPoll() {
     );
   }
 
-  // ── RESULTS PHASE (Cinematic) ──
+  // ── RESULTS PHASE (inline simple) ──
   if (phase === 'results' && myChoice) {
+    const userPercent = myChoice === 'A' ? percentA : percentB;
     return (
-      <CinematicResults
-        poll={poll}
-        choice={myChoice}
-        percentA={percentA}
-        percentB={percentB}
-        totalVotes={totalVotes}
-        visible={true}
-        onNext={handleNextFromResults}
-      />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6 gap-6">
+        <div className="text-center space-y-2">
+          <p className="text-5xl font-bold text-foreground">{userPercent}%</p>
+          <p className="text-muted-foreground">voted with you on "{poll.option_a} vs {poll.option_b}"</p>
+        </div>
+        <div className="w-full max-w-sm space-y-2">
+          <div className="flex justify-between text-sm font-semibold text-foreground">
+            <span>{poll.option_a} {percentA}%</span>
+            <span>{percentB}% {poll.option_b}</span>
+          </div>
+          <div className="h-3 bg-muted rounded-full overflow-hidden flex">
+            <div className="bg-primary h-full" style={{ width: `${percentA}%` }} />
+            <div className="bg-secondary h-full" style={{ width: `${percentB}%` }} />
+          </div>
+          <p className="text-xs text-muted-foreground text-center">{totalVotes.toLocaleString()} votes</p>
+        </div>
+        <Button onClick={handleNextFromResults} className="rounded-2xl px-8">Next</Button>
+      </div>
     );
   }
 
