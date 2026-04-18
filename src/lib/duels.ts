@@ -4,7 +4,7 @@ const shuffle = <T,>(items: T[]) => [...items].sort(() => Math.random() - 0.5);
 
 export async function pickDuelPollIds(
   seedPollIds: string[] = [],
-  desiredCount = 5,
+  desiredCount = 10,
   category?: string | null
 ) {
   const uniqueSeedIds = Array.from(new Set(seedPollIds.filter(Boolean)));
