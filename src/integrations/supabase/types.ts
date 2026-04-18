@@ -170,6 +170,47 @@ export type Database = {
           },
         ]
       }
+      campaign_panelists: {
+        Row: {
+          accepted_at: string | null
+          campaign_id: string
+          completed_at: string | null
+          dropped_at: string | null
+          id: string
+          invited_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          campaign_id: string
+          completed_at?: string | null
+          dropped_at?: string | null
+          id?: string
+          invited_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          campaign_id?: string
+          completed_at?: string | null
+          dropped_at?: string | null
+          id?: string
+          invited_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_panelists_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "poll_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_polls: {
         Row: {
           campaign_id: string
@@ -205,6 +246,47 @@ export type Database = {
             columns: ["poll_id"]
             isOneToOne: false
             referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_verbatim_themes: {
+        Row: {
+          campaign_id: string
+          generated_at: string
+          generation_run_id: string
+          id: string
+          sample_quotes: Json
+          supporting_quote_count: number
+          theme_label: string
+          theme_summary: string
+        }
+        Insert: {
+          campaign_id: string
+          generated_at?: string
+          generation_run_id: string
+          id?: string
+          sample_quotes?: Json
+          supporting_quote_count?: number
+          theme_label: string
+          theme_summary: string
+        }
+        Update: {
+          campaign_id?: string
+          generated_at?: string
+          generation_run_id?: string
+          id?: string
+          sample_quotes?: Json
+          supporting_quote_count?: number
+          theme_label?: string
+          theme_summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_verbatim_themes_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "poll_campaigns"
             referencedColumns: ["id"]
           },
         ]
@@ -906,6 +988,7 @@ export type Database = {
           attribute_config: Json
           brand_logo_url: string | null
           brand_name: string | null
+          campaign_type: string
           created_at: string
           created_by: string
           description: string | null
@@ -916,6 +999,8 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          panel_incentive_points: number | null
+          panel_size_target: number | null
           release_at: string | null
           target_vote_count: number | null
           updated_at: string
@@ -925,6 +1010,7 @@ export type Database = {
           attribute_config?: Json
           brand_logo_url?: string | null
           brand_name?: string | null
+          campaign_type?: string
           created_at?: string
           created_by: string
           description?: string | null
@@ -935,6 +1021,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          panel_incentive_points?: number | null
+          panel_size_target?: number | null
           release_at?: string | null
           target_vote_count?: number | null
           updated_at?: string
@@ -944,6 +1032,7 @@ export type Database = {
           attribute_config?: Json
           brand_logo_url?: string | null
           brand_name?: string | null
+          campaign_type?: string
           created_at?: string
           created_by?: string
           description?: string | null
@@ -954,6 +1043,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          panel_incentive_points?: number | null
+          panel_size_target?: number | null
           release_at?: string | null
           target_vote_count?: number | null
           updated_at?: string
@@ -2240,6 +2331,16 @@ export type Database = {
         Args: { p_campaign_id: string }
         Returns: Json
       }
+      assemble_focus_group_panel: {
+        Args: {
+          p_age_range?: string
+          p_campaign_id: string
+          p_city?: string
+          p_gender?: string
+          p_target_size: number
+        }
+        Returns: number
+      }
       can_send_notification: {
         Args: {
           p_notification_type: string
@@ -2247,6 +2348,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      count_eligible_panelists: {
+        Args: { p_age_range?: string; p_city?: string; p_gender?: string }
+        Returns: number
       }
       generate_daily_queue: {
         Args: { p_user_id: string }
@@ -2381,6 +2486,17 @@ export type Database = {
           shared_dimensions: number
           user_a_score: number
           user_b_score: number
+        }[]
+      }
+      get_focus_group_stats: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          accepted_count: number
+          completed_count: number
+          completion_rate: number
+          dropped_count: number
+          invited_count: number
+          total_panelists: number
         }[]
       }
       get_friend_votes: {
@@ -2566,6 +2682,10 @@ export type Database = {
         Returns: boolean
       }
       is_campaign_client: {
+        Args: { _campaign_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_campaign_panelist: {
         Args: { _campaign_id: string; _user_id: string }
         Returns: boolean
       }
