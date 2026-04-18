@@ -177,7 +177,7 @@ export default function Friends() {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-xs leading-tight">Versa Arena</p>
               <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
-                Challenge a friend to a live 5-poll duel
+                Challenge a friend to a live 10-poll duel
               </p>
             </div>
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />

@@ -41,7 +41,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
     setSending(true);
     try {
       const pollIds = await pickDuelPollIds([pollId]);
-      if (pollIds.length < 5) {
+      if (pollIds.length < 10) {
         toast.error('Not enough polls available');
         return;
       }
@@ -53,7 +53,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
           challenged_id: selectedFriend,
           poll_id: pollIds[0],
           poll_ids: pollIds,
-          game_type: 'duel_5',
+          game_type: 'duel_10',
           taunt_message: taunt,
           challenger_choice: JSON.stringify([userChoice]),
         })
