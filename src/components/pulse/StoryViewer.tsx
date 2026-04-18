@@ -41,6 +41,8 @@ type Props = {
   autoAdvanceMs?: number;
   /** Override the share button — receives current card index, returns true if handled. */
   onShareOverride?: (cardIndex: number) => boolean | Promise<boolean>;
+  /** Called when the last card finishes. Return true to suppress auto-close (e.g. flipping to next story). */
+  onComplete?: () => boolean | void;
 };
 
 const DEFAULT_DURATION = 4000;
@@ -53,6 +55,7 @@ export default function StoryViewer({
   startIndex = 0,
   autoAdvanceMs = DEFAULT_DURATION,
   onShareOverride,
+  onComplete,
 }: Props) {
   const navigate = useNavigate();
   const [index, setIndex] = useState(startIndex);
@@ -108,6 +111,8 @@ export default function StoryViewer({
     if (index >= cards.length - 1) {
       markSeenLocally(topic);
       trackStoryEvent(topic, null, { completed: true });
+      const handled = onComplete?.();
+      if (handled === true) return;
       onClose();
       return;
     }
