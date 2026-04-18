@@ -156,7 +156,7 @@ export default function StoryViewer({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[300] bg-black"
+        className="fixed inset-0 z-[300] bg-black/90 flex items-center justify-center"
         onPointerDown={() => setPaused(true)}
         onPointerUp={() => { setPaused(false); startedAt.current = Date.now() - progress * autoAdvanceMs; }}
         onPointerCancel={() => setPaused(false)}
@@ -165,6 +165,7 @@ export default function StoryViewer({
         dragElastic={0.4}
         onDragEnd={(_, info) => { if (info.offset.y > 100) { onClose(); } }}
       >
+        <div className="relative w-full h-full max-w-[440px] sm:max-h-[90vh] sm:rounded-3xl overflow-hidden bg-black shadow-2xl mx-auto">
         {/* Progress bars */}
         <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2 pt-3">
           {cards.map((_, i) => (
@@ -274,6 +275,7 @@ export default function StoryViewer({
             </div>
           )}
         </motion.div>
+        </div>
       </motion.div>
     </AnimatePresence>
   );
