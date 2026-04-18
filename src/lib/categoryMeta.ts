@@ -1,16 +1,16 @@
 import {
-  Briefcase,
+  Banknote,
   Car,
-  Clapperboard,
   Compass,
   Flame,
-  Landmark,
+  Heart,
+  Popcorn,
   ShoppingBag,
-  Smartphone,
   Sparkles,
   Users,
-  UtensilsCrossed,
   Utensils,
+  Wifi,
+  ShoppingBasket,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -33,15 +33,15 @@ export const VERSA_CATEGORIES = [
 export type VersaCategory = (typeof VERSA_CATEGORIES)[number];
 
 const EXACT_CATEGORY_ICONS: Record<string, LucideIcon> = {
-  'fmcg & food': UtensilsCrossed,
+  'fmcg & food': ShoppingBasket,
   'beauty & personal care': Sparkles,
-  'financial services': Landmark,
-  'media & entertainment': Clapperboard,
+  'financial services': Banknote,
+  'media & entertainment': Popcorn,
   'retail & e-commerce': ShoppingBag,
-  'telco & tech': Smartphone,
+  'telco & tech': Wifi,
   'food delivery & dining': Utensils,
   'automotive & mobility': Car,
-  'lifestyle & society': Users,
+  'lifestyle & society': Heart,
   'the pulse': Flame,
 };
 
@@ -60,15 +60,15 @@ export const CATEGORY_COLOR: Record<string, string> = {
 };
 
 const KEYWORD_FALLBACK: Array<{ keywords: string[]; icon: LucideIcon }> = [
-  { keywords: ['money', 'finance', 'fintech', 'bank', 'budget', 'crypto', 'payment', 'business', 'startup'], icon: Landmark },
+  { keywords: ['money', 'finance', 'fintech', 'bank', 'budget', 'crypto', 'payment', 'business', 'startup'], icon: Banknote },
   { keywords: ['beauty', 'makeup', 'skincare', 'cosmetic', 'hair'], icon: Sparkles },
   { keywords: ['delivery', 'restaurant', 'dining', 'cafe', 'café'], icon: Utensils },
-  { keywords: ['food', 'drink', 'snack', 'beverage', 'fmcg'], icon: UtensilsCrossed },
+  { keywords: ['food', 'drink', 'snack', 'beverage', 'fmcg'], icon: ShoppingBasket },
   { keywords: ['retail', 'shopping', 'ecommerce', 'e-commerce', 'store', 'brand'], icon: ShoppingBag },
-  { keywords: ['telecom', 'mobile', 'phone', 'network', 'internet', 'tech', 'app'], icon: Smartphone },
+  { keywords: ['telecom', 'mobile', 'phone', 'network', 'internet', 'tech', 'app'], icon: Wifi },
   { keywords: ['car', 'auto', 'vehicle', 'mobility', 'ride'], icon: Car },
-  { keywords: ['movie', 'film', 'series', 'tv', 'show', 'celeb', 'music', 'sport', 'game', 'entertainment'], icon: Clapperboard },
-  { keywords: ['lifestyle', 'society', 'relationship', 'wellness', 'style', 'fashion', 'personality'], icon: Users },
+  { keywords: ['movie', 'film', 'series', 'tv', 'show', 'celeb', 'music', 'sport', 'game', 'entertainment'], icon: Popcorn },
+  { keywords: ['lifestyle', 'society', 'relationship', 'wellness', 'style', 'fashion', 'personality'], icon: Heart },
   { keywords: ['pulse', 'trend', 'viral', 'culture', 'news'], icon: Flame },
 ];
 
