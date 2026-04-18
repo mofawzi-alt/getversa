@@ -4,6 +4,8 @@ import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import BrandDisclaimer from '@/components/poll/BrandDisclaimer';
+import CategoryBadge from '@/components/category/CategoryBadge';
+import { mapToVersaCategory } from '@/lib/categoryMeta';
 
 interface Poll {
   id: string;
