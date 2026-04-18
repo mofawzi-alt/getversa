@@ -190,7 +190,7 @@ export default function BrandCampaign() {
             {currentPoll.subtitle && (
               <p className="text-xs text-muted-foreground mb-3">{currentPoll.subtitle}</p>
             )}
-            <div className="flex flex-col gap-3 mt-3">
+            <div className="grid grid-cols-2 gap-2 mt-3">
               <button
                 onClick={() => handleVote('A')}
                 disabled={voting}
@@ -203,8 +203,8 @@ export default function BrandCampaign() {
                   side="A"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/75 to-transparent">
-                  <div className="text-white text-base font-semibold text-center">{currentPoll.option_a}</div>
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/75 to-transparent">
+                  <div className="text-white text-sm font-semibold text-center line-clamp-2">{currentPoll.option_a}</div>
                 </div>
               </button>
               <button
@@ -219,8 +219,8 @@ export default function BrandCampaign() {
                   side="B"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/75 to-transparent">
-                  <div className="text-white text-base font-semibold text-center">{currentPoll.option_b}</div>
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/75 to-transparent">
+                  <div className="text-white text-sm font-semibold text-center line-clamp-2">{currentPoll.option_b}</div>
                 </div>
               </button>
             </div>
