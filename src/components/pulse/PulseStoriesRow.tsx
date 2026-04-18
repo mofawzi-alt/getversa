@@ -220,18 +220,7 @@ export default function PulseStoriesRow() {
       });
     }
 
-    // 3-6 — User top categories (or defaults for guests/new users)
-    const cats = (userTopCats?.length ? userTopCats : DEFAULT_CATEGORIES).slice(0, 4);
-    for (const cat of cats) {
-      const c = pulse.by_category?.[cat];
-      if (!c) continue;
-      list.push({
-        topic: `category:${cat}`,
-        label: cat.split(' ')[0].replace(/^\w/, (s) => s.toUpperCase()),
-        emoji: emojiFor(cat),
-        cards: [pulseCardToStory(c, cat.toUpperCase(), emojiFor(cat))],
-      });
-    }
+    // Categories moved out — single "Browse" entry point added below
 
     // 7 — Updates (real per-poll diffs)
     if (user && (updates?.length || 0) > 0) {
