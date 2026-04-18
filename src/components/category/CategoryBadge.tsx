@@ -24,7 +24,7 @@ export default function CategoryBadge({
     variant === 'plain'
       ? 'inline-flex items-center text-primary'
       : variant === 'overlay'
-      ? `inline-flex items-center rounded-full backdrop-blur-md bg-white/85 font-medium shadow-sm ${colorClass.replace(/bg-\S+/g, '').trim()}`
+      ? 'inline-flex items-center rounded-full backdrop-blur-md bg-white/90 text-foreground font-semibold shadow-md ring-1 ring-black/5'
       : `inline-flex items-center rounded-full font-medium ${colorClass}`;
 
   const spacingClasses = isSmall ? 'gap-1.5 text-xs px-2 py-0.5' : 'gap-1 text-[10px] px-1.5 py-0.5';
