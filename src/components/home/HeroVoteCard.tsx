@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import CategoryBadge from '@/components/category/CategoryBadge';
+import { mapToVersaCategory } from '@/lib/categoryMeta';
 import { toast } from 'sonner';
 import { Check, Send } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
@@ -471,6 +473,16 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           {poll.is_hot_take && <HotTakeBadge />}
           <ControversialBadge percentA={poll.percentA} percentB={poll.percentB} totalVotes={poll.totalVotes} />
 
+          {/* Category badge */}
+          {poll.category && (
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+              <CategoryBadge
+                category={mapToVersaCategory(poll.category)}
+                variant="overlay"
+                size="xs"
+              />
+            </div>
+          )}
 
 
           {/* Option A — left half */}
