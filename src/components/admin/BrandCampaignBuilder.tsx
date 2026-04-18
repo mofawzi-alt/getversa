@@ -111,6 +111,26 @@ export default function BrandCampaignBuilder() {
                     {c.brand_name || '—'} · {c.is_active ? 'Active' : 'Paused'}
                   </div>
                 </div>
+
+                <div className="mb-2">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1 text-center">
+                    Where polls appear
+                  </div>
+                  <Select
+                    value={c.visibility_mode || 'mixed'}
+                    onValueChange={(v) => updateVisibilityMode(c.id, v)}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mixed">Mixed — Hero feed + Brand banner</SelectItem>
+                      <SelectItem value="bundle_only">Bundle only — Brand banner only</SelectItem>
+                      <SelectItem value="hero_only">Hero only — No banner, native feed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="flex items-center justify-center gap-1 flex-wrap">
                   <CampaignAnalyticsDialog campaignId={c.id} campaignName={c.name} brandName={c.brand_name} />
                   <CampaignFeedbackConfigDialog campaignId={c.id} campaignName={c.name} />
