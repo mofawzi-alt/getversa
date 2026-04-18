@@ -337,6 +337,50 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_pulse: {
+        Row: {
+          by_category: Json | null
+          cairo: Json | null
+          cards: Json
+          egypt_today: Json
+          generated_at: string
+          id: string
+          pinned_poll_id: string | null
+          pulse_date: string
+          slot: string
+        }
+        Insert: {
+          by_category?: Json | null
+          cairo?: Json | null
+          cards?: Json
+          egypt_today?: Json
+          generated_at?: string
+          id?: string
+          pinned_poll_id?: string | null
+          pulse_date: string
+          slot: string
+        }
+        Update: {
+          by_category?: Json | null
+          cairo?: Json | null
+          cards?: Json
+          egypt_today?: Json
+          generated_at?: string
+          id?: string
+          pinned_poll_id?: string | null
+          pulse_date?: string
+          slot?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_pulse_pinned_poll_id_fkey"
+            columns: ["pinned_poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dimensions: {
         Row: {
           created_at: string
@@ -1191,6 +1235,39 @@ export type Database = {
         }
         Relationships: []
       }
+      pulse_settings: {
+        Row: {
+          cairo_enabled: boolean
+          egypt_today_enabled: boolean
+          evening_verdict_enabled: boolean
+          id: string
+          morning_pulse_enabled: boolean
+          stories_row_enabled: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          cairo_enabled?: boolean
+          egypt_today_enabled?: boolean
+          evening_verdict_enabled?: boolean
+          id?: string
+          morning_pulse_enabled?: boolean
+          stories_row_enabled?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          cairo_enabled?: boolean
+          egypt_today_enabled?: boolean
+          evening_verdict_enabled?: boolean
+          id?: string
+          morning_pulse_enabled?: boolean
+          stories_row_enabled?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -1367,6 +1444,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      story_views: {
+        Row: {
+          cards_viewed: number
+          completed: boolean
+          created_at: string
+          id: string
+          share_taps: number
+          topic: string
+          updated_at: string
+          user_id: string
+          view_date: string
+          vote_taps: number
+        }
+        Insert: {
+          cards_viewed?: number
+          completed?: boolean
+          created_at?: string
+          id?: string
+          share_taps?: number
+          topic: string
+          updated_at?: string
+          user_id: string
+          view_date?: string
+          vote_taps?: number
+        }
+        Update: {
+          cards_viewed?: number
+          completed?: boolean
+          created_at?: string
+          id?: string
+          share_taps?: number
+          topic?: string
+          updated_at?: string
+          user_id?: string
+          view_date?: string
+          vote_taps?: number
+        }
+        Relationships: []
       }
       subscription_plans: {
         Row: {
