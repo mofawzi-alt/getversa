@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import CategoryBadge from '@/components/category/CategoryBadge';
+import { mapToVersaCategory } from '@/lib/categoryMeta';
 import { toast } from 'sonner';
 import { Check, Send } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
