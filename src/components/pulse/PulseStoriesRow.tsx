@@ -280,6 +280,7 @@ export default function PulseStoriesRow() {
   if (settings?.stories_row_enabled === false) return null;
   if (!pulse || circles.length === 0) return null;
 
+
   const activeCircle = circles.find((c) => c.topic === openTopic);
 
   return (
