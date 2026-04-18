@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Users, MapPin, Venus } from 'lucide-react';
+import { Sparkles, Users, MapPin, UserCircle2 } from 'lucide-react';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import ExportButtons from './ExportButtons';
@@ -88,7 +88,7 @@ export default function ResearchBrief({ question, summary, polls }: Props) {
                 )}
                 {p.gender_teaser && (
                   <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <Venus className="h-3 w-3" />
+                    <UserCircle2 className="h-3 w-3" />
                     {p.gender_teaser}
                   </div>
                 )}
