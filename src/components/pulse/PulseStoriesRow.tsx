@@ -436,7 +436,7 @@ export default function PulseStoriesRow() {
             categoryEmoji: '👥',
             headline: f.poll.question,
             primaryText: `Chose ${choseLabel}`,
-            secondaryText: 'Tap to vote & see results',
+            secondaryText: 'Open poll to join in',
             votePollId: f.poll.id,
             shareable: true,
           };
