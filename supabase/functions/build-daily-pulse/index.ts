@@ -136,12 +136,14 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
   const polls = await fetchActivePolls(supabase);
   const votes = await fetchRecentVotes(supabase, sinceISO);
   const tallies = tallyVotes(votes);
+  console.log('DEBUG tallies size:', tallies.size, 'sample:', Array.from(tallies.entries()).slice(0, 3));
 
   // Filter to polls with meaningful volume
   const ranked = Array.from(tallies.entries())
     .filter(([pid, t]) => polls.has(pid) && t.total >= 2) // dev threshold
     .map(([pid, t]) => ({ poll: polls.get(pid)!, t }))
     .filter((x) => x.poll.poll_type !== 'predict'); // surprise handled separately
+  console.log('DEBUG ranked size:', ranked.length);
 
   // Big Result: most votes overall
   const bigSorted = [...ranked].sort((a, b) => b.t.total - a.t.total);
