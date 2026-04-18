@@ -138,7 +138,9 @@ export default function Explore() {
       const { data: votes } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
       return new Set(votes?.map(v => v.poll_id) || []);
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const { data: pollsData } = useQuery({
