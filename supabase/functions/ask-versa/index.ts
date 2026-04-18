@@ -98,7 +98,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You translate natural language questions about Egyptian Gen Z opinion polls into structured filters. Categories available: ${KNOWN_CATEGORIES.join(", ")}. Be conservative — only set demographic filters when explicitly asked.`,
+            content: `You translate natural language questions about Egyptian opinion polls into structured filters. Categories available: ${KNOWN_CATEGORIES.join(", ")}. Be conservative — only set demographic filters when explicitly asked.`,
           },
           { role: "user", content: question },
         ],
@@ -215,7 +215,7 @@ serve(async (req) => {
           messages: [
             {
               role: "system",
-              content: "You write 1-2 punchy sentences summarizing what these Egyptian Gen Z polls reveal. No bullet points. Direct, confident, culturally aware.",
+              content: "You write 1-2 punchy sentences summarizing what these Egyptian opinion polls reveal. No bullet points. Direct, confident, culturally aware. Do not mention 'Gen Z' or any specific generation.",
             },
             {
               role: "user",
