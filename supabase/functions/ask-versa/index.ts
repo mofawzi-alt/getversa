@@ -59,8 +59,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
+    if (!GROQ_API_KEY) throw new Error("GROQ_API_KEY not configured");
+    const AI_URL = "https://api.groq.com/openai/v1/chat/completions";
+    const AI_MODEL = "llama-3.3-70b-versatile";
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -75,11 +77,11 @@ serve(async (req) => {
     }
 
     // 1. Extract filters via tool calling
-    const extractResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const extractResp = await fetch(AI_URL, {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: AI_MODEL,
         messages: [
           {
             role: "system",
@@ -180,11 +182,11 @@ serve(async (req) => {
         .slice(0, 8)
         .map((p: any) => `- "${p.question}" (${p.option_a} vs ${p.option_b})`)
         .join("\n");
-      const sumResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const sumResp = await fetch(AI_URL, {
         method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: AI_MODEL,
           messages: [
             {
               role: "system",
