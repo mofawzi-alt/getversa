@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, BarChart3, Users, Globe, Calendar, Sparkles, TrendingUp, ChevronRight, Download, Star, MessageSquare } from 'lucide-react';
+import { Loader2, BarChart3, Users, Globe, Calendar, Sparkles, TrendingUp, ChevronRight, Download, Star, MessageSquare, CalendarClock } from 'lucide-react';
+import CampaignDripSchedule from './CampaignDripSchedule';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
@@ -116,7 +117,7 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
 
   return (
     <Tabs defaultValue="overview" className="w-full max-w-full overflow-x-hidden">
-      <TabsList className="grid grid-cols-6 w-full">
+      <TabsList className="grid grid-cols-7 w-full">
         <TabsTrigger value="overview" className="text-xs gap-1.5">
           <TrendingUp className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Overview</span>
@@ -124,6 +125,10 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
         <TabsTrigger value="polls" className="text-xs gap-1.5">
           <BarChart3 className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Polls</span>
+        </TabsTrigger>
+        <TabsTrigger value="schedule" className="text-xs gap-1.5">
+          <CalendarClock className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Sched</span>
         </TabsTrigger>
         <TabsTrigger value="demographics" className="text-xs gap-1.5">
           <Users className="w-3.5 h-3.5" />
@@ -142,6 +147,10 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
           <span className="hidden sm:inline">AI</span>
         </TabsTrigger>
       </TabsList>
+
+      <TabsContent value="schedule" className="mt-4">
+        <CampaignDripSchedule campaignId={campaignId} />
+      </TabsContent>
 
       {/* OVERVIEW */}
       <TabsContent value="overview" className="space-y-4 mt-4">
