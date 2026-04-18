@@ -33,6 +33,7 @@ import UserManagement from '@/components/admin/UserManagement';
 import { NotificationAnalytics } from '@/components/admin/NotificationAnalytics';
 import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
 import PulseAdminPanel from '@/components/admin/PulseAdminPanel';
+import BreakdownAdminPanel from '@/components/admin/BreakdownAdminPanel';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
@@ -169,8 +170,11 @@ export default function AdminDashboard() {
           </div>
         </TabsContent>
 
-        <TabsContent value="pulse" className="space-y-4">
+        <TabsContent value="pulse" className="space-y-6">
           <PulseAdminPanel />
+          <div className="border-t pt-6">
+            <BreakdownAdminPanel />
+          </div>
         </TabsContent>
 
         <TabsContent value="daily-limit" className="space-y-4">

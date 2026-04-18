@@ -82,6 +82,62 @@ export type Database = {
         }
         Relationships: []
       }
+      breakdown_findings: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          detail: Json
+          finding_type: string
+          headline: string
+          id: string
+          pinned: boolean
+          poll_id: string
+          scan_at: string
+          scan_run_id: string
+          status: string
+          total_votes: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          detail?: Json
+          finding_type: string
+          headline: string
+          id?: string
+          pinned?: boolean
+          poll_id: string
+          scan_at?: string
+          scan_run_id: string
+          status?: string
+          total_votes?: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          detail?: Json
+          finding_type?: string
+          headline?: string
+          id?: string
+          pinned?: boolean
+          poll_id?: string
+          scan_at?: string
+          scan_run_id?: string
+          status?: string
+          total_votes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "breakdown_findings_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_clients: {
         Row: {
           campaign_id: string

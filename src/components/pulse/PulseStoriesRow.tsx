@@ -6,7 +6,7 @@ import { hasSeenLocally } from '@/lib/pulseTime';
 import { trackStoryEvent } from '@/lib/storyAnalytics';
 import {
   Pin, Flame, MapPin, Building2, Bell, Users, Sparkles,
-  Swords, Layers, Brain, Clock, Trophy, PartyPopper,
+  Swords, Layers, Brain, Clock, Trophy, PartyPopper, BarChart3,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -14,6 +14,7 @@ import {
   useYourPollsUpdated, usePredictRecap, useClosingSoon,
   useWeeklyVerdict, useNewThisWeek, useLastVisit,
 } from '@/hooks/usePulseCircles';
+import { useBreakdownFindings, type BreakdownFinding } from '@/hooks/useBreakdownFindings';
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
 
@@ -85,6 +86,12 @@ const TOPIC_VISUALS: Record<string, CircleVisual> = {
     ringGradient: 'bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500',
     iconColor: 'text-white',
   },
+  breakdown: {
+    Icon: BarChart3,
+    tileGradient: 'bg-gradient-to-br from-indigo-600 to-purple-800',
+    ringGradient: 'bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500',
+    iconColor: 'text-white',
+  },
 };
 
 const FALLBACK_VISUAL: CircleVisual = {
@@ -140,6 +147,57 @@ function fmtCountdown(endsAt: string): string {
   return `${m}m left`;
 }
 
+function breakdownToCard(f: BreakdownFinding): StoryCardData {
+  const d = f.detail || {};
+  const poll = d.poll || {};
+  let primary = '';
+  let secondary = '';
+  let splitA: { label: string; pct: number } | undefined;
+  let splitB: { label: string; pct: number } | undefined;
+  let label = 'The Breakdown';
+  let bg = poll.image_a_url || poll.image_b_url || null;
+
+  if (f.finding_type === 'gender_split' && d.female && d.male) {
+    label = 'Gender Split';
+    primary = `Women ${d.female.pct_a}% • Men ${d.male.pct_a}%`;
+    secondary = `${d.gap_pct}pt gap on "${poll.option_a}"`;
+    splitA = { label: `♀ ${poll.option_a}`, pct: d.female.pct_a };
+    splitB = { label: `♂ ${poll.option_a}`, pct: d.male.pct_a };
+  } else if (f.finding_type === 'age_gap' && d.young && d.old) {
+    label = 'Age Gap';
+    primary = `Gen Z ${d.young.pct_a}% • 35+ ${d.old.pct_a}%`;
+    secondary = `${d.gap_pct}% difference between youngest and oldest`;
+    splitA = { label: `18-24 ${poll.option_a}`, pct: d.young.pct_a };
+    splitB = { label: `35+ ${poll.option_a}`, pct: d.old.pct_a };
+  } else if (f.finding_type === 'city_war' && d.cairo && d.alexandria) {
+    label = 'City War';
+    primary = `Cairo ${d.cairo.pct_a}% • Alex ${d.alexandria.pct_a}%`;
+    secondary = `Two cities, two answers`;
+    splitA = { label: `Cairo ${poll.option_a}`, pct: d.cairo.pct_a };
+    splitB = { label: `Alex ${poll.option_a}`, pct: d.alexandria.pct_a };
+  } else if (f.finding_type === 'dominant_demo' && d.segment) {
+    label = `${d.demo_label} dominates`;
+    primary = `${d.segment.winner_pct}% chose ${d.segment.winner_option}`;
+    secondary = `Overall: ${d.overall.pct_a}% / ${d.overall.pct_b}% — one of the strongest verdicts`;
+    splitA = { label: `${d.demo_label} ${poll.option_a}`, pct: d.segment.pct_a };
+    splitB = { label: `Overall ${poll.option_a}`, pct: d.overall.pct_a };
+    bg = d.segment.winner_option === poll.option_a ? poll.image_a_url : poll.image_b_url;
+  }
+
+  return {
+    backgroundImage: bg,
+    label,
+    categoryEmoji: '📊',
+    headline: f.headline,
+    primaryText: primary,
+    secondaryText: `${secondary} • Based on ${f.total_votes.toLocaleString()} votes on Versa`,
+    splitA,
+    splitB,
+    votePollId: poll.id,
+    shareable: true,
+  };
+}
+
 export default function PulseStoriesRow() {
   const { user } = useAuth();
   const { data: pulse } = useDailyPulse();
@@ -157,6 +215,7 @@ export default function PulseStoriesRow() {
   const { data: closingData } = useClosingSoon();
   const { data: weeklyData } = useWeeklyVerdict();
   const { data: newPollsData } = useNewThisWeek(lastVisit);
+  const { data: breakdownData } = useBreakdownFindings();
 
   const circles: CircleSpec[] = useMemo(() => {
     if (!pulse) return [];
@@ -417,9 +476,20 @@ export default function PulseStoriesRow() {
       });
     }
 
+    // ── The Breakdown (BLUE dot when has new findings)
+    if (breakdownData && breakdownData.length > 0) {
+      list.push({
+        topic: 'breakdown',
+        label: 'Breakdown',
+        cards: breakdownData.map((f) => breakdownToCard(f)),
+        dot: hasSeenLocally('breakdown') ? null : 'blue',
+        priority: 35,
+      });
+    }
+
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pulse, settings, battleData, updatesData, friendsData, categoriesData, predictData, closingData, weeklyData, newPollsData, user, bump]);
+  }, [pulse, settings, battleData, updatesData, friendsData, categoriesData, predictData, closingData, weeklyData, newPollsData, breakdownData, user, bump]);
 
   // Sort: fixedPosition first (egypt=0, battle=1, updates=2), then by dot priority then by priority field
   const sorted = useMemo(() => {
