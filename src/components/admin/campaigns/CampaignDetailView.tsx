@@ -5,8 +5,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, BarChart3, Users, Globe, Calendar, Sparkles, TrendingUp, ChevronRight, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import {
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
+} from 'recharts';
 import PollAnalytics from '@/components/admin/PollAnalytics';
-import { exportCampaignPdf } from './exportCampaignPdf';
+import {
+  exportOverviewPdf,
+  exportPollsPdf,
+  exportDemographicsPdf,
+  exportNarrativePdf,
+} from './exportCampaignPdf';
 
 interface Props {
   campaignId: string;
@@ -33,8 +42,13 @@ interface DemoRow {
   vote_count: number;
 }
 
+const COLOR_A = 'hsl(142, 71%, 45%)'; // green
+const COLOR_B = 'hsl(217, 91%, 60%)'; // blue
+const PIE_COLORS = ['hsl(217, 91%, 60%)', 'hsl(340, 75%, 55%)', 'hsl(280, 60%, 60%)', 'hsl(40, 90%, 55%)', 'hsl(160, 60%, 50%)'];
+
 export default function CampaignDetailView({ campaignId, campaignName, brandName }: Props) {
   const [drilldownPollId, setDrilldownPollId] = useState<string | null>(null);
+  const [insights, setInsights] = useState<string>('');
 
   const { data: results = [], isLoading: loadingResults } = useQuery({
     queryKey: ['campaign-analytics', campaignId],
@@ -55,6 +69,8 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
   });
 
   const totalVotes = useMemo(() => results.reduce((s, r) => s + Number(r.total_votes || 0), 0), [results]);
+  const totalA = useMemo(() => results.reduce((s, r) => s + Number(r.votes_a || 0), 0), [results]);
+  const totalB = totalVotes - totalA;
   const avgPerPoll = results.length > 0 ? Math.round(totalVotes / results.length) : 0;
   const topPoll = useMemo(() => [...results].sort((a, b) => b.total_votes - a.total_votes)[0], [results]);
 
@@ -70,50 +86,98 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
     return <p className="text-sm text-muted-foreground py-12 text-center">No poll data yet.</p>;
   }
 
-  const handleExport = () => {
+  const handleExportOverview = () => {
     try {
-      exportCampaignPdf({ campaignName, brandName, results, demos });
-      toast.success('Report downloaded');
-    } catch (e) {
-      console.error(e);
-      toast.error('Failed to generate PDF');
-    }
+      exportOverviewPdf({ campaignName, brandName, results });
+      toast.success('Overview PDF downloaded');
+    } catch (e) { console.error(e); toast.error('Failed to generate PDF'); }
+  };
+  const handleExportPolls = () => {
+    try {
+      exportPollsPdf({ campaignName, brandName, results });
+      toast.success('Polls PDF downloaded');
+    } catch (e) { console.error(e); toast.error('Failed to generate PDF'); }
+  };
+  const handleExportDemos = () => {
+    try {
+      exportDemographicsPdf({ campaignName, brandName, results, demos });
+      toast.success('Demographics PDF downloaded');
+    } catch (e) { console.error(e); toast.error('Failed to generate PDF'); }
+  };
+  const handleExportNarrative = () => {
+    try {
+      exportNarrativePdf({ campaignName, brandName, insights, results });
+      toast.success('AI Insights PDF downloaded');
+    } catch (e) { console.error(e); toast.error('Failed to generate PDF'); }
   };
 
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <div className="flex items-center gap-2 mb-2">
-        <TabsList className="grid grid-cols-4 flex-1">
-          <TabsTrigger value="overview" className="text-xs gap-1.5">
-            <TrendingUp className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="polls" className="text-xs gap-1.5">
-            <BarChart3 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Polls</span>
-          </TabsTrigger>
-          <TabsTrigger value="demographics" className="text-xs gap-1.5">
-            <Users className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Demographics</span>
-          </TabsTrigger>
-          <TabsTrigger value="narrative" className="text-xs gap-1.5">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">AI Insights</span>
-          </TabsTrigger>
-        </TabsList>
-        <Button size="sm" variant="outline" onClick={handleExport} className="gap-1.5 shrink-0 h-9">
-          <Download className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">PDF</span>
-        </Button>
-      </div>
+      <TabsList className="grid grid-cols-4 w-full">
+        <TabsTrigger value="overview" className="text-xs gap-1.5">
+          <TrendingUp className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Overview</span>
+        </TabsTrigger>
+        <TabsTrigger value="polls" className="text-xs gap-1.5">
+          <BarChart3 className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Polls</span>
+        </TabsTrigger>
+        <TabsTrigger value="demographics" className="text-xs gap-1.5">
+          <Users className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Demographics</span>
+        </TabsTrigger>
+        <TabsTrigger value="narrative" className="text-xs gap-1.5">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">AI</span>
+        </TabsTrigger>
+      </TabsList>
 
       {/* OVERVIEW */}
       <TabsContent value="overview" className="space-y-4 mt-4">
+        <div className="flex justify-end">
+          <Button size="sm" variant="outline" onClick={handleExportOverview} className="gap-1.5 h-8">
+            <Download className="w-3.5 h-3.5" />
+            Overview PDF
+          </Button>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <KpiCard label="Polls" value={results.length} />
           <KpiCard label="Total votes" value={totalVotes.toLocaleString()} />
           <KpiCard label="Avg / poll" value={avgPerPoll.toLocaleString()} />
           <KpiCard label="Top vote count" value={(topPoll?.total_votes ?? 0).toLocaleString()} />
+        </div>
+
+        {/* Overall A vs B donut */}
+        <div className="rounded-xl border border-border p-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+            Overall split (all polls combined)
+          </div>
+          <div className="h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Option A', value: totalA },
+                    { name: 'Option B', value: totalB },
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  <Cell fill={COLOR_A} />
+                  <Cell fill={COLOR_B} />
+                </Pie>
+                <Tooltip
+                  contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
+                />
+                <Legend verticalAlign="bottom" height={24} iconSize={10} wrapperStyle={{ fontSize: 12 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {topPoll && (
@@ -155,6 +219,36 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
 
       {/* POLLS */}
       <TabsContent value="polls" className="space-y-3 mt-4">
+        <div className="flex justify-end">
+          <Button size="sm" variant="outline" onClick={handleExportPolls} className="gap-1.5 h-8">
+            <Download className="w-3.5 h-3.5" />
+            Polls PDF
+          </Button>
+        </div>
+
+        {/* Votes-per-poll bar chart */}
+        <div className="rounded-xl border border-border p-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+            Votes per poll
+          </div>
+          <div className="h-[220px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={results.map((r, i) => ({ name: `P${i + 1}`, A: r.votes_a, B: r.votes_b, q: r.question }))}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
+                  labelFormatter={(_, payload) => payload?.[0]?.payload?.q ?? ''}
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="A" stackId="v" fill={COLOR_A} name="Option A" />
+                <Bar dataKey="B" stackId="v" fill={COLOR_B} name="Option B" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
         {drilldownPollId ? (
           <div className="space-y-3">
             <button
@@ -182,7 +276,7 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
                   <div className="text-sm font-semibold flex-1">{r.question}</div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
                 </div>
-                <div className="text-xs text-muted-foreground">{r.total_votes} votes</div>
+                <div className="text-xs text-muted-foreground">{r.total_votes} votes · tap for full analytics</div>
                 <ResultBar
                   optionA={r.option_a}
                   optionB={r.option_b}
@@ -198,6 +292,12 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
 
       {/* DEMOGRAPHICS */}
       <TabsContent value="demographics" className="space-y-3 mt-4">
+        <div className="flex justify-end">
+          <Button size="sm" variant="outline" onClick={handleExportDemos} className="gap-1.5 h-8">
+            <Download className="w-3.5 h-3.5" />
+            Demographics PDF
+          </Button>
+        </div>
         {loadingDemo ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -207,8 +307,20 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
         )}
       </TabsContent>
 
-      <TabsContent value="narrative" className="mt-4">
-        <NarrativeTab campaignId={campaignId} />
+      <TabsContent value="narrative" className="mt-4 space-y-3">
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleExportNarrative}
+            disabled={!insights}
+            className="gap-1.5 h-8"
+          >
+            <Download className="w-3.5 h-3.5" />
+            AI Insights PDF
+          </Button>
+        </div>
+        <NarrativeTab campaignId={campaignId} insights={insights} setInsights={setInsights} />
       </TabsContent>
     </Tabs>
   );
@@ -289,24 +401,72 @@ function DemographicsView({ demos }: { demos: DemoRow[] }) {
 
   return (
     <>
-      {Object.entries(grouped).map(([type, segments]) => (
-        <div key={type} className="rounded-xl bg-muted/30 p-3">
-          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-            {segmentIcon(type)}
-            {type.replace('_', ' ')}
-          </div>
-          <div className="space-y-1.5">
-            {Object.entries(segments)
-              .sort((a, b) => b[1].A + b[1].B - (a[1].A + a[1].B))
-              .map(([seg, counts]) => {
-                const total = (counts.A || 0) + (counts.B || 0);
-                const pctA = total ? Math.round(((counts.A || 0) / total) * 100) : 0;
+      {Object.entries(grouped).map(([type, segments]) => {
+        const isPie = type === 'gender';
+        const segArr = Object.entries(segments)
+          .map(([seg, counts]) => ({ seg, total: counts.A + counts.B, A: counts.A, B: counts.B }))
+          .sort((a, b) => b.total - a.total);
+
+        return (
+          <div key={type} className="rounded-xl bg-muted/30 p-3">
+            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+              {segmentIcon(type)}
+              {type.replace('_', ' ')}
+            </div>
+
+            {/* Distribution chart */}
+            {isPie ? (
+              <div className="h-[180px] mb-3">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={segArr.map((s) => ({ name: s.seg, value: s.total }))}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={65}
+                      dataKey="value"
+                      label={(e: any) => `${e.name} ${Math.round(e.percent * 100)}%`}
+                      labelLine={false}
+                    >
+                      {segArr.map((_, i) => (
+                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-[180px] mb-3">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={segArr.slice(0, 8).map((s) => ({ name: s.seg, A: s.A, B: s.B }))}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-15} textAnchor="end" height={50} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip
+                      contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="A" stackId="d" fill={COLOR_A} name="Option A" />
+                    <Bar dataKey="B" stackId="d" fill={COLOR_B} name="Option B" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Per-segment A vs B detail */}
+            <div className="space-y-1.5">
+              {segArr.map(({ seg, A, B }) => {
+                const total = A + B;
+                const pctA = total ? Math.round((A / total) * 100) : 0;
                 return (
                   <div key={seg} className="flex items-center gap-2 text-xs">
                     <span className="w-24 truncate">{seg}</span>
                     <div className="flex-1 h-1.5 bg-background rounded-full overflow-hidden flex">
                       <div className="bg-green-500" style={{ width: `${pctA}%` }} />
-                      <div className="bg-blue-500 flex-1" />
+                      <div className="bg-blue-500" style={{ width: `${100 - pctA}%` }} />
                     </div>
                     <span className="w-20 text-right text-muted-foreground">
                       {pctA}% / {100 - pctA}% · {total}
@@ -314,15 +474,23 @@ function DemographicsView({ demos }: { demos: DemoRow[] }) {
                   </div>
                 );
               })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </>
   );
 }
 
-function NarrativeTab({ campaignId }: { campaignId: string }) {
-  const [insights, setInsights] = useState<string | null>(null);
+function NarrativeTab({
+  campaignId,
+  insights,
+  setInsights,
+}: {
+  campaignId: string;
+  insights: string;
+  setInsights: (v: string) => void;
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -403,7 +571,6 @@ function NarrativeTab({ campaignId }: { campaignId: string }) {
   );
 }
 
-// Tiny inline markdown → HTML for headings, bullets, bold. Keeps bundle small.
 function simpleMarkdown(md: string): string {
   const escape = (s: string) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
