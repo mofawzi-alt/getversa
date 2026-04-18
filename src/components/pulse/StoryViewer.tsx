@@ -275,6 +275,7 @@ export default function StoryViewer({
             </div>
           )}
         </motion.div>
+        </div>
       </motion.div>
     </AnimatePresence>
   );
