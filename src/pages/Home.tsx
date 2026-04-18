@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
 import DailyPulseStrip from '@/components/home/DailyPulseStrip';
+import PulseStoriesRow from '@/components/pulse/PulseStoriesRow';
+import MorningPulseTrigger from '@/components/pulse/MorningPulseTrigger';
+import EveningVerdictTrigger from '@/components/pulse/EveningVerdictTrigger';
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -990,8 +993,15 @@ export default function Home() {
         {/* ═══ BRAND PACK BANNER ═══ */}
         <BrandPackBanner />
 
+        {/* ═══ PULSE STORIES ROW (IG-style circles) ═══ */}
+        <PulseStoriesRow />
+
         {/* ═══ DAILY PULSE STRIP ═══ */}
         <DailyPulseStrip />
+
+        {/* Auto-triggered full-screen sequences */}
+        <MorningPulseTrigger />
+        <EveningVerdictTrigger />
 
         {/* ═══ INFINITE HERO VOTE CARD ═══ */}
         <div ref={heroRef}>
