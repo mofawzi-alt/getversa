@@ -27,11 +27,14 @@ export function useActiveBrandCampaign() {
     queryFn: async (): Promise<ActiveBrandCampaign | null> => {
       const now = new Date().toISOString();
 
-      // Fetch active campaigns currently in their release window
+      // Fetch active campaigns currently in their release window.
+      // Exclude 'hero_only' campaigns — those polls flow into the regular Hero feed
+      // and should NOT have a brand pack banner.
       const { data: campaigns, error } = await supabase
         .from('poll_campaigns')
-        .select('id, name, brand_name, brand_logo_url, description, release_at, expires_at, is_active')
+        .select('id, name, brand_name, brand_logo_url, description, release_at, expires_at, is_active, visibility_mode')
         .eq('is_active', true)
+        .neq('visibility_mode', 'hero_only')
         .or(`release_at.is.null,release_at.lte.${now}`)
         .or(`expires_at.is.null,expires_at.gte.${now}`);
 
