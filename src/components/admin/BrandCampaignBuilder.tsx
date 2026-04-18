@@ -37,6 +37,30 @@ export default function BrandCampaignBuilder() {
     queryClient.invalidateQueries({ queryKey: ['active-brand-campaign'] });
   };
 
+  const deleteCampaign = async (id: string, name: string) => {
+    const alsoDeletePolls = confirm(
+      `Delete campaign "${name}"?\n\nClick OK to ALSO delete all polls in this campaign.\nClick Cancel to keep the polls (they'll be unlinked) — then confirm again to delete just the campaign.`
+    );
+    if (alsoDeletePolls) {
+      const { data: cps } = await supabase.from('campaign_polls').select('poll_id').eq('campaign_id', id);
+      const pollIds = (cps || []).map((c: any) => c.poll_id);
+      if (pollIds.length) {
+        await supabase.from('campaign_polls').delete().eq('campaign_id', id);
+        const { error: pErr } = await supabase.from('polls').delete().in('id', pollIds);
+        if (pErr) return toast.error(`Failed to delete polls: ${pErr.message}`);
+      }
+    } else {
+      if (!confirm(`Delete just the campaign "${name}" and keep its polls?`)) return;
+      await supabase.from('campaign_polls').delete().eq('campaign_id', id);
+      await supabase.from('polls').update({ campaign_id: null }).eq('campaign_id', id);
+    }
+    const { error } = await supabase.from('poll_campaigns').delete().eq('id', id);
+    if (error) return toast.error(error.message);
+    toast.success('Campaign deleted');
+    refetchCampaigns();
+    queryClient.invalidateQueries({ queryKey: ['active-brand-campaign'] });
+  };
+
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
