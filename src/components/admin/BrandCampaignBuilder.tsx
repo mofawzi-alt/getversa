@@ -106,6 +106,9 @@ export default function BrandCampaignBuilder() {
                 <Button size="sm" variant="ghost" onClick={() => toggleCampaignActive(c.id, c.is_active)}>
                   {c.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </Button>
+                <Button size="sm" variant="ghost" onClick={() => deleteCampaign(c.id, c.name)} className="text-destructive hover:text-destructive">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             ))}
           </div>
