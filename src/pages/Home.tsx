@@ -405,6 +405,7 @@ export default function Home() {
   
   // Category filter for hero card
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [categoriesSheetOpen, setCategoriesSheetOpen] = useState(false);
   const savedHeroIndex = useRef<number>(0);
 
   useEffect(() => {
