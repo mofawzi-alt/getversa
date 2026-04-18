@@ -103,6 +103,7 @@ export default function BrandCampaignBuilder() {
                   </div>
                 </div>
                 <CampaignAnalyticsDialog campaignId={c.id} campaignName={c.name} brandName={c.brand_name} />
+                <CampaignFeedbackConfigDialog campaignId={c.id} campaignName={c.name} />
                 <CampaignClientsManager campaignId={c.id} campaignName={c.name} />
                 <Button size="sm" variant="ghost" onClick={() => toggleCampaignActive(c.id, c.is_active)}>
                   {c.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
