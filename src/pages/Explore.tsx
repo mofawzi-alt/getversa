@@ -138,7 +138,9 @@ export default function Explore() {
       const { data: votes } = await supabase.from('votes').select('poll_id').eq('user_id', user.id);
       return new Set(votes?.map(v => v.poll_id) || []);
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const { data: pollsData } = useQuery({
@@ -353,8 +355,11 @@ export default function Explore() {
           {/* All Polls in Category */}
           <div className="px-3 space-y-2.5">
             {(() => {
-              const visiblePolls = unvotedOnly
-                ? categoryPollsBase.filter(p => !votedPollIds?.has(p.id))
+              const votedReady = votedPollIds !== undefined;
+              const visiblePolls = unvotedOnly && votedReady
+                ? categoryPollsBase.filter(p => !votedPollIds.has(p.id))
+                : unvotedOnly && !votedReady
+                ? []
                 : categoryPollsBase;
               if (visiblePolls.length === 0) {
                 return (
