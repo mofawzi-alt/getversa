@@ -134,7 +134,8 @@ export default function StoryViewer({
     trackStoryEvent(topic, 'share_taps');
     if (onShareOverride) {
       try {
-        const handled = await onShareOverride(safeIndex);
+        const idx = Math.max(0, Math.min(index, cards.length - 1));
+        const handled = await onShareOverride(idx);
         if (handled) return;
       } catch { /* fall through */ }
     }
