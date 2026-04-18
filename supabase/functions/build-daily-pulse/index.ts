@@ -149,7 +149,7 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
 
   // Closest Battle: closest to 50/50, min 100 votes
   const closeRanked = ranked
-    .filter((x) => x.t.total >= 100)
+    .filter((x) => x.t.total >= 5)
     .map((x) => ({ ...x, dist: Math.abs((x.t.a / x.t.total) - 0.5) }))
     .sort((a, b) => a.dist - b.dist);
   const closestBattle = closeRanked[0] ? pollCard(closeRanked[0].poll, closeRanked[0].t) : null;
