@@ -167,21 +167,6 @@ export default function Profile() {
         {/* Voting Insights */}
         <VotingInsights />
 
-        {/* Stats — non-duplicates of header pills */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="glass rounded-xl p-4 text-center">
-            <div className="text-2xl font-bold">{profile?.points || 0}</div>
-            <div className="text-xs text-card-foreground/70">Insight Points</div>
-          </div>
-          <div className="glass rounded-xl p-4 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <Target className="h-4 w-4 text-primary" />
-              <span className="text-2xl font-bold">{stats?.predictionAccuracy || 0}%</span>
-            </div>
-            <div className="text-xs text-card-foreground/70">Majority Rate</div>
-          </div>
-        </div>
-
         {/* Menu Items */}
         <div className="glass rounded-2xl divide-y divide-border">
           {menuItems.map(({ icon: Icon, label, path, color, highlight }: any) => (
