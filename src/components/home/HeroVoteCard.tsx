@@ -772,27 +772,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         </div>
       )}
 
-      {/* Cinematic Results — only in Full Reveal mode */}
-      {poll && cinematicData && revealMode === 'full' && (
-        <CinematicResults
-          poll={poll}
-          choice={cinematicData.choice}
-          percentA={cinematicData.percentA}
-          percentB={cinematicData.percentB}
-          totalVotes={cinematicData.totalVotes}
-          visible={!!cinematicData}
-          onNext={() => {
-            setCinematicData(null);
-            setResult(null);
-            setIsVoting(false);
-            setIsMinority(false);
-            setIsFirstVoteOfDay(false);
-            setRevealMode(null);
-            setShowHint(true);
-            onVoteComplete?.();
-          }}
-        />
-      )}
+      {/* CinematicResults removed — inline results on the card are used instead */}
 
       {showHookMoment && (
         <HookMoment

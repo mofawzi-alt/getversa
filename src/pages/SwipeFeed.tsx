@@ -1376,11 +1376,7 @@ export default function SwipeFeed() {
       </AnimatePresence>
 
 
-      {/* Cinematic Results Screen */}
-      {cinematicData && (
-        <CinematicResults
-          poll={cinematicData.poll}
-          choice={cinematicData.choice}
+      {/* CinematicResults removed — inline results in feed cards are used instead */}
           percentA={cinematicData.percentA}
           percentB={cinematicData.percentB}
           totalVotes={cinematicData.totalVotes}
