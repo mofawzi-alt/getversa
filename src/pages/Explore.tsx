@@ -110,6 +110,7 @@ export default function Explore() {
   const [modalPoll, setModalPoll] = useState<PollItem | null>(null);
   const [peopleLikeYou, setPeopleLikeYou] = useState(false);
   const [categorySort, setCategorySort] = useState<'most_voted' | 'most_recent' | 'most_controversial'>('most_voted');
+  const [unvotedOnly, setUnvotedOnly] = useState(true);
 
   useEffect(() => {
     const catParam = searchParams.get('category');
