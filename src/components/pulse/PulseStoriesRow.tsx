@@ -206,6 +206,7 @@ export default function PulseStoriesRow() {
   const lastVisit = useLastVisit();
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [bump, setBump] = useState(0);
+  const [shareFinding, setShareFinding] = useState<BreakdownFinding | null>(null);
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
