@@ -111,6 +111,8 @@ export default function StoryViewer({
     if (index >= cards.length - 1) {
       markSeenLocally(topic);
       trackStoryEvent(topic, null, { completed: true });
+      const handled = onComplete?.();
+      if (handled === true) return;
       onClose();
       return;
     }
