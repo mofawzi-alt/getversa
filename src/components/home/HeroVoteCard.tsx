@@ -473,17 +473,6 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           {poll.is_hot_take && <HotTakeBadge />}
           <ControversialBadge percentA={poll.percentA} percentB={poll.percentB} totalVotes={poll.totalVotes} />
 
-          {/* Category badge */}
-          {poll.category && (
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
-              <CategoryBadge
-                category={mapToVersaCategory(poll.category)}
-                variant="overlay"
-                size="xs"
-              />
-            </div>
-          )}
-
 
           {/* Option A — left half */}
           <div
