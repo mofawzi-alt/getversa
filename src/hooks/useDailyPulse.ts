@@ -19,6 +19,11 @@ export type PulseCard = {
   predicted_a?: number;
   predicted_b?: number;
   gap?: number;
+  // Cairo divergence fields (only set on cards in `cairo`)
+  cairo_pct_a?: number;
+  cairo_pct_b?: number;
+  national_pct_a?: number;
+  national_pct_b?: number;
 };
 
 export type DailyPulseRow = {
