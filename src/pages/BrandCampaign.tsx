@@ -179,11 +179,11 @@ export default function BrandCampaign() {
             {currentPoll.subtitle && (
               <p className="text-xs text-muted-foreground mb-3">{currentPoll.subtitle}</p>
             )}
-            <div className="grid grid-cols-2 gap-2 mt-3">
+            <div className="flex flex-col gap-3 mt-3">
               <button
                 onClick={() => handleVote('A')}
                 disabled={voting}
-                className="aspect-[4/5] rounded-2xl overflow-hidden bg-muted relative active:scale-[0.98] transition-transform disabled:opacity-50"
+                className="w-full aspect-[3/4] rounded-2xl overflow-hidden bg-muted relative active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 <PollOptionImage
                   imageUrl={currentPoll.image_a_url}
@@ -192,14 +192,14 @@ export default function BrandCampaign() {
                   side="A"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
-                  <div className="text-white text-sm font-semibold text-center">{currentPoll.option_a}</div>
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/75 to-transparent">
+                  <div className="text-white text-base font-semibold text-center">{currentPoll.option_a}</div>
                 </div>
               </button>
               <button
                 onClick={() => handleVote('B')}
                 disabled={voting}
-                className="aspect-[4/5] rounded-2xl overflow-hidden bg-muted relative active:scale-[0.98] transition-transform disabled:opacity-50"
+                className="w-full aspect-[3/4] rounded-2xl overflow-hidden bg-muted relative active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 <PollOptionImage
                   imageUrl={currentPoll.image_b_url}
@@ -208,8 +208,8 @@ export default function BrandCampaign() {
                   side="B"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
-                  <div className="text-white text-sm font-semibold text-center">{currentPoll.option_b}</div>
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/75 to-transparent">
+                  <div className="text-white text-base font-semibold text-center">{currentPoll.option_b}</div>
                 </div>
               </button>
             </div>
