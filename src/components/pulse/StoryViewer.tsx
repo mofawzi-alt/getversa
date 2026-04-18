@@ -52,6 +52,7 @@ export default function StoryViewer({
   cards,
   startIndex = 0,
   autoAdvanceMs = DEFAULT_DURATION,
+  onShareOverride,
 }: Props) {
   const navigate = useNavigate();
   const [index, setIndex] = useState(startIndex);
