@@ -6,7 +6,51 @@ import { useQuery } from '@tanstack/react-query';
 import StoryViewer, { type StoryCardData } from './StoryViewer';
 import { hasSeenLocally, localDateKey } from '@/lib/pulseTime';
 import { trackStoryEvent } from '@/lib/storyAnalytics';
-import { Pin } from 'lucide-react';
+import { Pin, Flame, MapPin, Building2, Bell, Users, Sparkles, type LucideIcon } from 'lucide-react';
+
+type CircleVisual = {
+  Icon: LucideIcon;
+  /** Tailwind gradient classes for the icon background tile */
+  tileGradient: string;
+  /** Tailwind gradient classes for the outer ring (when active/unseen) */
+  ringGradient: string;
+  /** Icon color class */
+  iconColor: string;
+};
+
+const TOPIC_VISUALS: Record<string, CircleVisual> = {
+  egypt_today: {
+    Icon: MapPin,
+    tileGradient: 'bg-gradient-to-br from-rose-500 to-red-600',
+    ringGradient: 'bg-gradient-to-tr from-rose-500 via-red-500 to-amber-400',
+    iconColor: 'text-white',
+  },
+  cairo: {
+    Icon: Building2,
+    tileGradient: 'bg-gradient-to-br from-amber-400 to-orange-600',
+    ringGradient: 'bg-gradient-to-tr from-amber-400 via-orange-500 to-rose-500',
+    iconColor: 'text-white',
+  },
+  updates: {
+    Icon: Bell,
+    tileGradient: 'bg-gradient-to-br from-sky-500 to-indigo-600',
+    ringGradient: 'bg-gradient-to-tr from-sky-400 via-indigo-500 to-fuchsia-500',
+    iconColor: 'text-white',
+  },
+  friends: {
+    Icon: Users,
+    tileGradient: 'bg-gradient-to-br from-fuchsia-500 to-purple-600',
+    ringGradient: 'bg-gradient-to-tr from-fuchsia-500 via-purple-500 to-indigo-500',
+    iconColor: 'text-white',
+  },
+};
+
+const FALLBACK_VISUAL: CircleVisual = {
+  Icon: Sparkles,
+  tileGradient: 'bg-gradient-to-br from-slate-500 to-slate-700',
+  ringGradient: 'bg-gradient-to-tr from-primary via-fuchsia-500 to-amber-400',
+  iconColor: 'text-white',
+};
 
 type CircleSpec = {
   topic: string;
@@ -280,11 +324,13 @@ export default function PulseStoriesRow() {
           <button
             type="button"
             onClick={() => { window.location.href = '/explore?tab=trending'; }}
-            className="flex flex-col items-center gap-1 w-16 active:scale-95 transition-transform"
+            className="flex flex-col items-center gap-1.5 w-16 active:scale-95 transition-transform"
           >
-            <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-br from-orange-500/25 to-red-500/15 border-2 border-orange-400">
-              <div className="w-full h-full rounded-full bg-background flex items-center justify-center text-2xl">
-                🔥
+            <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-orange-500 via-red-500 to-amber-400 shadow-lg shadow-orange-500/20">
+              <div className="w-full h-full rounded-full bg-background flex items-center justify-center p-[3px]">
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-inner">
+                  <Flame className="w-6 h-6 text-white drop-shadow" strokeWidth={2.25} />
+                </div>
               </div>
             </div>
             <span className="text-[10px] font-bold text-foreground truncate w-full text-center">
@@ -294,6 +340,8 @@ export default function PulseStoriesRow() {
           {circles.map((circle) => {
             const seen = hasSeenLocally(circle.topic);
             const showRing = !seen || circle.hasUpdate;
+            const visual = TOPIC_VISUALS[circle.topic] || FALLBACK_VISUAL;
+            const Icon = visual.Icon;
             return (
               <button
                 key={circle.topic}
@@ -302,23 +350,23 @@ export default function PulseStoriesRow() {
                   setOpenTopic(circle.topic);
                   trackStoryEvent(circle.topic);
                 }}
-                className="flex flex-col items-center gap-1 w-16 active:scale-95 transition-transform"
+                className="flex flex-col items-center gap-1.5 w-16 active:scale-95 transition-transform"
               >
                 <div
                   className={`w-16 h-16 rounded-full p-[2px] ${
-                    showRing
-                      ? 'bg-gradient-to-tr from-primary via-fuchsia-500 to-amber-400'
-                      : 'bg-muted'
+                    showRing ? `${visual.ringGradient} shadow-lg shadow-primary/10` : 'bg-muted'
                   }`}
                 >
-                  <div className={`w-full h-full rounded-full bg-background flex items-center justify-center text-2xl relative ${seen && !circle.hasUpdate ? 'opacity-60' : ''}`}>
-                    {circle.topic === 'egypt_today' && pulse.pinned_poll_id && (
-                      <Pin className="absolute top-1 right-1 w-3 h-3 text-primary fill-primary" />
-                    )}
-                    {circle.emoji}
-                    {circle.hasUpdate && (
-                      <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-background" />
-                    )}
+                  <div className="w-full h-full rounded-full bg-background flex items-center justify-center p-[3px]">
+                    <div className={`w-full h-full rounded-full ${visual.tileGradient} flex items-center justify-center shadow-inner relative ${seen && !circle.hasUpdate ? 'opacity-70' : ''}`}>
+                      {circle.topic === 'egypt_today' && pulse.pinned_poll_id && (
+                        <Pin className="absolute top-0.5 right-0.5 w-3 h-3 text-white fill-white" />
+                      )}
+                      <Icon className={`w-6 h-6 ${visual.iconColor} drop-shadow`} strokeWidth={2.25} />
+                      {circle.hasUpdate && (
+                        <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-background" />
+                      )}
+                    </div>
                   </div>
                 </div>
                 <span className="text-[10px] font-medium text-foreground/80 truncate w-full text-center">
