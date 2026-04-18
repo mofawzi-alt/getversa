@@ -587,6 +587,21 @@ export default function PulseStoriesRow() {
         onClose={() => { setOpenTopic(null); setBump((b) => b + 1); }}
         topic={openTopic || ''}
         cards={activeCircle?.cards || []}
+        onShareOverride={
+          openTopic === 'breakdown' && breakdownData
+            ? (cardIndex) => {
+                const finding = breakdownData[cardIndex];
+                if (!finding) return false;
+                setShareFinding(finding);
+                return true;
+              }
+            : undefined
+        }
+      />
+      <BreakdownShareCard
+        open={!!shareFinding}
+        finding={shareFinding}
+        onClose={() => setShareFinding(null)}
       />
     </>
   );
