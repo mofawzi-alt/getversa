@@ -113,8 +113,13 @@ function SmartLanding() {
   );
 }
 
-// DemographicsGuard — pass-through
+// DemographicsGuard — forces OAuth users to complete demographics before using the app
+import CompleteDemographicsModal from "@/components/onboarding/CompleteDemographicsModal";
 function DemographicsGuard({ children }: { children: React.ReactNode }) {
+  const { user, profile, loading } = useAuth();
+  if (loading || !user || !profile) return <>{children}</>;
+  const incomplete = !profile.age_range || !profile.gender || !profile.city;
+  if (incomplete) return <CompleteDemographicsModal />;
   return <>{children}</>;
 }
 
