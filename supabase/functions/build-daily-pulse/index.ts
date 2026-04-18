@@ -118,7 +118,7 @@ async function fetchSurprise(supabase: any, sinceISO: string, polls: Map<string,
   for (const [pid, pt] of predTally) {
     const poll = polls.get(pid);
     const at = tallies.get(pid);
-    if (!poll || !at || at.total < 3 || pt.total < 3) continue;
+    if (!poll || !at || at.total < 50 || pt.total < 10) continue;
     const predA = Math.round((pt.a / pt.total) * 100);
     const actualA = Math.round((at.a / at.total) * 100);
     const gap = Math.abs(predA - actualA);
@@ -139,7 +139,7 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
 
   // Filter to polls with meaningful volume
   const ranked = Array.from(tallies.entries())
-    .filter(([pid, t]) => polls.has(pid) && t.total >= 3)
+    .filter(([pid, t]) => polls.has(pid) && t.total >= 20)
     .map(([pid, t]) => ({ poll: polls.get(pid)!, t }))
     .filter((x) => x.poll.poll_type !== 'predict'); // surprise handled separately
 
@@ -149,7 +149,7 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
 
   // Closest Battle: closest to 50/50, min 100 votes
   const closeRanked = ranked
-    .filter((x) => x.t.total >= 3)
+    .filter((x) => x.t.total >= 100)
     .map((x) => ({ ...x, dist: Math.abs((x.t.a / x.t.total) - 0.5) }))
     .sort((a, b) => a.dist - b.dist);
   const closestBattle = closeRanked[0] ? pollCard(closeRanked[0].poll, closeRanked[0].t) : null;
@@ -166,8 +166,8 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
     .limit(1);
   const todayFirst = nextPoll?.[0] || null;
 
-  // Egypt Today: top 3 by total votes (different polls)
-  const egyptToday = bigSorted.slice(0, 3).map(({ poll, t }) => pollCard(poll, t));
+  // Egypt Today: top 3 by total votes (different polls). If admin pinned a poll, place it first.
+  let egyptToday = bigSorted.slice(0, 3).map(({ poll, t }) => pollCard(poll, t));
 
   // Cairo: top 3 filtered to Cairo voters
   const cairoSorted = ranked
@@ -192,6 +192,17 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
     .eq('slot', slot)
     .eq('pulse_date', pulseDate)
     .maybeSingle();
+
+  // If admin pinned a poll, prepend it (or fetch its data if missing from rankings)
+  const pinnedId = existing?.pinned_poll_id;
+  if (pinnedId) {
+    const pinnedPoll = polls.get(pinnedId);
+    const pinnedTally = tallies.get(pinnedId) || { a: 0, b: 0, total: 0, cairo_a: 0, cairo_b: 0, cairo_total: 0 };
+    if (pinnedPoll) {
+      const pinnedCard = pollCard(pinnedPoll, pinnedTally);
+      egyptToday = [pinnedCard, ...egyptToday.filter((c) => c.poll_id !== pinnedId)].slice(0, 3);
+    }
+  }
 
   const cards = {
     big_result: bigResult,

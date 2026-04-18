@@ -32,6 +32,7 @@ import ActivePollsMonitor from '@/components/admin/ActivePollsMonitor';
 import UserManagement from '@/components/admin/UserManagement';
 import { NotificationAnalytics } from '@/components/admin/NotificationAnalytics';
 import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
+import PulseAdminPanel from '@/components/admin/PulseAdminPanel';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
@@ -72,6 +73,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="analytics" className="text-xs px-4 py-2">Analytics</TabsTrigger>
           <TabsTrigger value="rewards" className="text-xs px-4 py-2">Rewards</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs px-4 py-2">Notify</TabsTrigger>
+          <TabsTrigger value="pulse" className="text-xs px-4 py-2">Pulse</TabsTrigger>
           <TabsTrigger value="daily-limit" className="text-xs px-4 py-2">Daily Limit</TabsTrigger>
           <TabsTrigger value="users" className="text-xs px-4 py-2">Users</TabsTrigger>
         </TabsList>
@@ -165,6 +167,10 @@ export default function AdminDashboard() {
           <div className="border-t pt-6">
             <NotificationsTab />
           </div>
+        </TabsContent>
+
+        <TabsContent value="pulse" className="space-y-4">
+          <PulseAdminPanel />
         </TabsContent>
 
         <TabsContent value="daily-limit" className="space-y-4">
