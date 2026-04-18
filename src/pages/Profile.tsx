@@ -98,8 +98,8 @@ export default function Profile() {
             {profile?.country || 'Unknown location'}
           </p>
 
-          {/* Votes / Comparisons / Battles */}
-          <div className="flex items-center justify-center gap-4 mt-3">
+          {/* Votes / Comparisons / Battles / Points / Majority */}
+          <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
             <button onClick={() => navigate('/history')} className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-1">
                 <BarChart3 className="h-3 w-3 text-muted-foreground" />
@@ -123,6 +123,22 @@ export default function Profile() {
               </div>
               <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Battles</span>
             </button>
+            <div className="w-px h-7 bg-border" />
+            <button onClick={() => navigate('/rewards')} className="flex flex-col items-center gap-0.5">
+              <div className="flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-muted-foreground" />
+                <span className="text-sm font-bold text-foreground">{profile?.points || 0}</span>
+              </div>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Points</span>
+            </button>
+            <div className="w-px h-7 bg-border" />
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="flex items-center gap-1">
+                <Target className="h-3 w-3 text-muted-foreground" />
+                <span className="text-sm font-bold text-foreground">{stats?.predictionAccuracy || 0}%</span>
+              </div>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Majority</span>
+            </div>
           </div>
 
           {stats?.currentStreak !== undefined && stats.currentStreak > 0 && (
