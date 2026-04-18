@@ -281,18 +281,17 @@ export default function StoryViewer({
               )}
             </div>
 
-            {(card.cta || card.votePollId) && (
+            {card.cta && (
               <div className="absolute bottom-6 left-0 right-0 px-5 pointer-events-auto">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (card.cta) { card.cta.onClick(); return; }
-                    handleVote(card);
+                    card.cta!.onClick();
                   }}
                   className="w-full h-12 rounded-full bg-white text-black font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                 >
-                  {card.cta?.label || 'Vote Now'}
+                  {card.cta.label}
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
