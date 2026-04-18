@@ -116,7 +116,7 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
 
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="grid grid-cols-4 w-full">
+      <TabsList className="grid grid-cols-6 w-full">
         <TabsTrigger value="overview" className="text-xs gap-1.5">
           <TrendingUp className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Overview</span>
@@ -127,7 +127,15 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
         </TabsTrigger>
         <TabsTrigger value="demographics" className="text-xs gap-1.5">
           <Users className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Demographics</span>
+          <span className="hidden sm:inline">Demos</span>
+        </TabsTrigger>
+        <TabsTrigger value="attributes" className="text-xs gap-1.5">
+          <Star className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Attrs</span>
+        </TabsTrigger>
+        <TabsTrigger value="verbatim" className="text-xs gap-1.5">
+          <MessageSquare className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Quotes</span>
         </TabsTrigger>
         <TabsTrigger value="narrative" className="text-xs gap-1.5">
           <Sparkles className="w-3.5 h-3.5" />
