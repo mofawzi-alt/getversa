@@ -36,11 +36,11 @@ export default function CampaignFeedbackModal({ open, onClose, pollId, choice, o
         voter_country: profile?.country || null,
       };
 
-      const tasks: Promise<any>[] = [];
+      const tasks: Array<() => Promise<{ error: any }>> = [];
 
       if (visibleAttrs.length > 0 && Object.keys(ratings).length > 0) {
-        tasks.push(
-          supabase.from('poll_attribute_ratings').upsert(
+        tasks.push(async () => {
+          const { error } = await supabase.from('poll_attribute_ratings').upsert(
             {
               poll_id: pollId,
               user_id: user.id,
@@ -53,13 +53,14 @@ export default function CampaignFeedbackModal({ open, onClose, pollId, choice, o
               ...demoFields,
             },
             { onConflict: 'poll_id,user_id' }
-          )
-        );
+          );
+          return { error };
+        });
       }
 
       if (config.verbatim && verbatim.trim().length > 0) {
-        tasks.push(
-          supabase.from('poll_verbatim_feedback').upsert(
+        tasks.push(async () => {
+          const { error } = await supabase.from('poll_verbatim_feedback').upsert(
             {
               poll_id: pollId,
               user_id: user.id,
@@ -68,12 +69,13 @@ export default function CampaignFeedbackModal({ open, onClose, pollId, choice, o
               ...demoFields,
             },
             { onConflict: 'poll_id,user_id' }
-          )
-        );
+          );
+          return { error };
+        });
       }
 
       if (tasks.length > 0) {
-        const results = await Promise.all(tasks);
+        const results = await Promise.all(tasks.map((t) => t()));
         const errs = results.filter((r) => r.error).map((r) => r.error.message);
         if (errs.length) throw new Error(errs[0]);
         toast.success('Thanks for the feedback!');
