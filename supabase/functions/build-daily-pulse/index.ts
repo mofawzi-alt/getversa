@@ -169,13 +169,31 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
   // Egypt Today: top 3 by total votes (different polls). If admin pinned a poll, place it first.
   let egyptToday = bigSorted.slice(0, 3).map(({ poll, t }) => pollCard(poll, t));
 
-  // Cairo: top 3 filtered to Cairo voters
-  const cairoSorted = ranked
-    .filter((x) => x.t.cairo_total >= 2)
-    .map((x) => ({ poll: x.poll, t: { ...x.t, a: x.t.cairo_a, b: x.t.cairo_b, total: x.t.cairo_total } }))
-    .sort((a, b) => b.t.total - a.t.total)
+  // Cairo: only include polls where Cairo voted *differently* from the national average
+  // by >= 10 percentage points. Each card carries both Cairo and national pcts.
+  const MIN_DIVERGENCE = 10;
+  const cairoDiverged = ranked
+    .filter((x) => x.t.cairo_total >= 5 && x.t.total >= 10)
+    .map((x) => {
+      const cairoPctA = Math.round((x.t.cairo_a / x.t.cairo_total) * 100);
+      const nationalPctA = Math.round((x.t.a / x.t.total) * 100);
+      const divergence = Math.abs(cairoPctA - nationalPctA);
+      return { poll: x.poll, t: x.t, cairoPctA, nationalPctA, divergence };
+    })
+    .filter((x) => x.divergence >= MIN_DIVERGENCE)
+    .sort((a, b) => b.divergence - a.divergence)
     .slice(0, 3);
-  const cairo = cairoSorted.map(({ poll, t }) => pollCard(poll, t));
+  const cairo = cairoDiverged.map(({ poll, t, cairoPctA, nationalPctA }) => {
+    const cairoTally: Tally = { ...t, a: t.cairo_a, b: t.cairo_b, total: t.cairo_total };
+    const card = pollCard(poll, cairoTally);
+    return {
+      ...card,
+      cairo_pct_a: cairoPctA,
+      cairo_pct_b: 100 - cairoPctA,
+      national_pct_a: nationalPctA,
+      national_pct_b: 100 - nationalPctA,
+    };
+  });
 
   // By category: top result per category
   const byCategory: Record<string, any> = {};
