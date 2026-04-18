@@ -129,9 +129,15 @@ export default function BrandCampaignBuilder() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="mixed">Mixed — Hero feed + Brand banner</SelectItem>
-                      <SelectItem value="bundle_only">Bundle only — Brand banner only</SelectItem>
-                      <SelectItem value="hero_only">Hero only — No banner, native feed</SelectItem>
+                      {c.campaign_type === 'focus_group' ? (
+                        <SelectItem value="panel_only">Panel only — Private invited panelists</SelectItem>
+                      ) : (
+                        <>
+                          <SelectItem value="mixed">Mixed — Hero feed + Brand banner</SelectItem>
+                          <SelectItem value="bundle_only">Bundle only — Brand banner only</SelectItem>
+                          <SelectItem value="hero_only">Hero only — No banner, native feed</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
