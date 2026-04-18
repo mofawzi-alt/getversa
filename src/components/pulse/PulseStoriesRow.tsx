@@ -311,6 +311,7 @@ export default function PulseStoriesRow() {
                 </span>
               </button>
             );
+          })}
           {/* Browse all categories — link to /explore */}
           <button
             type="button"
