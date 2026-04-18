@@ -288,6 +288,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
       }, FLASH_RESULT_MS + 300);
     }
 
+    if (shouldFullReveal) {
       setRevealMode('full');
       setTimeout(() => {
         setCinematicData({
