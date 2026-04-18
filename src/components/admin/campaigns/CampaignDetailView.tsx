@@ -318,6 +318,17 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
         )}
       </TabsContent>
 
+      {/* ATTRIBUTES */}
+      <TabsContent value="attributes" className="mt-4 space-y-3">
+        <CampaignAttributesTab campaignId={campaignId} />
+        <CampaignRankShiftMatrix campaignId={campaignId} />
+      </TabsContent>
+
+      {/* VERBATIM */}
+      <TabsContent value="verbatim" className="mt-4 space-y-3">
+        <CampaignVerbatimTab campaignId={campaignId} />
+      </TabsContent>
+
       <TabsContent value="narrative" className="mt-4 space-y-3">
         <div className="flex justify-end">
           <Button
