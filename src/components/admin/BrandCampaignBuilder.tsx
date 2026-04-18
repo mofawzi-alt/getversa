@@ -95,22 +95,24 @@ export default function BrandCampaignBuilder() {
         ) : (
           <div className="space-y-2">
             {campaigns.map((c: any) => (
-              <div key={c.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/40">
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold truncate">{c.name}</div>
-                  <div className="text-xs text-muted-foreground">
+              <div key={c.id} className="p-3 rounded-lg bg-muted/40">
+                <div className="text-center mb-2">
+                  <div className="text-xs font-semibold truncate">{c.name}</div>
+                  <div className="text-[10px] text-muted-foreground">
                     {c.brand_name || '—'} · {c.is_active ? 'Active' : 'Paused'}
                   </div>
                 </div>
-                <CampaignAnalyticsDialog campaignId={c.id} campaignName={c.name} brandName={c.brand_name} />
-                <CampaignFeedbackConfigDialog campaignId={c.id} campaignName={c.name} />
-                <CampaignClientsManager campaignId={c.id} campaignName={c.name} />
-                <Button size="sm" variant="ghost" onClick={() => toggleCampaignActive(c.id, c.is_active)}>
-                  {c.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => deleteCampaign(c.id, c.name)} className="text-destructive hover:text-destructive">
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center justify-center gap-1 flex-wrap">
+                  <CampaignAnalyticsDialog campaignId={c.id} campaignName={c.name} brandName={c.brand_name} />
+                  <CampaignFeedbackConfigDialog campaignId={c.id} campaignName={c.name} />
+                  <CampaignClientsManager campaignId={c.id} campaignName={c.name} />
+                  <Button size="sm" variant="ghost" onClick={() => toggleCampaignActive(c.id, c.is_active)}>
+                    {c.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => deleteCampaign(c.id, c.name)} className="text-destructive hover:text-destructive">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
