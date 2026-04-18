@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Search, Loader2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import PollOptionImage from '@/components/poll/PollOptionImage';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { toast } from 'sonner';
@@ -165,18 +165,20 @@ export default function Ask() {
                   className="text-left rounded-2xl overflow-hidden bg-card border border-border active:scale-[0.98] transition"
                 >
                   <div className="grid grid-cols-2 aspect-[4/5]">
-                    <img
-                      src={getPollDisplayImageSrc({ imageUrl: p.image_a_url, question: p.question, option: p.option_a, side: 'A' })}
-                      onError={(e) => handlePollImageError(e, { question: p.question, option: p.option_a, side: 'A' })}
-                      alt={p.option_a}
-                      className="w-full h-full object-cover"
+                    <PollOptionImage
+                      imageUrl={p.image_a_url}
+                      option={p.option_a}
+                      question={p.question}
+                      side="A"
+                      variant="browse"
                       loading="lazy"
                     />
-                    <img
-                      src={getPollDisplayImageSrc({ imageUrl: p.image_b_url, question: p.question, option: p.option_b, side: 'B' })}
-                      onError={(e) => handlePollImageError(e, { question: p.question, option: p.option_b, side: 'B' })}
-                      alt={p.option_b}
-                      className="w-full h-full object-cover"
+                    <PollOptionImage
+                      imageUrl={p.image_b_url}
+                      option={p.option_b}
+                      question={p.question}
+                      side="B"
+                      variant="browse"
                       loading="lazy"
                     />
                   </div>
