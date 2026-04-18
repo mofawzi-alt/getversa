@@ -326,6 +326,24 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
       throw new Error('Invalid poll data structure');
     }
 
+    // Clamp category to allowed list (server-side enforcement)
+    const clampCategory = (raw: string | undefined | null): string => {
+      const n = (raw || '').trim().toLowerCase();
+      const exact = ALLOWED_CATEGORIES.find((c) => c.toLowerCase() === n);
+      if (exact) return exact;
+      if (/(deliver|restaurant|dining|cafe|café|talabat|elmenus|otlob)/.test(n)) return 'Food Delivery & Dining';
+      if (/(beauty|makeup|skincare|cosmetic|shampoo|perfume|hair)/.test(n)) return 'Beauty & Personal Care';
+      if (/(bank|finance|fintech|money|budget|crypto|payment|wallet|loan|business|startup)/.test(n)) return 'Financial Services';
+      if (/(telecom|mobile|phone|network|internet|wifi|tech|app|software|gadget|telco)/.test(n)) return 'Telco & Tech';
+      if (/(car|auto|vehicle|mobility|ride|uber|careem|swvl|motorcycle|scooter)/.test(n)) return 'Automotive & Mobility';
+      if (/(retail|shopping|ecommerce|e-commerce|store|brand|noon|jumia|amazon)/.test(n)) return 'Retail & E-commerce';
+      if (/(movie|film|series|tv|show|celeb|music|song|artist|sport|football|game|gaming|entertainment)/.test(n)) return 'Media & Entertainment';
+      if (/(food|drink|snack|beverage|fmcg|coffee|tea|chips|cola|juice|chocolate)/.test(n)) return 'FMCG & Food';
+      if (/(lifestyle|society|relationship|dating|wellness|habit|style|fashion|design|personality|travel)/.test(n)) return 'Lifestyle & Society';
+      return 'The Pulse';
+    };
+    pollData.category = clampCategory(pollData.category || category);
+
     // Generate images for both options in parallel and upload to storage
     console.log('Generating images for poll options...');
     const [imageA, imageB] = await Promise.all([
