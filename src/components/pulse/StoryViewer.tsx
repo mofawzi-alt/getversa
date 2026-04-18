@@ -266,7 +266,7 @@ export default function StoryViewer({
               )}
             </div>
 
-            {(card.votePollId || card.cta) && (
+            {(card.cta || card.votePollId) && (
               <div className="absolute bottom-6 left-0 right-0 px-5 pointer-events-auto">
                 <button
                   type="button"
