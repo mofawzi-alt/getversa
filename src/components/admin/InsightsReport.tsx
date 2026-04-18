@@ -61,10 +61,11 @@ export default function InsightsReport() {
       const winner = votesA >= votesB ? poll.option_a : poll.option_b;
       const winnerChoice = votesA >= votesB ? 'A' : 'B';
 
-      // Gender breakdown
+      // Gender breakdown — exclude votes missing gender
       const genderMap = new Map<string, { a: number; b: number; total: number }>();
       votes.forEach(v => {
-        const g = v.voter_gender || 'Unknown';
+        if (!v.voter_gender) return;
+        const g = v.voter_gender;
         if (!genderMap.has(g)) genderMap.set(g, { a: 0, b: 0, total: 0 });
         const entry = genderMap.get(g)!;
         entry.total++;
@@ -79,10 +80,11 @@ export default function InsightsReport() {
         }))
         .sort((a, b) => b.total - a.total);
 
-      // Age breakdown
+      // Age breakdown — exclude votes missing age
       const ageMap = new Map<string, { a: number; b: number; total: number }>();
       votes.forEach(v => {
-        const age = v.voter_age_range || 'Unknown';
+        if (!v.voter_age_range) return;
+        const age = v.voter_age_range;
         if (!ageMap.has(age)) ageMap.set(age, { a: 0, b: 0, total: 0 });
         const entry = ageMap.get(age)!;
         entry.total++;
@@ -97,10 +99,11 @@ export default function InsightsReport() {
         }))
         .sort((a, b) => b.total - a.total);
 
-      // City breakdown
+      // City breakdown — exclude votes missing city
       const cityMap = new Map<string, { a: number; b: number; total: number }>();
       votes.forEach(v => {
-        const city = v.voter_city || 'Unknown';
+        if (!v.voter_city) return;
+        const city = v.voter_city;
         if (!cityMap.has(city)) cityMap.set(city, { a: 0, b: 0, total: 0 });
         const entry = cityMap.get(city)!;
         entry.total++;
