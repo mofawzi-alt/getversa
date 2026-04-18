@@ -61,11 +61,17 @@ export default function StoryViewer({
   // Reset on open
   useEffect(() => {
     if (!open) return;
-    setIndex(startIndex);
+    setIndex(Math.max(0, Math.min(startIndex, cards.length - 1)));
     setProgress(0);
     startedAt.current = Date.now();
     trackStoryEvent(topic, 'cards_viewed');
-  }, [open, startIndex, topic]);
+  }, [open, startIndex, topic, cards.length]);
+
+  // Clamp index if cards array changes while viewer is open
+  useEffect(() => {
+    if (!open || cards.length === 0) return;
+    setIndex((current) => Math.max(0, Math.min(current, cards.length - 1)));
+  }, [open, cards.length]);
 
   // Track each new card view
   useEffect(() => {
@@ -76,7 +82,7 @@ export default function StoryViewer({
 
   // Auto-advance progress
   useEffect(() => {
-    if (!open || paused || autoAdvanceMs <= 0) return;
+    if (!open || paused || autoAdvanceMs <= 0 || cards.length === 0) return;
     let frame = 0;
     const tick = () => {
       const elapsed = Date.now() - startedAt.current;
@@ -93,7 +99,7 @@ export default function StoryViewer({
     rafRef.current = frame;
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, open, paused, autoAdvanceMs]);
+  }, [index, open, paused, autoAdvanceMs, cards.length]);
 
   function next() {
     if (index >= cards.length - 1) {
@@ -102,14 +108,14 @@ export default function StoryViewer({
       onClose();
       return;
     }
-    setIndex((i) => i + 1);
+    setIndex((i) => Math.min(i + 1, cards.length - 1));
     setProgress(0);
     startedAt.current = Date.now();
   }
 
   function prev() {
     if (index === 0) return;
-    setIndex((i) => i - 1);
+    setIndex((i) => Math.max(i - 1, 0));
     setProgress(0);
     startedAt.current = Date.now();
   }
@@ -148,7 +154,9 @@ export default function StoryViewer({
   }
 
   if (!open || cards.length === 0) return null;
-  const card = cards[index];
+  const safeIndex = Math.max(0, Math.min(index, cards.length - 1));
+  const card = cards[safeIndex];
+  if (!card) return null;
 
   const content = (
     <AnimatePresence>
