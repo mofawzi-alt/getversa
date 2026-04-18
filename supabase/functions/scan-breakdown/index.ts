@@ -16,9 +16,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const MIN_POLL_VOTES = 50;
-const MIN_DEMO_VOTES = 30;
-const MIN_CITY_VOTES = 20;
+const MIN_POLL_VOTES = 20;
+const MIN_DEMO_VOTES = 10;
+const MIN_CITY_VOTES = 8;
 const MIN_GAP_PCT = 15;
 const DOMINANCE_PCT = 75;
 const SCAN_LOOKBACK_DAYS = 14;
