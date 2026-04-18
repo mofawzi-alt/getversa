@@ -6,6 +6,7 @@ import { Sparkles, Eye, EyeOff, Layers, Wand2, Zap, Trash2 } from 'lucide-react'
 import { toast } from 'sonner';
 import CampaignClientsManager from './CampaignClientsManager';
 import CampaignAnalyticsDialog from './CampaignAnalyticsDialog';
+import CampaignFeedbackConfigDialog from './campaigns/CampaignFeedbackConfigDialog';
 import QuickLaunchForm from './campaigns/QuickLaunchForm';
 import TemplatesForm from './campaigns/TemplatesForm';
 import AIDraftForm from './campaigns/AIDraftForm';
