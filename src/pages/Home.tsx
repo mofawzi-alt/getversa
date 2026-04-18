@@ -176,11 +176,14 @@ function HomeLiveDebateCard({
           <LiveIndicator variant="badge" />
           {isTrending && <TrendingBadge size="xs" />}
           <span className="text-xs text-muted-foreground font-semibold">{poll.totalVotes.toLocaleString()} votes</span>
-          {poll.ends_at && (
-            <span className="ml-auto">
+          <div className="ml-auto flex items-center gap-1.5">
+            {poll.ends_at && (
               <CountdownTimer endsAt={poll.ends_at} size="xs" showIcon={false} />
-            </span>
-          )}
+            )}
+            <div onClick={(e) => e.stopPropagation()}>
+              <PinButton pollId={poll.id} size="sm" className="!bg-muted !text-muted-foreground hover:!bg-muted/80" />
+            </div>
+          </div>
         </div>
       </div>
 
