@@ -276,6 +276,21 @@ export default function PulseStoriesRow() {
     <>
       <div className="w-full overflow-x-auto no-scrollbar -mx-4 px-4 py-3 border-b border-border/40 bg-background">
         <div className="flex gap-3 min-w-max">
+          {/* Trending entry — links to /explore?tab=trending */}
+          <button
+            type="button"
+            onClick={() => { window.location.href = '/explore?tab=trending'; }}
+            className="flex flex-col items-center gap-1 w-16 active:scale-95 transition-transform"
+          >
+            <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-br from-orange-500/25 to-red-500/15 border-2 border-orange-400">
+              <div className="w-full h-full rounded-full bg-background flex items-center justify-center text-2xl">
+                🔥
+              </div>
+            </div>
+            <span className="text-[10px] font-bold text-foreground truncate w-full text-center">
+              Trending
+            </span>
+          </button>
           {circles.map((circle) => {
             const seen = hasSeenLocally(circle.topic);
             const showRing = !seen || circle.hasUpdate;
