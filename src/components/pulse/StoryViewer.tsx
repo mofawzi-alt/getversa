@@ -156,7 +156,7 @@ export default function StoryViewer({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[300] bg-black"
+        className="fixed inset-0 z-[300] bg-black/90 flex items-center justify-center"
         onPointerDown={() => setPaused(true)}
         onPointerUp={() => { setPaused(false); startedAt.current = Date.now() - progress * autoAdvanceMs; }}
         onPointerCancel={() => setPaused(false)}
