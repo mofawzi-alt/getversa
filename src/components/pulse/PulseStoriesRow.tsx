@@ -233,40 +233,49 @@ export default function PulseStoriesRow() {
       });
     }
 
-    // 7 — Updates
-    if (user && hasUpdates) {
+    // 7 — Updates (real per-poll diffs)
+    if (user && (updates?.length || 0) > 0) {
       list.push({
         topic: 'updates',
         label: 'Updates',
         emoji: '🔔',
         hasUpdate: true,
-        cards: [{
-          headline: 'Results have shifted on polls you voted on',
-          primaryText: 'Tap to see what changed',
-          label: 'Updates',
-          cta: { label: 'See updates', onClick: () => { window.location.href = '/history'; } },
-        }],
+        cards: (updates || []).map((u: any) => ({
+          backgroundImage: u.image,
+          label: u.flipped ? 'Result flipped' : 'Result shifted',
+          headline: u.question,
+          primaryText: `You voted ${u.user_choice === 'A' ? u.option_a : u.option_b} (${u.user_pct}%)`,
+          secondaryText: `Now ${u.other_pct}% chose the other side • ${u.total.toLocaleString()} votes`,
+          splitA: { label: u.option_a, pct: u.user_choice === 'A' ? u.user_pct : u.other_pct },
+          splitB: { label: u.option_b, pct: u.user_choice === 'B' ? u.user_pct : u.other_pct },
+          votePollId: u.poll_id,
+          shareable: true,
+        })),
       });
     }
 
-    // 8 — Friends
-    if (user && (friendsActivity?.length || 0) > 0) {
+    // 8 — Friends (with names)
+    if (user && (friendsActivityNamed?.length || 0) > 0) {
+      const totalVotes = (friendsActivity || []).length;
       list.push({
         topic: 'friends',
         label: 'Friends',
         emoji: '👥',
         hasUpdate: true,
-        cards: [{
-          headline: `${friendsActivity!.length} friend votes today`,
-          primaryText: 'See what they chose',
-          label: 'Friends',
-          cta: { label: 'Open Friends', onClick: () => { window.location.href = '/friends'; } },
-        }],
+        cards: [
+          {
+            headline: `${friendsActivityNamed!.length} friend${friendsActivityNamed!.length === 1 ? '' : 's'} voted today`,
+            primaryText: `${totalVotes} total votes`,
+            secondaryText: friendsActivityNamed!.map((f: any) => `${f.name} (${f.count})`).join(' • '),
+            label: 'Friends today',
+            cta: { label: 'Open Friends', onClick: () => { window.location.href = '/friends'; } },
+          },
+        ],
       });
     }
 
     return list;
-  }, [pulse, settings, userTopCats, friendsActivity, hasUpdates, user, bump]);
+  }, [pulse, settings, userTopCats, friendsActivity, friendsActivityNamed, updates, user, bump]);
 
   if (settings?.stories_row_enabled === false) return null;
   if (!pulse || circles.length === 0) return null;
