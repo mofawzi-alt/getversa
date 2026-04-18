@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sparkles, Eye, EyeOff, Layers, Wand2, Zap, Trash2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import CampaignClientsManager from './CampaignClientsManager';
 import CampaignAnalyticsDialog from './CampaignAnalyticsDialog';
@@ -19,11 +20,19 @@ export default function BrandCampaignBuilder() {
     queryFn: async () => {
       const { data } = await supabase
         .from('poll_campaigns')
-        .select('id, name, brand_name, is_active, release_at, expires_at, created_at')
+        .select('id, name, brand_name, is_active, release_at, expires_at, visibility_mode, created_at')
         .order('created_at', { ascending: false });
       return data || [];
     },
   });
+
+  const updateVisibilityMode = async (id: string, mode: string) => {
+    const { error } = await supabase.from('poll_campaigns').update({ visibility_mode: mode }).eq('id', id);
+    if (error) return toast.error(error.message);
+    toast.success('Visibility updated');
+    refetchCampaigns();
+    queryClient.invalidateQueries({ queryKey: ['active-brand-campaign'] });
+  };
 
   const onLaunched = () => {
     refetchCampaigns();
@@ -102,6 +111,26 @@ export default function BrandCampaignBuilder() {
                     {c.brand_name || '—'} · {c.is_active ? 'Active' : 'Paused'}
                   </div>
                 </div>
+
+                <div className="mb-2">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1 text-center">
+                    Where polls appear
+                  </div>
+                  <Select
+                    value={c.visibility_mode || 'mixed'}
+                    onValueChange={(v) => updateVisibilityMode(c.id, v)}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mixed">Mixed — Hero feed + Brand banner</SelectItem>
+                      <SelectItem value="bundle_only">Bundle only — Brand banner only</SelectItem>
+                      <SelectItem value="hero_only">Hero only — No banner, native feed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="flex items-center justify-center gap-1 flex-wrap">
                   <CampaignAnalyticsDialog campaignId={c.id} campaignName={c.name} brandName={c.brand_name} />
                   <CampaignFeedbackConfigDialog campaignId={c.id} campaignName={c.name} />

@@ -9,6 +9,8 @@ export interface DraftPoll {
   category?: string;
 }
 
+export type CampaignVisibilityMode = 'mixed' | 'bundle_only' | 'hero_only';
+
 export interface LaunchInput {
   userId: string;
   name: string;
@@ -17,12 +19,13 @@ export interface LaunchInput {
   description?: string;
   releaseAt?: string; // datetime-local
   expiresAt?: string;
+  visibilityMode?: CampaignVisibilityMode;
   polls: DraftPoll[];
 }
 
 export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: string; pollCount: number }> {
   const {
-    userId, name, brandName, brandLogoUrl, description, releaseAt, expiresAt, polls,
+    userId, name, brandName, brandLogoUrl, description, releaseAt, expiresAt, visibilityMode, polls,
   } = input;
 
   const { data: campaign, error: cErr } = await supabase
@@ -34,6 +37,7 @@ export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: 
       description: description?.trim() || null,
       release_at: releaseAt ? new Date(releaseAt).toISOString() : null,
       expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+      visibility_mode: visibilityMode || 'mixed',
       is_active: true,
       created_by: userId,
     })
