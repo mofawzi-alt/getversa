@@ -246,6 +246,14 @@ function HomeLiveDebateCard({
             {genderTeaser.text}
           </motion.p>
         )}
+        {poll.category && (
+          <div className="pt-0.5">
+            <CategoryBadge
+              category={mapToVersaCategory(poll.category)}
+              size="xs"
+            />
+          </div>
+        )}
         {hasVoted ? (
           <div className="flex items-center justify-between pt-1 gap-2">
             <span className="text-xs font-semibold text-primary truncate">
