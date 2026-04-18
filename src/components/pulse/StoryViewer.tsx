@@ -41,6 +41,8 @@ type Props = {
   autoAdvanceMs?: number;
   /** Override the share button — receives current card index, returns true if handled. */
   onShareOverride?: (cardIndex: number) => boolean | Promise<boolean>;
+  /** Called when the last card finishes. Return true to suppress auto-close (e.g. flipping to next story). */
+  onComplete?: () => boolean | void;
 };
 
 const DEFAULT_DURATION = 4000;
