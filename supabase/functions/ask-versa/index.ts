@@ -182,11 +182,11 @@ serve(async (req) => {
         .slice(0, 8)
         .map((p: any) => `- "${p.question}" (${p.option_a} vs ${p.option_b})`)
         .join("\n");
-      const sumResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const sumResp = await fetch(AI_URL, {
         method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: AI_MODEL,
           messages: [
             {
               role: "system",
