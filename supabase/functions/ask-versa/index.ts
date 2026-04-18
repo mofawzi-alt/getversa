@@ -98,7 +98,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You translate natural language questions about Egyptian Gen Z opinion polls into structured filters. Categories available: ${KNOWN_CATEGORIES.join(", ")}. Be conservative — only set demographic filters when explicitly asked.`,
+            content: `You translate natural language questions about Egyptian opinion polls into structured filters. Categories available: ${KNOWN_CATEGORIES.join(", ")}. Be conservative — only set demographic filters when explicitly asked.`,
           },
           { role: "user", content: question },
         ],
