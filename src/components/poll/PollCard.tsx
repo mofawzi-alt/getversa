@@ -147,6 +147,17 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
       {/* Images — fixed height matching home screen cards */}
       <div className="relative grid grid-cols-2 gap-0 h-[75vh] max-h-[650px] rounded-2xl overflow-hidden mx-2 border border-border/60 shadow-sm">
 
+        {/* Category badge */}
+        {poll.category && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+            <CategoryBadge
+              category={mapToVersaCategory(poll.category)}
+              variant="overlay"
+              size="xs"
+            />
+          </div>
+        )}
+
         {/* Question overlay centered in middle of images */}
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-5 pointer-events-none">
           <div className="px-2 py-1">
