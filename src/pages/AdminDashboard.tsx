@@ -34,10 +34,12 @@ import { NotificationAnalytics } from '@/components/admin/NotificationAnalytics'
 import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
 import PulseAdminPanel from '@/components/admin/PulseAdminPanel';
 import BreakdownAdminPanel from '@/components/admin/BreakdownAdminPanel';
+import { useBreakdownPendingCount } from '@/hooks/useBreakdownPendingCount';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { data: breakdownPending = 0 } = useBreakdownPendingCount();
   
   const [showPollForm, setShowPollForm] = useState(false);
   const [showRewardForm, setShowRewardForm] = useState(false);
@@ -74,7 +76,14 @@ export default function AdminDashboard() {
           <TabsTrigger value="analytics" className="text-xs px-4 py-2">Analytics</TabsTrigger>
           <TabsTrigger value="rewards" className="text-xs px-4 py-2">Rewards</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs px-4 py-2">Notify</TabsTrigger>
-          <TabsTrigger value="pulse" className="text-xs px-4 py-2">Pulse</TabsTrigger>
+          <TabsTrigger value="pulse" className="text-xs px-4 py-2 relative">
+            Pulse
+            {breakdownPending > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+                {breakdownPending > 99 ? '99+' : breakdownPending}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="daily-limit" className="text-xs px-4 py-2">Daily Limit</TabsTrigger>
           <TabsTrigger value="users" className="text-xs px-4 py-2">Users</TabsTrigger>
         </TabsList>
