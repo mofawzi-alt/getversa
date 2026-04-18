@@ -35,7 +35,8 @@ export default function FocusGroupForm({ onLaunched }: Props) {
     setPolls((prev) => prev.map((p, idx) => (idx === i ? { ...p, ...patch } : p)));
 
   const handleCreate = async () => {
-    if (!user) return;
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) return toast.error('Not signed in — please refresh and log in again');
     if (!name.trim() || !brandName.trim()) return toast.error('Campaign name and brand are required');
     const sizeNum = parseInt(panelSize, 10);
     if (!Number.isFinite(sizeNum) || sizeNum < 5 || sizeNum > 100) {
