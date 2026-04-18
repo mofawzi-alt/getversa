@@ -55,6 +55,7 @@ const PlayDuel = lazy(() => import("./pages/PlayDuel"));
 const BrandCampaign = lazy(() => import("./pages/BrandCampaign"));
 const BrandClientPortal = lazy(() => import("./pages/BrandClientPortal"));
 const FocusGroup = lazy(() => import("./pages/FocusGroup"));
+const Rewards = lazy(() => import("./pages/Rewards"));
 
 import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
@@ -183,6 +184,7 @@ function AppInner() {
             <Route path="/weekly-results" element={<WeeklyTopResults />} />
             <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+            <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
             <Route path="/play" element={<Play />} />
             <Route path="/play/predict" element={<ProtectedRoute><PlayPredict /></ProtectedRoute>} />
             <Route path="/play/duels" element={<ProtectedRoute><PlayDuels /></ProtectedRoute>} />
