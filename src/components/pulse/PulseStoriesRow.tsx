@@ -594,6 +594,16 @@ export default function PulseStoriesRow() {
         onClose={() => { setOpenTopic(null); setBump((b) => b + 1); }}
         topic={openTopic || ''}
         cards={activeCircle?.cards || []}
+        onComplete={() => {
+          const idx = sorted.findIndex((c) => c.topic === openTopic);
+          const nextCircle = idx >= 0 ? sorted[idx + 1] : undefined;
+          if (nextCircle) {
+            setOpenTopic(nextCircle.topic);
+            trackStoryEvent(nextCircle.topic);
+            return true;
+          }
+          return false;
+        }}
         onShareOverride={
           openTopic === 'breakdown' && breakdownData
             ? (cardIndex) => {
