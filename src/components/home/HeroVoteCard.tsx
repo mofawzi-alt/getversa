@@ -678,6 +678,15 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 />
               </div>
 
+              {poll.category && (
+                <div className="mb-2 flex justify-center">
+                  <CategoryBadge
+                    category={mapToVersaCategory(poll.category)}
+                    size="xs"
+                  />
+                </div>
+              )}
+
               {/* Gender teaser — shown on all voted polls */}
               {genderTeaser && (
                 <motion.p
