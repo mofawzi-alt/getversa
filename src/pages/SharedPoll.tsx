@@ -381,8 +381,15 @@ export default function SharedPoll() {
           </div>
 
           <button
+            onClick={() => navigate('/auth?mode=signup')}
+            className="text-white/70 text-sm font-semibold underline underline-offset-4 hover:text-white transition-colors"
+          >
+            Sign up with email
+          </button>
+
+          <button
             onClick={handleSkipSignup}
-            className="text-white/40 text-sm font-medium pt-2 hover:text-white/60 transition-colors"
+            className="block mx-auto text-white/40 text-sm font-medium pt-2 hover:text-white/60 transition-colors"
           >
             Skip for now
           </button>
