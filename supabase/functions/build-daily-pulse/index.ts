@@ -137,11 +137,11 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
   const votes = await fetchRecentVotes(supabase, sinceISO);
   const tallies = tallyVotes(votes);
 
-  // Filter to polls with meaningful volume
+  // Filter to polls with meaningful volume (dev threshold; raise to 20 in prod)
   const ranked = Array.from(tallies.entries())
-    .filter(([pid, t]) => polls.has(pid) && t.total >= 20)
+    .filter(([pid, t]) => polls.has(pid) && t.total >= 2)
     .map(([pid, t]) => ({ poll: polls.get(pid)!, t }))
-    .filter((x) => x.poll.poll_type !== 'predict'); // surprise handled separately
+    .filter((x) => x.poll.poll_type !== 'predict');
 
   // Big Result: most votes overall
   const bigSorted = [...ranked].sort((a, b) => b.t.total - a.t.total);
@@ -149,7 +149,7 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
 
   // Closest Battle: closest to 50/50, min 100 votes
   const closeRanked = ranked
-    .filter((x) => x.t.total >= 100)
+    .filter((x) => x.t.total >= 5)
     .map((x) => ({ ...x, dist: Math.abs((x.t.a / x.t.total) - 0.5) }))
     .sort((a, b) => a.dist - b.dist);
   const closestBattle = closeRanked[0] ? pollCard(closeRanked[0].poll, closeRanked[0].t) : null;
@@ -171,7 +171,7 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
 
   // Cairo: top 3 filtered to Cairo voters
   const cairoSorted = ranked
-    .filter((x) => x.t.cairo_total >= 10)
+    .filter((x) => x.t.cairo_total >= 2)
     .map((x) => ({ poll: x.poll, t: { ...x.t, a: x.t.cairo_a, b: x.t.cairo_b, total: x.t.cairo_total } }))
     .sort((a, b) => b.t.total - a.t.total)
     .slice(0, 3);
