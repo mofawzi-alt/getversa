@@ -746,7 +746,13 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
       {/* Bottom hints */}
       {!result && !isVoting && (
-        <div className="flex flex-col items-center gap-1 mt-2">
+        <div className="flex flex-col items-center gap-1.5 mt-2">
+          {poll.category && (
+            <CategoryBadge
+              category={mapToVersaCategory(poll.category)}
+              size="xs"
+            />
+          )}
           <p className="text-center text-xs text-muted-foreground">← Tap or swipe to vote →</p>
           <button
             onClick={submitSkip}
