@@ -166,8 +166,8 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
     .limit(1);
   const todayFirst = nextPoll?.[0] || null;
 
-  // Egypt Today: top 3 by total votes (different polls)
-  const egyptToday = bigSorted.slice(0, 3).map(({ poll, t }) => pollCard(poll, t));
+  // Egypt Today: top 3 by total votes (different polls). If admin pinned a poll, place it first.
+  let egyptToday = bigSorted.slice(0, 3).map(({ poll, t }) => pollCard(poll, t));
 
   // Cairo: top 3 filtered to Cairo voters
   const cairoSorted = ranked
@@ -192,6 +192,17 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
     .eq('slot', slot)
     .eq('pulse_date', pulseDate)
     .maybeSingle();
+
+  // If admin pinned a poll, prepend it (or fetch its data if missing from rankings)
+  const pinnedId = existing?.pinned_poll_id;
+  if (pinnedId) {
+    const pinnedPoll = polls.get(pinnedId);
+    const pinnedTally = tallies.get(pinnedId) || { a: 0, b: 0, total: 0, cairo_a: 0, cairo_b: 0, cairo_total: 0 };
+    if (pinnedPoll) {
+      const pinnedCard = pollCard(pinnedPoll, pinnedTally);
+      egyptToday = [pinnedCard, ...egyptToday.filter((c) => c.poll_id !== pinnedId)].slice(0, 3);
+    }
+  }
 
   const cards = {
     big_result: bigResult,
