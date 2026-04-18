@@ -916,6 +916,7 @@ export type Database = {
           release_at: string | null
           target_vote_count: number | null
           updated_at: string
+          visibility_mode: string
         }
         Insert: {
           attribute_config?: Json
@@ -931,6 +932,7 @@ export type Database = {
           release_at?: string | null
           target_vote_count?: number | null
           updated_at?: string
+          visibility_mode?: string
         }
         Update: {
           attribute_config?: Json
@@ -946,6 +948,7 @@ export type Database = {
           release_at?: string | null
           target_vote_count?: number | null
           updated_at?: string
+          visibility_mode?: string
         }
         Relationships: []
       }
