@@ -2,8 +2,10 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, BarChart3, Users, Globe, Calendar, Sparkles, TrendingUp, ChevronRight, Download, Star, MessageSquare, CalendarClock } from 'lucide-react';
+import { Loader2, BarChart3, Users, Globe, Calendar, Sparkles, TrendingUp, ChevronRight, Download, Star, MessageSquare, CalendarClock, Lightbulb, UserCheck } from 'lucide-react';
 import CampaignDripSchedule from './CampaignDripSchedule';
+import CampaignThemesTab from './CampaignThemesTab';
+import FocusGroupPanelTab from './FocusGroupPanelTab';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {

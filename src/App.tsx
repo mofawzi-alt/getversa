@@ -54,6 +54,7 @@ const PlayDuels = lazy(() => import("./pages/PlayDuels"));
 const PlayDuel = lazy(() => import("./pages/PlayDuel"));
 const BrandCampaign = lazy(() => import("./pages/BrandCampaign"));
 const BrandClientPortal = lazy(() => import("./pages/BrandClientPortal"));
+const FocusGroup = lazy(() => import("./pages/FocusGroup"));
 
 import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
@@ -194,6 +195,7 @@ function AppInner() {
             <Route path="/brands" element={<ProtectedRoute><BrandPortal /></ProtectedRoute>} />
             <Route path="/brand/portal" element={<ProtectedRoute><BrandClientPortal /></ProtectedRoute>} />
             <Route path="/campaign/:id" element={<BrandCampaign />}/>
+            <Route path="/focus-group/:id" element={<ProtectedRoute><FocusGroup /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/messages/:conversationId" element={<ProtectedRoute><ChatThread /></ProtectedRoute>} />
             <Route path="/user/:userId" element={<UserProfile />} />
