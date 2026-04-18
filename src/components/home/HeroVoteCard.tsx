@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { Check, Send } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import HeroCaughtUp from './HeroCaughtUp';
-import CinematicResults from '@/components/poll/CinematicResults';
+
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
 import { getInsightTier } from '@/lib/streakGating';

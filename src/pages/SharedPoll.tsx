@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, ArrowRight, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { lovable } from '@/integrations/lovable/index';
-import CinematicResults from '@/components/poll/CinematicResults';
+
 
 interface Poll {
   id: string;
