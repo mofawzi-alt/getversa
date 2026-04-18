@@ -163,8 +163,10 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
             >
               ← Back to all polls
             </button>
-            <div className="border-t border-border pt-3">
-              <PollAnalytics initialPollId={drilldownPollId} />
+            <div className="border-t border-border pt-3 -mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-hidden">
+              <div className="max-w-full overflow-x-auto">
+                <PollAnalytics initialPollId={drilldownPollId} />
+              </div>
             </div>
           </div>
         ) : (
