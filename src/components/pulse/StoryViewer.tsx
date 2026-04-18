@@ -43,7 +43,7 @@ type Props = {
   onShareOverride?: (cardIndex: number) => boolean | Promise<boolean>;
 };
 
-const DEFAULT_DURATION = 6000;
+const DEFAULT_DURATION = 4000;
 
 export default function StoryViewer({
   open,
