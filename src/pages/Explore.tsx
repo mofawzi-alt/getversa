@@ -110,6 +110,7 @@ export default function Explore() {
   const [modalPoll, setModalPoll] = useState<PollItem | null>(null);
   const [peopleLikeYou, setPeopleLikeYou] = useState(false);
   const [categorySort, setCategorySort] = useState<'most_voted' | 'most_recent' | 'most_controversial'>('most_voted');
+  const [unvotedOnly, setUnvotedOnly] = useState(true);
 
   useEffect(() => {
     const catParam = searchParams.get('category');
@@ -328,195 +329,72 @@ export default function Explore() {
               </div>
             </div>
 
-            {/* People Like You toggle */}
-            {user && userProfile?.age_range && userProfile?.gender && (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setPeopleLikeYou(!peopleLikeYou)}
-                className={`mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  peopleLikeYou
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'bg-muted text-muted-foreground'
-                }`}
-              >
-                <UserCheck className="h-3.5 w-3.5" />
-                People Like You
-                {peopleLikeYou && (
-                  <span className="text-[10px] font-normal opacity-80">
-                    ({userProfile.gender}, {userProfile.age_range})
-                  </span>
-                )}
-              </motion.button>
-            )}
-          </div>
-
-          {/* Sort options */}
-          <div className="px-4 mt-3 mb-1 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
-            {([
-              { key: 'most_voted', label: 'Most Voted' },
-              { key: 'most_recent', label: 'Most Recent' },
-              { key: 'most_controversial', label: 'Most Controversial' },
-            ] as const).map(opt => (
+            {/* Unvoted / All filter */}
+            <div className="mt-3 inline-flex items-center gap-1 p-1 rounded-full bg-muted">
               <button
-                key={opt.key}
-                onClick={() => setCategorySort(opt.key)}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  categorySort === opt.key
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                onClick={() => setUnvotedOnly(true)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  unvotedOnly ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
                 }`}
               >
-                {opt.label}
+                Unvoted
               </button>
-            ))}
-          </div>
-
-          {/* Decision Hub — Top Picks */}
-          {decisionHub && !peopleLikeYou && categorySort === 'most_voted' && (
-            <div className="px-4 mb-4 space-y-4">
-              {/* Clear Winners */}
-              {decisionHub.clearWinners.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Crown className="h-4 w-4 text-amber-500" />
-                    <span className="text-xs font-display font-bold text-foreground">Clear Winners</span>
-                    <span className="text-[10px] text-muted-foreground ml-1">— The crowd has spoken</span>
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                    {decisionHub.clearWinners.map(poll => {
-                      const winner = getWinnerInfo(poll);
-                      return (
-                        <motion.div
-                          key={poll.id}
-                          whileTap={{ scale: 0.96 }}
-                          onClick={() => setModalPoll(poll)}
-                          className="shrink-0 w-36 rounded-xl bg-card border border-border/50 overflow-hidden cursor-pointer"
-                        >
-                          <div className="relative h-24 overflow-hidden">
-                            <PollOptionImage
-                              imageUrl={winner.side === 'A' ? poll.image_a_url : poll.image_b_url}
-                              option={winner.option}
-                              question={poll.question}
-                              side={winner.side}
-                              maxLogoSize="50%"
-                              loading="lazy"
-                              variant="browse"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                            <div className="absolute bottom-1.5 left-2 right-2">
-                              <p className="text-white text-xs font-bold truncate">{winner.option}</p>
-                              <span className="text-[10px] font-extrabold text-green-400">{winner.pct}% winner</span>
-                            </div>
-                          </div>
-                          <div className="p-2">
-                            <p className="text-[11px] font-semibold text-foreground leading-tight line-clamp-2">{poll.question}</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">{formatVoteCount(poll.totalVotes)} votes</p>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
-
-              {/* Most Debated */}
-              {decisionHub.mostDebated.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Scale className="h-4 w-4 text-orange-500" />
-                    <span className="text-xs font-display font-bold text-foreground">Most Debated</span>
-                    <span className="text-[10px] text-muted-foreground ml-1">— Close calls</span>
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                    {decisionHub.mostDebated.map(poll => (
-                      <motion.div
-                        key={poll.id}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => setModalPoll(poll)}
-                        className="shrink-0 w-44 rounded-xl bg-card border border-border/50 p-2.5 cursor-pointer"
-                      >
-                        <p className="text-[11px] font-semibold text-foreground leading-tight line-clamp-2">{poll.question}</p>
-                        <div className="mt-2 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-foreground truncate max-w-[60px]">{poll.option_a}</span>
-                            <span className="text-[10px] font-bold text-foreground truncate max-w-[60px]">{poll.option_b}</span>
-                          </div>
-                          <div className="flex h-1.5 rounded-full overflow-hidden bg-muted">
-                            <div className="bg-green-500 transition-all" style={{ width: `${poll.percentA}%` }} />
-                            <div className="bg-blue-500 transition-all" style={{ width: `${poll.percentB}%` }} />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-green-600">{poll.percentA}%</span>
-                            <span className="text-[10px] text-muted-foreground">{formatVoteCount(poll.totalVotes)} votes</span>
-                            <span className="text-[10px] font-bold text-blue-600">{poll.percentB}%</span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Trending Now */}
-              {decisionHub.trendingNow.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Flame className="h-4 w-4 text-destructive" />
-                    <span className="text-xs font-display font-bold text-foreground">Trending Now</span>
-                    <span className="text-[10px] text-muted-foreground ml-1">— Most active today</span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {decisionHub.trendingNow.map((poll, i) => {
-                      const winner = getWinnerInfo(poll);
-                      const recentVotes = votes24hMap.get(poll.id) || 0;
-                      return (
-                        <motion.div
-                          key={poll.id}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setModalPoll(poll)}
-                          className="flex items-center gap-2.5 p-2 rounded-xl bg-card border border-border/40 cursor-pointer"
-                        >
-                          <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-foreground truncate">{poll.question}</p>
-                            <p className="text-[10px] text-muted-foreground">
-                              <span className="font-bold text-foreground">{winner.option}</span> leads with {winner.pct}%
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1 text-[10px] text-orange-500 font-bold shrink-0">
-                            <Zap className="h-3 w-3" /> {recentVotes}/hr
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
-
-              <div className="border-t border-border/40" />
+              <button
+                onClick={() => setUnvotedOnly(false)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  !unvotedOnly ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+                }`}
+              >
+                All
+              </button>
             </div>
-          )}
+          </div>
 
           {/* All Polls in Category */}
           <div className="px-3 space-y-2.5">
-            {categoryPollsBase.map((poll, i) => (
-              <PollCard
-                key={poll.id}
-                poll={poll}
-                index={i}
-                votes24hMap={votes24hMap}
-                onTap={setModalPoll}
-                celebrityNames={celebrityPresence[poll.id]}
-                peopleLikeYou={peopleLikeYou}
-                demoResult={peopleLikeYou ? demoResults?.get(poll.id) : undefined}
-                userProfile={userProfile}
-              />
-            ))}
-            {categoryPollsBase.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-sm">No active polls in this category</p>
-              </div>
-            )}
+            {(() => {
+              const visiblePolls = unvotedOnly
+                ? categoryPollsBase.filter(p => !votedPollIds?.has(p.id))
+                : categoryPollsBase;
+              if (visiblePolls.length === 0) {
+                return (
+                  <div className="text-center py-12 px-6">
+                    <div className={`w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${style.gradient} flex items-center justify-center text-white shadow-sm`}>
+                      <CheckCircle2 className="h-6 w-6" />
+                    </div>
+                    <p className="text-sm font-display font-bold text-foreground mb-1">
+                      {unvotedOnly && categoryPollsBase.length > 0 ? "You're all caught up" : 'No active polls'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {unvotedOnly && categoryPollsBase.length > 0
+                        ? `You've voted on every poll in ${selectedCategory}`
+                        : 'Check back soon for new polls in this category'}
+                    </p>
+                    {unvotedOnly && categoryPollsBase.length > 0 && (
+                      <button
+                        onClick={() => setUnvotedOnly(false)}
+                        className="mt-4 px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-bold"
+                      >
+                        See all polls
+                      </button>
+                    )}
+                  </div>
+                );
+              }
+              return visiblePolls.map((poll, i) => (
+                <PollCard
+                  key={poll.id}
+                  poll={poll}
+                  index={i}
+                  votes24hMap={votes24hMap}
+                  onTap={setModalPoll}
+                  celebrityNames={celebrityPresence[poll.id]}
+                  peopleLikeYou={false}
+                  demoResult={undefined}
+                  userProfile={userProfile}
+                />
+              ));
+            })()}
           </div>
 
           <HomeResultsModal
