@@ -139,7 +139,7 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
 
   // Filter to polls with meaningful volume
   const ranked = Array.from(tallies.entries())
-    .filter(([pid, t]) => polls.has(pid) && t.total >= 20)
+    .filter(([pid, t]) => polls.has(pid) && t.total >= 3)
     .map(([pid, t]) => ({ poll: polls.get(pid)!, t }))
     .filter((x) => x.poll.poll_type !== 'predict'); // surprise handled separately
 
