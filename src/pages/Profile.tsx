@@ -98,8 +98,8 @@ export default function Profile() {
             {profile?.country || 'Unknown location'}
           </p>
 
-          {/* Votes / Comparisons / Battles */}
-          <div className="flex items-center justify-center gap-4 mt-3">
+          {/* Votes / Comparisons / Battles / Points / Majority */}
+          <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
             <button onClick={() => navigate('/history')} className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-1">
                 <BarChart3 className="h-3 w-3 text-muted-foreground" />
@@ -123,6 +123,22 @@ export default function Profile() {
               </div>
               <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Battles</span>
             </button>
+            <div className="w-px h-7 bg-border" />
+            <button onClick={() => navigate('/rewards')} className="flex flex-col items-center gap-0.5">
+              <div className="flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-muted-foreground" />
+                <span className="text-sm font-bold text-foreground">{profile?.points || 0}</span>
+              </div>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Points</span>
+            </button>
+            <div className="w-px h-7 bg-border" />
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="flex items-center gap-1">
+                <Target className="h-3 w-3 text-muted-foreground" />
+                <span className="text-sm font-bold text-foreground">{stats?.predictionAccuracy || 0}%</span>
+              </div>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Majority</span>
+            </div>
           </div>
 
           {stats?.currentStreak !== undefined && stats.currentStreak > 0 && (
@@ -150,21 +166,6 @@ export default function Profile() {
 
         {/* Voting Insights */}
         <VotingInsights />
-
-        {/* Stats — non-duplicates of header pills */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="glass rounded-xl p-4 text-center">
-            <div className="text-2xl font-bold">{profile?.points || 0}</div>
-            <div className="text-xs text-card-foreground/70">Insight Points</div>
-          </div>
-          <div className="glass rounded-xl p-4 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <Target className="h-4 w-4 text-primary" />
-              <span className="text-2xl font-bold">{stats?.predictionAccuracy || 0}%</span>
-            </div>
-            <div className="text-xs text-card-foreground/70">Majority Rate</div>
-          </div>
-        </div>
 
         {/* Menu Items */}
         <div className="glass rounded-2xl divide-y divide-border">
