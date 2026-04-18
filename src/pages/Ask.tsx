@@ -166,15 +166,15 @@ export default function Ask() {
                 >
                   <div className="grid grid-cols-2 aspect-[4/5]">
                     <img
-                      src={getPollDisplayImageSrc({ id: p.id, image_a_url: p.image_a_url, option_a: p.option_a } as any, 'a')}
-                      onError={(e) => handlePollImageError(e, { id: p.id, option_a: p.option_a } as any, 'a')}
+                      src={getPollDisplayImageSrc({ imageUrl: p.image_a_url, question: p.question, option: p.option_a, side: 'a' })}
+                      onError={(e) => handlePollImageError(e, { question: p.question, option: p.option_a, side: 'a' })}
                       alt={p.option_a}
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
                     <img
-                      src={getPollDisplayImageSrc({ id: p.id, image_b_url: p.image_b_url, option_b: p.option_b } as any, 'b')}
-                      onError={(e) => handlePollImageError(e, { id: p.id, option_b: p.option_b } as any, 'b')}
+                      src={getPollDisplayImageSrc({ imageUrl: p.image_b_url, question: p.question, option: p.option_b, side: 'b' })}
+                      onError={(e) => handlePollImageError(e, { question: p.question, option: p.option_b, side: 'b' })}
                       alt={p.option_b}
                       className="w-full h-full object-cover"
                       loading="lazy"
