@@ -6,6 +6,7 @@ import { Sparkles, Eye, EyeOff, Layers, Wand2, Zap, Trash2 } from 'lucide-react'
 import { toast } from 'sonner';
 import CampaignClientsManager from './CampaignClientsManager';
 import CampaignAnalyticsDialog from './CampaignAnalyticsDialog';
+import CampaignFeedbackConfigDialog from './campaigns/CampaignFeedbackConfigDialog';
 import QuickLaunchForm from './campaigns/QuickLaunchForm';
 import TemplatesForm from './campaigns/TemplatesForm';
 import AIDraftForm from './campaigns/AIDraftForm';
@@ -102,6 +103,7 @@ export default function BrandCampaignBuilder() {
                   </div>
                 </div>
                 <CampaignAnalyticsDialog campaignId={c.id} campaignName={c.name} brandName={c.brand_name} />
+                <CampaignFeedbackConfigDialog campaignId={c.id} campaignName={c.name} />
                 <CampaignClientsManager campaignId={c.id} campaignName={c.name} />
                 <Button size="sm" variant="ghost" onClick={() => toggleCampaignActive(c.id, c.is_active)}>
                   {c.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

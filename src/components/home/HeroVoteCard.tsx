@@ -17,6 +17,8 @@ import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
 import { getInsightTier } from '@/lib/streakGating';
 import HookMoment from '@/components/onboarding/HookMoment';
+import CampaignFeedbackModal from '@/components/poll/CampaignFeedbackModal';
+import { useCampaignFeedbackConfig } from '@/hooks/useCampaignFeedbackConfig';
 
 interface HeroPoll {
   id: string;
@@ -75,6 +77,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const sessionShownRef = useRef(new Set<string>());
   const [showHookMoment, setShowHookMoment] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
+  const [feedbackPrompt, setFeedbackPrompt] = useState<{ pollId: string; choice: 'A' | 'B'; optionLabel: string } | null>(null);
+  const { data: feedbackConfig } = useCampaignFeedbackConfig(poll?.id);
 
   // Gate gender teaser behind streak (Day 3+)
   const streak: number = (profile as any)?.current_streak ?? 0;
@@ -273,6 +277,15 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
       toast('👋 First vote of the day', { duration: 2000 });
     } else if (isMilestone) {
       toast(`🔥 ${voteNumber} votes in`, { duration: 2200 });
+    }
+
+    // Campaign feedback prompt: only for campaign polls with config enabled
+    if (feedbackConfig && (feedbackConfig.config.enabled || feedbackConfig.config.verbatim)) {
+      const optionLabel = choice === 'A' ? poll.option_a : poll.option_b;
+      // Delay slightly so flash result registers first
+      setTimeout(() => {
+        setFeedbackPrompt({ pollId: poll.id, choice, optionLabel });
+      }, FLASH_RESULT_MS + 300);
     }
 
     if (shouldFullReveal) {
@@ -780,6 +793,17 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         open={showShareSheet}
         onOpenChange={setShowShareSheet}
       />
+
+      {feedbackPrompt && feedbackConfig && (
+        <CampaignFeedbackModal
+          open={!!feedbackPrompt}
+          onClose={() => setFeedbackPrompt(null)}
+          pollId={feedbackPrompt.pollId}
+          choice={feedbackPrompt.choice}
+          optionLabel={feedbackPrompt.optionLabel}
+          config={feedbackConfig.config}
+        />
+      )}
     </section>
   );
 }
