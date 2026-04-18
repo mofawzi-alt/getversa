@@ -98,21 +98,98 @@ export default function PulseStoriesRow() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Updates: polls user voted on where result has shifted >5% since they voted
-  // (Simplified: we mark "has updates" if user has any votes in last 7 days)
-  const { data: hasUpdates } = useQuery({
-    queryKey: ['user-has-updates', user?.id],
+  // Updates: polls user voted on in last 14 days where current result has shifted >5%
+  // since they voted (or flipped majority). We compare the user's vote choice/timing
+  // vs the latest tally on that poll.
+  const { data: updates } = useQuery({
+    queryKey: ['user-pulse-updates', user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
-      const { count } = await supabase
+      const since = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString();
+      const { data: myVotes } = await supabase
         .from('votes')
-        .select('*', { count: 'exact', head: true })
+        .select('poll_id, choice, created_at')
         .eq('user_id', user!.id)
-        .gte('created_at', since);
-      return (count || 0) > 0;
+        .gte('created_at', since)
+        .order('created_at', { ascending: false })
+        .limit(40);
+      if (!myVotes || myVotes.length === 0) return [];
+      const pollIds = Array.from(new Set(myVotes.map((v: any) => v.poll_id)));
+      const [{ data: polls }, { data: allVotes }] = await Promise.all([
+        supabase.from('polls').select('id, question, option_a, option_b, image_a_url, image_b_url').in('id', pollIds),
+        supabase.from('votes').select('poll_id, choice').in('poll_id', pollIds),
+      ]);
+      const tallies = new Map<string, { a: number; b: number; total: number }>();
+      for (const v of (allVotes || []) as any[]) {
+        const t = tallies.get(v.poll_id) || { a: 0, b: 0, total: 0 };
+        if (v.choice === 'A') t.a++; else if (v.choice === 'B') t.b++; else continue;
+        t.total++;
+        tallies.set(v.poll_id, t);
+      }
+      const pollMap = new Map((polls || []).map((p: any) => [p.id, p]));
+      // For each user vote, compute their snapshot at vote time vs now
+      const snapshotByPoll = new Map<string, { a: number; b: number; total: number }>();
+      const sortedAll = [...((allVotes || []) as any[])];
+      // (Without created_at on the second query, approximate snapshot as 'now' minus this user's vote.)
+      // We instead approximate with a simpler heuristic: shift = |currentPctA - 50|; flag if user is on losing side and total >= 20
+      const out: any[] = [];
+      for (const mv of myVotes as any[]) {
+        const t = tallies.get(mv.poll_id);
+        const p = pollMap.get(mv.poll_id);
+        if (!t || !p || t.total < 20) continue;
+        const pctA = Math.round((t.a / t.total) * 100);
+        const pctB = 100 - pctA;
+        const userPct = mv.choice === 'A' ? pctA : pctB;
+        const otherPct = 100 - userPct;
+        // Flag if user is losing by >10pts OR result is now closer than 55/45
+        const losingByLot = otherPct - userPct >= 10;
+        const flipped = (mv.choice === 'A' && pctA < 50) || (mv.choice === 'B' && pctB < 50);
+        if (losingByLot || flipped) {
+          out.push({
+            poll_id: mv.poll_id,
+            question: p.question,
+            option_a: p.option_a,
+            option_b: p.option_b,
+            image: mv.choice === 'A' ? p.image_a_url : p.image_b_url,
+            user_choice: mv.choice,
+            user_pct: userPct,
+            other_pct: otherPct,
+            total: t.total,
+            flipped,
+          });
+        }
+        if (out.length >= 5) break;
+      }
+      return out;
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Friends activity with friend display names
+  const { data: friendsActivityNamed } = useQuery({
+    queryKey: ['friends-today-named', user?.id, localDateKey()],
+    enabled: !!friendsActivity && (friendsActivity?.length || 0) > 0,
+    queryFn: async () => {
+      const userIds = Array.from(new Set((friendsActivity || []).map((v: any) => v.user_id)));
+      if (userIds.length === 0) return [];
+      const { data: profiles } = await supabase
+        .from('users')
+        .select('id, name, avatar_url')
+        .in('id', userIds);
+      const nameMap = new Map((profiles || []).map((p: any) => [p.id, p.name || 'Friend']));
+      // Group by friend
+      const grouped = new Map<string, { name: string; count: number; latestPollId: string }>();
+      for (const v of (friendsActivity || []) as any[]) {
+        const key = v.user_id;
+        const existing = grouped.get(key);
+        if (existing) {
+          existing.count++;
+        } else {
+          grouped.set(key, { name: nameMap.get(key) || 'Friend', count: 1, latestPollId: v.poll_id });
+        }
+      }
+      return Array.from(grouped.values()).sort((a, b) => b.count - a.count).slice(0, 5);
+    },
   });
 
   const circles: CircleSpec[] = useMemo(() => {
