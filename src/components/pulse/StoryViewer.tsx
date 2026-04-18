@@ -39,6 +39,8 @@ type Props = {
   startIndex?: number;
   /** Auto-advance duration per card in ms. Set 0 to disable. */
   autoAdvanceMs?: number;
+  /** Override the share button — receives current card index, returns true if handled. */
+  onShareOverride?: (cardIndex: number) => boolean | Promise<boolean>;
 };
 
 const DEFAULT_DURATION = 6000;
