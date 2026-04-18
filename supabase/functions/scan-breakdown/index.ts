@@ -7,7 +7,7 @@
 // 2. age_gap       — 18-24 vs 35+ disagreement (>=15pt)
 // 3. city_war      — Cairo vs Alexandria (>=15pt)
 // 4. dominant_demo — any demo (gender/age/city) where one option got >=75%
-// Min 50 votes per poll, 30 per demo segment, 20 per city.
+// Min 20 votes per poll, 10 per demo segment, 8 per city (lowered for early-stage data).
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
