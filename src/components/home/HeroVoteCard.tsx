@@ -793,6 +793,17 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         open={showShareSheet}
         onOpenChange={setShowShareSheet}
       />
+
+      {feedbackPrompt && feedbackConfig && (
+        <CampaignFeedbackModal
+          open={!!feedbackPrompt}
+          onClose={() => setFeedbackPrompt(null)}
+          pollId={feedbackPrompt.pollId}
+          choice={feedbackPrompt.choice}
+          optionLabel={feedbackPrompt.optionLabel}
+          config={feedbackConfig.config}
+        />
+      )}
     </section>
   );
 }
