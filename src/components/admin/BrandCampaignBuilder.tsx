@@ -12,6 +12,7 @@ import QuickLaunchForm from './campaigns/QuickLaunchForm';
 import TemplatesForm from './campaigns/TemplatesForm';
 import AIDraftForm from './campaigns/AIDraftForm';
 import FocusGroupForm from './campaigns/FocusGroupForm';
+import ManagePanelDialog from './campaigns/ManagePanelDialog';
 
 export default function BrandCampaignBuilder() {
   const queryClient = useQueryClient();
@@ -145,6 +146,9 @@ export default function BrandCampaignBuilder() {
                 <div className="flex items-center justify-center gap-1 flex-wrap">
                   <CampaignAnalyticsDialog campaignId={c.id} campaignName={c.name} brandName={c.brand_name} />
                   <CampaignFeedbackConfigDialog campaignId={c.id} campaignName={c.name} />
+                  {c.campaign_type === 'focus_group' && (
+                    <ManagePanelDialog campaignId={c.id} campaignName={c.name} />
+                  )}
                   <CampaignClientsManager campaignId={c.id} campaignName={c.name} />
                   <Button size="sm" variant="ghost" onClick={() => toggleCampaignActive(c.id, c.is_active)}>
                     {c.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
