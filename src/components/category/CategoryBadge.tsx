@@ -1,10 +1,10 @@
-import { getCategoryIcon } from '@/lib/categoryMeta';
+import { getCategoryIcon, getCategoryColorClass } from '@/lib/categoryMeta';
 
 interface CategoryBadgeProps {
   category: string;
   label?: string;
   size?: 'xs' | 'sm';
-  variant?: 'pill' | 'plain';
+  variant?: 'pill' | 'plain' | 'overlay';
   className?: string;
 }
 
@@ -18,10 +18,14 @@ export default function CategoryBadge({
   const Icon = getCategoryIcon(category);
   const isSmall = size === 'sm';
 
+  const colorClass = getCategoryColorClass(category);
+
   const baseClasses =
     variant === 'plain'
       ? 'inline-flex items-center text-primary'
-      : 'inline-flex items-center rounded-full bg-primary/10 text-primary font-medium';
+      : variant === 'overlay'
+      ? `inline-flex items-center rounded-full backdrop-blur-md bg-white/85 font-medium shadow-sm ${colorClass.replace(/bg-\S+/g, '').trim()}`
+      : `inline-flex items-center rounded-full font-medium ${colorClass}`;
 
   const spacingClasses = isSmall ? 'gap-1.5 text-xs px-2 py-0.5' : 'gap-1 text-[10px] px-1.5 py-0.5';
   const iconClasses = isSmall ? 'h-3.5 w-3.5' : 'h-3 w-3';
