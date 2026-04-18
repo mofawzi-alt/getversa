@@ -184,17 +184,28 @@ function normalize(value: string): string {
  */
 export function getBrandColor(option: string): string | null {
   const norm = normalize(option);
-  
-  // Direct match
+
+  // Direct exact match only
   if (BRAND_COLORS[norm]) return BRAND_COLORS[norm];
-  
-  // Check if any brand key is contained in the option
+
+  // Word-boundary match: option must be a SHORT phrase (≤4 words) AND
+  // contain the brand as a whole word. This prevents long sentence options
+  // like "I could eat this for many different occasions" from incorrectly
+  // matching brand substrings (e.g. 'x', 'hp', 'lg').
+  const wordCount = norm.split(' ').filter(Boolean).length;
+  if (wordCount > 4) return null;
+
+  const words = new Set(norm.split(' ').filter(Boolean));
   for (const [brand, color] of Object.entries(BRAND_COLORS)) {
-    if (norm.includes(brand) || brand.includes(norm)) {
-      return color;
+    // Multi-word brand: require full phrase as a substring
+    if (brand.includes(' ')) {
+      if (norm.includes(brand)) return color;
+    } else {
+      // Single-word brand: require exact word match
+      if (words.has(brand)) return color;
     }
   }
-  
+
   return null;
 }
 
