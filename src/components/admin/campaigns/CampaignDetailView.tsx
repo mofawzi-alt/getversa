@@ -56,6 +56,19 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
   const [drilldownPollId, setDrilldownPollId] = useState<string | null>(null);
   const [insights, setInsights] = useState<string>('');
 
+  const { data: campaignMeta } = useQuery({
+    queryKey: ['campaign-meta', campaignId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('poll_campaigns')
+        .select('campaign_type')
+        .eq('id', campaignId)
+        .maybeSingle();
+      return data;
+    },
+  });
+  const isFocusGroup = campaignMeta?.campaign_type === 'focus_group';
+
   const { data: results = [], isLoading: loadingResults } = useQuery({
     queryKey: ['campaign-analytics', campaignId],
     queryFn: async (): Promise<PollResult[]> => {
@@ -119,36 +132,56 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
 
   return (
     <Tabs defaultValue="overview" className="w-full max-w-full overflow-x-hidden">
-      <TabsList className="grid grid-cols-7 w-full">
-        <TabsTrigger value="overview" className="text-xs gap-1.5">
-          <TrendingUp className="w-3.5 h-3.5" />
+      <TabsList className={`grid w-full ${isFocusGroup ? 'grid-cols-9' : 'grid-cols-8'}`}>
+        <TabsTrigger value="overview" className="text-xs gap-1">
+          <TrendingUp className="w-3 h-3" />
           <span className="hidden sm:inline">Overview</span>
         </TabsTrigger>
-        <TabsTrigger value="polls" className="text-xs gap-1.5">
-          <BarChart3 className="w-3.5 h-3.5" />
+        <TabsTrigger value="polls" className="text-xs gap-1">
+          <BarChart3 className="w-3 h-3" />
           <span className="hidden sm:inline">Polls</span>
         </TabsTrigger>
-        <TabsTrigger value="schedule" className="text-xs gap-1.5">
-          <CalendarClock className="w-3.5 h-3.5" />
+        {isFocusGroup && (
+          <TabsTrigger value="panel" className="text-xs gap-1">
+            <UserCheck className="w-3 h-3" />
+            <span className="hidden sm:inline">Panel</span>
+          </TabsTrigger>
+        )}
+        <TabsTrigger value="schedule" className="text-xs gap-1">
+          <CalendarClock className="w-3 h-3" />
           <span className="hidden sm:inline">Sched</span>
         </TabsTrigger>
-        <TabsTrigger value="demographics" className="text-xs gap-1.5">
-          <Users className="w-3.5 h-3.5" />
+        <TabsTrigger value="demographics" className="text-xs gap-1">
+          <Users className="w-3 h-3" />
           <span className="hidden sm:inline">Demos</span>
         </TabsTrigger>
-        <TabsTrigger value="attributes" className="text-xs gap-1.5">
-          <Star className="w-3.5 h-3.5" />
+        <TabsTrigger value="attributes" className="text-xs gap-1">
+          <Star className="w-3 h-3" />
           <span className="hidden sm:inline">Attrs</span>
         </TabsTrigger>
-        <TabsTrigger value="verbatim" className="text-xs gap-1.5">
-          <MessageSquare className="w-3.5 h-3.5" />
+        <TabsTrigger value="verbatim" className="text-xs gap-1">
+          <MessageSquare className="w-3 h-3" />
           <span className="hidden sm:inline">Quotes</span>
         </TabsTrigger>
-        <TabsTrigger value="narrative" className="text-xs gap-1.5">
-          <Sparkles className="w-3.5 h-3.5" />
+        <TabsTrigger value="themes" className="text-xs gap-1">
+          <Lightbulb className="w-3 h-3" />
+          <span className="hidden sm:inline">Themes</span>
+        </TabsTrigger>
+        <TabsTrigger value="narrative" className="text-xs gap-1">
+          <Sparkles className="w-3 h-3" />
           <span className="hidden sm:inline">AI</span>
         </TabsTrigger>
       </TabsList>
+
+      {isFocusGroup && (
+        <TabsContent value="panel" className="mt-4">
+          <FocusGroupPanelTab campaignId={campaignId} />
+        </TabsContent>
+      )}
+
+      <TabsContent value="themes" className="mt-4">
+        <CampaignThemesTab campaignId={campaignId} />
+      </TabsContent>
 
       <TabsContent value="schedule" className="mt-4">
         <CampaignDripSchedule campaignId={campaignId} />
