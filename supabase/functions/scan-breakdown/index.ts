@@ -318,6 +318,28 @@ Deno.serve(async (req) => {
     const { error: insErr } = await supabase.from('breakdown_findings').insert(rows);
     if (insErr) throw insErr;
 
+    // Notify all admins so they can approve before findings go stale
+    try {
+      const { data: admins } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+      const adminIds = (admins || []).map((a: any) => a.user_id);
+      if (adminIds.length > 0) {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            title: '📊 Breakdown findings ready',
+            body: `${rows.length} new demographic finding${rows.length === 1 ? '' : 's'} need${rows.length === 1 ? 's' : ''} review`,
+            url: '/admin?tab=pulse',
+            user_ids: adminIds,
+            notification_type: 'admin_breakdown_review',
+          },
+        });
+      }
+    } catch (notifyErr) {
+      console.error('admin notify failed (non-fatal)', notifyErr);
+    }
+
     return new Response(
       JSON.stringify({ ok: true, scan_run_id: scanRunId, findings: rows.length, candidates: candidates.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },

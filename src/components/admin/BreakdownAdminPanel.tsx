@@ -100,7 +100,12 @@ export default function BreakdownAdminPanel() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
         <TabsList>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="pending" className="relative">
+            Pending
+            {(findings?.length || 0) > 0 && tab === 'pending' && (
+              <Badge className="ml-1.5 h-4 px-1.5 text-[10px] bg-red-500 hover:bg-red-500">{findings!.length}</Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="approved">Live</TabsTrigger>
           <TabsTrigger value="rejected">Rejected</TabsTrigger>
         </TabsList>
