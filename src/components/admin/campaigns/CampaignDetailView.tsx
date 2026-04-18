@@ -135,15 +135,17 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
           <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
             Quick winner snapshot
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {results.map((r) => {
               const winner = r.percent_a >= r.percent_b ? r.option_a : r.option_b;
               const margin = Math.abs(r.percent_a - r.percent_b);
               return (
-                <div key={r.poll_id} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="truncate flex-1 text-muted-foreground">{r.question}</span>
-                  <span className="font-semibold">{winner}</span>
-                  <span className="text-xs text-muted-foreground w-16 text-right">+{margin}pt</span>
+                <div key={r.poll_id} className="flex flex-col gap-0.5 text-sm border-b border-border/50 pb-2 last:border-0 last:pb-0">
+                  <div className="text-xs text-muted-foreground line-clamp-1">{r.question}</div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-semibold text-sm truncate flex-1 min-w-0">{winner}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">+{margin}pt</span>
+                  </div>
                 </div>
               );
             })}
