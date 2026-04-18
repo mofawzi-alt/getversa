@@ -6,7 +6,51 @@ import { useQuery } from '@tanstack/react-query';
 import StoryViewer, { type StoryCardData } from './StoryViewer';
 import { hasSeenLocally, localDateKey } from '@/lib/pulseTime';
 import { trackStoryEvent } from '@/lib/storyAnalytics';
-import { Pin } from 'lucide-react';
+import { Pin, Flame, MapPin, Building2, Bell, Users, Sparkles, type LucideIcon } from 'lucide-react';
+
+type CircleVisual = {
+  Icon: LucideIcon;
+  /** Tailwind gradient classes for the icon background tile */
+  tileGradient: string;
+  /** Tailwind gradient classes for the outer ring (when active/unseen) */
+  ringGradient: string;
+  /** Icon color class */
+  iconColor: string;
+};
+
+const TOPIC_VISUALS: Record<string, CircleVisual> = {
+  egypt_today: {
+    Icon: MapPin,
+    tileGradient: 'bg-gradient-to-br from-rose-500 to-red-600',
+    ringGradient: 'bg-gradient-to-tr from-rose-500 via-red-500 to-amber-400',
+    iconColor: 'text-white',
+  },
+  cairo: {
+    Icon: Building2,
+    tileGradient: 'bg-gradient-to-br from-amber-400 to-orange-600',
+    ringGradient: 'bg-gradient-to-tr from-amber-400 via-orange-500 to-rose-500',
+    iconColor: 'text-white',
+  },
+  updates: {
+    Icon: Bell,
+    tileGradient: 'bg-gradient-to-br from-sky-500 to-indigo-600',
+    ringGradient: 'bg-gradient-to-tr from-sky-400 via-indigo-500 to-fuchsia-500',
+    iconColor: 'text-white',
+  },
+  friends: {
+    Icon: Users,
+    tileGradient: 'bg-gradient-to-br from-fuchsia-500 to-purple-600',
+    ringGradient: 'bg-gradient-to-tr from-fuchsia-500 via-purple-500 to-indigo-500',
+    iconColor: 'text-white',
+  },
+};
+
+const FALLBACK_VISUAL: CircleVisual = {
+  Icon: Sparkles,
+  tileGradient: 'bg-gradient-to-br from-slate-500 to-slate-700',
+  ringGradient: 'bg-gradient-to-tr from-primary via-fuchsia-500 to-amber-400',
+  iconColor: 'text-white',
+};
 
 type CircleSpec = {
   topic: string;
