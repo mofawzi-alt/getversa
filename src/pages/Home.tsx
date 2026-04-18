@@ -14,6 +14,8 @@ import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteSc
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import LiveIndicator from '@/components/poll/LiveIndicator';
+import CategoryBadge from '@/components/category/CategoryBadge';
+import { mapToVersaCategory } from '@/lib/categoryMeta';
 import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import { Loader2 } from 'lucide-react';
@@ -243,6 +245,14 @@ function HomeLiveDebateCard({
           >
             {genderTeaser.text}
           </motion.p>
+        )}
+        {poll.category && (
+          <div className="pt-0.5">
+            <CategoryBadge
+              category={mapToVersaCategory(poll.category)}
+              size="xs"
+            />
+          </div>
         )}
         {hasVoted ? (
           <div className="flex items-center justify-between pt-1 gap-2">
