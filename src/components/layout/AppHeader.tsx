@@ -26,6 +26,15 @@ export default function AppHeader() {
           <div className="flex items-center gap-1">
             {user && (
               <button
+                onClick={() => navigate('/ask')}
+                className="p-2 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                aria-label="Ask Versa"
+              >
+                <Sparkles className="h-5 w-5" />
+              </button>
+            )}
+            {user && (
+              <button
                 onClick={() => setSearchOpen(true)}
                 className="p-2 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all"
                 aria-label="Search polls"
