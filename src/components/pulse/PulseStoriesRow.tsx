@@ -312,21 +312,6 @@ export default function PulseStoriesRow() {
               </button>
             );
           })}
-          {/* Browse all categories — link to /explore */}
-          <button
-            type="button"
-            onClick={() => { window.location.href = '/explore'; }}
-            className="flex flex-col items-center gap-1 w-16 active:scale-95 transition-transform"
-          >
-            <div className="w-16 h-16 rounded-full p-[2px] bg-muted">
-              <div className="w-full h-full rounded-full bg-background flex items-center justify-center text-2xl">
-                🗂️
-              </div>
-            </div>
-            <span className="text-[10px] font-medium text-foreground/80 truncate w-full text-center">
-              Categories
-            </span>
-          </button>
         </div>
       </div>
 
