@@ -152,6 +152,19 @@ serve(async (req) => {
     const randomSeed = Math.floor(Math.random() * 1000000);
     const timestamp = Date.now();
 
+    const ALLOWED_CATEGORIES = [
+      'FMCG & Food',
+      'Beauty & Personal Care',
+      'Financial Services',
+      'Media & Entertainment',
+      'Retail & E-commerce',
+      'Telco & Tech',
+      'Food Delivery & Dining',
+      'Automotive & Mobility',
+      'Lifestyle & Society',
+      'The Pulse',
+    ];
+
     const systemPrompt = `You are an expert poll creator for a social voting app called VERSA, targeting audiences in EGYPT. 
 Your job is to create simple "X vs Y" or "This or That" style comparison polls that resonate with Egyptian culture.
 
@@ -194,12 +207,28 @@ ${targetGender ? `- Gender: ${targetGender}` : ''}
 ${targetCountry ? `- Country/Region: ${targetCountry}` : ''}
 Make sure the poll topic, references, and language resonate with this specific demographic!` : ''}
 
+CRITICAL CATEGORY RULE:
+The "category" field MUST be EXACTLY one of these 10 values (copy verbatim, no variations):
+${ALLOWED_CATEGORIES.map((c) => `- ${c}`).join('\n')}
+
+Category guide:
+- FMCG & Food: packaged food, snacks, beverages (Coca-Cola, Chipsy, Cadbury, Galaxy)
+- Beauty & Personal Care: makeup, skincare, shampoo, perfume
+- Financial Services: banks, fintech, payments, wallets, business/startups
+- Media & Entertainment: movies, series, music, sports, celebrities, gaming
+- Retail & E-commerce: shopping, stores, marketplaces (Noon, Amazon, Jumia)
+- Telco & Tech: telecom (Vodafone, Orange, Etisalat, WE), apps, gadgets, software
+- Food Delivery & Dining: restaurants, cafes, delivery apps (Talabat, elmenus)
+- Automotive & Mobility: cars, ride-hailing (Uber, Careem, Swvl), scooters
+- Lifestyle & Society: relationships, wellness, style, fashion, personality, habits, travel
+- The Pulse: trending cultural/political/news debates (Al Ahly vs Zamalek, Cairo vs Alex)
+
 You MUST respond with a valid JSON object with these exact fields:
 {
   "question": "Option A vs Option B",
   "option_a": "Option A",
-  "option_b": "Option B", 
-  "category": "Category name"
+  "option_b": "Option B",
+  "category": "<one of the 10 categories above, exactly>"
 }`;
 
     // Food category examples for variety
