@@ -9,7 +9,7 @@ import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
 import { getInsightTier } from '@/lib/streakGating';
 import { useAuth } from '@/contexts/AuthContext';
 import StreakInsightTeaser from './StreakInsightTeaser';
-import PostVoteSharePrompt from './PostVoteSharePrompt';
+
 
 interface Poll {
   id: string;
@@ -126,17 +126,6 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
           )}
           <StreakInsightTeaser pollId={poll.id} choice={result.choice} />
           
-          {/* Viral Share Prompt */}
-          <PostVoteSharePrompt
-            pollId={poll.id}
-            pollQuestion={poll.question}
-            optionA={poll.option_a}
-            optionB={poll.option_b}
-            userChoice={result.choice}
-            percentA={result.percentA}
-            percentB={result.percentB}
-          />
-
           <div className="flex items-center justify-center gap-3 mt-2">
             <ChallengeButton pollId={poll.id} pollQuestion={poll.question} userChoice={result.choice} />
           </div>
