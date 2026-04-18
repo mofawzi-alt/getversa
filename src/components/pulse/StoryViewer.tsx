@@ -132,6 +132,12 @@ export default function StoryViewer({
 
   async function handleShare(card: StoryCardData) {
     trackStoryEvent(topic, 'share_taps');
+    if (onShareOverride) {
+      try {
+        const handled = await onShareOverride(safeIndex);
+        if (handled) return;
+      } catch { /* fall through */ }
+    }
     const shareData = {
       title: 'Versa',
       text: card.headline + (card.primaryText ? ` — ${card.primaryText}` : ''),
