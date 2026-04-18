@@ -51,6 +51,9 @@ export default function FocusGroupForm({ onLaunched }: Props) {
     }
     setSubmitting(true);
     try {
+      console.log('[FocusGroup] Creating campaign as user:', user.id);
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      console.log('[FocusGroup] Auth user from supabase:', authUser?.id);
       const { data: campaign, error: cErr } = await supabase
         .from('poll_campaigns')
         .insert({
