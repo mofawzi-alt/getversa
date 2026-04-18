@@ -35,7 +35,8 @@ export default function FocusGroupForm({ onLaunched }: Props) {
     setPolls((prev) => prev.map((p, idx) => (idx === i ? { ...p, ...patch } : p)));
 
   const handleCreate = async () => {
-    if (!user) return;
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) return toast.error('Not signed in — please refresh and log in again');
     if (!name.trim() || !brandName.trim()) return toast.error('Campaign name and brand are required');
     const sizeNum = parseInt(panelSize, 10);
     if (!Number.isFinite(sizeNum) || sizeNum < 5 || sizeNum > 100) {
@@ -51,9 +52,6 @@ export default function FocusGroupForm({ onLaunched }: Props) {
     }
     setSubmitting(true);
     try {
-      console.log('[FocusGroup] Creating campaign as user:', user.id);
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      console.log('[FocusGroup] Auth user from supabase:', authUser?.id);
       const { data: campaign, error: cErr } = await supabase
         .from('poll_campaigns')
         .insert({
@@ -65,7 +63,7 @@ export default function FocusGroupForm({ onLaunched }: Props) {
           panel_size_target: sizeNum,
           panel_incentive_points: incNum,
           is_active: true,
-          created_by: user.id,
+          created_by: authUser.id,
         })
         .select()
         .single();
@@ -78,7 +76,7 @@ export default function FocusGroupForm({ onLaunched }: Props) {
         category: 'focus_group',
         is_active: true,
         campaign_id: campaign.id,
-        created_by: user.id,
+        created_by: authUser.id,
         poll_type: 'campaign',
         expiry_type: 'evergreen',
       }));
