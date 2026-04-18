@@ -229,7 +229,7 @@ serve(async (req) => {
         summary = sd.choices?.[0]?.message?.content?.trim() || summary;
       }
     } else {
-      summary = `No polls match "${question}" yet. Try broader keywords or a different angle.`;
+      summary = `No polls match "${question}" yet. Try a brand name (e.g. "Coca-Cola", "Vodafone"), a topic ("football", "fashion"), or browse by category.`;
     }
 
     return new Response(
