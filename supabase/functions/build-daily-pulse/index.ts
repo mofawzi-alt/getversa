@@ -118,7 +118,7 @@ async function fetchSurprise(supabase: any, sinceISO: string, polls: Map<string,
   for (const [pid, pt] of predTally) {
     const poll = polls.get(pid);
     const at = tallies.get(pid);
-    if (!poll || !at || at.total < 50 || pt.total < 10) continue;
+    if (!poll || !at || at.total < 3 || pt.total < 3) continue;
     const predA = Math.round((pt.a / pt.total) * 100);
     const actualA = Math.round((at.a / at.total) * 100);
     const gap = Math.abs(predA - actualA);
@@ -139,7 +139,7 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
 
   // Filter to polls with meaningful volume
   const ranked = Array.from(tallies.entries())
-    .filter(([pid, t]) => polls.has(pid) && t.total >= 20)
+    .filter(([pid, t]) => polls.has(pid) && t.total >= 3)
     .map(([pid, t]) => ({ poll: polls.get(pid)!, t }))
     .filter((x) => x.poll.poll_type !== 'predict'); // surprise handled separately
 
@@ -149,7 +149,7 @@ async function buildSlot(supabase: any, slot: 'morning' | 'evening') {
 
   // Closest Battle: closest to 50/50, min 100 votes
   const closeRanked = ranked
-    .filter((x) => x.t.total >= 100)
+    .filter((x) => x.t.total >= 3)
     .map((x) => ({ ...x, dist: Math.abs((x.t.a / x.t.total) - 0.5) }))
     .sort((a, b) => a.dist - b.dist);
   const closestBattle = closeRanked[0] ? pollCard(closeRanked[0].poll, closeRanked[0].t) : null;
