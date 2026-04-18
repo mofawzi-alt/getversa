@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Eye, EyeOff, Layers, Wand2, Zap } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Layers, Wand2, Zap, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import CampaignClientsManager from './CampaignClientsManager';
 import CampaignAnalyticsDialog from './CampaignAnalyticsDialog';
