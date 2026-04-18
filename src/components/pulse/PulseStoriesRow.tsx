@@ -15,6 +15,7 @@ import {
   useWeeklyVerdict, useNewThisWeek, useLastVisit,
 } from '@/hooks/usePulseCircles';
 import { useBreakdownFindings, type BreakdownFinding } from '@/hooks/useBreakdownFindings';
+import BreakdownShareCard from './BreakdownShareCard';
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
 
@@ -205,6 +206,7 @@ export default function PulseStoriesRow() {
   const lastVisit = useLastVisit();
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [bump, setBump] = useState(0);
+  const [shareFinding, setShareFinding] = useState<BreakdownFinding | null>(null);
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
@@ -585,6 +587,21 @@ export default function PulseStoriesRow() {
         onClose={() => { setOpenTopic(null); setBump((b) => b + 1); }}
         topic={openTopic || ''}
         cards={activeCircle?.cards || []}
+        onShareOverride={
+          openTopic === 'breakdown' && breakdownData
+            ? (cardIndex) => {
+                const finding = breakdownData[cardIndex];
+                if (!finding) return false;
+                setShareFinding(finding);
+                return true;
+              }
+            : undefined
+        }
+      />
+      <BreakdownShareCard
+        open={!!shareFinding}
+        finding={shareFinding}
+        onClose={() => setShareFinding(null)}
       />
     </>
   );

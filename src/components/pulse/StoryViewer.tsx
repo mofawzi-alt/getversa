@@ -39,6 +39,8 @@ type Props = {
   startIndex?: number;
   /** Auto-advance duration per card in ms. Set 0 to disable. */
   autoAdvanceMs?: number;
+  /** Override the share button — receives current card index, returns true if handled. */
+  onShareOverride?: (cardIndex: number) => boolean | Promise<boolean>;
 };
 
 const DEFAULT_DURATION = 6000;
@@ -50,6 +52,7 @@ export default function StoryViewer({
   cards,
   startIndex = 0,
   autoAdvanceMs = DEFAULT_DURATION,
+  onShareOverride,
 }: Props) {
   const navigate = useNavigate();
   const [index, setIndex] = useState(startIndex);
@@ -129,6 +132,13 @@ export default function StoryViewer({
 
   async function handleShare(card: StoryCardData) {
     trackStoryEvent(topic, 'share_taps');
+    if (onShareOverride) {
+      try {
+        const idx = Math.max(0, Math.min(index, cards.length - 1));
+        const handled = await onShareOverride(idx);
+        if (handled) return;
+      } catch { /* fall through */ }
+    }
     const shareData = {
       title: 'Versa',
       text: card.headline + (card.primaryText ? ` — ${card.primaryText}` : ''),
