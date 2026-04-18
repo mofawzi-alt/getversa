@@ -475,7 +475,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
           {/* Category badge */}
           {poll.category && (
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
               <CategoryBadge
                 category={mapToVersaCategory(poll.category)}
                 variant="overlay"
