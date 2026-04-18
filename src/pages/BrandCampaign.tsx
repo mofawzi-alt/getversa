@@ -78,11 +78,22 @@ export default function BrandCampaign() {
     const poll = data.polls[currentIndex];
     setVoting(true);
     try {
+      // Snapshot user demographics onto vote (denormalized for analytics)
+      const { data: profile } = await supabase
+        .from('users')
+        .select('gender, age_range, city, country')
+        .eq('id', user.id)
+        .maybeSingle();
+
       const { error } = await supabase.from('votes').insert({
         user_id: user.id,
         poll_id: poll.id,
         choice,
         category: poll.category,
+        voter_gender: profile?.gender ?? null,
+        voter_age_range: profile?.age_range ?? null,
+        voter_city: profile?.city ?? null,
+        voter_country: profile?.country ?? null,
       });
       if (error) throw error;
       await refetch();
