@@ -17,6 +17,8 @@ import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
 import { getInsightTier } from '@/lib/streakGating';
 import HookMoment from '@/components/onboarding/HookMoment';
+import CampaignFeedbackModal from '@/components/poll/CampaignFeedbackModal';
+import { useCampaignFeedbackConfig } from '@/hooks/useCampaignFeedbackConfig';
 
 interface HeroPoll {
   id: string;
