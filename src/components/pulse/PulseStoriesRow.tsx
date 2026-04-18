@@ -6,7 +6,7 @@ import { hasSeenLocally } from '@/lib/pulseTime';
 import { trackStoryEvent } from '@/lib/storyAnalytics';
 import {
   Pin, Flame, MapPin, Building2, Bell, Users, Sparkles,
-  Swords, Layers, Brain, Clock, Trophy, PartyPopper,
+  Swords, Layers, Brain, Clock, Trophy, PartyPopper, BarChart3,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -14,6 +14,7 @@ import {
   useYourPollsUpdated, usePredictRecap, useClosingSoon,
   useWeeklyVerdict, useNewThisWeek, useLastVisit,
 } from '@/hooks/usePulseCircles';
+import { useBreakdownFindings, type BreakdownFinding } from '@/hooks/useBreakdownFindings';
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
 
@@ -83,6 +84,12 @@ const TOPIC_VISUALS: Record<string, CircleVisual> = {
     Icon: PartyPopper,
     tileGradient: 'bg-gradient-to-br from-cyan-500 to-blue-600',
     ringGradient: 'bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500',
+    iconColor: 'text-white',
+  },
+  breakdown: {
+    Icon: BarChart3,
+    tileGradient: 'bg-gradient-to-br from-indigo-600 to-purple-800',
+    ringGradient: 'bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500',
     iconColor: 'text-white',
   },
 };
