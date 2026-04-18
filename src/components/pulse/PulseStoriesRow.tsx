@@ -524,22 +524,6 @@ export default function PulseStoriesRow() {
     <>
       <div className="w-full overflow-x-auto no-scrollbar -mx-4 px-4 py-3 border-b border-border/40 bg-background">
         <div className="flex gap-3 min-w-max">
-          {/* Trending entry */}
-          <button
-            type="button"
-            onClick={() => { window.location.href = '/explore?tab=trending'; }}
-            className="flex flex-col items-center gap-1.5 w-16 active:scale-95 transition-transform"
-          >
-            <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-orange-500 via-red-500 to-amber-400 shadow-lg shadow-orange-500/20">
-              <div className="w-full h-full rounded-full bg-background flex items-center justify-center p-[3px]">
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-inner">
-                  <Flame className="w-6 h-6 text-white drop-shadow" strokeWidth={2.25} />
-                </div>
-              </div>
-            </div>
-            <span className="text-[10px] font-bold text-foreground truncate w-full text-center">Trending</span>
-          </button>
-
           {sorted.map((circle) => {
             const visual = TOPIC_VISUALS[circle.topic] || FALLBACK_VISUAL;
             const Icon = visual.Icon;
