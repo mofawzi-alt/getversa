@@ -115,7 +115,7 @@ export default function CampaignDetailView({ campaignId, campaignName, brandName
   };
 
   return (
-    <Tabs defaultValue="overview" className="w-full">
+    <Tabs defaultValue="overview" className="w-full max-w-full overflow-x-hidden">
       <TabsList className="grid grid-cols-6 w-full">
         <TabsTrigger value="overview" className="text-xs gap-1.5">
           <TrendingUp className="w-3.5 h-3.5" />
