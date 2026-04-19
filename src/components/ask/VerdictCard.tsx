@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Users, ArrowRight } from 'lucide-react';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import ShareVerdictCard from './ShareVerdictCard';
 
 export interface Verdict {
   poll_id: string;
@@ -83,13 +84,16 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
             <span>{verdict.viewer_line}</span>
           </div>
         )}
-        <button
-          onClick={() => navigate(`/browse?pollId=${verdict.poll_id}`)}
-          className="w-full mt-2 h-10 rounded-full bg-foreground text-background text-sm font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
-        >
-          Cast your vote
-          <ArrowRight className="h-4 w-4" />
-        </button>
+        <div className="space-y-2 pt-1">
+          <button
+            onClick={() => navigate(`/browse?pollId=${verdict.poll_id}`)}
+            className="w-full h-10 rounded-full bg-foreground text-background text-sm font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
+          >
+            Cast your vote
+            <ArrowRight className="h-4 w-4" />
+          </button>
+          <ShareVerdictCard verdict={verdict} />
+        </div>
       </div>
     </div>
   );
