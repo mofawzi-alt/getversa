@@ -72,6 +72,8 @@ export default function Ask() {
     setSummary(null);
     setVerdict(null);
     setPolls([]);
+    setLowData(false);
+    setSuggestions([]);
     setSearched(true);
     try {
       const viewer = profile ? {
@@ -90,6 +92,8 @@ export default function Ask() {
       setSummary(data.summary || null);
       setVerdict(data.verdict || null);
       setPolls(data.polls || []);
+      setLowData(!!data.low_data);
+      setSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || 'Search failed');
