@@ -35,6 +35,8 @@ export default function Ask() {
   const [summary, setSummary] = useState<string | null>(null);
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [polls, setPolls] = useState<ResearchPoll[]>([]);
+  const [lowData, setLowData] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [searched, setSearched] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
