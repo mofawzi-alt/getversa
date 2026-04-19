@@ -589,6 +589,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         image_a_url: p.image_a_url, image_b_url: p.image_b_url,
         category: p.category,
         percent_a: pctA, percent_b: pctB, total_votes: s.total,
+        real_votes: s.realTotal,
+        baseline_active: !!s.baselineActive,
         viewer_age_line, viewer_city_line, gender_teaser,
       };
     });
