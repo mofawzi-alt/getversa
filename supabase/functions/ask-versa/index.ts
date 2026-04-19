@@ -254,39 +254,66 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 
     // ---- 4. Zero-data guardrail (50 votes) ----
     if (matchedPolls.length === 0 || totalVotes < MIN_VOTES_GUARDRAIL) {
-      // Suggest 3 unvoted polls user can vote on
+      // Only suggest TOPICALLY RELEVANT polls (matched by keyword/category).
+      // Don't fall back to random recent polls — that creates a confusing UX
+      // where someone asks "iPhone vs Samsung" and gets cosmetics suggestions.
       let suggestedPolls: any[] = [];
+
+      let votedIds = new Set<string>();
       if (userId) {
         const { data: votedRows } = await supabase
           .from("votes")
           .select("poll_id")
           .eq("user_id", userId);
-        const votedIds = new Set((votedRows || []).map((v: any) => v.poll_id));
-        // Try matched polls first (relevant), fall back to recent active
-        const candidates = matchedPolls.length > 0
-          ? matchedPolls
-          : await (async () => {
-              const { data } = await supabase
-                .from("polls")
-                .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
-                .eq("is_active", true)
-                .order("created_at", { ascending: false })
-                .limit(20);
-              return data || [];
-            })();
-        suggestedPolls = candidates
+        votedIds = new Set((votedRows || []).map((v: any) => v.poll_id));
+      }
+
+      const mapPoll = (p: any) => ({
+        id: p.id,
+        question: p.question,
+        option_a: p.option_a,
+        option_b: p.option_b,
+        image_a_url: p.image_a_url,
+        image_b_url: p.image_b_url,
+        category: p.category,
+      });
+
+      // Tier 1: matched polls (keyword/category hits)
+      if (matchedPolls.length > 0) {
+        suggestedPolls = matchedPolls
           .filter((p: any) => !votedIds.has(p.id))
           .slice(0, 3)
-          .map((p: any) => ({
-            id: p.id,
-            question: p.question,
-            option_a: p.option_a,
-            option_b: p.option_b,
-            image_a_url: p.image_a_url,
-            image_b_url: p.image_b_url,
-            category: p.category,
-          }));
+          .map(mapPoll);
+        // If user voted on all matched, still re-show them so they see what data exists.
+        if (suggestedPolls.length === 0) {
+          suggestedPolls = matchedPolls.slice(0, 3).map(mapPoll);
+        }
       }
+
+      // Tier 2: same-category fallback (still topically related)
+      if (suggestedPolls.length < 3 && category && category !== "any") {
+        const dbCats = CATEGORY_MAP[category.toLowerCase()] || [];
+        if (dbCats.length > 0) {
+          const { data: catPolls } = await supabase
+            .from("polls")
+            .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
+            .eq("is_active", true)
+            .in("category", dbCats)
+            .order("created_at", { ascending: false })
+            .limit(20);
+          const seen = new Set(suggestedPolls.map((p) => p.id));
+          for (const p of catPolls || []) {
+            if (suggestedPolls.length >= 3) break;
+            if (seen.has(p.id) || votedIds.has(p.id)) continue;
+            suggestedPolls.push(mapPoll(p));
+            seen.add(p.id);
+          }
+        }
+      }
+
+      const summary = suggestedPolls.length > 0
+        ? `Versa doesn't have enough data on this topic yet. Vote on these related polls to help build it — and earn credits while you do.`
+        : `Versa doesn't have any polls on this topic yet. Try a different question, or vote on polls in the feed to help build new topics.`;
 
       // Log (no charge)
       if (userId) {
@@ -308,7 +335,7 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       return new Response(
         JSON.stringify({
           stage: "guardrail",
-          summary: `Versa doesn't have enough data on this topic yet. Vote on these polls to help build it — and earn credits while you do.`,
+          summary,
           low_data: true,
           credits_balance: userBalance,
           suggested_polls: suggestedPolls,
