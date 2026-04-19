@@ -47,6 +47,9 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useDailyQueue } from '@/hooks/useDailyQueue';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import { useTrendingPolls } from '@/hooks/useTrendingPolls';
+import { useFriendsOnPolls, type FriendOnPoll } from '@/hooks/useFriendsOnPolls';
+import UserAvatar from '@/components/UserAvatar';
+import { Lock } from 'lucide-react';
 import CountdownTimer from '@/components/poll/CountdownTimer';
 import TrendingBadge from '@/components/poll/TrendingBadge';
 import ClosingSoonStrip from '@/components/home/ClosingSoonStrip';
@@ -143,6 +146,7 @@ function HomeLiveDebateCard({
   hasVoted,
   chosenOptionLabel,
   isTrending = false,
+  friendsOnPoll = [],
   onCardClick,
 }: {
   poll: PollCard;
@@ -150,6 +154,7 @@ function HomeLiveDebateCard({
   hasVoted: boolean;
   chosenOptionLabel: string | null;
   isTrending?: boolean;
+  friendsOnPoll?: FriendOnPoll[];
   onCardClick: () => void;
 }) {
   const { user } = useAuth();
@@ -227,6 +232,37 @@ function HomeLiveDebateCard({
             <div className="absolute inset-0 border-2 border-option-b rounded-r-xl pointer-events-none" />
           )}
         </div>
+
+        {/* Frosted reveal overlay — only when NOT voted */}
+        {!hasVoted && (
+          <div className="absolute inset-0 z-30 flex items-end justify-center pb-4 pointer-events-none">
+            <div className="px-3 py-1.5 rounded-full bg-black/55 backdrop-blur-md flex items-center gap-1.5 shadow-lg">
+              <Lock className="h-3 w-3 text-white" />
+              <span className="text-[11px] font-semibold text-white tracking-wide">Vote to reveal result</span>
+            </div>
+          </div>
+        )}
+
+        {/* Friend avatar stack — bottom-left of image area, both states */}
+        {friendsOnPoll.length > 0 && (
+          <div className="absolute bottom-2 left-2 z-30 flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/55 backdrop-blur-md max-w-[78%] pointer-events-none">
+            <div className="flex -space-x-1.5">
+              {friendsOnPoll.slice(0, 3).map((f) => (
+                <UserAvatar
+                  key={f.friendId}
+                  url={f.friendAvatarUrl}
+                  username={f.friendName}
+                  className="w-5 h-5 ring-1 ring-black/40"
+                />
+              ))}
+            </div>
+            <span className="text-[10px] font-semibold text-white truncate">
+              {friendsOnPoll.length === 1
+                ? `${friendsOnPoll[0].friendName} voted`
+                : `${friendsOnPoll[0].friendName} and ${friendsOnPoll.length - 1} other${friendsOnPoll.length - 1 > 1 ? 's' : ''} voted`}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="px-4 pt-3 pb-4 space-y-2">
@@ -328,6 +364,68 @@ function HomeLiveDebateCard({
         onOpenChange={setShareSheetOpen}
       />
     </motion.div>
+  );
+}
+
+function LiveDebatesList({
+  livePolls,
+  votedPollIds,
+  userVoteChoices,
+  trendingIdSet,
+  newPolls,
+  setHeroPollIndex,
+  heroRef,
+  setModalPoll,
+  navigate,
+}: {
+  livePolls: PollCard[];
+  votedPollIds?: Set<string>;
+  userVoteChoices?: Map<string, { choice: string }>;
+  trendingIdSet?: Set<string>;
+  newPolls: PollCard[];
+  setHeroPollIndex: (n: number) => void;
+  heroRef: React.RefObject<HTMLDivElement>;
+  setModalPoll: (p: PollCard) => void;
+  navigate: (path: string) => void;
+}) {
+  const pollIds = useMemo(() => livePolls.map(p => p.id), [livePolls]);
+  const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
+
+  return (
+    <div className="flex flex-col gap-4 px-3">
+      {livePolls.map((poll, i) => {
+        const hasVoted = Boolean(votedPollIds?.has(poll.id));
+        const voteData = userVoteChoices?.get(poll.id);
+        const userChoice = voteData?.choice;
+        const chosenOptionLabel = userChoice === 'A' ? poll.option_a : userChoice === 'B' ? poll.option_b : null;
+        const friendsOnPoll = friendsByPoll?.[poll.id] || [];
+
+        return (
+          <HomeLiveDebateCard
+            key={poll.id}
+            poll={poll}
+            index={i}
+            hasVoted={hasVoted}
+            chosenOptionLabel={chosenOptionLabel}
+            isTrending={trendingIdSet?.has(poll.id) || false}
+            friendsOnPoll={friendsOnPoll}
+            onCardClick={() => {
+              if (hasVoted) {
+                setModalPoll(poll);
+                return;
+              }
+              const idx = newPolls.findIndex(p => p.id === poll.id);
+              if (idx >= 0) {
+                setHeroPollIndex(idx);
+                heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                navigate(`/browse?filter=live&pollId=${poll.id}`);
+              }
+            }}
+          />
+        );
+      })}
+    </div>
   );
 }
 
@@ -1105,39 +1203,17 @@ export default function Home() {
           </div>
 
           {livePolls.length > 0 ? (
-            <div className="flex flex-col gap-4 px-3">
-              {livePolls.map((poll, i) => {
-                const hasVoted = Boolean(votedPollIds?.has(poll.id));
-                const voteData = userVoteChoices?.get(poll.id);
-                const userChoice = voteData?.choice;
-                const chosenOptionLabel = userChoice === 'A' ? poll.option_a : userChoice === 'B' ? poll.option_b : null;
-
-                return (
-                  <HomeLiveDebateCard
-                    key={poll.id}
-                    poll={poll}
-                    index={i}
-                    hasVoted={hasVoted}
-                    chosenOptionLabel={chosenOptionLabel}
-                    isTrending={trendingIdSet?.has(poll.id) || false}
-                    onCardClick={() => {
-                      if (hasVoted) {
-                        setModalPoll(poll);
-                        return;
-                      }
-
-                      const idx = newPolls.findIndex(p => p.id === poll.id);
-                      if (idx >= 0) {
-                        setHeroPollIndex(idx);
-                        heroRef.current?.scrollIntoView({ behavior: 'smooth' });
-                      } else {
-                        navigate(`/browse?filter=live&pollId=${poll.id}`);
-                      }
-                    }}
-                  />
-                );
-              })}
-            </div>
+            <LiveDebatesList
+              livePolls={livePolls}
+              votedPollIds={votedPollIds}
+              userVoteChoices={userVoteChoices}
+              trendingIdSet={trendingIdSet}
+              newPolls={newPolls}
+              setHeroPollIndex={setHeroPollIndex}
+              heroRef={heroRef}
+              setModalPoll={setModalPoll}
+              navigate={navigate}
+            />
           ) : (
             <div className="mx-3 rounded-2xl border border-border/60 bg-card px-4 py-8 text-center">
               <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }}>
