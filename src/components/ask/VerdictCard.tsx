@@ -15,6 +15,8 @@ export interface Verdict {
   winner_pct: number;
   loser_pct: number;
   total_votes: number;
+  real_votes?: number;
+  baseline_active?: boolean;
   reason: string;
   viewer_line: string | null;
 }
@@ -38,6 +40,11 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
           <span className="font-bold text-foreground">{verdict.winner_pct}%</span> of Egyptians agree
           <span className="text-muted-foreground"> · {verdict.total_votes.toLocaleString()} votes</span>
         </p>
+        {verdict.baseline_active && (
+          <p className="text-[10px] text-muted-foreground/70 italic mt-1">
+            Still building real user data — totals include baseline.
+          </p>
+        )}
       </div>
 
       {/* Images */}

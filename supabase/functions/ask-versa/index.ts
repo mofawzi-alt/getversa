@@ -219,7 +219,7 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
     const buildQuery = (useCategory: boolean, useKeywords: boolean) => {
       let q = supabase
         .from("polls")
-        .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at")
+        .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, baseline_votes_a, baseline_votes_b")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(80);
@@ -254,6 +254,13 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       const { data, error } = await queryBuilder;
       if (error) throw error;
       if (data && data.length > 0) { polls = data; break; }
+    }
+
+    // ---- Fetch sunset threshold (default 50) ----
+    let sunsetThreshold = 50;
+    {
+      const { data: ss } = await supabase.from("seeding_settings").select("baseline_sunset_threshold").limit(1).maybeSingle();
+      if (ss?.baseline_sunset_threshold) sunsetThreshold = ss.baseline_sunset_threshold;
     }
 
     // ---- 3. Vote stats ----
@@ -304,7 +311,20 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 
     let matchedPolls = polls
       .map((p) => {
-        const s = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
+        const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
+        const realTotal = rawStats.total;
+        const baselineActive = realTotal < sunsetThreshold;
+        const baseA = baselineActive ? (p.baseline_votes_a || 0) : 0;
+        const baseB = baselineActive ? (p.baseline_votes_b || 0) : 0;
+        // Merge baselines into top-line a/b/total only (demographic splits stay 100% real)
+        const s = {
+          ...rawStats,
+          a: rawStats.a + baseA,
+          b: rawStats.b + baseB,
+          total: rawStats.total + baseA + baseB,
+          realTotal,
+          baselineActive,
+        };
         const split = s.total > 0 ? s.a / s.total : 0.5;
         const controversyScore = 1 - Math.abs(split - 0.5) * 2;
         const topicalHits = getPollTopicalHitCount(p);
@@ -324,6 +344,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 
     matchedPolls = matchedPolls.slice(0, mode === "decide" ? 3 : 12);
     const totalVotes = matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.total || 0), 0);
+    const totalRealVotes = matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.realTotal || 0), 0);
+    const anyBaselineActive = matchedPolls.some((p: any) => p._stats?.baselineActive);
 
     // ---- 4. Zero-data guardrail (50 votes) ----
     if (matchedPolls.length === 0 || totalVotes < MIN_VOTES_GUARDRAIL) {
@@ -441,6 +463,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
           teaser,
           matched_poll_count: matchedPolls.length,
           total_votes: totalVotes,
+          real_votes: totalRealVotes,
+          baseline_active: anyBaselineActive,
           mode,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -510,6 +534,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         winner_pct: winnerPct,
         loser_pct: 100 - winnerPct,
         total_votes: s.total,
+        real_votes: s.realTotal,
+        baseline_active: !!s.baselineActive,
         reason,
         viewer_line: viewerLine,
       };
@@ -565,6 +591,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         image_a_url: p.image_a_url, image_b_url: p.image_b_url,
         category: p.category,
         percent_a: pctA, percent_b: pctB, total_votes: s.total,
+        real_votes: s.realTotal,
+        baseline_active: !!s.baselineActive,
         viewer_age_line, viewer_city_line, gender_teaser,
       };
     });
@@ -596,6 +624,9 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         route: safeRoute,
         credits_charged: cost,
         credits_balance: newBalance,
+        total_votes: totalVotes,
+        real_votes: totalRealVotes,
+        baseline_active: anyBaselineActive,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
