@@ -232,6 +232,37 @@ function HomeLiveDebateCard({
             <div className="absolute inset-0 border-2 border-option-b rounded-r-xl pointer-events-none" />
           )}
         </div>
+
+        {/* Frosted reveal overlay — only when NOT voted */}
+        {!hasVoted && (
+          <div className="absolute inset-0 z-30 flex items-end justify-center pb-4 pointer-events-none">
+            <div className="px-3 py-1.5 rounded-full bg-black/55 backdrop-blur-md flex items-center gap-1.5 shadow-lg">
+              <Lock className="h-3 w-3 text-white" />
+              <span className="text-[11px] font-semibold text-white tracking-wide">Vote to reveal result</span>
+            </div>
+          </div>
+        )}
+
+        {/* Friend avatar stack — bottom-left of image area, both states */}
+        {friendsOnPoll.length > 0 && (
+          <div className="absolute bottom-2 left-2 z-30 flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/55 backdrop-blur-md max-w-[78%] pointer-events-none">
+            <div className="flex -space-x-1.5">
+              {friendsOnPoll.slice(0, 3).map((f) => (
+                <UserAvatar
+                  key={f.friendId}
+                  url={f.friendAvatarUrl}
+                  username={f.friendName}
+                  className="w-5 h-5 ring-1 ring-black/40"
+                />
+              ))}
+            </div>
+            <span className="text-[10px] font-semibold text-white truncate">
+              {friendsOnPoll.length === 1
+                ? `${friendsOnPoll[0].friendName} voted`
+                : `${friendsOnPoll[0].friendName} and ${friendsOnPoll.length - 1} other${friendsOnPoll.length - 1 > 1 ? 's' : ''} voted`}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="px-4 pt-3 pb-4 space-y-2">
