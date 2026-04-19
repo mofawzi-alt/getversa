@@ -367,7 +367,69 @@ function HomeLiveDebateCard({
   );
 }
 
-export default function Home() {
+function LiveDebatesList({
+  livePolls,
+  votedPollIds,
+  userVoteChoices,
+  trendingIdSet,
+  newPolls,
+  setHeroPollIndex,
+  heroRef,
+  setModalPoll,
+  navigate,
+}: {
+  livePolls: PollCard[];
+  votedPollIds?: Set<string>;
+  userVoteChoices?: Map<string, { choice: 'A' | 'B' }>;
+  trendingIdSet?: Set<string>;
+  newPolls: PollCard[];
+  setHeroPollIndex: (n: number) => void;
+  heroRef: React.RefObject<HTMLDivElement>;
+  setModalPoll: (p: PollCard) => void;
+  navigate: (path: string) => void;
+}) {
+  const pollIds = useMemo(() => livePolls.map(p => p.id), [livePolls]);
+  const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
+
+  return (
+    <div className="flex flex-col gap-4 px-3">
+      {livePolls.map((poll, i) => {
+        const hasVoted = Boolean(votedPollIds?.has(poll.id));
+        const voteData = userVoteChoices?.get(poll.id);
+        const userChoice = voteData?.choice;
+        const chosenOptionLabel = userChoice === 'A' ? poll.option_a : userChoice === 'B' ? poll.option_b : null;
+        const friendsOnPoll = friendsByPoll?.[poll.id] || [];
+
+        return (
+          <HomeLiveDebateCard
+            key={poll.id}
+            poll={poll}
+            index={i}
+            hasVoted={hasVoted}
+            chosenOptionLabel={chosenOptionLabel}
+            isTrending={trendingIdSet?.has(poll.id) || false}
+            friendsOnPoll={friendsOnPoll}
+            onCardClick={() => {
+              if (hasVoted) {
+                setModalPoll(poll);
+                return;
+              }
+              const idx = newPolls.findIndex(p => p.id === poll.id);
+              if (idx >= 0) {
+                setHeroPollIndex(idx);
+                heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                navigate(`/browse?filter=live&pollId=${poll.id}`);
+              }
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
   const storiesRef = useRef<HTMLDivElement>(null);
