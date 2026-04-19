@@ -429,7 +429,7 @@ function LiveDebatesList({
   );
 }
 
-
+export default function Home() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
   const storiesRef = useRef<HTMLDivElement>(null);
