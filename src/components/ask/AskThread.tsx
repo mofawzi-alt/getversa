@@ -29,15 +29,15 @@ interface Props {
 }
 
 const DECIDE_FOLLOWUPS = [
-  'Break it down by age',
-  'What about women?',
-  'Show Cairo only',
+  'Why do people pick it?',
+  'What\'s the runner-up argument?',
+  'Compare with another option',
 ];
 
 const RESEARCH_FOLLOWUPS = [
-  'Break it down by gender',
-  'Compare 18–24 vs 25–34',
-  'Zoom into Cairo',
+  'Summarize the main takeaway',
+  'What\'s the most divisive poll?',
+  'Show a related question',
 ];
 
 export default function AskThread({ turns, onPickSuggestion }: Props) {
