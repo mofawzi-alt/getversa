@@ -48,6 +48,7 @@ const FILTER_TOOL = {
       type: "object",
       properties: {
         keywords: { type: "array", items: { type: "string" }, description: "Key topical terms (lowercase)." },
+        entities: { type: "array", items: { type: "string" }, description: "Named products, brands, people, or places explicitly mentioned." },
         category: { type: "string", description: `One of: ${KNOWN_CATEGORIES.join(", ")}, or "any".` },
         gender: { type: "string", description: 'One of: male, female, any.' },
         age_range: { type: "string", description: 'One of: under_18, 18-24, 25-34, 35-44, 45+, any.' },
