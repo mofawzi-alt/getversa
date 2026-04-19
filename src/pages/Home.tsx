@@ -380,7 +380,7 @@ function LiveDebatesList({
 }: {
   livePolls: PollCard[];
   votedPollIds?: Set<string>;
-  userVoteChoices?: Map<string, { choice: 'A' | 'B' }>;
+  userVoteChoices?: Map<string, { choice: string }>;
   trendingIdSet?: Set<string>;
   newPolls: PollCard[];
   setHeroPollIndex: (n: number) => void;
