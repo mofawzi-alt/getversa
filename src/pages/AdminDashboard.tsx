@@ -88,6 +88,7 @@ export default function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger value="daily-limit" className="text-xs px-4 py-2">Daily Limit</TabsTrigger>
           <TabsTrigger value="ask-versa" className="text-xs px-4 py-2">Ask Versa</TabsTrigger>
+          <TabsTrigger value="seeding" className="text-xs px-4 py-2">Seeding</TabsTrigger>
           <TabsTrigger value="users" className="text-xs px-4 py-2">Users</TabsTrigger>
         </TabsList>
 
