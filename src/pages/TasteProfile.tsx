@@ -231,7 +231,7 @@ export default function TasteProfile() {
 
   // Archetype
   const archetype = computeArchetype(traits || []);
-  const personality = computePersonalityType(traits || [], totalVotes);
+  const personality = computePersonalityType(traits || [], totalVotes, profile?.id);
 
   // Dynamic description based on majority/minority ratio
   const dynamicDescription = (() => {
