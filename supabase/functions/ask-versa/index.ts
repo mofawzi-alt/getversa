@@ -21,6 +21,8 @@ const CATEGORY_MAP: Record<string, string[]> = {
   "personality": ["Lifestyle & Society"],
   "relationships": ["Lifestyle & Society"],
   "telecom": ["Telco & Tech"],
+  "tech": ["Telco & Tech"],
+  "technology": ["Telco & Tech"],
 };
 const KNOWN_CATEGORIES = Object.keys(CATEGORY_MAP);
 
@@ -46,6 +48,7 @@ const FILTER_TOOL = {
       type: "object",
       properties: {
         keywords: { type: "array", items: { type: "string" }, description: "Key topical terms (lowercase)." },
+        entities: { type: "array", items: { type: "string" }, description: "Named products, brands, people, or places explicitly mentioned." },
         category: { type: "string", description: `One of: ${KNOWN_CATEGORIES.join(", ")}, or "any".` },
         gender: { type: "string", description: 'One of: male, female, any.' },
         age_range: { type: "string", description: 'One of: under_18, 18-24, 25-34, 35-44, 45+, any.' },
@@ -191,10 +194,26 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       }
       if (!filters) throw new Error("No filter extracted");
     }
-    const { keywords = [], category, gender, age_range, controversial, intent_summary, route = "simple" } = filters;
+    const {
+      keywords = [],
+      category,
+      gender,
+      age_range,
+      controversial,
+      intent_summary,
+      route = "simple",
+      entities = [],
+    } = filters;
     const safeRoute = (["simple", "medium", "complex"].includes(route) ? route : "simple") as "simple" | "medium" | "complex";
     const cost = ROUTE_COSTS[safeRoute];
     const model = ROUTE_MODEL[safeRoute];
+
+    const normalizeTerm = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s&+-]/g, " ").replace(/\s+/g, " ").trim();
+    const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and"]);
+    const topicalTerms = Array.from(new Set([...(Array.isArray(entities) ? entities : []), ...keywords]
+      .map((term: string) => normalizeTerm(String(term || "")))
+      .filter((term: string) => term.length >= 3 && !STOP_TERMS.has(term))));
+    const categoryBuckets = category && category !== "any" ? (CATEGORY_MAP[category.toLowerCase()] || []) : [];
 
     // ---- 2. Query polls ----
     const buildQuery = (useCategory: boolean, useKeywords: boolean) => {
@@ -205,30 +224,34 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         .order("created_at", { ascending: false })
         .limit(80);
 
-      if (useCategory && category && category !== "any") {
-        const dbCats = CATEGORY_MAP[category.toLowerCase()] || [];
-        if (dbCats.length > 0) q = q.in("category", dbCats);
+      if (useCategory) {
+        if (categoryBuckets.length === 0) return null;
+        q = q.in("category", categoryBuckets);
       }
-      if (useKeywords && keywords.length > 0) {
+
+      if (useKeywords) {
         const orFilters: string[] = [];
-        for (const kw of keywords.slice(0, 5)) {
-          const safe = kw.replace(/[%,()]/g, "").trim();
-          if (safe.length < 2) continue;
-          orFilters.push(`question.ilike.%${safe}%`);
-          orFilters.push(`option_a.ilike.%${safe}%`);
-          orFilters.push(`option_b.ilike.%${safe}%`);
-          orFilters.push(`subtitle.ilike.%${safe}%`);
-          orFilters.push(`category.ilike.%${safe}%`);
+        for (const term of topicalTerms.slice(0, 5)) {
+          orFilters.push(`question.ilike.%${term}%`);
+          orFilters.push(`option_a.ilike.%${term}%`);
+          orFilters.push(`option_b.ilike.%${term}%`);
+          orFilters.push(`subtitle.ilike.%${term}%`);
         }
-        if (orFilters.length > 0) q = q.or(orFilters.join(","));
+        if (orFilters.length === 0) return null;
+        q = q.or(orFilters.join(","));
       }
+
       return q;
     };
 
     let polls: any[] = [];
-    const attempts: Array<[boolean, boolean]> = [[true, true], [false, true], [true, false], [false, false]];
+    const attempts: Array<[boolean, boolean]> = mode === "decide"
+      ? [[true, true], [false, true]]
+      : [[true, true], [false, true], [true, false]];
     for (const [useCat, useKw] of attempts) {
-      const { data, error } = await buildQuery(useCat, useKw);
+      const queryBuilder = buildQuery(useCat, useKw);
+      if (!queryBuilder) continue;
+      const { data, error } = await queryBuilder;
       if (error) throw error;
       if (data && data.length > 0) { polls = data; break; }
     }
@@ -273,17 +296,30 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       });
     }
 
-    let matchedPolls = polls.map((p) => {
-      const s = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
-      const split = s.total > 0 ? s.a / s.total : 0.5;
-      const controversyScore = 1 - Math.abs(split - 0.5) * 2;
-      return { ...p, _stats: s, _controversyScore: controversyScore };
-    });
+    const getPollTopicalHitCount = (poll: any) => {
+      if (topicalTerms.length === 0) return 0;
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b].filter(Boolean).join(" "));
+      return topicalTerms.reduce((count, term) => count + (haystack.includes(term) ? 1 : 0), 0);
+    };
+
+    let matchedPolls = polls
+      .map((p) => {
+        const s = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
+        const split = s.total > 0 ? s.a / s.total : 0.5;
+        const controversyScore = 1 - Math.abs(split - 0.5) * 2;
+        const topicalHits = getPollTopicalHitCount(p);
+        return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits };
+      })
+      .filter((p: any) => {
+        if (topicalTerms.length === 0) return categoryBuckets.length === 0 || categoryBuckets.includes(p.category);
+        const minHits = mode === "decide" ? Math.min(2, topicalTerms.length) : 1;
+        return p._topicalHits >= minHits;
+      });
 
     if (controversial) {
-      matchedPolls = matchedPolls.filter((p: any) => p._stats.total >= 5).sort((a: any, b: any) => b._controversyScore - a._controversyScore);
+      matchedPolls = matchedPolls.filter((p: any) => p._stats.total >= 5).sort((a: any, b: any) => (b._topicalHits - a._topicalHits) || (b._controversyScore - a._controversyScore));
     } else {
-      matchedPolls.sort((a: any, b: any) => b._stats.total - a._stats.total);
+      matchedPolls.sort((a: any, b: any) => (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
     }
 
     matchedPolls = matchedPolls.slice(0, mode === "decide" ? 3 : 12);
@@ -327,24 +363,23 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         }
       }
 
-      // Tier 2: same-category fallback (still topically related)
-      if (suggestedPolls.length < 3 && category && category !== "any") {
-        const dbCats = CATEGORY_MAP[category.toLowerCase()] || [];
-        if (dbCats.length > 0) {
-          const { data: catPolls } = await supabase
-            .from("polls")
-            .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
-            .eq("is_active", true)
-            .in("category", dbCats)
-            .order("created_at", { ascending: false })
-            .limit(20);
-          const seen = new Set(suggestedPolls.map((p) => p.id));
-          for (const p of catPolls || []) {
-            if (suggestedPolls.length >= 3) break;
-            if (seen.has(p.id) || votedIds.has(p.id)) continue;
-            suggestedPolls.push(mapPoll(p));
-            seen.add(p.id);
-          }
+      // Tier 2: same-category fallback only for broader research asks.
+      // For decide-mode brand/product questions, category-only suggestions feel irrelevant.
+      if (mode === "research" && suggestedPolls.length < 3 && categoryBuckets.length > 0) {
+        const { data: catPolls } = await supabase
+          .from("polls")
+          .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
+          .eq("is_active", true)
+          .in("category", categoryBuckets)
+          .order("created_at", { ascending: false })
+          .limit(20);
+        const seen = new Set(suggestedPolls.map((p) => p.id));
+        for (const p of catPolls || []) {
+          if (suggestedPolls.length >= 3) break;
+          const topicalHits = getPollTopicalHitCount(p);
+          if (seen.has(p.id) || votedIds.has(p.id) || topicalTerms.length > 0 && topicalHits === 0) continue;
+          suggestedPolls.push(mapPoll(p));
+          seen.add(p.id);
         }
       }
 
