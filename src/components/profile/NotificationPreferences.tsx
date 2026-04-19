@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 type PrefKey =
+  | "daily_poll_batch"
   | "streak_reminder"
   | "friend_activity"
   | "challenge_waiting"
@@ -19,6 +20,7 @@ type PrefKey =
   | "last_chance_poll";
 
 const ROWS: { key: PrefKey; label: string; desc: string }[] = [
+  { key: "daily_poll_batch", label: "Daily poll roundup", desc: "One morning ping at 7am with the day's fresh polls" },
   { key: "streak_reminder", label: "Streak reminders", desc: "When your streak is about to break" },
   { key: "challenge_waiting", label: "Duel challenges", desc: "When a friend challenges you" },
   { key: "last_chance_poll", label: "Last chance polls", desc: "Trending polls expiring in under 2 hours" },
