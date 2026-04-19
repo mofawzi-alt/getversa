@@ -41,65 +41,81 @@ export default function VoteHistoryGrid({ userId }: Props) {
 
   return (
     <div className="space-y-2">
-      <button
-        onClick={() => navigate('/history')}
-        className="w-full flex items-center justify-between px-1"
-      >
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between px-1">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1.5 flex-1"
+          aria-expanded={expanded}
+        >
           <History className="h-4 w-4 text-muted-foreground" />
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Recent Votes
           </span>
-        </div>
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-      </button>
-
-      <div className="grid grid-cols-3 gap-1.5">
-        {history.map((v: any) => {
-          const p = v.poll;
-          const userPickedA = v.choice === 'A';
-          return (
-            <button
-              key={v.poll_id + v.created_at}
-              onClick={() => navigate('/history')}
-              className="relative aspect-square rounded-lg overflow-hidden border border-border/50 active:scale-95 transition-transform"
-            >
-              <div className="flex h-full">
-                <div className="w-1/2 h-full relative overflow-hidden">
-                  <PollOptionImage
-                    imageUrl={p.image_a_url}
-                    option={p.option_a}
-                    question={p.question}
-                    side="A"
-                    maxLogoSize="55%"
-                    loading="lazy"
-                    variant="browse"
-                  />
-                  {userPickedA && (
-                    <div className="absolute inset-0 ring-2 ring-inset ring-primary pointer-events-none" />
-                  )}
-                </div>
-                <div className="absolute inset-y-0 left-1/2 w-px bg-white/30 z-10" />
-                <div className="w-1/2 h-full relative overflow-hidden">
-                  <PollOptionImage
-                    imageUrl={p.image_b_url}
-                    option={p.option_b}
-                    question={p.question}
-                    side="B"
-                    maxLogoSize="55%"
-                    loading="lazy"
-                    variant="browse"
-                  />
-                  {!userPickedA && (
-                    <div className="absolute inset-0 ring-2 ring-inset ring-primary pointer-events-none" />
-                  )}
-                </div>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-            </button>
-          );
-        })}
+          {expanded ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
+        {expanded && (
+          <button
+            onClick={() => navigate('/history')}
+            className="flex items-center text-muted-foreground"
+            aria-label="See all"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        )}
       </div>
+
+      {expanded && (
+        <div className="grid grid-cols-3 gap-1.5">
+          {history.map((v: any) => {
+            const p = v.poll;
+            const userPickedA = v.choice === 'A';
+            return (
+              <button
+                key={v.poll_id + v.created_at}
+                onClick={() => navigate('/history')}
+                className="relative aspect-square rounded-lg overflow-hidden border border-border/50 active:scale-95 transition-transform"
+              >
+                <div className="flex h-full">
+                  <div className="w-1/2 h-full relative overflow-hidden">
+                    <PollOptionImage
+                      imageUrl={p.image_a_url}
+                      option={p.option_a}
+                      question={p.question}
+                      side="A"
+                      maxLogoSize="55%"
+                      loading="lazy"
+                      variant="browse"
+                    />
+                    {userPickedA && (
+                      <div className="absolute inset-0 ring-2 ring-inset ring-primary pointer-events-none" />
+                    )}
+                  </div>
+                  <div className="absolute inset-y-0 left-1/2 w-px bg-white/30 z-10" />
+                  <div className="w-1/2 h-full relative overflow-hidden">
+                    <PollOptionImage
+                      imageUrl={p.image_b_url}
+                      option={p.option_b}
+                      question={p.question}
+                      side="B"
+                      maxLogoSize="55%"
+                      loading="lazy"
+                      variant="browse"
+                    />
+                    {!userPickedA && (
+                      <div className="absolute inset-0 ring-2 ring-inset ring-primary pointer-events-none" />
+                    )}
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
