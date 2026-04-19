@@ -2827,9 +2827,11 @@ export type Database = {
       get_poll_results: {
         Args: { poll_ids: string[] }
         Returns: {
+          baseline_active: boolean
           percent_a: number
           percent_b: number
           poll_id: string
+          real_total: number
           total_votes: number
           votes_a: number
           votes_b: number
