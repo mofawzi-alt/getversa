@@ -254,38 +254,63 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 
     // ---- 4. Zero-data guardrail (50 votes) ----
     if (matchedPolls.length === 0 || totalVotes < MIN_VOTES_GUARDRAIL) {
-      // Suggest 3 unvoted polls user can vote on
+      // Suggest up to 3 unvoted polls user can vote on
       let suggestedPolls: any[] = [];
+
+      // Get user's voted poll ids (empty set if signed-out)
+      let votedIds = new Set<string>();
       if (userId) {
         const { data: votedRows } = await supabase
           .from("votes")
           .select("poll_id")
           .eq("user_id", userId);
-        const votedIds = new Set((votedRows || []).map((v: any) => v.poll_id));
-        // Try matched polls first (relevant), fall back to recent active
-        const candidates = matchedPolls.length > 0
-          ? matchedPolls
-          : await (async () => {
-              const { data } = await supabase
-                .from("polls")
-                .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
-                .eq("is_active", true)
-                .order("created_at", { ascending: false })
-                .limit(20);
-              return data || [];
-            })();
-        suggestedPolls = candidates
+        votedIds = new Set((votedRows || []).map((v: any) => v.poll_id));
+      }
+
+      const mapPoll = (p: any) => ({
+        id: p.id,
+        question: p.question,
+        option_a: p.option_a,
+        option_b: p.option_b,
+        image_a_url: p.image_a_url,
+        image_b_url: p.image_b_url,
+        category: p.category,
+      });
+
+      // Tier 1: matched polls (most relevant)
+      if (matchedPolls.length > 0) {
+        suggestedPolls = matchedPolls
           .filter((p: any) => !votedIds.has(p.id))
           .slice(0, 3)
-          .map((p: any) => ({
-            id: p.id,
-            question: p.question,
-            option_a: p.option_a,
-            option_b: p.option_b,
-            image_a_url: p.image_a_url,
-            image_b_url: p.image_b_url,
-            category: p.category,
-          }));
+          .map(mapPoll);
+      }
+
+      // Tier 2: recent active polls (always run if we still need more)
+      if (suggestedPolls.length < 3) {
+        const { data: recent } = await supabase
+          .from("polls")
+          .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
+          .limit(30);
+        const seen = new Set(suggestedPolls.map((p) => p.id));
+        for (const p of recent || []) {
+          if (suggestedPolls.length >= 3) break;
+          if (seen.has(p.id) || votedIds.has(p.id)) continue;
+          suggestedPolls.push(mapPoll(p));
+          seen.add(p.id);
+        }
+      }
+
+      // Tier 3: last resort — show recent polls even if voted
+      if (suggestedPolls.length === 0) {
+        const { data: anyPolls } = await supabase
+          .from("polls")
+          .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
+          .limit(3);
+        suggestedPolls = (anyPolls || []).map(mapPoll);
       }
 
       // Log (no charge)
