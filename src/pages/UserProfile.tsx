@@ -251,7 +251,7 @@ export default function UserProfile() {
   const showPrivateGate = !isOwnProfile && isPrivate && !isFriendOfTarget;
 
   // Compact personality bio line (uses same engine as the big card)
-  const personalityResult = computePersonalityType(traits, voteCount);
+  const personalityResult = computePersonalityType(traits, voteCount, targetId);
   const personalityBio = personalityResult.ready
     ? {
         emoji: personalityResult.emoji,
