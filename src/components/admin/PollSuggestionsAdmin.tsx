@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Lightbulb, Check, X, ExternalLink, Link2 } from 'lucide-react';
+import { Loader2, Lightbulb, Check, X, ExternalLink, Link2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { formatDistanceToNow } from 'date-fns';
+import CreatePollFromSuggestionDialog from './CreatePollFromSuggestionDialog';
 
 type Status = 'pending' | 'approved' | 'rejected';
 
@@ -30,6 +31,7 @@ export default function PollSuggestionsAdmin() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<Status>('pending');
   const [linkInput, setLinkInput] = useState<Record<string, string>>({});
+  const [createFor, setCreateFor] = useState<Suggestion | null>(null);
 
   const { data: suggestions = [], isLoading } = useQuery({
     queryKey: ['admin-poll-suggestions', tab],
@@ -135,20 +137,34 @@ export default function PollSuggestionsAdmin() {
 
               {s.status === 'pending' && (
                 <div className="space-y-2 pt-1">
+                  <Button
+                    size="sm"
+                    className="w-full h-10"
+                    onClick={() => setCreateFor(s)}
+                  >
+                    <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                    Create poll & reward
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">or link existing</span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Paste published poll ID to approve…"
+                      placeholder="Paste existing poll ID…"
                       value={linkInput[s.id] || ''}
                       onChange={(e) => setLinkInput((prev) => ({ ...prev, [s.id]: e.target.value }))}
                       className="text-xs h-9"
                     />
                     <Button
                       size="sm"
+                      variant="outline"
                       className="h-9 shrink-0"
                       disabled={!linkInput[s.id]?.trim() || approveAndLink.isPending}
                       onClick={() => approveAndLink.mutate({ id: s.id, pollId: linkInput[s.id].trim() })}
                     >
-                      {approveAndLink.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5 mr-1" />Approve & link</>}
+                      {approveAndLink.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5 mr-1" />Link</>}
                     </Button>
                   </div>
                   <button
@@ -175,6 +191,12 @@ export default function PollSuggestionsAdmin() {
           ))}
         </TabsContent>
       </Tabs>
+
+      <CreatePollFromSuggestionDialog
+        suggestion={createFor}
+        open={!!createFor}
+        onOpenChange={(o) => !o && setCreateFor(null)}
+      />
     </div>
   );
 }
