@@ -332,8 +332,9 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       })
       .filter((p: any) => {
         if (topicalTerms.length === 0) return categoryBuckets.length === 0 || categoryBuckets.includes(p.category);
-        const minHits = mode === "decide" ? Math.min(2, topicalTerms.length) : 1;
-        return p._topicalHits >= minHits;
+        // Require at least 1 topical hit. Decide mode used to require 2, but brand
+        // synonyms (e.g. "coke" vs "Coca-Cola") often only match one side.
+        return p._topicalHits >= 1;
       });
 
     if (controversial) {
