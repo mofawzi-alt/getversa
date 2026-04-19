@@ -129,9 +129,10 @@ export default function StoryViewer({
   }
 
   function handleTap(e: React.MouseEvent) {
-    const w = e.currentTarget.clientWidth;
-    const x = e.nativeEvent.offsetX;
-    if (x < w / 3) prev();
+    // IG-style: split the entire viewport in half — left = back, right = forward
+    const w = window.innerWidth;
+    const x = e.clientX;
+    if (x < w / 2) prev();
     else next();
   }
 
