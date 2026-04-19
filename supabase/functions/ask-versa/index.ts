@@ -24,33 +24,53 @@ const CATEGORY_MAP: Record<string, string[]> = {
 };
 const KNOWN_CATEGORIES = Object.keys(CATEGORY_MAP);
 
+const AI_URL = "https://api.groq.com/openai/v1/chat/completions";
+const MODEL_FAST = "llama-3.1-8b-instant";        // simple route
+const MODEL_SMART = "llama-3.3-70b-versatile";    // medium + complex routes
+
+const ROUTE_COSTS = { simple: 1, medium: 3, complex: 8 } as const;
+const ROUTE_MODEL: Record<string, string> = {
+  simple: MODEL_FAST,
+  medium: MODEL_SMART,
+  complex: MODEL_SMART,
+};
+
+const MIN_VOTES_GUARDRAIL = 50; // total votes across matched polls
+
 const FILTER_TOOL = {
   type: "function",
   function: {
     name: "extract_poll_filters",
-    description: "Extract structured filter criteria from a natural language question about polls.",
+    description: "Extract structured filter criteria + complexity route from a natural language question about polls.",
     parameters: {
       type: "object",
       properties: {
-        keywords: {
-          type: "array",
-          items: { type: "string" },
-          description: "Key topical terms to fuzzy-search (lowercase, single words preferred).",
-        },
-        category: {
-          type: "string",
-          enum: [...KNOWN_CATEGORIES, "any"],
-        },
+        keywords: { type: "array", items: { type: "string" }, description: "Key topical terms (lowercase)." },
+        category: { type: "string", enum: [...KNOWN_CATEGORIES, "any"] },
         gender: { type: "string", enum: ["male", "female", "any"] },
         age_range: { type: "string", enum: ["under_18", "18-24", "25-34", "35-44", "45+", "any"] },
         controversial: { type: "boolean" },
         intent_summary: { type: "string", description: "One-sentence rephrasing of intent." },
+        route: {
+          type: "string",
+          enum: ["simple", "medium", "complex"],
+          description: "simple = single poll/brand fact lookup; medium = one demographic OR one category summary; complex = synthesis across multiple polls/demographics or brand intelligence.",
+        },
       },
-      required: ["keywords", "category", "intent_summary"],
+      required: ["keywords", "category", "intent_summary", "route"],
       additionalProperties: false,
     },
   },
 };
+
+async function callGroq(apiKey: string, model: string, payload: any) {
+  const resp = await fetch(AI_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model, ...payload }),
+  });
+  return resp;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -58,19 +78,24 @@ serve(async (req) => {
   try {
     const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
     if (!GROQ_API_KEY) throw new Error("GROQ_API_KEY not configured");
-    const AI_URL = "https://api.groq.com/openai/v1/chat/completions";
-    const AI_MODEL = "llama-3.3-70b-versatile";
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { question, mode = "decide", viewer, history } = body as {
+    const {
+      question,
+      mode = "decide",
+      viewer,
+      history,
+      stage = "preview", // "preview" or "confirm"
+    } = body as {
       question?: string;
       mode?: "decide" | "research";
       viewer?: { age_range?: string; city?: string; gender?: string };
       history?: Array<{ role: "user" | "assistant"; content: string }>;
+      stage?: "preview" | "confirm";
     };
 
     if (!question || typeof question !== "string" || question.trim().length < 3) {
@@ -79,30 +104,43 @@ serve(async (req) => {
       });
     }
 
-    // Trim & sanitize prior turns so follow-ups inherit topic context
+    // Identify caller
+    const authHeader = req.headers.get("Authorization") || "";
+    let userId: string | null = null;
+    let userBalance = 0;
+    if (authHeader.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      const { data: userData } = await supabase.auth.getUser(token);
+      userId = userData?.user?.id ?? null;
+      if (userId) {
+        const { data: u } = await supabase.from("users").select("ask_credits").eq("id", userId).maybeSingle();
+        userBalance = u?.ask_credits ?? 0;
+      }
+    }
+
+    // Trim history
     const trimmedHistory = Array.isArray(history) ? history.slice(-6) : [];
     const historyMessages = trimmedHistory.map((h) => ({
       role: h.role,
       content: String(h.content || "").slice(0, 500),
     }));
 
-    // 1. Extract filters
-    const extractResp = await fetch(AI_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: AI_MODEL,
-        messages: [
-          {
-            role: "system",
-            content: `You translate natural language questions about Egyptian opinion polls into structured filters. Categories: ${KNOWN_CATEGORIES.join(", ")}. Be conservative — only set demographic filters when explicitly mentioned. If conversation history is provided, the user's new question may be a FOLLOW-UP that depends on prior context (e.g. "now show women only", "what about Cairo?", "break it down by age"). Infer the underlying topic from the history and merge it with the new ask. Always extract keywords describing the underlying topic, not just the follow-up phrasing.`,
-          },
-          ...historyMessages,
-          { role: "user", content: question },
-        ],
-        tools: [FILTER_TOOL],
-        tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
-      }),
+    // ---- 1. Extract filters + classify route (always uses fast model) ----
+    const extractResp = await callGroq(GROQ_API_KEY, MODEL_FAST, {
+      messages: [
+        {
+          role: "system",
+          content: `You translate natural language questions about Egyptian opinion polls into structured filters AND classify complexity. Categories: ${KNOWN_CATEGORIES.join(", ")}. Be conservative — only set demographic filters when explicitly mentioned. Classify "route":
+- simple: single poll/brand fact lookup, one entity, asking for one number ("Who won iPhone vs Samsung?", "% chose Coke?")
+- medium: one demographic filter OR one category summary ("How did women vote on money polls?", "What does Cairo think about tech?")
+- complex: synthesis across multiple polls/demographics, cross-category, brand intelligence ("What does data say about Gen Z financial behavior?", "Compare Cairo vs Alex on lifestyle")
+If conversation history is provided, the new question may be a FOLLOW-UP — infer the underlying topic and merge with the new ask.`,
+        },
+        ...historyMessages,
+        { role: "user", content: question },
+      ],
+      tools: [FILTER_TOOL],
+      tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
     });
 
     if (!extractResp.ok) {
@@ -116,9 +154,12 @@ serve(async (req) => {
     if (!toolCall) throw new Error("No filter extracted");
 
     const filters = JSON.parse(toolCall.function.arguments);
-    const { keywords = [], category, gender, age_range, controversial, intent_summary } = filters;
+    const { keywords = [], category, gender, age_range, controversial, intent_summary, route = "simple" } = filters;
+    const safeRoute = (["simple", "medium", "complex"].includes(route) ? route : "simple") as "simple" | "medium" | "complex";
+    const cost = ROUTE_COSTS[safeRoute];
+    const model = ROUTE_MODEL[safeRoute];
 
-    // 2. Query polls
+    // ---- 2. Query polls ----
     const buildQuery = (useCategory: boolean, useKeywords: boolean) => {
       let q = supabase
         .from("polls")
@@ -155,16 +196,9 @@ serve(async (req) => {
       if (data && data.length > 0) { polls = data; break; }
     }
 
-    // 3. Fetch vote stats for ALL matched polls (needed for verdict + research)
+    // ---- 3. Vote stats ----
     const ids = polls.map((p) => p.id);
-    const statsMap = new Map<string, {
-      a: number; b: number; total: number;
-      viewerAge: { a: number; b: number; total: number };
-      viewerCity: { a: number; b: number; total: number };
-      genderM: { a: number; b: number; total: number };
-      genderF: { a: number; b: number; total: number };
-    }>();
-
+    const statsMap = new Map<string, any>();
     if (ids.length > 0) {
       const { data: votes } = await supabase
         .from("votes")
@@ -183,7 +217,6 @@ serve(async (req) => {
         const isB = v.choice === "B" || v.choice === "b";
         if (isA) s.a++; else if (isB) s.b++;
         s.total++;
-
         if (viewer?.age_range && v.voter_age_range === viewer.age_range) {
           if (isA) s.viewerAge.a++; else if (isB) s.viewerAge.b++;
           s.viewerAge.total++;
@@ -203,7 +236,6 @@ serve(async (req) => {
       });
     }
 
-    // Apply demographic / controversial filtering & sort
     let matchedPolls = polls.map((p) => {
       const s = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
       const split = s.total > 0 ? s.a / s.total : 0.5;
@@ -218,73 +250,130 @@ serve(async (req) => {
     }
 
     matchedPolls = matchedPolls.slice(0, mode === "decide" ? 3 : 12);
+    const totalVotes = matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.total || 0), 0);
 
-    // 4. Build verdict (decide) or summary (research)
-    let summary = intent_summary || "Here's what I found.";
-    let verdict: any = null;
-    let low_data = false;
+    // ---- 4. Zero-data guardrail (50 votes) ----
+    if (matchedPolls.length === 0 || totalVotes < MIN_VOTES_GUARDRAIL) {
+      // Suggest 3 unvoted polls user can vote on
+      let suggestedPolls: any[] = [];
+      if (userId) {
+        const { data: votedRows } = await supabase
+          .from("votes")
+          .select("poll_id")
+          .eq("user_id", userId);
+        const votedIds = new Set((votedRows || []).map((v: any) => v.poll_id));
+        // Try matched polls first (relevant), fall back to recent active
+        const candidates = matchedPolls.length > 0
+          ? matchedPolls
+          : await (async () => {
+              const { data } = await supabase
+                .from("polls")
+                .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
+                .eq("is_active", true)
+                .order("created_at", { ascending: false })
+                .limit(20);
+              return data || [];
+            })();
+        suggestedPolls = candidates
+          .filter((p: any) => !votedIds.has(p.id))
+          .slice(0, 3)
+          .map((p: any) => ({
+            id: p.id,
+            question: p.question,
+            option_a: p.option_a,
+            option_b: p.option_b,
+            image_a_url: p.image_a_url,
+            image_b_url: p.image_b_url,
+            category: p.category,
+          }));
+      }
 
-    // Low-data guardrail: avoid fabricating answers when matched polls are too sparse
-    const topVotes = matchedPolls[0]?._stats?.total ?? 0;
-    const totalMatchedVotes = matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.total || 0), 0);
-    const MIN_TOP_VOTES = mode === "decide" ? 5 : 5;
-    const MIN_TOTAL_VOTES = mode === "decide" ? 8 : 12;
-    const insufficientData =
-      matchedPolls.length === 0 ||
-      topVotes < MIN_TOP_VOTES ||
-      totalMatchedVotes < MIN_TOTAL_VOTES;
-
-    if (insufficientData) {
-      low_data = true;
-      // Ask AI for 2 short rephrasing suggestions framed as A vs B
-      let suggestions: string[] = [];
-      try {
-        const sugResp = await fetch(AI_URL, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: AI_MODEL,
-            messages: [
-              { role: "system", content: 'You rewrite vague or yes/no questions into 2 short Egyptian-context binary "X or Y?" comparison questions that an opinion poll could answer. Return ONLY a JSON array of 2 strings, no prose. Each under 8 words. Example input: "Is Dubai good?" → ["Dubai or Sharm for vacation?","Travel abroad or staycation?"]' },
-              { role: "user", content: question },
-            ],
-          }),
+      // Log (no charge)
+      if (userId) {
+        await supabase.from("ask_versa_queries").insert({
+          user_id: userId,
+          question,
+          mode,
+          route: safeRoute,
+          credits_charged: 0,
+          answered: false,
+          low_data: true,
+          model_used: model,
+          total_votes_considered: totalVotes,
+          matched_poll_count: matchedPolls.length,
+          category_hint: category && category !== "any" ? category : null,
         });
-        if (sugResp.ok) {
-          const sd = await sugResp.json();
-          const raw = sd.choices?.[0]?.message?.content?.trim() || "[]";
-          const match = raw.match(/\[[\s\S]*\]/);
-          if (match) {
-            const parsed = JSON.parse(match[0]);
-            if (Array.isArray(parsed)) suggestions = parsed.filter((s: any) => typeof s === "string").slice(0, 2);
-          }
-        }
-      } catch (_) { /* non-fatal */ }
-
-      const baseMsg = matchedPolls.length === 0
-        ? `No polls match "${question}" yet.`
-        : `Not enough Versa votes yet to answer this confidently (only ${totalMatchedVotes} related votes).`;
-      const tip = ' Try rephrasing as a clear "X or Y?" comparison.';
-      summary = baseMsg + tip;
+      }
 
       return new Response(
         JSON.stringify({
-          summary,
-          verdict: null,
-          filters,
-          polls: [],
-          count: 0,
-          mode,
+          stage: "guardrail",
+          summary: `Versa doesn't have enough data on this topic yet. Vote on these polls to help build it — and earn credits while you do.`,
           low_data: true,
-          suggestions,
+          credits_balance: userBalance,
+          suggested_polls: suggestedPolls,
+          route: safeRoute,
+          mode,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    if (matchedPolls.length === 0) {
-      summary = `No polls match "${question}" yet. Try a brand name (e.g. "Coca-Cola", "Vodafone"), a topic ("football", "fashion"), or browse by category.`;
-    } else if (mode === "decide") {
+    // ---- 5. PREVIEW stage: return cost + teaser, no charge ----
+    if (stage === "preview") {
+      // Build a quick teaser from the top poll without LLM call (cheap)
+      const top = matchedPolls[0];
+      const s = top._stats;
+      const pctA = s.total > 0 ? Math.round((s.a / s.total) * 100) : 50;
+      const pctB = 100 - pctA;
+      const winnerLabel = pctA >= pctB ? top.option_a : top.option_b;
+      const winnerPct = Math.max(pctA, pctB);
+      const teaser = mode === "decide"
+        ? `${winnerPct}% of Egyptians lean toward ${winnerLabel}…`
+        : `Across ${matchedPolls.length} related polls and ${totalVotes} votes, here's what the data says…`;
+
+      return new Response(
+        JSON.stringify({
+          stage: "preview",
+          route: safeRoute,
+          cost,
+          credits_balance: userBalance,
+          can_afford: userBalance >= cost,
+          teaser,
+          matched_poll_count: matchedPolls.length,
+          total_votes: totalVotes,
+          mode,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ---- 6. CONFIRM stage: charge credits, then build full answer ----
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Sign in to use Ask Versa." }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: spendData, error: spendErr } = await supabase.rpc("spend_ask_credits", {
+      p_user_id: userId,
+      p_amount: cost,
+    });
+    if (spendErr) throw spendErr;
+    if (!spendData?.success) {
+      return new Response(JSON.stringify({
+        error: "Not enough credits.",
+        credits_balance: spendData?.balance ?? 0,
+        cost,
+      }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const newBalance = spendData.balance;
+
+    // Build verdict / research using selected model
+    let summary = intent_summary || "Here's what I found.";
+    let verdict: any = null;
+
+    if (mode === "decide") {
       const top = matchedPolls[0];
       const s = top._stats;
       const pctA = s.total > 0 ? Math.round((s.a / s.total) * 100) : 50;
@@ -300,17 +389,11 @@ serve(async (req) => {
         viewerLine = `${vPct}% of ${viewer.age_range} agree`;
       }
 
-      // Short reasoning blurb
-      const reasonResp = await fetch(AI_URL, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: AI_MODEL,
-          messages: [
-            { role: "system", content: "You write ONE punchy sentence (max 18 words) explaining why Egyptians lean a certain way on a poll. No preamble, no quotes. Direct and confident." },
-            { role: "user", content: `Question: "${top.question}"\nWinner: ${winnerLabel} (${winnerPct}%)\nLoser: ${winnerSide === "A" ? top.option_b : top.option_a} (${100 - winnerPct}%)\nSample size: ${s.total}\n\nWhy did people pick ${winnerLabel}? One sentence.` },
-          ],
-        }),
+      const reasonResp = await callGroq(GROQ_API_KEY, model, {
+        messages: [
+          { role: "system", content: "You write ONE punchy sentence (max 18 words) explaining why Egyptians lean a certain way on a poll. No preamble, no quotes. Direct and confident." },
+          { role: "user", content: `Question: "${top.question}"\nWinner: ${winnerLabel} (${winnerPct}%)\nLoser: ${winnerSide === "A" ? top.option_b : top.option_a} (${100 - winnerPct}%)\nSample size: ${s.total}\n\nWhy did people pick ${winnerLabel}? One sentence.` },
+        ],
       });
       let reason = "";
       if (reasonResp.ok) {
@@ -333,22 +416,16 @@ serve(async (req) => {
       };
       summary = `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
     } else {
-      // research summary
       const sampleText = matchedPolls.slice(0, 8).map((p: any) => {
         const s = p._stats;
         const pctA = s.total > 0 ? Math.round((s.a / s.total) * 100) : 50;
         return `- "${p.question}" → ${p.option_a} ${pctA}% vs ${p.option_b} ${100 - pctA}% (n=${s.total})`;
       }).join("\n");
-      const sumResp = await fetch(AI_URL, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: AI_MODEL,
-          messages: [
-            { role: "system", content: "You write a 2-3 sentence research-style insight summary. Lead with the strongest concrete number. No bullet points. No mention of 'Gen Z' or generations. Direct and citation-worthy." },
-            { role: "user", content: `User's research question: "${question}"\n\nMatched polls with results:\n${sampleText}\n\nWrite 2-3 sentences leading with the most striking stat.` },
-          ],
-        }),
+      const sumResp = await callGroq(GROQ_API_KEY, model, {
+        messages: [
+          { role: "system", content: "You write a 2-3 sentence research-style insight summary. Lead with the strongest concrete number. No bullet points. No mention of 'Gen Z' or generations. Direct and citation-worthy." },
+          { role: "user", content: `User's research question: "${question}"\n\nMatched polls with results:\n${sampleText}\n\nWrite 2-3 sentences leading with the most striking stat.` },
+        ],
       });
       if (sumResp.ok) {
         const sd = await sumResp.json();
@@ -356,12 +433,11 @@ serve(async (req) => {
       }
     }
 
-    // Build research-friendly poll cards (with stats)
+    // Enriched poll cards
     const enrichedPolls = matchedPolls.map((p: any) => {
       const s = p._stats;
       const pctA = s.total > 0 ? Math.round((s.a / s.total) * 100) : 50;
       const pctB = 100 - pctA;
-      // Viewer-personalized lines (respecting normal user privacy)
       let viewer_age_line: string | null = null;
       if (viewer?.age_range && s.viewerAge.total >= 3) {
         const vA = Math.round((s.viewerAge.a / s.viewerAge.total) * 100);
@@ -372,7 +448,6 @@ serve(async (req) => {
         const vA = Math.round((s.viewerCity.a / s.viewerCity.total) * 100);
         viewer_city_line = `${viewer.city}: ${p.option_a} ${vA}% / ${p.option_b} ${100 - vA}% (n=${s.viewerCity.total})`;
       }
-      // Counterintuitive gender teaser only (matches existing privacy rule)
       let gender_teaser: string | null = null;
       if (s.genderM.total >= 5 && s.genderF.total >= 5) {
         const mA = s.genderM.a / s.genderM.total;
@@ -395,8 +470,34 @@ serve(async (req) => {
       };
     });
 
+    // Log answered query
+    await supabase.from("ask_versa_queries").insert({
+      user_id: userId,
+      question,
+      mode,
+      route: safeRoute,
+      credits_charged: cost,
+      answered: true,
+      low_data: false,
+      model_used: model,
+      total_votes_considered: totalVotes,
+      matched_poll_count: matchedPolls.length,
+      category_hint: category && category !== "any" ? category : null,
+    });
+
     return new Response(
-      JSON.stringify({ summary, verdict, filters, polls: enrichedPolls, count: enrichedPolls.length, mode }),
+      JSON.stringify({
+        stage: "answer",
+        summary,
+        verdict,
+        filters,
+        polls: enrichedPolls,
+        count: enrichedPolls.length,
+        mode,
+        route: safeRoute,
+        credits_charged: cost,
+        credits_balance: newBalance,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {

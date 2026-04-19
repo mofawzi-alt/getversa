@@ -2,6 +2,8 @@ import { Sparkles, User } from 'lucide-react';
 import VerdictCard, { type Verdict } from './VerdictCard';
 import ResearchBrief from './ResearchBrief';
 import SuggestionChips from './SuggestionChips';
+import GuardrailCard from './GuardrailCard';
+import EarnCreditsCTA from './EarnCreditsCTA';
 import type { ResearchPoll } from '@/lib/askExport';
 
 export type Mode = 'decide' | 'research';
@@ -16,6 +18,9 @@ export interface AskTurn {
   polls?: ResearchPoll[];
   lowData?: boolean;
   suggestions?: string[];
+  guardrailPolls?: Array<{ id: string; question: string; option_a: string; option_b: string; image_a_url?: string | null; image_b_url?: string | null; category?: string | null }>;
+  creditsCharged?: number;
+  creditsBalance?: number;
 }
 
 interface Props {
@@ -74,19 +79,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                 )}
 
                 {!t.loading && t.lowData && t.summary && (
-                  <div className="space-y-3">
-                    <div className="rounded-2xl rounded-tl-sm bg-muted/40 border border-border p-3.5 space-y-2">
-                      <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Not enough data yet</p>
-                      <p className="text-sm text-foreground leading-relaxed">{t.summary}</p>
-                    </div>
-                    {isLast && t.suggestions && t.suggestions.length > 0 && (
-                      <SuggestionChips
-                        label="Try one of these instead"
-                        suggestions={t.suggestions}
-                        onPick={onPickSuggestion}
-                      />
-                    )}
-                  </div>
+                  <GuardrailCard summary={t.summary} polls={t.guardrailPolls || []} />
                 )}
 
                 {!t.loading && !t.lowData && t.mode === 'decide' && t.verdict && (
