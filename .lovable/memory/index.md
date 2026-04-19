@@ -94,6 +94,7 @@ Updated: now
 - [Daily Queue](mem://features/home/daily-queue-logic) — 9 AM Cairo timezone feed reset rules
 - [Scheduled Engagement](mem://features/notifications/scheduled-engagement) — 9 AM cron push notifications
 - [Personality Types](mem://features/personality-types) — 16 hybrid types from voting axes
+- [Suggested Polls](mem://features/user-suggested-polls) — Ask Versa guardrail + Profile entry → admin approves → +5 credits trigger
 - [Engagement Features](mem://features/engagement-features) — Streak gating, drip scheduling, Hot Take, streak rescue
 - [Social Engagement V2](mem://features/social-engagement-v2) — Following Feed, Cliffhangers, Taste Evolution, Weekly Report
 - [Re-engagement Notifications](mem://features/re-engagement-notifications) — Absence digest, result flip alerts, vote mattered push
