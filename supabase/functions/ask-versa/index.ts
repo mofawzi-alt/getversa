@@ -227,8 +227,8 @@ serve(async (req) => {
     // Low-data guardrail: avoid fabricating answers when matched polls are too sparse
     const topVotes = matchedPolls[0]?._stats?.total ?? 0;
     const totalMatchedVotes = matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.total || 0), 0);
-    const MIN_TOP_VOTES = mode === "decide" ? 10 : 8;
-    const MIN_TOTAL_VOTES = mode === "decide" ? 10 : 15;
+    const MIN_TOP_VOTES = mode === "decide" ? 5 : 5;
+    const MIN_TOTAL_VOTES = mode === "decide" ? 8 : 12;
     const insufficientData =
       matchedPolls.length === 0 ||
       topVotes < MIN_TOP_VOTES ||
