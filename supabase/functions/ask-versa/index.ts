@@ -463,6 +463,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
           teaser,
           matched_poll_count: matchedPolls.length,
           total_votes: totalVotes,
+          real_votes: totalRealVotes,
+          baseline_active: anyBaselineActive,
           mode,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
