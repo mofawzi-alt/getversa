@@ -20,6 +20,7 @@ export default function Profile() {
   const { profile, isAdmin, signOut, user } = useAuth();
   const navigate = useNavigate();
   const { isVerified: selfVerified, category: selfCategory } = useVerifiedUser(user?.id);
+  const { data: credits = 0 } = useAskCredits();
 
   const { data: stats } = useQuery({
     queryKey: ['user-stats-v2', profile?.id],
