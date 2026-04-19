@@ -1,15 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Search, Loader2, Scale, FlaskConical } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, Scale, FlaskConical, ArrowUp, RotateCcw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import VerdictCard, { type Verdict } from '@/components/ask/VerdictCard';
-import ResearchBrief from '@/components/ask/ResearchBrief';
 import SuggestionChips from '@/components/ask/SuggestionChips';
-import type { ResearchPoll } from '@/lib/askExport';
-
-type Mode = 'decide' | 'research';
+import AskThread, { type AskTurn, type Mode } from '@/components/ask/AskThread';
 
 const DECIDE_SUGGESTIONS = [
   'Costa or Cilantro for studying?',
@@ -26,39 +22,50 @@ const RESEARCH_SUGGESTIONS = [
   'How divided are Egyptians on Ahly vs Zamalek?',
 ];
 
+function buildHistoryFromTurns(turns: AskTurn[]) {
+  // Convert prior turns into role/content pairs the model can use as context
+  const out: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+  for (const t of turns) {
+    if (t.loading) continue;
+    out.push({ role: 'user', content: t.question });
+    let assistant = t.summary || '';
+    if (t.verdict) {
+      assistant = `Verdict: pick ${t.verdict.winner_label} (${t.verdict.winner_pct}% of ${t.verdict.total_votes} votes). Question: ${t.verdict.question}. ${t.verdict.reason || ''}`.trim();
+    }
+    if (assistant) out.push({ role: 'assistant', content: assistant });
+  }
+  return out;
+}
+
 export default function Ask() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [mode, setMode] = useState<Mode>('decide');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [summary, setSummary] = useState<string | null>(null);
-  const [verdict, setVerdict] = useState<Verdict | null>(null);
-  const [polls, setPolls] = useState<ResearchPoll[]>([]);
-  const [lowData, setLowData] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [searched, setSearched] = useState(false);
+  const [turns, setTurns] = useState<AskTurn[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const threadEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 200);
   }, []);
 
+  // Auto-scroll on new turn
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [turns]);
+
   const reset = () => {
     setQuery('');
-    setSearched(false);
-    setSummary(null);
-    setVerdict(null);
-    setPolls([]);
-    setLowData(false);
-    setSuggestions([]);
+    setTurns([]);
+    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   const switchMode = (m: Mode) => {
     if (m === mode) return;
     setMode(m);
     reset();
-    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   const runSearch = async (q?: string) => {
@@ -67,14 +74,16 @@ export default function Ask() {
       toast.error('Type a fuller question');
       return;
     }
-    setQuery(question);
+    if (loading) return;
+
+    setQuery('');
     setLoading(true);
-    setSummary(null);
-    setVerdict(null);
-    setPolls([]);
-    setLowData(false);
-    setSuggestions([]);
-    setSearched(true);
+
+    const turnId = crypto.randomUUID();
+    const placeholder: AskTurn = { id: turnId, question, mode, loading: true };
+    const historyForRequest = buildHistoryFromTurns(turns);
+    setTurns((prev) => [...prev, placeholder]);
+
     try {
       const viewer = profile ? {
         age_range: profile.age_range || undefined,
@@ -82,52 +91,71 @@ export default function Ask() {
         gender: profile.gender || undefined,
       } : undefined;
       const { data, error } = await supabase.functions.invoke('ask-versa', {
-        body: { question, mode, viewer },
+        body: { question, mode, viewer, history: historyForRequest },
       });
       if (error) throw error;
       if (data?.error) {
         toast.error(data.error);
+        setTurns((prev) => prev.filter((t) => t.id !== turnId));
         return;
       }
-      setSummary(data.summary || null);
-      setVerdict(data.verdict || null);
-      setPolls(data.polls || []);
-      setLowData(!!data.low_data);
-      setSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
+      setTurns((prev) => prev.map((t) => t.id === turnId ? {
+        ...t,
+        loading: false,
+        summary: data.summary || null,
+        verdict: data.verdict || null,
+        polls: data.polls || [],
+        lowData: !!data.low_data,
+        suggestions: Array.isArray(data.suggestions) ? data.suggestions : [],
+      } : t));
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || 'Search failed');
+      setTurns((prev) => prev.filter((t) => t.id !== turnId));
     } finally {
       setLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 50);
     }
   };
 
   const placeholder = mode === 'decide'
-    ? 'e.g. Costa or Cilantro?'
-    : 'e.g. What do students think about online learning?';
+    ? (turns.length > 0 ? 'Ask a follow-up…' : 'e.g. Costa or Cilantro?')
+    : (turns.length > 0 ? 'Ask a follow-up…' : 'e.g. What do students think about online learning?');
 
   const promptSuggestions = mode === 'decide' ? DECIDE_SUGGESTIONS : RESEARCH_SUGGESTIONS;
+  const empty = turns.length === 0;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
-        <div className="flex items-center gap-2 px-3 py-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 -ml-2 rounded-full hover:bg-muted active:scale-95 transition"
-            aria-label="Back"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <h1 className="text-base font-bold">Ask Versa</h1>
+        <div className="flex items-center justify-between gap-2 px-3 py-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 -ml-2 rounded-full hover:bg-muted active:scale-95 transition"
+              aria-label="Back"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <h1 className="text-base font-bold">Ask Versa</h1>
+            </div>
           </div>
+          {turns.length > 0 && (
+            <button
+              onClick={reset}
+              className="flex items-center gap-1 h-8 px-3 rounded-full bg-muted text-xs font-semibold text-foreground active:scale-95 transition"
+            >
+              <RotateCcw className="h-3 w-3" />
+              New
+            </button>
+          )}
         </div>
 
         {/* Mode tabs */}
-        <div className="px-3 pb-2">
+        <div className="px-3 pb-3">
           <div className="grid grid-cols-2 gap-1 p-1 rounded-full bg-muted">
             <button
               onClick={() => switchMode('decide')}
@@ -149,104 +177,62 @@ export default function Ask() {
             </button>
           </div>
         </div>
-
-        {/* Input */}
-        <form
-          onSubmit={(e) => { e.preventDefault(); runSearch(); }}
-          className="px-3 pb-3"
-        >
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={placeholder}
-              className="w-full h-11 pl-9 pr-20 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-            <button
-              type="submit"
-              disabled={loading || query.trim().length < 3}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 px-3 rounded-full bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50 active:scale-95 transition flex items-center gap-1"
-            >
-              {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Ask'}
-            </button>
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-2 px-2">
-            {mode === 'decide'
-              ? 'Get a clear pick backed by real Egyptian votes.'
-              : 'Get a research brief — copy or download as PDF.'}
-          </p>
-        </form>
       </div>
 
       {/* Body */}
-      <div className="px-3 pt-4 space-y-4">
-        {!searched && (
-          <SuggestionChips
-            label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'}
-            suggestions={promptSuggestions}
-            onPick={runSearch}
-          />
-        )}
-
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <p className="text-xs text-muted-foreground">
-              {mode === 'decide' ? 'Reading the pulse…' : 'Building your brief…'}
-            </p>
-          </div>
-        )}
-
-        {/* Low-data guardrail state */}
-        {!loading && lowData && summary && (
-          <div className="space-y-3">
-            <div className="rounded-2xl bg-muted/40 border border-border p-4 space-y-2">
-              <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Not enough data yet</p>
-              <p className="text-sm text-foreground leading-relaxed">{summary}</p>
+      <div className="flex-1 px-3 pt-4 pb-32 space-y-4">
+        {empty && (
+          <>
+            <div className="text-center pt-4 pb-2">
+              <div className="inline-flex h-12 w-12 rounded-full bg-primary/10 items-center justify-center mb-3">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">
+                {mode === 'decide' ? 'Get a clear pick backed by real votes' : 'Get a research brief from Egypt\'s pulse'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {mode === 'decide' ? 'Ask follow-ups to dig deeper.' : 'Copy or download as PDF.'}
+              </p>
             </div>
-            {suggestions.length > 0 && (
-              <SuggestionChips
-                label="Try one of these instead"
-                suggestions={suggestions}
-                onPick={runSearch}
-              />
-            )}
-          </div>
+            <SuggestionChips
+              label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'}
+              suggestions={promptSuggestions}
+              onPick={runSearch}
+            />
+          </>
         )}
 
-        {!loading && !lowData && mode === 'decide' && verdict && (
-          <VerdictCard verdict={verdict} />
+        {!empty && (
+          <AskThread turns={turns} onPickSuggestion={runSearch} />
         )}
 
-        {!loading && !lowData && mode === 'decide' && !verdict && summary && (
-          <div className="rounded-2xl bg-card border border-border p-4">
-            <p className="text-sm text-foreground">{summary}</p>
-          </div>
-        )}
-
-        {!loading && !lowData && mode === 'research' && summary && polls.length > 0 && (
-          <ResearchBrief question={query} summary={summary} polls={polls} />
-        )}
-
-        {!loading && !lowData && mode === 'research' && summary && polls.length === 0 && (
-          <div className="rounded-2xl bg-card border border-border p-4">
-            <p className="text-sm text-foreground">{summary}</p>
-          </div>
-        )}
-
-        {!loading && searched && (
-          <div className="text-center pt-2 pb-6">
-            <button
-              onClick={reset}
-              className="text-xs text-primary font-semibold underline"
-            >
-              Ask another question
-            </button>
-          </div>
-        )}
+        <div ref={threadEndRef} />
       </div>
+
+      {/* Pinned input */}
+      <form
+        onSubmit={(e) => { e.preventDefault(); runSearch(); }}
+        className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 safe-area-bottom z-30"
+      >
+        <div className="relative max-w-lg mx-auto">
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={placeholder}
+            disabled={loading}
+            className="w-full h-12 pl-4 pr-14 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+          />
+          <button
+            type="submit"
+            disabled={loading || query.trim().length < 3}
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-primary text-primary-foreground disabled:opacity-40 active:scale-95 transition flex items-center justify-center"
+            aria-label="Send"
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
