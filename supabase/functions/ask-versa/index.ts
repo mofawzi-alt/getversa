@@ -254,10 +254,11 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 
     // ---- 4. Zero-data guardrail (50 votes) ----
     if (matchedPolls.length === 0 || totalVotes < MIN_VOTES_GUARDRAIL) {
-      // Suggest up to 3 unvoted polls user can vote on
+      // Only suggest TOPICALLY RELEVANT polls (matched by keyword/category).
+      // Don't fall back to random recent polls — that creates a confusing UX
+      // where someone asks "iPhone vs Samsung" and gets cosmetics suggestions.
       let suggestedPolls: any[] = [];
 
-      // Get user's voted poll ids (empty set if signed-out)
       let votedIds = new Set<string>();
       if (userId) {
         const { data: votedRows } = await supabase
@@ -277,41 +278,42 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         category: p.category,
       });
 
-      // Tier 1: matched polls (most relevant)
+      // Tier 1: matched polls (keyword/category hits)
       if (matchedPolls.length > 0) {
         suggestedPolls = matchedPolls
           .filter((p: any) => !votedIds.has(p.id))
           .slice(0, 3)
           .map(mapPoll);
-      }
-
-      // Tier 2: recent active polls (always run if we still need more)
-      if (suggestedPolls.length < 3) {
-        const { data: recent } = await supabase
-          .from("polls")
-          .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(30);
-        const seen = new Set(suggestedPolls.map((p) => p.id));
-        for (const p of recent || []) {
-          if (suggestedPolls.length >= 3) break;
-          if (seen.has(p.id) || votedIds.has(p.id)) continue;
-          suggestedPolls.push(mapPoll(p));
-          seen.add(p.id);
+        // If user voted on all matched, still re-show them so they see what data exists.
+        if (suggestedPolls.length === 0) {
+          suggestedPolls = matchedPolls.slice(0, 3).map(mapPoll);
         }
       }
 
-      // Tier 3: last resort — show recent polls even if voted
-      if (suggestedPolls.length === 0) {
-        const { data: anyPolls } = await supabase
-          .from("polls")
-          .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(3);
-        suggestedPolls = (anyPolls || []).map(mapPoll);
+      // Tier 2: same-category fallback (still topically related)
+      if (suggestedPolls.length < 3 && category && category !== "any") {
+        const dbCats = CATEGORY_MAP[category.toLowerCase()] || [];
+        if (dbCats.length > 0) {
+          const { data: catPolls } = await supabase
+            .from("polls")
+            .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
+            .eq("is_active", true)
+            .in("category", dbCats)
+            .order("created_at", { ascending: false })
+            .limit(20);
+          const seen = new Set(suggestedPolls.map((p) => p.id));
+          for (const p of catPolls || []) {
+            if (suggestedPolls.length >= 3) break;
+            if (seen.has(p.id) || votedIds.has(p.id)) continue;
+            suggestedPolls.push(mapPoll(p));
+            seen.add(p.id);
+          }
+        }
       }
+
+      const summary = suggestedPolls.length > 0
+        ? `Versa doesn't have enough data on this topic yet. Vote on these related polls to help build it — and earn credits while you do.`
+        : `Versa doesn't have any polls on this topic yet. Try a different question, or vote on polls in the feed to help build new topics.`;
 
       // Log (no charge)
       if (userId) {
@@ -333,7 +335,7 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       return new Response(
         JSON.stringify({
           stage: "guardrail",
-          summary: `Versa doesn't have enough data on this topic yet. Vote on these polls to help build it — and earn credits while you do.`,
+          summary,
           low_data: true,
           credits_balance: userBalance,
           suggested_polls: suggestedPolls,
