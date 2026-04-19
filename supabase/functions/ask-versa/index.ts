@@ -46,19 +46,17 @@ const FILTER_TOOL = {
       type: "object",
       properties: {
         keywords: { type: "array", items: { type: "string" }, description: "Key topical terms (lowercase)." },
-        category: { type: "string", enum: [...KNOWN_CATEGORIES, "any"] },
-        gender: { type: "string", enum: ["male", "female", "any"] },
-        age_range: { type: "string", enum: ["under_18", "18-24", "25-34", "35-44", "45+", "any"] },
+        category: { type: "string", description: `One of: ${KNOWN_CATEGORIES.join(", ")}, or "any".` },
+        gender: { type: "string", description: 'One of: male, female, any.' },
+        age_range: { type: "string", description: 'One of: under_18, 18-24, 25-34, 35-44, 45+, any.' },
         controversial: { type: "boolean" },
         intent_summary: { type: "string", description: "One-sentence rephrasing of intent." },
         route: {
           type: "string",
-          enum: ["simple", "medium", "complex"],
-          description: "simple = single poll/brand fact lookup; medium = one demographic OR one category summary; complex = synthesis across multiple polls/demographics or brand intelligence.",
+          description: "simple = single poll/brand fact lookup; medium = one demographic OR one category summary; complex = synthesis across multiple polls/demographics or brand intelligence. Must be exactly 'simple', 'medium', or 'complex'.",
         },
       },
       required: ["keywords", "category", "intent_summary", "route"],
-      additionalProperties: false,
     },
   },
 };
@@ -144,9 +142,11 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
     });
 
     if (!extractResp.ok) {
+      const errBody = await extractResp.text().catch(() => "");
+      console.error(`Groq extract failed ${extractResp.status}:`, errBody);
       if (extractResp.status === 429) return new Response(JSON.stringify({ error: "Too many requests, try again in a moment." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (extractResp.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      throw new Error(`AI extraction failed: ${extractResp.status}`);
+      throw new Error(`AI extraction failed: ${extractResp.status} - ${errBody.slice(0, 200)}`);
     }
 
     const extractData = await extractResp.json();
