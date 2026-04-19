@@ -40,7 +40,7 @@ export default function ResearchBrief({ question, summary, polls }: Props) {
         {polls.map((p, idx) => (
           <button
             key={p.id}
-            onClick={() => navigate(`/?pollId=${p.id}`)}
+            onClick={() => navigate(`/home?pollId=${p.id}`)}
             className="w-full text-left rounded-2xl bg-card border border-border p-3.5 active:scale-[0.99] transition space-y-2.5"
           >
             <div className="flex items-start gap-2">
