@@ -141,19 +141,56 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
     });
 
+    // Helper: extract JSON args from a Groq tool_use_failed body or message content
+    const recoverFiltersFromText = (text: string): any | null => {
+      if (!text) return null;
+      // Try every {...} block, prefer ones containing "keywords" or "route"
+      const matches = text.match(/\{[\s\S]*?\}/g) || [];
+      for (const m of matches.reverse()) {
+        try {
+          const parsed = JSON.parse(m);
+          if (parsed && typeof parsed === "object" && ("keywords" in parsed || "route" in parsed || "category" in parsed)) {
+            return parsed;
+          }
+        } catch { /* keep looking */ }
+      }
+      return null;
+    };
+
+    let filters: any = null;
+
     if (!extractResp.ok) {
       const errBody = await extractResp.text().catch(() => "");
       console.error(`Groq extract failed ${extractResp.status}:`, errBody);
       if (extractResp.status === 429) return new Response(JSON.stringify({ error: "Too many requests, try again in a moment." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (extractResp.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      throw new Error(`AI extraction failed: ${extractResp.status} - ${errBody.slice(0, 200)}`);
+
+      // Recover from tool_use_failed: model wrote JSON as text inside failed_generation
+      if (extractResp.status === 400 && errBody.includes("tool_use_failed")) {
+        try {
+          const errJson = JSON.parse(errBody);
+          const failedGen = errJson?.error?.failed_generation || "";
+          filters = recoverFiltersFromText(failedGen);
+          if (filters) console.log("Recovered filters from failed_generation");
+        } catch { /* ignore */ }
+      }
+
+      if (!filters) {
+        throw new Error(`AI extraction failed: ${extractResp.status} - ${errBody.slice(0, 200)}`);
+      }
+    } else {
+      const extractData = await extractResp.json();
+      const toolCall = extractData.choices?.[0]?.message?.tool_calls?.[0];
+      if (toolCall) {
+        try { filters = JSON.parse(toolCall.function.arguments); } catch { /* fall through */ }
+      }
+      // Fallback: model returned JSON as plain content
+      if (!filters) {
+        const content = extractData.choices?.[0]?.message?.content || "";
+        filters = recoverFiltersFromText(content);
+      }
+      if (!filters) throw new Error("No filter extracted");
     }
-
-    const extractData = await extractResp.json();
-    const toolCall = extractData.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error("No filter extracted");
-
-    const filters = JSON.parse(toolCall.function.arguments);
     const { keywords = [], category, gender, age_range, controversial, intent_summary, route = "simple" } = filters;
     const safeRoute = (["simple", "medium", "complex"].includes(route) ? route : "simple") as "simple" | "medium" | "complex";
     const cost = ROUTE_COSTS[safeRoute];
