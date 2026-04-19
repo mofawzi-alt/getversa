@@ -102,6 +102,11 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                   </div>
                 )}
 
+                {/* Earn credits CTA after a successful paid answer */}
+                {!t.loading && !t.lowData && typeof t.creditsBalance === 'number' && (t.verdict || (t.polls && t.polls.length > 0) || t.summary) && (
+                  <EarnCreditsCTA balance={t.creditsBalance} charged={t.creditsCharged ?? 0} />
+                )}
+
                 {/* Follow-up chips on the latest answered turn */}
                 {showFollowups && (
                   <div className="flex flex-wrap gap-1.5 pt-1">
