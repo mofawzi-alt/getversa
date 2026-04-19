@@ -37,7 +37,7 @@ export default function GuardrailCard({ summary, polls }: Props) {
           {polls.map((p) => (
             <button
               key={p.id}
-              onClick={() => navigate(`/poll/${p.id}`)}
+              onClick={() => navigate(`/live-debate?pollId=${p.id}&returnTo=ask`)}
               className="w-full flex items-center gap-3 rounded-2xl bg-card border border-border p-2.5 active:scale-[0.99] transition text-left"
             >
               <div className="flex gap-1 shrink-0">
