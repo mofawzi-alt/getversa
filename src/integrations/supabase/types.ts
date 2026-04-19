@@ -189,6 +189,13 @@ export type Database = {
             foreignKeyName: "breakdown_findings_poll_id_fkey"
             columns: ["poll_id"]
             isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "breakdown_findings_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
             referencedRelation: "polls"
             referencedColumns: ["id"]
           },
@@ -296,6 +303,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "poll_campaigns"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_polls_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
           },
           {
             foreignKeyName: "campaign_polls_poll_id_fkey"
@@ -502,6 +516,13 @@ export type Database = {
             foreignKeyName: "daily_poll_queues_poll_id_fkey"
             columns: ["poll_id"]
             isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "daily_poll_queues_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
             referencedRelation: "polls"
             referencedColumns: ["id"]
           },
@@ -570,6 +591,13 @@ export type Database = {
             foreignKeyName: "daily_pulse_pinned_poll_id_fkey"
             columns: ["pinned_poll_id"]
             isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "daily_pulse_pinned_poll_id_fkey"
+            columns: ["pinned_poll_id"]
+            isOneToOne: false
             referencedRelation: "polls"
             referencedColumns: ["id"]
           },
@@ -620,6 +648,13 @@ export type Database = {
             foreignKeyName: "favorite_polls_poll_id_fkey"
             columns: ["poll_id"]
             isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "favorite_polls_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
             referencedRelation: "polls"
             referencedColumns: ["id"]
           },
@@ -648,6 +683,13 @@ export type Database = {
           poll_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "featured_polls_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
           {
             foreignKeyName: "featured_polls_poll_id_fkey"
             columns: ["poll_id"]
@@ -758,6 +800,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "conversations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_shared_poll_id_fkey"
+            columns: ["shared_poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
           },
           {
             foreignKeyName: "messages_shared_poll_id_fkey"
@@ -934,6 +983,13 @@ export type Database = {
             foreignKeyName: "pinned_polls_poll_id_fkey"
             columns: ["poll_id"]
             isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "pinned_polls_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
             referencedRelation: "polls"
             referencedColumns: ["id"]
           },
@@ -993,6 +1049,13 @@ export type Database = {
             foreignKeyName: "poll_attribute_ratings_poll_id_fkey"
             columns: ["poll_id"]
             isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "poll_attribute_ratings_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
             referencedRelation: "polls"
             referencedColumns: ["id"]
           },
@@ -1030,6 +1093,13 @@ export type Database = {
           starts_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "poll_boosts_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
           {
             foreignKeyName: "poll_boosts_poll_id_fkey"
             columns: ["poll_id"]
@@ -1168,6 +1238,13 @@ export type Database = {
             foreignKeyName: "poll_challenges_poll_id_fkey"
             columns: ["poll_id"]
             isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "poll_challenges_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
             referencedRelation: "polls"
             referencedColumns: ["id"]
           },
@@ -1221,6 +1298,13 @@ export type Database = {
             foreignKeyName: "poll_cycles_poll_id_fkey"
             columns: ["poll_id"]
             isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "poll_cycles_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
             referencedRelation: "polls"
             referencedColumns: ["id"]
           },
@@ -1258,6 +1342,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "dimensions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_dimensions_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
           },
           {
             foreignKeyName: "poll_dimensions_poll_id_fkey"
@@ -1346,6 +1437,13 @@ export type Database = {
             foreignKeyName: "poll_verbatim_feedback_poll_id_fkey"
             columns: ["poll_id"]
             isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "poll_verbatim_feedback_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
             referencedRelation: "polls"
             referencedColumns: ["id"]
           },
@@ -1353,6 +1451,8 @@ export type Database = {
       }
       polls: {
         Row: {
+          baseline_votes_a: number
+          baseline_votes_b: number
           batch_slot: string
           campaign_id: string | null
           category: string | null
@@ -1390,6 +1490,8 @@ export type Database = {
           weight_score: number | null
         }
         Insert: {
+          baseline_votes_a?: number
+          baseline_votes_b?: number
           batch_slot?: string
           campaign_id?: string | null
           category?: string | null
@@ -1427,6 +1529,8 @@ export type Database = {
           weight_score?: number | null
         }
         Update: {
+          baseline_votes_a?: number
+          baseline_votes_b?: number
           batch_slot?: string
           campaign_id?: string | null
           category?: string | null
@@ -1672,6 +1776,27 @@ export type Database = {
         }
         Relationships: []
       }
+      seeding_settings: {
+        Row: {
+          baseline_sunset_threshold: number
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          baseline_sunset_threshold?: number
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          baseline_sunset_threshold?: number
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       skipped_polls: {
         Row: {
           category: string | null
@@ -1710,6 +1835,13 @@ export type Database = {
           voter_gender?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "skipped_polls_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
           {
             foreignKeyName: "skipped_polls_poll_id_fkey"
             columns: ["poll_id"]
@@ -1760,6 +1892,13 @@ export type Database = {
           target_gender?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "sponsored_polls_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
           {
             foreignKeyName: "sponsored_polls_poll_id_fkey"
             columns: ["poll_id"]
@@ -2348,6 +2487,13 @@ export type Database = {
             foreignKeyName: "votes_poll_id_fkey"
             columns: ["poll_id"]
             isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
             referencedRelation: "polls"
             referencedColumns: ["id"]
           },
@@ -2389,7 +2535,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      poll_effective_counts: {
+        Row: {
+          baseline_active: boolean | null
+          baseline_votes_a: number | null
+          baseline_votes_b: number | null
+          effective_votes_a: number | null
+          effective_votes_b: number | null
+          poll_id: string | null
+          real_total: number | null
+          real_votes_a: number | null
+          real_votes_b: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       apply_campaign_drip_schedule: {
