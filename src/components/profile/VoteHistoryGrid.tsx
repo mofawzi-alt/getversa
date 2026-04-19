@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { History, ChevronRight } from 'lucide-react';
+import { History, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 
 interface Props {
