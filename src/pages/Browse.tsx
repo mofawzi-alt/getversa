@@ -687,8 +687,6 @@ export default function Browse() {
                   onVote={() => handleVote(poll.id)}
                   onShare={() => share(poll)}
                   onSendToFriend={() => setShareToFriendPoll(poll)}
-                  onReact={() => {}}
-                  reacted={false}
                 />
               </div>
             </div>
