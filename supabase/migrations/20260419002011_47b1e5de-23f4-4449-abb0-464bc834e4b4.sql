@@ -1,0 +1,1 @@
+DELETE FROM daily_poll_queues WHERE queue_date = (now() AT TIME ZONE 'Africa/Cairo')::date AND user_id IN ('01965fe7-a02c-454f-912e-e106e7a3ae5f','81923f9b-5ee7-45cc-a700-9327e98f0a12','41579d3f-e612-4e2d-b85f-133e3818fee7','cd9e8a7e-989f-4495-bb43-2b9a3c2b6cf1','24780a31-48dd-4e6e-befb-0443ff9af022');
