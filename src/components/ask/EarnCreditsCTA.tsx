@@ -13,7 +13,7 @@ export default function EarnCreditsCTA({ balance, charged }: Props) {
 
   return (
     <button
-      onClick={() => navigate('/')}
+      onClick={() => navigate('/browse')}
       className="w-full mt-2 flex items-center justify-between gap-2 rounded-2xl bg-primary/5 border border-primary/20 p-3 active:scale-[0.99] transition"
     >
       <div className="flex items-center gap-2 text-left">
@@ -24,12 +24,12 @@ export default function EarnCreditsCTA({ balance, charged }: Props) {
           <p className="text-xs font-bold text-foreground">
             {balance > 0
               ? `${balance} credit${balance === 1 ? '' : 's'} left`
-              : 'Vote to earn more credits'}
+              : 'Browse polls to earn credits'}
           </p>
           <p className="text-[11px] text-muted-foreground">
             {balance >= nextCost
               ? 'Ready for your next insight'
-              : `Vote on ${votesNeeded} more poll${votesNeeded === 1 ? '' : 's'} to unlock another →`}
+              : `Vote on ${votesNeeded} more poll${votesNeeded === 1 ? '' : 's'} in Browse to unlock →`}
           </p>
         </div>
       </div>
