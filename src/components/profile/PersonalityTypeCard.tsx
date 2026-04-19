@@ -37,7 +37,7 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
   const isCalibrating = !needsMoreVotes && !hasPersonalitySignal;
   const remainingVotes = Math.max(0, MIN_VOTES - voteCount);
 
-  const result = computePersonalityType(traits, voteCount);
+  const result = computePersonalityType(traits, voteCount, userId);
   const reasons = getPersonalityExplanation(traits, result);
 
   // Not ready state — show progress

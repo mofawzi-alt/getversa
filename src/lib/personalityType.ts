@@ -16,16 +16,25 @@ interface TraitEntry {
   vote_count: number;
 }
 
-// Which traits push toward each pole
+// Which traits push toward each pole.
+// Calibrated against actual poll tag distribution so no single pole dominates.
+// Each tag appears on at most ONE axis to avoid double-counting bias.
 const AXIS_TAGS = {
-  E: ['social', 'global', 'brand_oriented', 'experience'],
-  I: ['independent', 'local', 'minimalist', 'minimal'],
-  S: ['convenience', 'price_sensitive', 'practical', 'traditional', 'tradition'],
-  N: ['innovation', 'innovative', 'growth', 'adventurous'],
-  T: ['price_sensitive', 'growth', 'quality', 'speed', 'convenience'],
-  F: ['experience', 'social', 'indulgent', 'health', 'luxury'],
-  J: ['brand_oriented', 'traditional', 'tradition', 'quality', 'local'],
-  P: ['adventurous', 'innovative', 'innovation', 'global', 'growth'],
+  // E/I — outward social energy vs inward independent energy
+  E: ['social', 'experience', 'extrovert', 'public', 'expressive', 'glam', 'global', 'global_platform', 'global_streaming', 'global_sale', 'global_luxury'],
+  I: ['independent', 'introvert', 'private', 'homebody', 'calm', 'self_reliant', 'minimal', 'minimalist', 'local', 'local_platform', 'local_streaming', 'local_sale'],
+
+  // S/N — concrete, proven, practical vs novel, abstract, future-leaning
+  S: ['practical', 'traditional', 'tradition', 'traditional_formal', 'traditional_transport', 'modest', 'modest_fashion', 'authentic', 'safe_asset', 'structured', 'convenience'],
+  N: ['growth', 'growth_asset', 'innovation', 'innovative', 'trendy', 'tech_transport', 'curated', 'ecommerce', 'fintech', 'adventurous'],
+
+  // T/F — utility/logic vs values/feeling
+  T: ['price_sensitive', 'quality', 'speed', 'outsource', 'boss', 'western_formal'],
+  F: ['indulgent', 'health', 'luxury', 'romantic', 'soft', 'natural', 'mena_luxury', 'arab_dessert', 'western_dessert', 'fast_food'],
+
+  // J/P — loyal/decisive vs open/exploratory
+  J: ['brand_oriented', 'telecom_loyalty', 'coffee_brand', 'sneaker_brand', 'shawerma_brand'],
+  P: ['innovation', 'innovative', 'trendy', 'growth', 'curated', 'adventurous', 'experience'],
 };
 
 // 16 personality types with Versa names + MBTI codes
@@ -128,34 +137,55 @@ export const PERSONALITY_TYPES: Record<string, { name: string; emoji: string; de
   },
 };
 
+// Returns a normalized score in [-1, 1]: positive = first pole, negative = second pole.
+// Using a ratio (instead of raw sum) prevents the most-common tags from dominating.
 function scoreAxis(traits: TraitEntry[], positiveTags: string[], negativeTags: string[]): number {
-  let score = 0;
+  let pos = 0;
+  let neg = 0;
   for (const t of traits) {
     const tag = t.tag?.toLowerCase();
-    if (positiveTags.includes(tag)) score += t.vote_count;
-    if (negativeTags.includes(tag)) score -= t.vote_count;
+    if (positiveTags.includes(tag)) pos += t.vote_count;
+    if (negativeTags.includes(tag)) neg += t.vote_count;
   }
-  return score;
+  const total = pos + neg;
+  if (total === 0) return 0;
+  return (pos - neg) / total;
+}
+
+// Stable per-user pseudo-random in [-0.5, 0.5] used only as a tiebreaker
+// when an axis has no signal. Keeps assignment stable per user but varied across users.
+function tieJitter(seed: string, axis: string): number {
+  let h = 2166136261;
+  const s = seed + ':' + axis;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 1000) / 1000 - 0.5;
 }
 
 export interface PersonalityResult {
-  code: string;       // e.g. "ENTJ"
-  name: string;       // e.g. "The Commander"
+  code: string;
+  name: string;
   emoji: string;
   description: string;
   strengths: string[];
   axes: {
-    ei: number; // positive = E, negative = I
-    sn: number; // positive = S, negative = N
-    tf: number; // positive = T, negative = F
-    jp: number; // positive = J, negative = P
+    ei: number; // positive = E, negative = I (normalized -1..1)
+    sn: number;
+    tf: number;
+    jp: number;
   };
-  ready: boolean;     // whether enough votes for a type
+  ready: boolean;
 }
 
-export function computePersonalityType(traits: TraitEntry[], voteCount: number): PersonalityResult {
+export function computePersonalityType(
+  traits: TraitEntry[],
+  voteCount: number,
+  userSeed: string = 'anon',
+): PersonalityResult {
   const MIN_VOTES = 30;
-  
+
   if (voteCount < MIN_VOTES || !traits.length) {
     return {
       code: '????',
@@ -173,11 +203,19 @@ export function computePersonalityType(traits: TraitEntry[], voteCount: number):
   const tf = scoreAxis(traits, AXIS_TAGS.T, AXIS_TAGS.F);
   const jp = scoreAxis(traits, AXIS_TAGS.J, AXIS_TAGS.P);
 
+  // Deadband: when an axis is essentially balanced (or has no signal), use a
+  // stable per-user jitter so users don't all collapse to the same default pole.
+  const DEADBAND = 0.05;
+  const pick = (score: number, axis: string, posLetter: string, negLetter: string) => {
+    const effective = Math.abs(score) < DEADBAND ? tieJitter(userSeed, axis) : score;
+    return effective >= 0 ? posLetter : negLetter;
+  };
+
   const code =
-    (ei >= 0 ? 'E' : 'I') +
-    (sn >= 0 ? 'S' : 'N') +
-    (tf >= 0 ? 'T' : 'F') +
-    (jp >= 0 ? 'J' : 'P');
+    pick(ei, 'ei', 'E', 'I') +
+    pick(sn, 'sn', 'S', 'N') +
+    pick(tf, 'tf', 'T', 'F') +
+    pick(jp, 'jp', 'J', 'P');
 
   const type = PERSONALITY_TYPES[code] || PERSONALITY_TYPES['INFP'];
 

@@ -51,8 +51,8 @@ export default function PersonalityCompatibility({ targetUserId, targetUsername 
     enabled: !!targetUserId,
   });
 
-  const ownType = computePersonalityType(ownTraits, ownVoteCount);
-  const targetType = computePersonalityType(targetTraits, targetVoteCount);
+  const ownType = computePersonalityType(ownTraits, ownVoteCount, user?.id);
+  const targetType = computePersonalityType(targetTraits, targetVoteCount, targetUserId);
   const compat = computeTypeCompatibility(ownType, targetType);
 
   if (!compat) return null;

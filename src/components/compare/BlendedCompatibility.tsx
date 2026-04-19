@@ -57,8 +57,8 @@ export default function BlendedCompatibility({ userAId, userBId, userBUsername }
   const aPersonality = usePersonalityData(userAId);
   const bPersonality = usePersonalityData(userBId);
 
-  const typeA = computePersonalityType(aPersonality.traits, aPersonality.voteCount);
-  const typeB = computePersonalityType(bPersonality.traits, bPersonality.voteCount);
+  const typeA = computePersonalityType(aPersonality.traits, aPersonality.voteCount, userAId);
+  const typeB = computePersonalityType(bPersonality.traits, bPersonality.voteCount, userBId);
   const personalityCompat = computeTypeCompatibility(typeA, typeB);
 
   // Blended score calculation
