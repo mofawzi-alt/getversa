@@ -15,21 +15,20 @@ export interface ActiveBrandCampaign {
   poll_ids: string[];
 }
 
+const MAX_CAROUSEL_CAMPAIGNS = 3;
+
 /**
- * Returns the most relevant active brand campaign for the current user
- * (one with the most unvoted polls). Used by the Home Brand Pack banner.
+ * Returns up to 3 active brand campaigns (with unvoted polls) for the carousel banner,
+ * sorted by most unvoted polls first. Excludes 'hero_only' campaigns.
  */
-export function useActiveBrandCampaign() {
+export function useActiveBrandCampaigns() {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['active-brand-campaign', user?.id],
-    queryFn: async (): Promise<ActiveBrandCampaign | null> => {
+    queryKey: ['active-brand-campaigns', user?.id],
+    queryFn: async (): Promise<ActiveBrandCampaign[]> => {
       const now = new Date().toISOString();
 
-      // Fetch active campaigns currently in their release window.
-      // Exclude 'hero_only' campaigns — those polls flow into the regular Hero feed
-      // and should NOT have a brand pack banner.
       const { data: campaigns, error } = await supabase
         .from('poll_campaigns')
         .select('id, name, brand_name, brand_logo_url, description, release_at, expires_at, is_active, visibility_mode')
@@ -38,9 +37,8 @@ export function useActiveBrandCampaign() {
         .or(`release_at.is.null,release_at.lte.${now}`)
         .or(`expires_at.is.null,expires_at.gte.${now}`);
 
-      if (error || !campaigns || campaigns.length === 0) return null;
+      if (error || !campaigns || campaigns.length === 0) return [];
 
-      // For each campaign, fetch its polls and the user's votes
       const results = await Promise.all(
         campaigns.map(async (c) => {
           const { data: links } = await supabase
@@ -79,12 +77,20 @@ export function useActiveBrandCampaign() {
       );
 
       const valid = results.filter((r): r is ActiveBrandCampaign => r !== null && r.unvoted_polls > 0);
-      if (valid.length === 0) return null;
-
-      // Pick the one with most unvoted polls
       valid.sort((a, b) => b.unvoted_polls - a.unvoted_polls);
-      return valid[0];
+      return valid.slice(0, MAX_CAROUSEL_CAMPAIGNS);
     },
     staleTime: 60_000,
   });
+}
+
+/**
+ * Backward-compatible single-campaign hook (returns the top campaign).
+ */
+export function useActiveBrandCampaign() {
+  const query = useActiveBrandCampaigns();
+  return {
+    ...query,
+    data: query.data?.[0] ?? null,
+  };
 }
