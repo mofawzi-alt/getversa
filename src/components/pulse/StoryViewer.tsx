@@ -185,6 +185,7 @@ export default function StoryViewer({
         onPointerDown={() => setPaused(true)}
         onPointerUp={() => { setPaused(false); startedAt.current = Date.now() - progress * autoAdvanceMs; }}
         onPointerCancel={() => setPaused(false)}
+        onClick={handleTap}
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={0.4}
