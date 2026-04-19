@@ -266,7 +266,7 @@ export default function Ask() {
         loading={confirming}
         onConfirm={confirmAndAnswer}
         onCancel={() => setPreview(null)}
-        onEarn={() => { setPreview(null); navigate('/'); }}
+        onEarn={() => { setPreview(null); navigate('/browse'); }}
       />
     </div>
   );
