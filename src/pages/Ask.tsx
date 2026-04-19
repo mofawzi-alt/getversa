@@ -50,6 +50,8 @@ export default function Ask() {
     setSummary(null);
     setVerdict(null);
     setPolls([]);
+    setLowData(false);
+    setSuggestions([]);
   };
 
   const switchMode = (m: Mode) => {
