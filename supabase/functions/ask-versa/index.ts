@@ -168,14 +168,19 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       if (extractResp.status === 429) return new Response(JSON.stringify({ error: "Too many requests, try again in a moment." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (extractResp.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-      // Recover from tool_use_failed: model wrote JSON as text inside failed_generation
-      if (extractResp.status === 400 && errBody.includes("tool_use_failed")) {
+      // Recover from any 400 where the model wrote JSON args as text (tool_use_failed OR schema validation)
+      if (extractResp.status === 400) {
         try {
           const errJson = JSON.parse(errBody);
-          const failedGen = errJson?.error?.failed_generation || "";
+          const failedGen = errJson?.error?.failed_generation || errJson?.error?.message || "";
           filters = recoverFiltersFromText(failedGen);
-          if (filters) console.log("Recovered filters from failed_generation");
+          if (filters) console.log("Recovered filters from 400 error body");
         } catch { /* ignore */ }
+        // Last-resort fallback: synthesize minimal filters from the question itself
+        if (!filters) {
+          filters = { keywords: question.toLowerCase().split(/\s+/).filter((w) => w.length >= 3).slice(0, 6), route: "simple", category: "any" };
+          console.log("Synthesized minimal filters fallback");
+        }
       }
 
       if (!filters) {
