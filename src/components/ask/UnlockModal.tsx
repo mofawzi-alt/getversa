@@ -78,10 +78,10 @@ export default function UnlockModal({
               onClick={onEarn}
               className="w-full h-12 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-[0.98] transition"
             >
-              Vote to earn credits
+              Browse polls to earn credits
             </button>
             <p className="text-[11px] text-center text-muted-foreground">
-              Need {cost - balance} more credit{cost - balance === 1 ? '' : 's'}. Earn 1 per vote.
+              Need {cost - balance} more. Earn +1 credit per vote — unlimited polls in Browse.
             </p>
           </div>
         )}
