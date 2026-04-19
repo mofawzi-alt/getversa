@@ -192,6 +192,10 @@ export default function AdminDashboard() {
           <DailyLimitTab />
         </TabsContent>
 
+        <TabsContent value="ask-versa" className="space-y-4">
+          <AskVersaAnalytics />
+        </TabsContent>
+
         <TabsContent value="users" className="space-y-4">
           <UserManagement />
         </TabsContent>
