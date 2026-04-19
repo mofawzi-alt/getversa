@@ -106,7 +106,7 @@ export default function Ask() {
     ? 'e.g. Costa or Cilantro?'
     : 'e.g. What do students think about online learning?';
 
-  const suggestions = mode === 'decide' ? DECIDE_SUGGESTIONS : RESEARCH_SUGGESTIONS;
+  const promptSuggestions = mode === 'decide' ? DECIDE_SUGGESTIONS : RESEARCH_SUGGESTIONS;
 
   return (
     <div className="min-h-screen bg-background pb-20">
