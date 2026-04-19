@@ -7,12 +7,12 @@ const corsHeaders = {
 };
 
 /**
- * Batch Release Notify — sends ONE push per batch window (morning/afternoon/evening)
- * announcing the new batch of polls. Routed through send-governed-notification so it
- * respects the 3/day cap, user prefs, quiet hours, and gets logged.
+ * Daily Poll Batch Notify — sends ONE governed push per user per day at 7am Cairo
+ * announcing the day's fresh polls. Replaces the per-poll blast trigger and the
+ * 3-batch (morning/afternoon/evening) schedule.
  *
- * Mapped to notification_type "new_category" (priority 7) — same bucket as other
- * poll-discovery pushes.
+ * notification_type: "daily_poll_batch" (priority 3 — high enough to land but
+ * still respects the 3/day cap, user prefs, and quiet hours).
  */
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -24,32 +24,22 @@ serve(async (req: Request): Promise<Response> => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Determine which batch this is based on Cairo time
-    const cairoHour = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Africa/Cairo" })
-    ).getHours();
+    // Count fresh polls (last 24h) so the copy can be a little dynamic
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count: freshCount } = await supabase
+      .from("polls")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since)
+      .eq("is_active", true);
 
-    let batchLabel: string;
-    let emoji: string;
-    let body: string;
+    const polls = freshCount ?? 0;
+    const title = "☀️ New polls are live";
+    const body =
+      polls > 0
+        ? `${polls} fresh debate${polls === 1 ? "" : "s"} waiting for you. Start your morning vote.`
+        : "Your daily polls are ready. Tap in and shape today's results.";
 
-    if (cairoHour >= 7 && cairoHour < 11) {
-      batchLabel = "morning";
-      emoji = "☀️";
-      body = "Your morning polls are ready! Start your day with fresh debates.";
-    } else if (cairoHour >= 12 && cairoHour < 16) {
-      batchLabel = "afternoon";
-      emoji = "🔥";
-      body = "New polls just dropped! More debates waiting for you.";
-    } else {
-      batchLabel = "evening";
-      emoji = "🌙";
-      body = "Tonight's final batch is here! Don't miss out before the day ends.";
-    }
-
-    const title = `${emoji} New Polls Available!`;
-
-    console.log(`Batch release notification: ${batchLabel} batch at Cairo hour ${cairoHour}`);
+    console.log(`Daily poll batch notify — ${polls} fresh polls`);
 
     // Fetch all users
     const { data: users, error: usersError } = await supabase.from("users").select("id");
@@ -57,12 +47,13 @@ serve(async (req: Request): Promise<Response> => {
 
     if (!users?.length) {
       return new Response(
-        JSON.stringify({ success: true, batch: batchLabel, sent: 0 }),
+        JSON.stringify({ success: true, sent: 0, total_users: 0 }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Send one governed notification per user (governance handles dedup/cap/prefs)
+    // One governed notification per user — governance enforces 1/day naturally because
+    // the type is unique to this morning send and quiet hours / cap apply.
     const results = await Promise.allSettled(
       users.map((u) =>
         fetch(`${SUPABASE_URL}/functions/v1/send-governed-notification`, {
@@ -73,12 +64,12 @@ serve(async (req: Request): Promise<Response> => {
           },
           body: JSON.stringify({
             user_id: u.id,
-            notification_type: "new_category",
-            priority: 7,
+            notification_type: "daily_poll_batch",
+            priority: 3,
             title,
             body,
             url: "/home",
-            data: { batch: batchLabel },
+            data: { fresh_count: polls },
           }),
         }).then((r) => r.json())
       )
@@ -89,10 +80,10 @@ serve(async (req: Request): Promise<Response> => {
     ).length;
     const skipped = users.length - sent;
 
-    console.log(`Batch ${batchLabel}: ${sent} sent, ${skipped} skipped (cap/prefs/quiet)`);
+    console.log(`Daily poll batch: ${sent} sent, ${skipped} skipped (cap/prefs/quiet)`);
 
     return new Response(
-      JSON.stringify({ success: true, batch: batchLabel, sent, skipped, total_users: users.length }),
+      JSON.stringify({ success: true, sent, skipped, total_users: users.length, fresh_polls: polls }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
