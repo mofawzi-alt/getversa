@@ -198,6 +198,10 @@ export default function AdminDashboard() {
           <AskVersaAnalytics />
         </TabsContent>
 
+        <TabsContent value="seeding" className="space-y-4">
+          <BaselineSeeding />
+        </TabsContent>
+
         <TabsContent value="users" className="space-y-4">
           <UserManagement />
         </TabsContent>
