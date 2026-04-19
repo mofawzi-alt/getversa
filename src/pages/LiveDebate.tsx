@@ -69,6 +69,7 @@ export default function LiveDebate() {
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const startPollId = searchParams.get('pollId');
+  const returnTo = searchParams.get('returnTo');
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [result, setResult] = useState<VoteResult | null>(null);
@@ -257,8 +258,8 @@ export default function LiveDebate() {
   }, [currentPoll, phase, voteMutation]);
 
   const handleExit = useCallback(() => {
-    navigate('/home');
-  }, [navigate]);
+    navigate(returnTo === 'ask' ? '/ask' : '/home');
+  }, [navigate, returnTo]);
 
   // Swipe-down to exit
   const handleExitDragEnd = useCallback((_: any, info: PanInfo) => {
