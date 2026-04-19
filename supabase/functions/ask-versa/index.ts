@@ -66,10 +66,11 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { question, mode = "decide", viewer } = body as {
+    const { question, mode = "decide", viewer, history } = body as {
       question?: string;
       mode?: "decide" | "research";
       viewer?: { age_range?: string; city?: string; gender?: string };
+      history?: Array<{ role: "user" | "assistant"; content: string }>;
     };
 
     if (!question || typeof question !== "string" || question.trim().length < 3) {
@@ -77,6 +78,13 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Trim & sanitize prior turns so follow-ups inherit topic context
+    const trimmedHistory = Array.isArray(history) ? history.slice(-6) : [];
+    const historyMessages = trimmedHistory.map((h) => ({
+      role: h.role,
+      content: String(h.content || "").slice(0, 500),
+    }));
 
     // 1. Extract filters
     const extractResp = await fetch(AI_URL, {
@@ -87,8 +95,9 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You translate natural language questions about Egyptian opinion polls into structured filters. Categories: ${KNOWN_CATEGORIES.join(", ")}. Be conservative — only set demographic filters when explicitly mentioned.`,
+            content: `You translate natural language questions about Egyptian opinion polls into structured filters. Categories: ${KNOWN_CATEGORIES.join(", ")}. Be conservative — only set demographic filters when explicitly mentioned. If conversation history is provided, the user's new question may be a FOLLOW-UP that depends on prior context (e.g. "now show women only", "what about Cairo?", "break it down by age"). Infer the underlying topic from the history and merge it with the new ask. Always extract keywords describing the underlying topic, not just the follow-up phrasing.`,
           },
+          ...historyMessages,
           { role: "user", content: question },
         ],
         tools: [FILTER_TOOL],
