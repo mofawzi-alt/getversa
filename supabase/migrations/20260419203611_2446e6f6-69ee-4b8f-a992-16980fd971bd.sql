@@ -1,0 +1,1 @@
+DELETE FROM public.daily_pulse WHERE pulse_date = (now() AT TIME ZONE 'Africa/Cairo')::date;
