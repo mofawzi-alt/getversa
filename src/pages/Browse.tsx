@@ -197,6 +197,34 @@ function useShareImage() {
   return { share };
 }
 
+function FireReactionButton({ pollId }: { pollId: string }) {
+  const { count, reacted, toggle, canReact } = usePollReactions(pollId);
+  return (
+    <button
+      onClick={() => {
+        if (!canReact) {
+          toast.info('Sign in to react 🔥');
+          return;
+        }
+        toggle();
+      }}
+      className={`min-w-10 h-10 px-2 rounded-full backdrop-blur-sm border flex items-center justify-center gap-1 transition-all ${
+        reacted
+          ? 'bg-orange-500/20 border-orange-500/40 text-orange-500 scale-110'
+          : 'bg-background/80 border-border/50 text-foreground hover:bg-orange-500/10'
+      }`}
+      aria-label={reacted ? 'Remove fire reaction' : 'Add fire reaction'}
+    >
+      <Flame className={`h-4 w-4 ${reacted ? 'fill-current' : ''}`} />
+      {count > 0 && (
+        <span className="text-[10px] font-bold tabular-nums">
+          {count > 999 ? `${(count / 1000).toFixed(1)}k` : count}
+        </span>
+      )}
+    </button>
+  );
+}
+
 // Single full-screen card
 function BrowseCard({
   poll,
@@ -206,8 +234,6 @@ function BrowseCard({
   onVote,
   onShare,
   onSendToFriend,
-  onReact,
-  reacted,
 }: {
   poll: BrowsePoll;
   userChoice: string | null;
@@ -216,8 +242,6 @@ function BrowseCard({
   onVote: () => void;
   onShare: () => void;
   onSendToFriend: () => void;
-  onReact: () => void;
-  reacted: boolean;
 }) {
   // Images handled by PollOptionImage component
   const isCloseResult = !isSignedIn && poll.totalVotes >= 5 && poll.percentA >= 45 && poll.percentA <= 55;
@@ -242,7 +266,7 @@ function BrowseCard({
       </div>
 
       {/* Side action buttons */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-4">
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-4 items-end">
         {isSignedIn && (
           <button
             onClick={onSendToFriend}
@@ -255,10 +279,9 @@ function BrowseCard({
         <button onClick={onShare} className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center text-foreground hover:bg-primary/10 transition-colors">
           <Share2 className="h-4 w-4" />
         </button>
-        <button onClick={onReact} className={`w-10 h-10 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all ${reacted ? 'bg-orange-500/20 border-orange-500/40 text-orange-500 scale-110' : 'bg-background/80 border-border/50 text-foreground hover:bg-orange-500/10'}`}>
-          <Flame className={`h-4 w-4 ${reacted ? 'fill-current' : ''}`} />
-        </button>
+        <FireReactionButton pollId={poll.id} />
       </div>
+
 
       {/* Images — filling available space */}
       <div className="flex-1 flex relative min-h-0">
