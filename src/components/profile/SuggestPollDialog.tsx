@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lightbulb, Loader2 } from 'lucide-react';
+import { Lightbulb, Loader2, ShieldAlert } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -15,10 +15,17 @@ export default function SuggestPollDialog() {
   const [optionB, setOptionB] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const BANNED = /\b(fuck|shit|bitch|kos|كس|عرص|متناك|زبي|نيك|kafir|كافر|jew|يهود|christian|مسيحي|muslim|مسلم|sisi|السيسي|mubarak|مبارك|morsi|مرسي|israel|إسرائيل|hamas|حماس|gaza|غزة|nazi|hitler|rape|اغتصاب|kill|اقتل|terrorist|إرهابي)\b/i;
+
   const submit = async () => {
     if (!user) { toast.error('Sign in to suggest polls'); return; }
     const q = question.trim();
     if (q.length < 6) { toast.error('Add a clearer question'); return; }
+    const combined = `${q} ${optionA} ${optionB}`;
+    if (BANNED.test(combined)) {
+      toast.error('Suggestion contains banned content. Please keep it respectful and on-topic.');
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.from('poll_suggestions').insert({
@@ -63,6 +70,21 @@ export default function SuggestPollDialog() {
           <p className="text-xs text-muted-foreground">
             Tell us what you want Versa to ask Egypt. If we publish it, you earn <span className="font-bold text-primary">+5 Ask credits</span> + a notification.
           </p>
+
+          {/* Content policy */}
+          <div className="rounded-xl border border-border bg-muted/40 p-3 space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <ShieldAlert className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[10px] uppercase tracking-wider font-bold text-foreground">Community guidelines</p>
+            </div>
+            <ul className="text-[11px] text-muted-foreground leading-relaxed list-disc pl-4 space-y-0.5">
+              <li>Keep it respectful — no slurs, hate, or harassment.</li>
+              <li>No religion, politics, or sectarian topics.</li>
+              <li>No NSFW, violence, or personal attacks on real people.</li>
+              <li>No brand bashing — frame as a fair "A vs B" choice.</li>
+              <li>English or Arabic. Suggestions breaking these rules are rejected and may cost you credits.</li>
+            </ul>
+          </div>
           <div className="space-y-1.5">
             <label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Question</label>
             <Textarea
