@@ -4,8 +4,11 @@ import { ArrowLeft, Sparkles, Loader2, Scale, FlaskConical, ArrowUp, RotateCcw }
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import SuggestionChips from '@/components/ask/SuggestionChips';
 import AskThread, { type AskTurn, type Mode } from '@/components/ask/AskThread';
+import CreditBalance from '@/components/ask/CreditBalance';
+import UnlockModal from '@/components/ask/UnlockModal';
 
 const DECIDE_SUGGESTIONS = [
   'Costa or Cilantro for studying?',
@@ -23,7 +26,6 @@ const RESEARCH_SUGGESTIONS = [
 ];
 
 function buildHistoryFromTurns(turns: AskTurn[]) {
-  // Convert prior turns into role/content pairs the model can use as context
   const out: Array<{ role: 'user' | 'assistant'; content: string }> = [];
   for (const t of turns) {
     if (t.loading) continue;
@@ -37,28 +39,36 @@ function buildHistoryFromTurns(turns: AskTurn[]) {
   return out;
 }
 
+interface PreviewState {
+  question: string;
+  mode: Mode;
+  route: 'simple' | 'medium' | 'complex';
+  cost: number;
+  balance: number;
+  teaser: string;
+  history: Array<{ role: 'user' | 'assistant'; content: string }>;
+}
+
 export default function Ask() {
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const qc = useQueryClient();
   const [mode, setMode] = useState<Mode>('decide');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [turns, setTurns] = useState<AskTurn[]>([]);
+  const [preview, setPreview] = useState<PreviewState | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const threadEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 200);
-  }, []);
-
-  // Auto-scroll on new turn
-  useEffect(() => {
-    threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [turns]);
+  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 200); }, []);
+  useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
 
   const reset = () => {
     setQuery('');
     setTurns([]);
+    setPreview(null);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -68,30 +78,72 @@ export default function Ask() {
     reset();
   };
 
-  const runSearch = async (q?: string) => {
+  const viewer = profile ? {
+    age_range: profile.age_range || undefined,
+    city: profile.city || undefined,
+    gender: profile.gender || undefined,
+  } : undefined;
+
+  const runPreview = async (q?: string) => {
     const question = (q ?? query).trim();
-    if (question.length < 3) {
-      toast.error('Type a fuller question');
-      return;
-    }
+    if (question.length < 3) { toast.error('Type a fuller question'); return; }
     if (loading) return;
 
     setQuery('');
     setLoading(true);
-
-    const turnId = crypto.randomUUID();
-    const placeholder: AskTurn = { id: turnId, question, mode, loading: true };
-    const historyForRequest = buildHistoryFromTurns(turns);
-    setTurns((prev) => [...prev, placeholder]);
+    const history = buildHistoryFromTurns(turns);
 
     try {
-      const viewer = profile ? {
-        age_range: profile.age_range || undefined,
-        city: profile.city || undefined,
-        gender: profile.gender || undefined,
-      } : undefined;
       const { data, error } = await supabase.functions.invoke('ask-versa', {
-        body: { question, mode, viewer, history: historyForRequest },
+        body: { question, mode, viewer, history, stage: 'preview' },
+      });
+      if (error) throw error;
+      if (data?.error) { toast.error(data.error); return; }
+
+      // Guardrail: render directly as a turn, no charge
+      if (data.stage === 'guardrail') {
+        const turnId = crypto.randomUUID();
+        setTurns((prev) => [...prev, {
+          id: turnId, question, mode,
+          loading: false,
+          summary: data.summary,
+          lowData: true,
+          guardrailPolls: data.suggested_polls || [],
+        } as AskTurn]);
+        return;
+      }
+
+      // Preview: show modal
+      if (data.stage === 'preview') {
+        setPreview({
+          question, mode,
+          route: data.route,
+          cost: data.cost,
+          balance: data.credits_balance,
+          teaser: data.teaser,
+          history,
+        });
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || 'Search failed');
+    } finally {
+      setLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  };
+
+  const confirmAndAnswer = async () => {
+    if (!preview) return;
+    setConfirming(true);
+    const turnId = crypto.randomUUID();
+    const placeholder: AskTurn = { id: turnId, question: preview.question, mode: preview.mode, loading: true };
+    setTurns((prev) => [...prev, placeholder]);
+    setPreview(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('ask-versa', {
+        body: { question: preview.question, mode: preview.mode, viewer, history: preview.history, stage: 'confirm' },
       });
       if (error) throw error;
       if (data?.error) {
@@ -105,16 +157,17 @@ export default function Ask() {
         summary: data.summary || null,
         verdict: data.verdict || null,
         polls: data.polls || [],
-        lowData: !!data.low_data,
-        suggestions: Array.isArray(data.suggestions) ? data.suggestions : [],
-      } : t));
+        creditsCharged: data.credits_charged,
+        creditsBalance: data.credits_balance,
+      } as AskTurn : t));
+      // Refresh balance pill
+      qc.invalidateQueries({ queryKey: ['ask-credits'] });
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || 'Search failed');
+      toast.error(e?.message || 'Failed');
       setTurns((prev) => prev.filter((t) => t.id !== turnId));
     } finally {
-      setLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setConfirming(false);
     }
   };
 
@@ -127,15 +180,10 @@ export default function Ask() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
         <div className="flex items-center justify-between gap-2 px-3 py-3">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 -ml-2 rounded-full hover:bg-muted active:scale-95 transition"
-              aria-label="Back"
-            >
+            <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-muted active:scale-95 transition" aria-label="Back">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-1.5">
@@ -143,43 +191,29 @@ export default function Ask() {
               <h1 className="text-base font-bold">Ask Versa</h1>
             </div>
           </div>
-          {turns.length > 0 && (
-            <button
-              onClick={reset}
-              className="flex items-center gap-1 h-8 px-3 rounded-full bg-muted text-xs font-semibold text-foreground active:scale-95 transition"
-            >
-              <RotateCcw className="h-3 w-3" />
-              New
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <CreditBalance compact />
+            {turns.length > 0 && (
+              <button onClick={reset} className="flex items-center gap-1 h-8 px-3 rounded-full bg-muted text-xs font-semibold text-foreground active:scale-95 transition">
+                <RotateCcw className="h-3 w-3" />
+                New
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Mode tabs */}
         <div className="px-3 pb-3">
           <div className="grid grid-cols-2 gap-1 p-1 rounded-full bg-muted">
-            <button
-              onClick={() => switchMode('decide')}
-              className={`h-8 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition ${
-                mode === 'decide' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
-              }`}
-            >
-              <Scale className="h-3.5 w-3.5" />
-              Decide
+            <button onClick={() => switchMode('decide')} className={`h-8 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition ${mode === 'decide' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}>
+              <Scale className="h-3.5 w-3.5" /> Decide
             </button>
-            <button
-              onClick={() => switchMode('research')}
-              className={`h-8 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition ${
-                mode === 'research' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
-              }`}
-            >
-              <FlaskConical className="h-3.5 w-3.5" />
-              Research
+            <button onClick={() => switchMode('research')} className={`h-8 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition ${mode === 'research' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}>
+              <FlaskConical className="h-3.5 w-3.5" /> Research
             </button>
           </div>
         </div>
       </div>
 
-      {/* Body */}
       <div className="flex-1 px-3 pt-4 pb-32 space-y-4">
         {empty && (
           <>
@@ -191,29 +225,18 @@ export default function Ask() {
                 {mode === 'decide' ? 'Get a clear pick backed by real votes' : 'Get a research brief from Egypt\'s pulse'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {mode === 'decide' ? 'Ask follow-ups to dig deeper.' : 'Copy or download as PDF.'}
+                Each insight costs credits. Vote to earn more.
               </p>
             </div>
-            <SuggestionChips
-              label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'}
-              suggestions={promptSuggestions}
-              onPick={runSearch}
-            />
+            <SuggestionChips label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'} suggestions={promptSuggestions} onPick={runPreview} />
           </>
         )}
 
-        {!empty && (
-          <AskThread turns={turns} onPickSuggestion={runSearch} />
-        )}
-
+        {!empty && <AskThread turns={turns} onPickSuggestion={runPreview} />}
         <div ref={threadEndRef} />
       </div>
 
-      {/* Pinned input */}
-      <form
-        onSubmit={(e) => { e.preventDefault(); runSearch(); }}
-        className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 safe-area-bottom z-30"
-      >
+      <form onSubmit={(e) => { e.preventDefault(); runPreview(); }} className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 safe-area-bottom z-30">
         <div className="relative max-w-lg mx-auto">
           <input
             ref={inputRef}
@@ -233,6 +256,18 @@ export default function Ask() {
           </button>
         </div>
       </form>
+
+      <UnlockModal
+        open={!!preview}
+        cost={preview?.cost ?? 0}
+        balance={preview?.balance ?? 0}
+        teaser={preview?.teaser ?? ''}
+        route={preview?.route ?? 'simple'}
+        loading={confirming}
+        onConfirm={confirmAndAnswer}
+        onCancel={() => setPreview(null)}
+        onEarn={() => { setPreview(null); navigate('/'); }}
+      />
     </div>
   );
 }
