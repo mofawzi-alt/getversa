@@ -499,9 +499,14 @@ function DemographicsView({ demos }: { demos: DemoRow[] }) {
                       label={(e: any) => `${e.name} ${Math.round(e.percent * 100)}%`}
                       labelLine={false}
                     >
-                      {segArr.map((_, i) => (
-                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                      ))}
+                      {segArr.map((s, i) => {
+                        const label = s.seg.toLowerCase();
+                        const fill =
+                          label === 'female' ? 'hsl(340, 75%, 55%)' :
+                          label === 'male' ? 'hsl(210, 80%, 55%)' :
+                          PIE_COLORS[i % PIE_COLORS.length];
+                        return <Cell key={i} fill={fill} />;
+                      })}
                     </Pie>
                     <Tooltip
                       formatter={(v: any) => [`${v} people`, 'Reach']}
