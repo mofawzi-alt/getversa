@@ -15,10 +15,17 @@ export default function SuggestPollDialog() {
   const [optionB, setOptionB] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const BANNED = /\b(fuck|shit|bitch|kos|كس|عرص|متناك|زبي|نيك|kafir|كافر|jew|يهود|christian|مسيحي|muslim|مسلم|sisi|السيسي|mubarak|مبارك|morsi|مرسي|israel|إسرائيل|hamas|حماس|gaza|غزة|nazi|hitler|rape|اغتصاب|kill|اقتل|terrorist|إرهابي)\b/i;
+
   const submit = async () => {
     if (!user) { toast.error('Sign in to suggest polls'); return; }
     const q = question.trim();
     if (q.length < 6) { toast.error('Add a clearer question'); return; }
+    const combined = `${q} ${optionA} ${optionB}`;
+    if (BANNED.test(combined)) {
+      toast.error('Suggestion contains banned content. Please keep it respectful and on-topic.');
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.from('poll_suggestions').insert({
