@@ -70,6 +70,21 @@ export default function SuggestPollDialog() {
           <p className="text-xs text-muted-foreground">
             Tell us what you want Versa to ask Egypt. If we publish it, you earn <span className="font-bold text-primary">+5 Ask credits</span> + a notification.
           </p>
+
+          {/* Content policy */}
+          <div className="rounded-xl border border-border bg-muted/40 p-3 space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <ShieldAlert className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[10px] uppercase tracking-wider font-bold text-foreground">Community guidelines</p>
+            </div>
+            <ul className="text-[11px] text-muted-foreground leading-relaxed list-disc pl-4 space-y-0.5">
+              <li>Keep it respectful — no slurs, hate, or harassment.</li>
+              <li>No religion, politics, or sectarian topics.</li>
+              <li>No NSFW, violence, or personal attacks on real people.</li>
+              <li>No brand bashing — frame as a fair "A vs B" choice.</li>
+              <li>English or Arabic. Suggestions breaking these rules are rejected and may cost you credits.</li>
+            </ul>
+          </div>
           <div className="space-y-1.5">
             <label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Question</label>
             <Textarea
