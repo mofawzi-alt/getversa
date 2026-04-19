@@ -406,9 +406,11 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         }
       }
 
-      const summary = suggestedPolls.length > 0
-        ? `Versa doesn't have enough data on this topic yet. Vote on these related polls to help build it — and earn credits while you do.`
-        : `Versa doesn't have any polls on this topic yet. Try a different question, or vote on polls in the feed to help build new topics.`;
+      const summary = matchedPolls.length > 0
+        ? `Versa found polls on this topic, but there still isn't enough vote data yet. Vote on these polls to help build the answer — and earn credits while you do.`
+        : suggestedPolls.length > 0
+          ? `Versa doesn't have enough data on this topic yet. Vote on these related polls to help build it — and earn credits while you do.`
+          : `Versa doesn't have any polls on this topic yet. Try a different question, or vote on polls in the feed to help build new topics.`;
 
       // Log (no charge)
       if (userId) {
