@@ -585,13 +585,6 @@ export default function Browse() {
     navigate('/home');
   }, [user, navigate]);
 
-  const handleReact = useCallback((pollId: string) => {
-    setReactedPolls(prev => {
-      const next = new Set(prev);
-      if (next.has(pollId)) next.delete(pollId); else next.add(pollId);
-      return next;
-    });
-  }, []);
 
   if (isLoading) {
     return (
