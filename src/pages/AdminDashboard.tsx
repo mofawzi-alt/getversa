@@ -38,11 +38,13 @@ import { useBreakdownPendingCount } from '@/hooks/useBreakdownPendingCount';
 import AskVersaAnalytics from '@/components/admin/AskVersaAnalytics';
 import BaselineSeeding from '@/components/admin/BaselineSeeding';
 import PollSuggestionsAdmin from '@/components/admin/PollSuggestionsAdmin';
+import { usePendingSuggestionsCount } from '@/hooks/usePendingSuggestionsCount';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: breakdownPending = 0 } = useBreakdownPendingCount();
+  const { data: suggestionsPending = 0 } = usePendingSuggestionsCount();
   
   const [showPollForm, setShowPollForm] = useState(false);
   const [showRewardForm, setShowRewardForm] = useState(false);
@@ -89,7 +91,14 @@ export default function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger value="daily-limit" className="text-xs px-4 py-2">Daily Limit</TabsTrigger>
           <TabsTrigger value="ask-versa" className="text-xs px-4 py-2">Ask Versa</TabsTrigger>
-          <TabsTrigger value="suggestions" className="text-xs px-4 py-2">Suggestions</TabsTrigger>
+          <TabsTrigger value="suggestions" className="text-xs px-4 py-2 relative">
+            Suggestions
+            {suggestionsPending > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                {suggestionsPending > 99 ? '99+' : suggestionsPending}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="seeding" className="text-xs px-4 py-2">Seeding</TabsTrigger>
           <TabsTrigger value="users" className="text-xs px-4 py-2">Users</TabsTrigger>
         </TabsList>
