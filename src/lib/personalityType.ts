@@ -16,16 +16,25 @@ interface TraitEntry {
   vote_count: number;
 }
 
-// Which traits push toward each pole
+// Which traits push toward each pole.
+// Calibrated against actual poll tag distribution so no single pole dominates.
+// Each tag appears on at most ONE axis to avoid double-counting bias.
 const AXIS_TAGS = {
-  E: ['social', 'global', 'brand_oriented', 'experience'],
-  I: ['independent', 'local', 'minimalist', 'minimal'],
-  S: ['convenience', 'price_sensitive', 'practical', 'traditional', 'tradition'],
-  N: ['innovation', 'innovative', 'growth', 'adventurous'],
-  T: ['price_sensitive', 'growth', 'quality', 'speed', 'convenience'],
-  F: ['experience', 'social', 'indulgent', 'health', 'luxury'],
-  J: ['brand_oriented', 'traditional', 'tradition', 'quality', 'local'],
-  P: ['adventurous', 'innovative', 'innovation', 'global', 'growth'],
+  // E/I — outward social energy vs inward independent energy
+  E: ['social', 'experience', 'extrovert', 'public', 'expressive', 'glam', 'global', 'global_platform', 'global_streaming', 'global_sale', 'global_luxury'],
+  I: ['independent', 'introvert', 'private', 'homebody', 'calm', 'self_reliant', 'minimal', 'minimalist', 'local', 'local_platform', 'local_streaming', 'local_sale'],
+
+  // S/N — concrete, proven, practical vs novel, abstract, future-leaning
+  S: ['practical', 'traditional', 'tradition', 'traditional_formal', 'traditional_transport', 'modest', 'modest_fashion', 'authentic', 'safe_asset', 'structured', 'convenience'],
+  N: ['growth', 'growth_asset', 'innovation', 'innovative', 'trendy', 'tech_transport', 'curated', 'ecommerce', 'fintech', 'adventurous'],
+
+  // T/F — utility/logic vs values/feeling
+  T: ['price_sensitive', 'quality', 'speed', 'outsource', 'boss', 'western_formal'],
+  F: ['indulgent', 'health', 'luxury', 'romantic', 'soft', 'natural', 'mena_luxury', 'arab_dessert', 'western_dessert', 'fast_food'],
+
+  // J/P — loyal/decisive vs open/exploratory
+  J: ['brand_oriented', 'telecom_loyalty', 'coffee_brand', 'sneaker_brand', 'shawerma_brand'],
+  P: ['innovation', 'innovative', 'trendy', 'growth', 'curated', 'adventurous', 'experience'],
 };
 
 // 16 personality types with Versa names + MBTI codes
