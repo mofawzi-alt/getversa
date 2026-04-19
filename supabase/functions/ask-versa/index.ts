@@ -219,7 +219,7 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
     const buildQuery = (useCategory: boolean, useKeywords: boolean) => {
       let q = supabase
         .from("polls")
-        .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at")
+        .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, baseline_votes_a, baseline_votes_b")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(80);
@@ -254,6 +254,13 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       const { data, error } = await queryBuilder;
       if (error) throw error;
       if (data && data.length > 0) { polls = data; break; }
+    }
+
+    // ---- Fetch sunset threshold (default 50) ----
+    let sunsetThreshold = 50;
+    {
+      const { data: ss } = await supabase.from("seeding_settings").select("baseline_sunset_threshold").limit(1).maybeSingle();
+      if (ss?.baseline_sunset_threshold) sunsetThreshold = ss.baseline_sunset_threshold;
     }
 
     // ---- 3. Vote stats ----
