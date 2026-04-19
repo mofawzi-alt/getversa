@@ -418,8 +418,9 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
           : `Versa doesn't have any polls on this topic yet. Try a different question, or vote on polls in the feed to help build new topics.`;
 
       // Log (no charge)
+      let queryId: string | null = null;
       if (userId) {
-        await supabase.from("ask_versa_queries").insert({
+        const { data: inserted } = await supabase.from("ask_versa_queries").insert({
           user_id: userId,
           question,
           mode,
@@ -431,7 +432,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
           total_votes_considered: totalVotes,
           matched_poll_count: matchedPolls.length,
           category_hint: category && category !== "any" ? category : null,
-        });
+        }).select("id").maybeSingle();
+        queryId = inserted?.id ?? null;
       }
 
       return new Response(
@@ -443,6 +445,7 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
           suggested_polls: suggestedPolls,
           route: safeRoute,
           mode,
+          query_id: queryId,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );

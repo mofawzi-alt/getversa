@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
+import SuggestPollButton from './SuggestPollButton';
 
 interface SuggestedPoll {
   id: string;
@@ -14,9 +15,11 @@ interface SuggestedPoll {
 interface Props {
   summary: string;
   polls: SuggestedPoll[];
+  question: string;
+  askQueryId?: string | null;
 }
 
-export default function GuardrailCard({ summary, polls }: Props) {
+export default function GuardrailCard({ summary, polls, question, askQueryId }: Props) {
   const navigate = useNavigate();
 
   return (
@@ -29,6 +32,10 @@ export default function GuardrailCard({ summary, polls }: Props) {
         <p className="text-sm text-foreground leading-relaxed">{summary}</p>
         <p className="text-[11px] text-muted-foreground">No credits charged.</p>
       </div>
+
+      {/* Suggest-a-poll CTA — turns curiosity gaps into earn opportunities */}
+      <SuggestPollButton question={question} askQueryId={askQueryId} />
+
       {polls.length > 0 && (
         <div className="space-y-2">
           <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground px-1">

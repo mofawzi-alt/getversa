@@ -1383,38 +1383,75 @@ export type Database = {
       poll_suggestions: {
         Row: {
           admin_notes: string | null
+          ask_query_id: string | null
+          awarded_credits: number
           category: string | null
           created_at: string
           id: string
-          option_a: string
-          option_b: string
+          option_a: string | null
+          option_b: string | null
+          published_at: string | null
+          published_poll_id: string | null
           question: string
+          source: string
           status: string
           user_id: string
         }
         Insert: {
           admin_notes?: string | null
+          ask_query_id?: string | null
+          awarded_credits?: number
           category?: string | null
           created_at?: string
           id?: string
-          option_a: string
-          option_b: string
+          option_a?: string | null
+          option_b?: string | null
+          published_at?: string | null
+          published_poll_id?: string | null
           question: string
+          source?: string
           status?: string
           user_id: string
         }
         Update: {
           admin_notes?: string | null
+          ask_query_id?: string | null
+          awarded_credits?: number
           category?: string | null
           created_at?: string
           id?: string
-          option_a?: string
-          option_b?: string
+          option_a?: string | null
+          option_b?: string | null
+          published_at?: string | null
+          published_poll_id?: string | null
           question?: string
+          source?: string
           status?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "poll_suggestions_ask_query_id_fkey"
+            columns: ["ask_query_id"]
+            isOneToOne: false
+            referencedRelation: "ask_versa_queries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_suggestions_published_poll_id_fkey"
+            columns: ["published_poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "poll_suggestions_published_poll_id_fkey"
+            columns: ["published_poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       poll_verbatim_feedback: {
         Row: {
