@@ -2602,21 +2602,13 @@ export type Database = {
         Args: { p_amount: number; p_user_id: string }
         Returns: number
       }
-      generate_daily_queue:
-        | {
-            Args: { p_user_id: string }
-            Returns: {
-              poll_id: string
-              queue_order: number
-            }[]
-          }
-        | {
-            Args: { p_queue_date?: string; p_user_id: string }
-            Returns: {
-              poll_id: string
-              queue_order: number
-            }[]
-          }
+      generate_daily_queue: {
+        Args: { p_user_id: string }
+        Returns: {
+          poll_id: string
+          queue_order: number
+        }[]
+      }
       generate_redemption_code: { Args: never; Returns: string }
       get_all_polls_for_history: {
         Args: never
