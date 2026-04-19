@@ -36,6 +36,7 @@ import PulseAdminPanel from '@/components/admin/PulseAdminPanel';
 import BreakdownAdminPanel from '@/components/admin/BreakdownAdminPanel';
 import { useBreakdownPendingCount } from '@/hooks/useBreakdownPendingCount';
 import AskVersaAnalytics from '@/components/admin/AskVersaAnalytics';
+import BaselineSeeding from '@/components/admin/BaselineSeeding';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
