@@ -59,7 +59,7 @@ const FILTER_TOOL = {
           description: "simple = single poll/brand fact lookup; medium = one demographic OR one category summary; complex = synthesis across multiple polls/demographics or brand intelligence. Must be exactly 'simple', 'medium', or 'complex'.",
         },
       },
-      required: ["keywords", "category", "intent_summary", "route"],
+      required: ["keywords", "route"],
     },
   },
 };
