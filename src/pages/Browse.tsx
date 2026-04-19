@@ -370,7 +370,7 @@ export default function Browse() {
   const liveFilter = searchParams.get('filter') === 'live';
   const targetPollId = searchParams.get('pollId');
   const { share } = useShareImage();
-  const [shareToFriendPoll2, setShareToFriendPoll2] = useState<null>(null);
+  
   const [shareToFriendPoll, setShareToFriendPoll] = useState<BrowsePoll | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
