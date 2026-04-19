@@ -84,7 +84,7 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
           </div>
         )}
         <button
-          onClick={() => navigate(`/home?pollId=${verdict.poll_id}`)}
+          onClick={() => navigate(`/browse?pollId=${verdict.poll_id}`)}
           className="w-full mt-2 h-10 rounded-full bg-foreground text-background text-sm font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
         >
           Cast your vote
