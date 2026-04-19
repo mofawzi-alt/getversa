@@ -1141,39 +1141,17 @@ export default function Home() {
           </div>
 
           {livePolls.length > 0 ? (
-            <div className="flex flex-col gap-4 px-3">
-              {livePolls.map((poll, i) => {
-                const hasVoted = Boolean(votedPollIds?.has(poll.id));
-                const voteData = userVoteChoices?.get(poll.id);
-                const userChoice = voteData?.choice;
-                const chosenOptionLabel = userChoice === 'A' ? poll.option_a : userChoice === 'B' ? poll.option_b : null;
-
-                return (
-                  <HomeLiveDebateCard
-                    key={poll.id}
-                    poll={poll}
-                    index={i}
-                    hasVoted={hasVoted}
-                    chosenOptionLabel={chosenOptionLabel}
-                    isTrending={trendingIdSet?.has(poll.id) || false}
-                    onCardClick={() => {
-                      if (hasVoted) {
-                        setModalPoll(poll);
-                        return;
-                      }
-
-                      const idx = newPolls.findIndex(p => p.id === poll.id);
-                      if (idx >= 0) {
-                        setHeroPollIndex(idx);
-                        heroRef.current?.scrollIntoView({ behavior: 'smooth' });
-                      } else {
-                        navigate(`/browse?filter=live&pollId=${poll.id}`);
-                      }
-                    }}
-                  />
-                );
-              })}
-            </div>
+            <LiveDebatesList
+              livePolls={livePolls}
+              votedPollIds={votedPollIds}
+              userVoteChoices={userVoteChoices}
+              trendingIdSet={trendingIdSet}
+              newPolls={newPolls}
+              setHeroPollIndex={setHeroPollIndex}
+              heroRef={heroRef}
+              setModalPoll={setModalPoll}
+              navigate={navigate}
+            />
           ) : (
             <div className="mx-3 rounded-2xl border border-border/60 bg-card px-4 py-8 text-center">
               <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }}>
