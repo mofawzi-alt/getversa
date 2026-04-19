@@ -11,6 +11,7 @@ interface Props {
 
 export default function VoteHistoryGrid({ userId }: Props) {
   const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(true);
 
   const { data: history = [] } = useQuery({
     queryKey: ['vote-history-grid', userId],
