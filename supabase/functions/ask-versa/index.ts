@@ -534,6 +534,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         winner_pct: winnerPct,
         loser_pct: 100 - winnerPct,
         total_votes: s.total,
+        real_votes: s.realTotal,
+        baseline_active: !!s.baselineActive,
         reason,
         viewer_line: viewerLine,
       };
