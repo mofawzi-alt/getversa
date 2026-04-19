@@ -233,7 +233,7 @@ export default function StoryViewer({
             </button>
           </div>
 
-          <div className="absolute inset-0" onClick={handleTap} />
+          
 
           <motion.div
             key={index}
