@@ -138,6 +138,39 @@ export function useSendMessage() {
         message_type: messageType,
       });
       if (error) throw error;
+
+      // Notify the recipient (person-to-person, bypasses daily cap by design)
+      try {
+        const { data: convo } = await supabase
+          .from('conversations')
+          .select('user1_id, user2_id')
+          .eq('id', params.conversationId)
+          .maybeSingle();
+        const recipientId =
+          convo?.user1_id === user.id ? convo?.user2_id : convo?.user1_id;
+        if (recipientId) {
+          const { data: senderProfile } = await supabase
+            .from('users')
+            .select('username')
+            .eq('id', user.id)
+            .maybeSingle();
+          const senderName = senderProfile?.username || 'Someone';
+          const preview = messageType === 'poll_share'
+            ? 'Shared a poll with you'
+            : (params.content || '').slice(0, 80);
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              title: senderName,
+              body: preview || 'Sent you a message',
+              url: `/messages/${params.conversationId}`,
+              user_ids: [recipientId],
+              notification_type: 'new_message',
+            },
+          });
+        }
+      } catch (e) {
+        console.warn('Message push notify failed (non-blocking):', e);
+      }
     },
     onSuccess: (_d, vars) => {
       queryClient.invalidateQueries({ queryKey: ['messages', vars.conversationId] });
