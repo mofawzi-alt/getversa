@@ -185,7 +185,7 @@ export default function Ask() {
         {!searched && (
           <SuggestionChips
             label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'}
-            suggestions={suggestions}
+            suggestions={promptSuggestions}
             onPick={runSearch}
           />
         )}
@@ -199,21 +199,38 @@ export default function Ask() {
           </div>
         )}
 
-        {!loading && mode === 'decide' && verdict && (
+        {/* Low-data guardrail state */}
+        {!loading && lowData && summary && (
+          <div className="space-y-3">
+            <div className="rounded-2xl bg-muted/40 border border-border p-4 space-y-2">
+              <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Not enough data yet</p>
+              <p className="text-sm text-foreground leading-relaxed">{summary}</p>
+            </div>
+            {suggestions.length > 0 && (
+              <SuggestionChips
+                label="Try one of these instead"
+                suggestions={suggestions}
+                onPick={runSearch}
+              />
+            )}
+          </div>
+        )}
+
+        {!loading && !lowData && mode === 'decide' && verdict && (
           <VerdictCard verdict={verdict} />
         )}
 
-        {!loading && mode === 'decide' && !verdict && summary && (
+        {!loading && !lowData && mode === 'decide' && !verdict && summary && (
           <div className="rounded-2xl bg-card border border-border p-4">
             <p className="text-sm text-foreground">{summary}</p>
           </div>
         )}
 
-        {!loading && mode === 'research' && summary && polls.length > 0 && (
+        {!loading && !lowData && mode === 'research' && summary && polls.length > 0 && (
           <ResearchBrief question={query} summary={summary} polls={polls} />
         )}
 
-        {!loading && mode === 'research' && summary && polls.length === 0 && (
+        {!loading && !lowData && mode === 'research' && summary && polls.length === 0 && (
           <div className="rounded-2xl bg-card border border-border p-4">
             <p className="text-sm text-foreground">{summary}</p>
           </div>
