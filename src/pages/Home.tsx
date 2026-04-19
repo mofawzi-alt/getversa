@@ -708,21 +708,17 @@ export default function Home() {
   const hasUnseen = (unseenCount || 0) > 0;
   const allNewPolls = useMemo(() => {
     const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id));
-    // For authenticated users with daily queue, show queue polls + any polls not yet in the queue
+    // For authenticated users with daily queue: STRICTLY cap to queue polls only.
+    // This enforces first_day_limit / daily_limit so users don't see all 99 active polls at once.
     if (user && queuePollIds.length > 0) {
       const queueSet = new Set(queuePollIds);
-      const nonQueuePolls = unvoted.filter(p => !queueSet.has(p.id));
       const queuePolls = unvoted.filter(p => queueSet.has(p.id));
-      // Sort queue polls by queue order
       queuePolls.sort((a, b) => {
         const aIdx = queuePollIds.indexOf(a.id);
         const bIdx = queuePollIds.indexOf(b.id);
         return aIdx - bIdx;
       });
-      // Prepend non-queue polls (new/manual) before queue polls so they appear first
-      // Sort non-queue by weight_score desc then created_at desc
-      nonQueuePolls.sort((a, b) => (b.weight_score || 1) - (a.weight_score || 1) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      return [...nonQueuePolls, ...queuePolls];
+      return queuePolls;
     }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
   }, [allPolls, votedPollIds, profile?.age_range, user, queuePollIds]);
@@ -1028,7 +1024,7 @@ export default function Home() {
         <div ref={heroRef}>
           <HeroVoteCard
             poll={newPolls[heroPollIndex] || null}
-            unseenCount={newPolls.length}
+            unseenCount={user ? remainingToday : newPolls.length}
             onVoteComplete={() => {
               queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
               queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
