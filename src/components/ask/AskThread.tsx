@@ -79,7 +79,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                 )}
 
                 {!t.loading && t.lowData && t.summary && (
-                  <GuardrailCard summary={t.summary} polls={t.guardrailPolls || []} />
+                  <GuardrailCard summary={t.summary} polls={t.guardrailPolls || []} question={t.question} askQueryId={t.askQueryId} />
                 )}
 
                 {!t.loading && !t.lowData && t.mode === 'decide' && t.verdict && (
