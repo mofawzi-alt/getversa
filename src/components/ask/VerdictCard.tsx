@@ -15,6 +15,8 @@ export interface Verdict {
   winner_pct: number;
   loser_pct: number;
   total_votes: number;
+  real_votes?: number;
+  baseline_active?: boolean;
   reason: string;
   viewer_line: string | null;
 }
