@@ -146,6 +146,7 @@ function HomeLiveDebateCard({
   hasVoted,
   chosenOptionLabel,
   isTrending = false,
+  friendsOnPoll = [],
   onCardClick,
 }: {
   poll: PollCard;
@@ -153,6 +154,7 @@ function HomeLiveDebateCard({
   hasVoted: boolean;
   chosenOptionLabel: string | null;
   isTrending?: boolean;
+  friendsOnPoll?: FriendOnPoll[];
   onCardClick: () => void;
 }) {
   const { user } = useAuth();
