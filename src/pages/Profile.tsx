@@ -134,6 +134,14 @@ export default function Profile() {
               <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Points</span>
             </button>
             <div className="w-px h-7 bg-border" />
+            <button onClick={() => navigate('/ask')} className="flex flex-col items-center gap-0.5">
+              <div className="flex items-center gap-1">
+                <Coins className="h-3 w-3 text-primary" />
+                <span className="text-sm font-bold text-foreground">{credits}</span>
+              </div>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Credits</span>
+            </button>
+            <div className="w-px h-7 bg-border" />
             <div className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-1">
                 <Target className="h-3 w-3 text-muted-foreground" />
