@@ -213,6 +213,65 @@ serve(async (req) => {
     // 4. Build verdict (decide) or summary (research)
     let summary = intent_summary || "Here's what I found.";
     let verdict: any = null;
+    let low_data = false;
+
+    // Low-data guardrail: avoid fabricating answers when matched polls are too sparse
+    const topVotes = matchedPolls[0]?._stats?.total ?? 0;
+    const totalMatchedVotes = matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.total || 0), 0);
+    const MIN_TOP_VOTES = mode === "decide" ? 10 : 8;
+    const MIN_TOTAL_VOTES = mode === "decide" ? 10 : 15;
+    const insufficientData =
+      matchedPolls.length === 0 ||
+      topVotes < MIN_TOP_VOTES ||
+      totalMatchedVotes < MIN_TOTAL_VOTES;
+
+    if (insufficientData) {
+      low_data = true;
+      // Ask AI for 2 short rephrasing suggestions framed as A vs B
+      let suggestions: string[] = [];
+      try {
+        const sugResp = await fetch(AI_URL, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: AI_MODEL,
+            messages: [
+              { role: "system", content: 'You rewrite vague or yes/no questions into 2 short Egyptian-context binary "X or Y?" comparison questions that an opinion poll could answer. Return ONLY a JSON array of 2 strings, no prose. Each under 8 words. Example input: "Is Dubai good?" → ["Dubai or Sharm for vacation?","Travel abroad or staycation?"]' },
+              { role: "user", content: question },
+            ],
+          }),
+        });
+        if (sugResp.ok) {
+          const sd = await sugResp.json();
+          const raw = sd.choices?.[0]?.message?.content?.trim() || "[]";
+          const match = raw.match(/\[[\s\S]*\]/);
+          if (match) {
+            const parsed = JSON.parse(match[0]);
+            if (Array.isArray(parsed)) suggestions = parsed.filter((s: any) => typeof s === "string").slice(0, 2);
+          }
+        }
+      } catch (_) { /* non-fatal */ }
+
+      const baseMsg = matchedPolls.length === 0
+        ? `No polls match "${question}" yet.`
+        : `Not enough Versa votes yet to answer this confidently (only ${totalMatchedVotes} related votes).`;
+      const tip = ' Try rephrasing as a clear "X or Y?" comparison.';
+      summary = baseMsg + tip;
+
+      return new Response(
+        JSON.stringify({
+          summary,
+          verdict: null,
+          filters,
+          polls: [],
+          count: 0,
+          mode,
+          low_data: true,
+          suggestions,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     if (matchedPolls.length === 0) {
       summary = `No polls match "${question}" yet. Try a brand name (e.g. "Coca-Cola", "Vodafone"), a topic ("football", "fashion"), or browse by category.`;

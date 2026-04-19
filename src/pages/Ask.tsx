@@ -35,6 +35,8 @@ export default function Ask() {
   const [summary, setSummary] = useState<string | null>(null);
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [polls, setPolls] = useState<ResearchPoll[]>([]);
+  const [lowData, setLowData] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [searched, setSearched] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -48,6 +50,8 @@ export default function Ask() {
     setSummary(null);
     setVerdict(null);
     setPolls([]);
+    setLowData(false);
+    setSuggestions([]);
   };
 
   const switchMode = (m: Mode) => {
@@ -68,6 +72,8 @@ export default function Ask() {
     setSummary(null);
     setVerdict(null);
     setPolls([]);
+    setLowData(false);
+    setSuggestions([]);
     setSearched(true);
     try {
       const viewer = profile ? {
@@ -86,6 +92,8 @@ export default function Ask() {
       setSummary(data.summary || null);
       setVerdict(data.verdict || null);
       setPolls(data.polls || []);
+      setLowData(!!data.low_data);
+      setSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || 'Search failed');
@@ -98,7 +106,7 @@ export default function Ask() {
     ? 'e.g. Costa or Cilantro?'
     : 'e.g. What do students think about online learning?';
 
-  const suggestions = mode === 'decide' ? DECIDE_SUGGESTIONS : RESEARCH_SUGGESTIONS;
+  const promptSuggestions = mode === 'decide' ? DECIDE_SUGGESTIONS : RESEARCH_SUGGESTIONS;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -177,7 +185,7 @@ export default function Ask() {
         {!searched && (
           <SuggestionChips
             label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'}
-            suggestions={suggestions}
+            suggestions={promptSuggestions}
             onPick={runSearch}
           />
         )}
@@ -191,21 +199,38 @@ export default function Ask() {
           </div>
         )}
 
-        {!loading && mode === 'decide' && verdict && (
+        {/* Low-data guardrail state */}
+        {!loading && lowData && summary && (
+          <div className="space-y-3">
+            <div className="rounded-2xl bg-muted/40 border border-border p-4 space-y-2">
+              <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Not enough data yet</p>
+              <p className="text-sm text-foreground leading-relaxed">{summary}</p>
+            </div>
+            {suggestions.length > 0 && (
+              <SuggestionChips
+                label="Try one of these instead"
+                suggestions={suggestions}
+                onPick={runSearch}
+              />
+            )}
+          </div>
+        )}
+
+        {!loading && !lowData && mode === 'decide' && verdict && (
           <VerdictCard verdict={verdict} />
         )}
 
-        {!loading && mode === 'decide' && !verdict && summary && (
+        {!loading && !lowData && mode === 'decide' && !verdict && summary && (
           <div className="rounded-2xl bg-card border border-border p-4">
             <p className="text-sm text-foreground">{summary}</p>
           </div>
         )}
 
-        {!loading && mode === 'research' && summary && polls.length > 0 && (
+        {!loading && !lowData && mode === 'research' && summary && polls.length > 0 && (
           <ResearchBrief question={query} summary={summary} polls={polls} />
         )}
 
-        {!loading && mode === 'research' && summary && polls.length === 0 && (
+        {!loading && !lowData && mode === 'research' && summary && polls.length === 0 && (
           <div className="rounded-2xl bg-card border border-border p-4">
             <p className="text-sm text-foreground">{summary}</p>
           </div>
