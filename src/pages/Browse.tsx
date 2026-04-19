@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
+import { usePollReactions } from '@/hooks/usePollReactions';
 
 interface BrowsePoll {
   id: string;
