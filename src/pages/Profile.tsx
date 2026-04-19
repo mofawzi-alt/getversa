@@ -15,6 +15,7 @@ import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 import ShareCompatibilityCard from '@/components/compare/ShareCompatibilityCard';
 import VoteHistoryGrid from '@/components/profile/VoteHistoryGrid';
 import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
+import SuggestPollDialog from '@/components/profile/SuggestPollDialog';
 
 export default function Profile() {
   const { profile, isAdmin, signOut, user } = useAuth();
@@ -178,12 +179,13 @@ export default function Profile() {
         <VotingInsights />
 
         {/* Menu Items */}
-        <div className="glass rounded-2xl divide-y divide-border">
+        <div className="glass rounded-2xl divide-y divide-border overflow-hidden">
+          <SuggestPollDialog />
           {menuItems.map(({ icon: Icon, label, path, color, highlight }: any) => (
             <button
               key={path}
               onClick={() => navigate(path)}
-              className={`w-full flex items-center gap-4 p-4 hover:bg-secondary/50 transition-colors first:rounded-t-2xl last:rounded-b-2xl ${
+              className={`w-full flex items-center gap-4 p-4 hover:bg-secondary/50 transition-colors last:rounded-b-2xl ${
                 highlight ? 'bg-primary/5' : ''
               }`}
             >
