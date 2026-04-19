@@ -109,6 +109,7 @@ export default function Ask() {
           summary: data.summary,
           lowData: true,
           guardrailPolls: data.suggested_polls || [],
+          askQueryId: data.query_id || null,
         } as AskTurn]);
         return;
       }
