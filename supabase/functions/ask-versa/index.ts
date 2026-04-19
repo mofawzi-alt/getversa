@@ -311,7 +311,20 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 
     let matchedPolls = polls
       .map((p) => {
-        const s = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
+        const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
+        const realTotal = rawStats.total;
+        const baselineActive = realTotal < sunsetThreshold;
+        const baseA = baselineActive ? (p.baseline_votes_a || 0) : 0;
+        const baseB = baselineActive ? (p.baseline_votes_b || 0) : 0;
+        // Merge baselines into top-line a/b/total only (demographic splits stay 100% real)
+        const s = {
+          ...rawStats,
+          a: rawStats.a + baseA,
+          b: rawStats.b + baseB,
+          total: rawStats.total + baseA + baseB,
+          realTotal,
+          baselineActive,
+        };
         const split = s.total > 0 ? s.a / s.total : 0.5;
         const controversyScore = 1 - Math.abs(split - 0.5) * 2;
         const topicalHits = getPollTopicalHitCount(p);
@@ -331,6 +344,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 
     matchedPolls = matchedPolls.slice(0, mode === "decide" ? 3 : 12);
     const totalVotes = matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.total || 0), 0);
+    const totalRealVotes = matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.realTotal || 0), 0);
+    const anyBaselineActive = matchedPolls.some((p: any) => p._stats?.baselineActive);
 
     // ---- 4. Zero-data guardrail (50 votes) ----
     if (matchedPolls.length === 0 || totalVotes < MIN_VOTES_GUARDRAIL) {
