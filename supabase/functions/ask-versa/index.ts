@@ -624,6 +624,9 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         route: safeRoute,
         credits_charged: cost,
         credits_balance: newBalance,
+        total_votes: totalVotes,
+        real_votes: totalRealVotes,
+        baseline_active: anyBaselineActive,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
