@@ -1993,6 +1993,7 @@ export type Database = {
           compatibility_change: boolean
           controversial_poll: boolean
           created_at: string
+          daily_poll_batch: boolean
           friend_activity: boolean
           last_chance_poll: boolean
           missed_poll: boolean
@@ -2008,6 +2009,7 @@ export type Database = {
           compatibility_change?: boolean
           controversial_poll?: boolean
           created_at?: string
+          daily_poll_batch?: boolean
           friend_activity?: boolean
           last_chance_poll?: boolean
           missed_poll?: boolean
@@ -2023,6 +2025,7 @@ export type Database = {
           compatibility_change?: boolean
           controversial_poll?: boolean
           created_at?: string
+          daily_poll_batch?: boolean
           friend_activity?: boolean
           last_chance_poll?: boolean
           missed_poll?: boolean
