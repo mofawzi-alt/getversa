@@ -1380,6 +1380,30 @@ export type Database = {
           },
         ]
       }
+      poll_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          poll_id: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          poll_id: string
+          reaction?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          poll_id?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       poll_suggestions: {
         Row: {
           admin_notes: string | null
