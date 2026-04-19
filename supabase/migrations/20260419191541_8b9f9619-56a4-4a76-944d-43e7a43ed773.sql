@@ -1,0 +1,1 @@
+UPDATE polls SET image_a_url = 'https://jfpwuzifydxlbrrcofjh.supabase.co/storage/v1/object/public/poll-images/onboarding/20_a_egypt.png?v=2' WHERE image_a_url LIKE '%onboarding/20_a_egypt.png%';
