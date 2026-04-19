@@ -37,6 +37,7 @@ import BreakdownAdminPanel from '@/components/admin/BreakdownAdminPanel';
 import { useBreakdownPendingCount } from '@/hooks/useBreakdownPendingCount';
 import AskVersaAnalytics from '@/components/admin/AskVersaAnalytics';
 import BaselineSeeding from '@/components/admin/BaselineSeeding';
+import PollSuggestionsAdmin from '@/components/admin/PollSuggestionsAdmin';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
@@ -88,6 +89,7 @@ export default function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger value="daily-limit" className="text-xs px-4 py-2">Daily Limit</TabsTrigger>
           <TabsTrigger value="ask-versa" className="text-xs px-4 py-2">Ask Versa</TabsTrigger>
+          <TabsTrigger value="suggestions" className="text-xs px-4 py-2">Suggestions</TabsTrigger>
           <TabsTrigger value="seeding" className="text-xs px-4 py-2">Seeding</TabsTrigger>
           <TabsTrigger value="users" className="text-xs px-4 py-2">Users</TabsTrigger>
         </TabsList>
@@ -196,6 +198,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="ask-versa" className="space-y-4">
           <AskVersaAnalytics />
+        </TabsContent>
+
+        <TabsContent value="suggestions" className="space-y-4">
+          <PollSuggestionsAdmin />
         </TabsContent>
 
         <TabsContent value="seeding" className="space-y-4">
