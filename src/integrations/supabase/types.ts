@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      ask_versa_queries: {
+        Row: {
+          answered: boolean
+          category_hint: string | null
+          created_at: string
+          credits_charged: number
+          id: string
+          low_data: boolean
+          matched_poll_count: number | null
+          mode: string
+          model_used: string | null
+          question: string
+          route: string
+          total_votes_considered: number | null
+          user_id: string | null
+        }
+        Insert: {
+          answered?: boolean
+          category_hint?: string | null
+          created_at?: string
+          credits_charged?: number
+          id?: string
+          low_data?: boolean
+          matched_poll_count?: number | null
+          mode?: string
+          model_used?: string | null
+          question: string
+          route?: string
+          total_votes_considered?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          answered?: boolean
+          category_hint?: string | null
+          created_at?: string
+          credits_charged?: number
+          id?: string
+          low_data?: boolean
+          matched_poll_count?: number | null
+          mode?: string
+          model_used?: string | null
+          question?: string
+          route?: string
+          total_votes_considered?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ask_versa_queries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_settings: {
         Row: {
           created_at: string | null
@@ -2154,6 +2210,7 @@ export type Database = {
       users: {
         Row: {
           age_range: string | null
+          ask_credits: number
           avatar_url: string | null
           category_interests: string[] | null
           city: string | null
@@ -2169,6 +2226,7 @@ export type Database = {
           income_range: string | null
           industry: string | null
           is_private: boolean
+          last_daily_credit_date: string | null
           last_vote_date: string | null
           longest_streak: number | null
           points: number | null
@@ -2181,6 +2239,7 @@ export type Database = {
         }
         Insert: {
           age_range?: string | null
+          ask_credits?: number
           avatar_url?: string | null
           category_interests?: string[] | null
           city?: string | null
@@ -2196,6 +2255,7 @@ export type Database = {
           income_range?: string | null
           industry?: string | null
           is_private?: boolean
+          last_daily_credit_date?: string | null
           last_vote_date?: string | null
           longest_streak?: number | null
           points?: number | null
@@ -2208,6 +2268,7 @@ export type Database = {
         }
         Update: {
           age_range?: string | null
+          ask_credits?: number
           avatar_url?: string | null
           category_interests?: string[] | null
           city?: string | null
@@ -2223,6 +2284,7 @@ export type Database = {
           income_range?: string | null
           industry?: string | null
           is_private?: boolean
+          last_daily_credit_date?: string | null
           last_vote_date?: string | null
           longest_streak?: number | null
           points?: number | null
@@ -2356,6 +2418,10 @@ export type Database = {
         Args: { p_age_range?: string; p_city?: string; p_gender?: string }
         Returns: number
       }
+      earn_ask_credits: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: number
+      }
       generate_daily_queue: {
         Args: { p_user_id: string }
         Returns: {
@@ -2382,6 +2448,7 @@ export type Database = {
           starts_at: string
         }[]
       }
+      get_ask_versa_analytics: { Args: { p_days?: number }; Returns: Json }
       get_campaign_analytics: {
         Args: { p_campaign_id: string }
         Returns: {
@@ -2728,6 +2795,10 @@ export type Database = {
           points: number
           username: string
         }[]
+      }
+      spend_ask_credits: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: Json
       }
     }
     Enums: {
