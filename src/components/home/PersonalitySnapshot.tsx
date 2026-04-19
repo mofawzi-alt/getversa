@@ -31,7 +31,7 @@ export default function PersonalitySnapshot() {
 
   if (!user) return null;
 
-  const result = computePersonalityType(traits, voteCount);
+  const result = computePersonalityType(traits, voteCount, user.id);
   const progress = Math.min((voteCount / MIN_VOTES) * 100, 100);
 
   return (
