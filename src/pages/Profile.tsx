@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Target, Swords, BarChart3 } from 'lucide-react';
+import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Target, Swords, BarChart3, Coins } from 'lucide-react';
+import { useAskCredits } from '@/hooks/useAskCredits';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ export default function Profile() {
   const { profile, isAdmin, signOut, user } = useAuth();
   const navigate = useNavigate();
   const { isVerified: selfVerified, category: selfCategory } = useVerifiedUser(user?.id);
+  const { data: credits = 0 } = useAskCredits();
 
   const { data: stats } = useQuery({
     queryKey: ['user-stats-v2', profile?.id],
@@ -130,6 +132,14 @@ export default function Profile() {
                 <span className="text-sm font-bold text-foreground">{profile?.points || 0}</span>
               </div>
               <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Points</span>
+            </button>
+            <div className="w-px h-7 bg-border" />
+            <button onClick={() => navigate('/ask')} className="flex flex-col items-center gap-0.5">
+              <div className="flex items-center gap-1">
+                <Coins className="h-3 w-3 text-primary" />
+                <span className="text-sm font-bold text-foreground">{credits}</span>
+              </div>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Credits</span>
             </button>
             <div className="w-px h-7 bg-border" />
             <div className="flex flex-col items-center gap-0.5">
