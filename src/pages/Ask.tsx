@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Loader2, Scale, FlaskConical, ArrowUp, RotateCcw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -49,8 +49,14 @@ interface PreviewState {
   history: Array<{ role: 'user' | 'assistant'; content: string }>;
 }
 
+interface AskLocationState {
+  fromLiveDebate?: boolean;
+  fallbackTo?: string;
+}
+
 export default function Ask() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile } = useAuth();
   const qc = useQueryClient();
   const [mode, setMode] = useState<Mode>('decide');
@@ -64,6 +70,19 @@ export default function Ask() {
 
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 200); }, []);
   useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
+
+  const handleBack = () => {
+    const state = location.state as AskLocationState | null;
+    if (state?.fromLiveDebate) {
+      navigate(state.fallbackTo || '/home', { replace: true });
+      return;
+    }
+    if (window.history.state?.idx > 0) {
+      navigate(-1);
+      return;
+    }
+    navigate('/home', { replace: true });
+  };
 
   const reset = () => {
     setQuery('');
