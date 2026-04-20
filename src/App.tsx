@@ -11,7 +11,7 @@ import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/compon
 import { AnimatePresence } from "framer-motion";
 
 // Eagerly loaded — landing + most-visited routes
-import Home from "./pages/Home";
+const Home = lazy(() => import("./pages/Home"));
 import Auth from "./pages/Auth";
 import CookieConsent from "./components/CookieConsent";
 
