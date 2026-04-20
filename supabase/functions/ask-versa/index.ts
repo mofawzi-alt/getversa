@@ -43,12 +43,19 @@ const FILTER_TOOL = {
   type: "function",
   function: {
     name: "extract_poll_filters",
-    description: "Extract structured filter criteria + complexity route from a natural language question about polls.",
+    description: "Classify a user question about Egyptian opinion polls and extract structured filter criteria.",
     parameters: {
       type: "object",
       properties: {
+        intent: {
+          type: "string",
+          description: `Classify the user's intent EXACTLY as one of:
+- "preference": asks which option people prefer / pick / choose / lean toward / love more / vote for. e.g. "iPhone or Samsung?", "Do Egyptians prefer Coke or Pepsi?", "Which fast food brand wins with 18-24?"
+- "factual": asks for a number, fact, definition, news, market data, technical info — anything Versa polls cannot answer. e.g. "iPhone market size?", "Who founded Apple?", "When did Vodafone enter Egypt?"
+- "offscope": rude, harmful, nonsensical, code-help, math homework, personal life advice unrelated to consumer preferences.`,
+        },
         keywords: { type: "array", items: { type: "string" }, description: "Key topical terms (lowercase)." },
-        entities: { type: "array", items: { type: "string" }, description: "Named products, brands, people, or places explicitly mentioned." },
+        entities: { type: "array", items: { type: "string" }, description: "Named brands, products, people, or places explicitly mentioned (canonical form, lowercase). Include common synonyms inline, e.g. 'iphone' not 'apple iphone 15 pro'. For 'iPhone vs Samsung' return ['iphone','samsung']. For 'iPhone market size' return ['iphone']." },
         category: { type: "string", description: `One of: ${KNOWN_CATEGORIES.join(", ")}, or "any".` },
         gender: { type: "string", description: 'One of: male, female, any.' },
         age_range: { type: "string", description: 'One of: under_18, 18-24, 25-34, 35-44, 45+, any.' },
@@ -59,10 +66,46 @@ const FILTER_TOOL = {
           description: "simple = single poll/brand fact lookup; medium = one demographic OR one category summary; complex = synthesis across multiple polls/demographics or brand intelligence. Must be exactly 'simple', 'medium', or 'complex'.",
         },
       },
-      required: ["keywords", "route"],
+      required: ["intent", "keywords", "entities", "route"],
     },
   },
 };
+
+// Brand/entity synonyms — extend as the catalogue grows.
+// Each canonical key maps to a list of substrings we'll look for in poll text.
+const ENTITY_SYNONYMS: Record<string, string[]> = {
+  iphone: ["iphone", "apple"],
+  samsung: ["samsung", "galaxy"],
+  coke: ["coke", "coca", "cola"],
+  pepsi: ["pepsi"],
+  vodafone: ["vodafone"],
+  orange: ["orange"],
+  etisalat: ["etisalat"],
+  we: ["we telecom", "we mobile"],
+  talabat: ["talabat"],
+  elmenus: ["elmenus"],
+  uber: ["uber"],
+  careem: ["careem"],
+  costa: ["costa"],
+  cilantro: ["cilantro"],
+  starbucks: ["starbucks"],
+  carrefour: ["carrefour"],
+  spinneys: ["spinneys"],
+  ahly: ["ahly", "ahli"],
+  zamalek: ["zamalek"],
+};
+
+function expandEntityVariants(entity: string): string[] {
+  const e = entity.toLowerCase().trim();
+  if (!e) return [];
+  const direct = ENTITY_SYNONYMS[e];
+  if (direct) return direct;
+  // Look up by partial match (e.g. "iphone 15 pro" → iphone synonyms)
+  for (const [key, synonyms] of Object.entries(ENTITY_SYNONYMS)) {
+    if (e.includes(key)) return synonyms;
+  }
+  return [e];
+}
 
 async function callGroq(apiKey: string, model: string, payload: any) {
   const resp = await fetch(AI_URL, {
