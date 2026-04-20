@@ -129,7 +129,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                 )}
 
                 {/* Earn credits CTA after a successful paid answer */}
-                {!t.loading && !t.lowData && typeof t.creditsBalance === 'number' && (t.verdict || (t.polls && t.polls.length > 0) || t.summary) && (
+                {!t.loading && !t.lowData && !t.variant && typeof t.creditsBalance === 'number' && (t.verdict || (t.polls && t.polls.length > 0) || t.summary) && (
                   <EarnCreditsCTA balance={t.creditsBalance} charged={t.creditsCharged ?? 0} />
                 )}
 
