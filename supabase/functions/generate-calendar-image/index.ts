@@ -1,0 +1,99 @@
+// Generates an AI image preview for a poll calendar entry option (A or B).
+// Returns a public URL stored in the poll-calendar-images bucket.
+// Admin must approve the preview by copying it into image_a_url / image_b_url.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  try {
+    const { calendar_id, option } = await req.json();
+    if (!calendar_id || !["A", "B", "both"].includes(option)) {
+      return new Response(JSON.stringify({ error: "calendar_id and option (A|B|both) required" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+
+    // Validate caller is admin
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: corsHeaders });
+    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user) return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: corsHeaders });
+    const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
+    if (!roleRow) return new Response(JSON.stringify({ error: "admin only" }), { status: 403, headers: corsHeaders });
+
+    const { data: row, error: fetchErr } = await supabase
+      .from("poll_calendar")
+      .select("id,question,option_a,option_b,category")
+      .eq("id", calendar_id)
+      .single();
+    if (fetchErr || !row) throw fetchErr || new Error("not found");
+
+    const targets: ("A" | "B")[] = option === "both" ? ["A", "B"] : [option as "A" | "B"];
+    const updates: Record<string, string> = {};
+
+    for (const opt of targets) {
+      const optionText = opt === "A" ? row.option_a : row.option_b;
+      const prompt = `Editorial magazine-style photo, no text. Subject: "${optionText}". Context: poll about "${row.question}" (category: ${row.category || "lifestyle"}). Bright, clean, vibrant, mobile-optimized. Centered composition, high quality, no logos, no watermarks.`;
+
+      const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image",
+          messages: [{ role: "user", content: prompt }],
+          modalities: ["image", "text"],
+        }),
+      });
+      if (!aiRes.ok) {
+        const t = await aiRes.text();
+        throw new Error(`AI gen failed (${aiRes.status}): ${t.slice(0, 200)}`);
+      }
+      const aiJson = await aiRes.json();
+      const dataUrl = aiJson?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (!dataUrl) throw new Error("AI returned no image");
+
+      // data:image/png;base64,xxx -> Uint8Array
+      const base64 = dataUrl.split(",")[1];
+      const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+      const path = `${calendar_id}/${opt}-${Date.now()}.png`;
+      const { error: upErr } = await supabase.storage
+        .from("poll-calendar-images")
+        .upload(path, bytes, { contentType: "image/png", upsert: true });
+      if (upErr) throw upErr;
+
+      const { data: pub } = supabase.storage.from("poll-calendar-images").getPublicUrl(path);
+      updates[opt === "A" ? "ai_image_a_preview" : "ai_image_b_preview"] = pub.publicUrl;
+    }
+
+    // Set status to image_pending for admin review
+    const { error: updErr } = await supabase
+      .from("poll_calendar")
+      .update({ ...updates, status: "image_pending" })
+      .eq("id", calendar_id);
+    if (updErr) throw updErr;
+
+    return new Response(JSON.stringify({ ok: true, ...updates }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (e: any) {
+    console.error("generate-calendar-image error", e);
+    return new Response(JSON.stringify({ error: e?.message || String(e) }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});

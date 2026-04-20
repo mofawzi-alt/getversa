@@ -533,6 +533,7 @@ export type Database = {
           daily_limit: number
           first_day_limit: number
           id: string
+          release_hour_cairo: number
           updated_at: string
           updated_by: string | null
         }
@@ -540,6 +541,7 @@ export type Database = {
           daily_limit?: number
           first_day_limit?: number
           id?: string
+          release_hour_cairo?: number
           updated_at?: string
           updated_by?: string | null
         }
@@ -547,6 +549,7 @@ export type Database = {
           daily_limit?: number
           first_day_limit?: number
           id?: string
+          release_hour_cairo?: number
           updated_at?: string
           updated_by?: string | null
         }
@@ -1129,6 +1132,87 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      poll_calendar: {
+        Row: {
+          ai_image_a_preview: string | null
+          ai_image_b_preview: string | null
+          approved_at: string | null
+          approved_by: string | null
+          category: string | null
+          created_at: string
+          created_by: string
+          id: string
+          image_a_url: string | null
+          image_b_url: string | null
+          notes: string | null
+          option_a: string
+          option_b: string
+          published_at: string | null
+          published_poll_id: string | null
+          question: string
+          release_date: string
+          source: string | null
+          status: string
+          target_age_range: string | null
+          target_country: string | null
+          target_gender: string | null
+          updated_at: string
+          why_viral: string | null
+        }
+        Insert: {
+          ai_image_a_preview?: string | null
+          ai_image_b_preview?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          image_a_url?: string | null
+          image_b_url?: string | null
+          notes?: string | null
+          option_a: string
+          option_b: string
+          published_at?: string | null
+          published_poll_id?: string | null
+          question: string
+          release_date: string
+          source?: string | null
+          status?: string
+          target_age_range?: string | null
+          target_country?: string | null
+          target_gender?: string | null
+          updated_at?: string
+          why_viral?: string | null
+        }
+        Update: {
+          ai_image_a_preview?: string | null
+          ai_image_b_preview?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          image_a_url?: string | null
+          image_b_url?: string | null
+          notes?: string | null
+          option_a?: string
+          option_b?: string
+          published_at?: string | null
+          published_poll_id?: string | null
+          question?: string
+          release_date?: string
+          source?: string | null
+          status?: string
+          target_age_range?: string | null
+          target_country?: string | null
+          target_gender?: string | null
+          updated_at?: string
+          why_viral?: string | null
+        }
+        Relationships: []
       }
       poll_campaigns: {
         Row: {

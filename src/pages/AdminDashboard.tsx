@@ -39,6 +39,7 @@ import AskVersaAnalytics from '@/components/admin/AskVersaAnalytics';
 import BaselineSeeding from '@/components/admin/BaselineSeeding';
 import PollSuggestionsAdmin from '@/components/admin/PollSuggestionsAdmin';
 import { usePendingSuggestionsCount } from '@/hooks/usePendingSuggestionsCount';
+import PollCalendarPanel from '@/components/admin/PollCalendarPanel';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
@@ -77,6 +78,7 @@ export default function AdminDashboard() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1">
           <TabsTrigger value="polls" className="text-xs px-4 py-2">Polls</TabsTrigger>
+          <TabsTrigger value="calendar" className="text-xs px-4 py-2">Calendar</TabsTrigger>
           <TabsTrigger value="campaigns" className="text-xs px-4 py-2">Campaigns</TabsTrigger>
           <TabsTrigger value="analytics" className="text-xs px-4 py-2">Analytics</TabsTrigger>
           <TabsTrigger value="rewards" className="text-xs px-4 py-2">Rewards</TabsTrigger>
@@ -114,6 +116,10 @@ export default function AdminDashboard() {
             userId={user?.id}
             onInsightClick={handleInsightClick}
           />
+        </TabsContent>
+
+        <TabsContent value="calendar" className="space-y-4">
+          <PollCalendarPanel />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
