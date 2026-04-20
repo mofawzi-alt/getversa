@@ -207,9 +207,9 @@ export default function InsightHighlights({ onPollSelect }: InsightHighlightsPro
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-3 mb-4">
+      <div className="grid grid-cols-3 gap-2 mb-4">
         {[1, 2, 3].map(i => (
-          <Skeleton key={i} className="h-20 rounded-xl" />
+          <Skeleton key={i} className="h-16 rounded-lg" />
         ))}
       </div>
     );
@@ -222,35 +222,26 @@ export default function InsightHighlights({ onPollSelect }: InsightHighlightsPro
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3 mb-4">
+    <div className="grid grid-cols-3 gap-2 mb-4">
       {/* Most Polarizing Poll */}
       {insights?.polarizing && (
         <button
           onClick={() => handleClick(insights.polarizing!.pollId)}
-          className="rounded-xl p-4 border-l-4 border-l-orange-500 bg-orange-500/10 text-left transition-all hover:bg-orange-500/20 active:scale-[0.98] cursor-pointer group"
+          title={insights.polarizing.question}
+          className="rounded-lg p-2.5 border-l-2 border-l-orange-500 bg-orange-500/10 text-left transition-all hover:bg-orange-500/20 active:scale-[0.98] cursor-pointer min-w-0"
         >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-orange-500/20 shrink-0">
-              <Flame className="h-5 w-5 text-orange-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xs font-bold text-orange-400 uppercase tracking-wide">
-                  Top Split Poll
-                </span>
-                <span className="text-xs text-white/60">
-                  • {insights.polarizing.totalVotes} votes
-                </span>
-              </div>
-              <p className="text-sm font-medium text-white truncate">
-                {insights.polarizing.question}
-              </p>
-              <p className="text-xs text-white/70 mt-0.5">
-                {insights.polarizing.splitPercentage}% - {100 - insights.polarizing.splitPercentage}% split
-              </p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-white/40 group-hover:text-white/70 transition-colors shrink-0" />
+          <div className="flex items-center gap-1.5 mb-1">
+            <Flame className="h-3.5 w-3.5 text-orange-400 shrink-0" />
+            <span className="text-[10px] font-bold text-orange-400 uppercase tracking-wide truncate">
+              Top Split
+            </span>
           </div>
+          <p className="text-sm font-semibold text-white">
+            {insights.polarizing.splitPercentage}/{100 - insights.polarizing.splitPercentage}
+          </p>
+          <p className="text-[10px] text-white/60 truncate mt-0.5">
+            {insights.polarizing.question}
+          </p>
         </button>
       )}
 
@@ -258,27 +249,21 @@ export default function InsightHighlights({ onPollSelect }: InsightHighlightsPro
       {insights?.segmentBias && (
         <button
           onClick={() => handleClick(insights.segmentBias!.pollId)}
-          className="rounded-xl p-4 border-l-4 border-l-violet-500 bg-violet-500/10 text-left transition-all hover:bg-violet-500/20 active:scale-[0.98] cursor-pointer group"
+          title={insights.segmentBias.question}
+          className="rounded-lg p-2.5 border-l-2 border-l-violet-500 bg-violet-500/10 text-left transition-all hover:bg-violet-500/20 active:scale-[0.98] cursor-pointer min-w-0"
         >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-violet-500/20 shrink-0">
-              <Target className="h-5 w-5 text-violet-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xs font-bold text-violet-400 uppercase tracking-wide">
-                  Strongest Segment Bias
-                </span>
-              </div>
-              <p className="text-sm font-medium text-white truncate">
-                {insights.segmentBias.segment} → {insights.segmentBias.biasPercentage}% chose "{insights.segmentBias.winner}"
-              </p>
-              <p className="text-xs text-white/70 mt-0.5 truncate">
-                {insights.segmentBias.question}
-              </p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-white/40 group-hover:text-white/70 transition-colors shrink-0" />
+          <div className="flex items-center gap-1.5 mb-1">
+            <Target className="h-3.5 w-3.5 text-violet-400 shrink-0" />
+            <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wide truncate">
+              Segment Bias
+            </span>
           </div>
+          <p className="text-sm font-semibold text-white">
+            {insights.segmentBias.biasPercentage}%
+          </p>
+          <p className="text-[10px] text-white/60 truncate mt-0.5">
+            {insights.segmentBias.segment}
+          </p>
         </button>
       )}
 
@@ -286,30 +271,21 @@ export default function InsightHighlights({ onPollSelect }: InsightHighlightsPro
       {insights?.fastest && (
         <button
           onClick={() => handleClick(insights.fastest!.pollId)}
-          className="rounded-xl p-4 border-l-4 border-l-amber-500 bg-amber-500/10 text-left transition-all hover:bg-amber-500/20 active:scale-[0.98] cursor-pointer group"
+          title={insights.fastest.question}
+          className="rounded-lg p-2.5 border-l-2 border-l-amber-500 bg-amber-500/10 text-left transition-all hover:bg-amber-500/20 active:scale-[0.98] cursor-pointer min-w-0"
         >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-500/20 shrink-0">
-              <Zap className="h-5 w-5 text-amber-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xs font-bold text-amber-400 uppercase tracking-wide">
-                  Fastest Decision
-                </span>
-                <span className="text-xs text-white/60">
-                  • avg {formatTime(insights.fastest.avgSeconds)}
-                </span>
-              </div>
-              <p className="text-sm font-medium text-white truncate">
-                {insights.fastest.question}
-              </p>
-              <p className="text-xs text-white/70 mt-0.5">
-                {insights.fastest.totalVotes} instant reactions
-              </p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-white/40 group-hover:text-white/70 transition-colors shrink-0" />
+          <div className="flex items-center gap-1.5 mb-1">
+            <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wide truncate">
+              Fastest
+            </span>
           </div>
+          <p className="text-sm font-semibold text-white">
+            {formatTime(insights.fastest.avgSeconds)}
+          </p>
+          <p className="text-[10px] text-white/60 truncate mt-0.5">
+            {insights.fastest.question}
+          </p>
         </button>
       )}
     </div>
