@@ -148,6 +148,7 @@ function HomeLiveDebateCard({
   isTrending = false,
   friendsOnPoll = [],
   onCardClick,
+  onVoteInline,
 }: {
   poll: PollCard;
   index: number;
@@ -156,9 +157,16 @@ function HomeLiveDebateCard({
   isTrending?: boolean;
   friendsOnPoll?: FriendOnPoll[];
   onCardClick: () => void;
+  onVoteInline: (choice: 'A' | 'B') => void;
 }) {
   const { user } = useAuth();
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
+  const handleInlineVote = (choice: 'A' | 'B') => {
+    if (hasVoted || isVoting) return;
+    setIsVoting(true);
+    onVoteInline(choice);
+  };
   const { data: genderTeaser } = useGenderSplitTeaser(
     hasVoted ? poll.id : '',
     poll.option_a,
