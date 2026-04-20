@@ -148,6 +148,7 @@ function HomeLiveDebateCard({
   isTrending = false,
   friendsOnPoll = [],
   onCardClick,
+  onVoteInline,
 }: {
   poll: PollCard;
   index: number;
@@ -156,9 +157,16 @@ function HomeLiveDebateCard({
   isTrending?: boolean;
   friendsOnPoll?: FriendOnPoll[];
   onCardClick: () => void;
+  onVoteInline: (choice: 'A' | 'B') => void;
 }) {
   const { user } = useAuth();
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
+  const handleInlineVote = (choice: 'A' | 'B') => {
+    if (hasVoted || isVoting) return;
+    setIsVoting(true);
+    onVoteInline(choice);
+  };
   const { data: genderTeaser } = useGenderSplitTeaser(
     hasVoted ? poll.id : '',
     poll.option_a,
@@ -173,8 +181,8 @@ function HomeLiveDebateCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.05, 0.3) }}
       whileTap={{ scale: 0.985 }}
-      onClick={onCardClick}
-      className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-md"
+      onClick={hasVoted ? onCardClick : undefined}
+      className={`rounded-2xl overflow-hidden border border-border/60 bg-card shadow-md ${hasVoted ? 'cursor-pointer' : ''}`}
     >
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -201,7 +209,10 @@ function HomeLiveDebateCard({
             )}
           </div>
         </div>
-        <div className="w-1/2 h-full relative overflow-hidden">
+        <div
+          className={`w-1/2 h-full relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
+          onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('A'); } : undefined}
+        >
           <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -217,7 +228,10 @@ function HomeLiveDebateCard({
           )}
         </div>
         <div className="absolute inset-y-0 left-1/2 w-[1px] bg-white/30 z-10" />
-        <div className="w-1/2 h-full relative overflow-hidden">
+        <div
+          className={`w-1/2 h-full relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
+          onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('B'); } : undefined}
+        >
           <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -339,8 +353,19 @@ function HomeLiveDebateCard({
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <button className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5">
-              Vote on this <ArrowRight className="h-3.5 w-3.5" />
+            <button
+              onClick={(e) => { e.stopPropagation(); handleInlineVote('A'); }}
+              disabled={isVoting}
+              className="flex-1 py-2.5 rounded-xl bg-option-a/10 text-option-a border border-option-a/30 font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition disabled:opacity-60"
+            >
+              Vote {poll.option_a.length > 12 ? poll.option_a.slice(0, 12) + '…' : poll.option_a}
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleInlineVote('B'); }}
+              disabled={isVoting}
+              className="flex-1 py-2.5 rounded-xl bg-option-b/10 text-option-b border border-option-b/30 font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition disabled:opacity-60"
+            >
+              Vote {poll.option_b.length > 12 ? poll.option_b.slice(0, 12) + '…' : poll.option_b}
             </button>
             {user && (
               <button
@@ -390,6 +415,36 @@ function LiveDebatesList({
 }) {
   const pollIds = useMemo(() => livePolls.map(p => p.id), [livePolls]);
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
+  const { user, profile } = useAuth();
+  const queryClient = useQueryClient();
+
+  const handleInlineVote = useCallback(async (poll: PollCard, choice: 'A' | 'B') => {
+    if (!user) {
+      try { sessionStorage.setItem('versa_vote_intent', poll.id); } catch {}
+      window.location.href = '/auth?mode=signup&reason=vote';
+      return;
+    }
+    const votePayload: any = {
+      poll_id: poll.id,
+      user_id: user.id,
+      choice,
+      ...(poll.category ? { category: poll.category } : {}),
+      ...(profile?.gender ? { voter_gender: profile.gender } : {}),
+      ...(profile?.age_range ? { voter_age_range: profile.age_range } : {}),
+      ...(profile?.country ? { voter_country: profile.country } : {}),
+      ...(profile?.city ? { voter_city: profile.city } : {}),
+    };
+    const { error } = await supabase.from('votes').insert(votePayload);
+    if (error && error.code !== '23505') {
+      const { toast } = await import('sonner');
+      toast.error('Vote failed');
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ['user-voted-ids', user.id] });
+    queryClient.invalidateQueries({ queryKey: ['user-vote-choices', user.id] });
+    queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
+    queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
+  }, [user, profile, queryClient]);
 
   return (
     <div className="flex flex-col gap-4 px-3">
@@ -409,6 +464,7 @@ function LiveDebatesList({
             chosenOptionLabel={chosenOptionLabel}
             isTrending={trendingIdSet?.has(poll.id) || false}
             friendsOnPoll={friendsOnPoll}
+            onVoteInline={(choice) => handleInlineVote(poll, choice)}
             onCardClick={() => {
               if (hasVoted) {
                 setModalPoll(poll);
