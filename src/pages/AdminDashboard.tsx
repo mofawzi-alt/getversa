@@ -122,6 +122,8 @@ export default function AdminDashboard() {
           <PollCalendarPanel />
         </TabsContent>
 
+        <TabsContent value="analytics" className="space-y-4">
+          <Tabs defaultValue="dashboard" className="space-y-4">
             <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-secondary/50">
               <TabsTrigger value="dashboard" className="text-xs px-3 py-1.5">Dashboard</TabsTrigger>
               <TabsTrigger value="overview" className="text-xs px-3 py-1.5">Per Poll</TabsTrigger>
