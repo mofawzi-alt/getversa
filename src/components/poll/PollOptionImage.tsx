@@ -50,7 +50,7 @@ export default function PollOptionImage({
   maxLogoSize = '65%',
   showLoader = false,
   draggable = false,
-  loading = 'eager',
+  loading = 'lazy',
   variant = 'hero',
 }: PollOptionImageProps) {
   const [loaded, setLoaded] = useState(false);
