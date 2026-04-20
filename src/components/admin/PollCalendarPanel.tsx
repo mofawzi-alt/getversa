@@ -114,10 +114,40 @@ export default function PollCalendarPanel() {
       const { rows: parsed, errors } = parseCalendarCsv(text);
       if (errors.length) throw new Error(errors.join(' • '));
       if (!parsed.length) throw new Error('No rows found');
-      const inserts = parsed.map((p) => ({ ...p, status: 'draft', created_by: user!.id }));
-      const { error } = await supabase.from('poll_calendar').insert(inserts);
-      if (error) throw error;
-      return parsed.length;
+      const dates = parsed.map((p) => p.release_date);
+      // Find existing rows on these dates that haven't been published yet
+      const { data: existing, error: fetchErr } = await supabase
+        .from('poll_calendar')
+        .select('id, release_date, status')
+        .in('release_date', dates);
+      if (fetchErr) throw fetchErr;
+
+      const replaceableIds = (existing || [])
+        .filter((r) => r.status !== 'published')
+        .map((r) => r.id);
+      const protectedDates = new Set(
+        (existing || []).filter((r) => r.status === 'published').map((r) => r.release_date)
+      );
+
+      // Delete the old draft/pending/approved rows on overlapping dates
+      if (replaceableIds.length) {
+        const { error: delErr } = await supabase
+          .from('poll_calendar')
+          .delete()
+          .in('id', replaceableIds);
+        if (delErr) throw delErr;
+      }
+
+      // Insert new rows, skipping any dates that already have a published poll
+      const inserts = parsed
+        .filter((p) => !protectedDates.has(p.release_date))
+        .map((p) => ({ ...p, status: 'draft', created_by: user!.id }));
+      if (inserts.length) {
+        const { error } = await supabase.from('poll_calendar').insert(inserts);
+        if (error) throw error;
+      }
+      const skipped = parsed.length - inserts.length;
+      return { inserted: inserts.length, replaced: replaceableIds.length, skipped };
     },
     onSuccess: (n) => {
       toast.success(`Imported ${n} polls`);
