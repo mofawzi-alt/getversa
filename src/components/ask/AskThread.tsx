@@ -4,6 +4,7 @@ import ResearchBrief from './ResearchBrief';
 import SuggestionChips from './SuggestionChips';
 import GuardrailCard from './GuardrailCard';
 import EarnCreditsCTA from './EarnCreditsCTA';
+import SuggestPollButton from './SuggestPollButton';
 import type { ResearchPoll } from '@/lib/askExport';
 
 export type Mode = 'decide' | 'research';
@@ -83,11 +84,14 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                 )}
 
                 {!t.loading && t.variant === 'offscope' && t.summary && (
-                  <div className="rounded-2xl rounded-tl-sm bg-muted/40 border border-border p-3.5 space-y-2">
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Out of scope</p>
-                    <p className="text-sm text-foreground leading-relaxed">{t.summary}</p>
-                    <p className="text-[11px] text-muted-foreground">No credits charged.</p>
-                  </div>
+                  <>
+                    <div className="rounded-2xl rounded-tl-sm bg-muted/40 border border-border p-3.5 space-y-2">
+                      <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">No polls on this yet</p>
+                      <p className="text-sm text-foreground leading-relaxed">{t.summary}</p>
+                      <p className="text-[11px] text-muted-foreground">No credits charged.</p>
+                    </div>
+                    <SuggestPollButton question={t.question} askQueryId={t.askQueryId} />
+                  </>
                 )}
 
                 {!t.loading && t.variant === 'factual' && t.summary && (
@@ -125,7 +129,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                 )}
 
                 {/* Earn credits CTA after a successful paid answer */}
-                {!t.loading && !t.lowData && typeof t.creditsBalance === 'number' && (t.verdict || (t.polls && t.polls.length > 0) || t.summary) && (
+                {!t.loading && !t.lowData && !t.variant && typeof t.creditsBalance === 'number' && (t.verdict || (t.polls && t.polls.length > 0) || t.summary) && (
                   <EarnCreditsCTA balance={t.creditsBalance} charged={t.creditsCharged ?? 0} />
                 )}
 
