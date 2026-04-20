@@ -93,6 +93,8 @@ const ENTITY_SYNONYMS: Record<string, string[]> = {
   spinneys: ["spinneys"],
   ahly: ["ahly", "ahli"],
   zamalek: ["zamalek"],
+  apartment: ["apartment", "apt", "flat", "home"],
+  apt: ["apartment", "apt", "flat", "home"],
 };
 
 function expandEntityVariants(entity: string): string[] {
