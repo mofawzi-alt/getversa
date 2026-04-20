@@ -4,6 +4,7 @@ import ResearchBrief from './ResearchBrief';
 import SuggestionChips from './SuggestionChips';
 import GuardrailCard from './GuardrailCard';
 import EarnCreditsCTA from './EarnCreditsCTA';
+import SuggestPollButton from './SuggestPollButton';
 import type { ResearchPoll } from '@/lib/askExport';
 
 export type Mode = 'decide' | 'research';
