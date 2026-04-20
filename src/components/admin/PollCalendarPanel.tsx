@@ -154,12 +154,18 @@ export default function PollCalendarPanel() {
   const acceptAiImage = (row: CalendarRow, opt: 'A' | 'B') => {
     const preview = opt === 'A' ? row.ai_image_a_preview : row.ai_image_b_preview;
     if (!preview) return;
-    updateRow.mutate({
+    const patch: any = {
       id: row.id,
       [opt === 'A' ? 'image_a_url' : 'image_b_url']: preview,
       [opt === 'A' ? 'ai_image_a_preview' : 'ai_image_b_preview']: null,
-    } as any);
-    toast.success(`Image ${opt} approved`);
+    };
+    // If both images will now be set, drop status back to 'draft' so it's clearly ready to approve
+    const otherUrl = opt === 'A' ? row.image_b_url : row.image_a_url;
+    if (otherUrl && row.status === 'image_pending') {
+      patch.status = 'draft';
+    }
+    updateRow.mutate(patch);
+    toast.success(`Image ${opt} approved — ${otherUrl ? 'ready for final approval' : 'approve image ' + (opt === 'A' ? 'B' : 'A') + ' next'}`);
   };
 
   const setStatus = (row: CalendarRow, status: Status) => {
