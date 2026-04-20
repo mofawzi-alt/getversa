@@ -490,17 +490,38 @@ Rules:
       });
     }
 
-    const getPollTopicalHitCount = (poll: any) => {
-      if (topicalTerms.length === 0) return 0;
-      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b].filter(Boolean).join(" "));
-      return topicalTerms.reduce((count, term) => count + (haystack.includes(term) ? 1 : 0), 0);
+    // Generate stem variants so "rent" matches "renting", "rents", "rented".
+    const expandStemVariants = (term: string): string[] => {
+      const t = term.toLowerCase().trim();
+      if (t.length < 3) return [t];
+      const variants = new Set<string>([t]);
+      // Plural / -s
+      if (!t.endsWith("s")) variants.add(t + "s"); else variants.add(t.replace(/s$/, ""));
+      // -ing / -ed (only for verb-like terms)
+      if (t.length >= 4 && !t.endsWith("ing") && !t.endsWith("ed")) {
+        variants.add(t + "ing");
+        variants.add(t + "ed");
+        if (t.endsWith("e")) {
+          variants.add(t.slice(0, -1) + "ing");
+          variants.add(t + "d");
+        }
+      }
+      return Array.from(variants);
     };
 
-    // Strict entity gate: every named entity must appear (any of its synonyms) in the poll text.
-    // For 1 entity (e.g. "iphone"): poll must mention iphone/apple.
-    // For 2 entities (e.g. "iphone vs samsung"): poll must mention BOTH sides.
+    const topicalTermVariants = topicalTerms.map((t) => expandStemVariants(t));
+
+    const getPollTopicalHitCount = (poll: any) => {
+      if (topicalTermVariants.length === 0) return 0;
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
+      return topicalTermVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+    };
+
+    // Entity gate: with 2+ entities require all (e.g. "iphone vs samsung" → both must appear).
+    // With a single entity, also require it (avoids false matches like "apt" matching everything),
+    // BUT we will softly relax this later if it produces zero polls.
     const pollMatchesAllEntities = (poll: any) => {
-      if (requiredEntityVariants.length === 0) return true; // no entity constraint
+      if (requiredEntityVariants.length === 0) return true;
       const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b].filter(Boolean).join(" "));
       return requiredEntityVariants.every((variants) => variants.some((v) => haystack.includes(v)));
     };
