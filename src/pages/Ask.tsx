@@ -228,7 +228,7 @@ export default function Ask() {
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
         <div className="flex items-center justify-between gap-2 px-3 py-3">
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-muted active:scale-95 transition" aria-label="Back">
+            <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-muted active:scale-95 transition" aria-label="Back">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-1.5">
