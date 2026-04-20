@@ -149,8 +149,11 @@ export default function PollCalendarPanel() {
       const skipped = parsed.length - inserts.length;
       return { inserted: inserts.length, replaced: replaceableIds.length, skipped };
     },
-    onSuccess: (n) => {
-      toast.success(`Imported ${n} polls`);
+    onSuccess: ({ inserted, replaced, skipped }) => {
+      const parts = [`Imported ${inserted} polls`];
+      if (replaced) parts.push(`replaced ${replaced} existing draft${replaced > 1 ? 's' : ''}`);
+      if (skipped) parts.push(`skipped ${skipped} (already published)`);
+      toast.success(parts.join(' • '));
       qc.invalidateQueries({ queryKey: ['poll-calendar'] });
     },
     onError: (e: any) => toast.error(e.message),
