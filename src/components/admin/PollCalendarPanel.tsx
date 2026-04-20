@@ -55,6 +55,18 @@ function endOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth() + 1
 function ymd(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
+function normalizeCalendarRow(row: CalendarRow): CalendarRow {
+  if (
+    row.status === 'image_pending' &&
+    row.image_a_url &&
+    row.image_b_url &&
+    !row.ai_image_a_preview &&
+    !row.ai_image_b_preview
+  ) {
+    return { ...row, status: 'draft' };
+  }
+  return row;
+}
 
 export default function PollCalendarPanel() {
   const { user } = useAuth();
@@ -86,7 +98,7 @@ export default function PollCalendarPanel() {
         .lte('release_date', ymd(monthEnd))
         .order('release_date', { ascending: true });
       if (error) throw error;
-      return (data || []) as CalendarRow[];
+      return ((data || []) as CalendarRow[]).map(normalizeCalendarRow);
     },
   });
 
@@ -117,7 +129,9 @@ export default function PollCalendarPanel() {
   const updateRow = useMutation({
     mutationFn: async (patch: Partial<CalendarRow> & { id: string }) => {
       const { id, ...rest } = patch;
-      const { error } = await supabase.from('poll_calendar').update(rest).eq('id', id);
+      const normalizedPatch = normalizeCalendarRow({ ...(rows.find((row) => row.id === id) || ({} as CalendarRow)), id, ...rest } as CalendarRow);
+      const { id: _ignored, ...payload } = normalizedPatch;
+      const { error } = await supabase.from('poll_calendar').update(payload).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['poll-calendar'] }),
@@ -487,7 +501,7 @@ function EditForm({
       )}
 
       <DialogFooter className="gap-2">
-        <Button variant="outline" onClick={() => onSave(form)}>Save changes</Button>
+        <Button variant="outline" onClick={() => onSave(normalizeCalendarRow(form))}>Save changes</Button>
       </DialogFooter>
     </div>
   );
