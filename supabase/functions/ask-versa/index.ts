@@ -174,11 +174,22 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `You translate natural language questions about Egyptian opinion polls into structured filters AND classify complexity. Categories: ${KNOWN_CATEGORIES.join(", ")}. Be conservative — only set demographic filters when explicitly mentioned. Classify "route":
-- simple: single poll/brand fact lookup, one entity, asking for one number ("Who won iPhone vs Samsung?", "% chose Coke?")
-- medium: one demographic filter OR one category summary ("How did women vote on money polls?", "What does Cairo think about tech?")
-- complex: synthesis across multiple polls/demographics, cross-category, brand intelligence ("What does data say about Gen Z financial behavior?", "Compare Cairo vs Alex on lifestyle")
-If conversation history is provided, the new question may be a FOLLOW-UP — infer the underlying topic and merge with the new ask.`,
+          content: `You classify questions for an Egyptian opinion-poll app called Versa, then extract filters.
+
+Step 1 — INTENT (mandatory, exact value):
+- "preference": user is asking which option people PREFER, PICK, CHOOSE, LEAN toward, LOVE more, vote for, or "X or Y?". This is what Versa's polls answer.
+- "factual": user wants a number, fact, definition, market size, news, history, technical info, formula, or anything Versa votes cannot answer (e.g. "iPhone market size?", "Who founded Vodafone?", "When did Talabat launch?").
+- "offscope": rude, harmful, code-help, math homework, personal advice unrelated to consumer preferences, or gibberish.
+
+Step 2 — ENTITIES: every brand/product/person/place explicitly named, in canonical lowercase form. "iPhone vs Samsung" → ["iphone","samsung"]. "iPhone market size" → ["iphone"]. "How divided are Egyptians on Ahly vs Zamalek" → ["ahly","zamalek"]. NEVER hallucinate entities not in the question.
+
+Step 3 — Other filters (only set demographics when the question explicitly mentions them) and "route" complexity:
+- simple: single poll/brand fact lookup
+- medium: one demographic filter OR one category summary
+- complex: synthesis across multiple polls/demographics
+
+Categories: ${KNOWN_CATEGORIES.join(", ")}.
+If conversation history is provided, the new question may be a FOLLOW-UP — infer underlying topic and merge entities from prior turns.`,
         },
         ...historyMessages,
         { role: "user", content: question },
