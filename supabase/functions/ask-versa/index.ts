@@ -262,17 +262,89 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       intent_summary,
       route = "simple",
       entities = [],
+      intent: rawIntent,
     } = filters;
+    const intent = (["preference", "factual", "offscope"].includes(rawIntent)
+      ? rawIntent
+      : "preference") as "preference" | "factual" | "offscope";
     const safeRoute = (["simple", "medium", "complex"].includes(route) ? route : "simple") as "simple" | "medium" | "complex";
     const cost = ROUTE_COSTS[safeRoute];
     const model = ROUTE_MODEL[safeRoute];
 
     const normalizeTerm = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s&+-]/g, " ").replace(/\s+/g, " ").trim();
     const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and"]);
-    const topicalTerms = Array.from(new Set([...(Array.isArray(entities) ? entities : []), ...keywords]
+    const cleanedEntities: string[] = Array.from(new Set((Array.isArray(entities) ? entities : [])
+      .map((e: string) => normalizeTerm(String(e || "")))
+      .filter((e: string) => e.length >= 2 && !STOP_TERMS.has(e))));
+    // Entity variants we'll require to appear inside the poll text (strict gate).
+    const requiredEntityVariants = cleanedEntities.map((e) => expandEntityVariants(e));
+    const topicalTerms = Array.from(new Set([...cleanedEntities, ...keywords]
       .map((term: string) => normalizeTerm(String(term || "")))
       .filter((term: string) => term.length >= 3 && !STOP_TERMS.has(term))));
     const categoryBuckets = category && category !== "any" ? (CATEGORY_MAP[category.toLowerCase()] || []) : [];
+
+    // ---- 1b. Off-scope or factual short-circuit (no charge, no DB hit) ----
+    if (intent === "offscope") {
+      let queryId: string | null = null;
+      if (userId) {
+        const { data: inserted } = await supabase.from("ask_versa_queries").insert({
+          user_id: userId, question, mode, route: safeRoute,
+          credits_charged: 0, answered: false, low_data: true,
+          model_used: model, total_votes_considered: 0, matched_poll_count: 0,
+          category_hint: category && category !== "any" ? category : null,
+        }).select("id").maybeSingle();
+        queryId = inserted?.id ?? null;
+      }
+      return new Response(JSON.stringify({
+        stage: "offscope",
+        summary: "Versa is built for consumer preference questions — things people in Egypt vote on, like brands, food, lifestyle, or relationships. Try a question like \"Coke or Pepsi?\" or \"What do students think about online learning?\".",
+        credits_balance: userBalance,
+        route: safeRoute,
+        mode,
+        query_id: queryId,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (intent === "factual") {
+      // Honest general-knowledge answer, clearly labeled. No vote data, no charge.
+      let factualAnswer = "I can answer this from general knowledge, but it's not from Versa votes.";
+      try {
+        const factResp = await callGroq(GROQ_API_KEY, MODEL_FAST, {
+          messages: [
+            { role: "system", content: "You answer factual questions in 2-3 short sentences. Be direct, accurate, and cite a rough year if possible. If you don't know, say so. Never invent statistics." },
+            { role: "user", content: question },
+          ],
+        });
+        if (factResp.ok) {
+          const fd = await factResp.json();
+          factualAnswer = fd.choices?.[0]?.message?.content?.trim() || factualAnswer;
+        }
+      } catch (e) {
+        console.error("factual answer failed", e);
+      }
+
+      let queryId: string | null = null;
+      if (userId) {
+        const { data: inserted } = await supabase.from("ask_versa_queries").insert({
+          user_id: userId, question, mode, route: safeRoute,
+          credits_charged: 0, answered: true, low_data: true,
+          model_used: MODEL_FAST, total_votes_considered: 0, matched_poll_count: 0,
+          category_hint: category && category !== "any" ? category : null,
+        }).select("id").maybeSingle();
+        queryId = inserted?.id ?? null;
+      }
+
+      return new Response(JSON.stringify({
+        stage: "factual",
+        summary: factualAnswer,
+        notice: "General knowledge — not from Versa votes.",
+        credits_balance: userBalance,
+        route: safeRoute,
+        mode,
+        query_id: queryId,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
 
     // ---- 2. Query polls ----
     const buildQuery = (useCategory: boolean, useKeywords: boolean) => {
