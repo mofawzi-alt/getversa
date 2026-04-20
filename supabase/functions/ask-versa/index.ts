@@ -218,13 +218,45 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 
     let filters: any = null;
 
+    // Helper: retry without tool calling (uses JSON mode — far more reliable than Groq tool schema)
+    const jsonModeRetry = async (): Promise<any | null> => {
+      try {
+        const retryResp = await callGroq(GROQ_API_KEY, MODEL_FAST, {
+          messages: [
+            {
+              role: "system",
+              content: `Reply with ONLY a single JSON object (no prose, no markdown). Keys:
+{"intent": "preference"|"factual"|"offscope", "keywords": ["..."], "entities": ["..."], "category": "any" or one of (${KNOWN_CATEGORIES.join(", ")}), "route": "simple"|"medium"|"complex", "controversial": false, "intent_summary": "..."}
+Rules:
+- keywords/entities MUST be JSON arrays of lowercase strings (NEVER a single string).
+- "preference" = user asks which option people prefer (Versa polls answer this).
+- "factual" = needs a number/fact/news Versa votes can't answer.
+- "offscope" = harmful, code, math homework, gibberish.`,
+            },
+            ...historyMessages,
+            { role: "user", content: question },
+          ],
+          response_format: { type: "json_object" },
+        });
+        if (!retryResp.ok) {
+          await retryResp.text().catch(() => "");
+          return null;
+        }
+        const rd = await retryResp.json();
+        const content = rd.choices?.[0]?.message?.content || "";
+        try { return JSON.parse(content); } catch { return recoverFiltersFromText(content); }
+      } catch (e) {
+        console.error("JSON-mode retry failed", e);
+        return null;
+      }
+    };
+
     if (!extractResp.ok) {
       const errBody = await extractResp.text().catch(() => "");
       console.error(`Groq extract failed ${extractResp.status}:`, errBody);
       if (extractResp.status === 429) return new Response(JSON.stringify({ error: "Too many requests, try again in a moment." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (extractResp.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-      // Recover from any 400 where the model wrote JSON args as text (tool_use_failed OR schema validation)
       if (extractResp.status === 400) {
         try {
           const errJson = JSON.parse(errBody);
@@ -232,15 +264,16 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
           filters = recoverFiltersFromText(failedGen);
           if (filters) console.log("Recovered filters from 400 error body");
         } catch { /* ignore */ }
-        // Last-resort fallback: synthesize minimal filters from the question itself
-        if (!filters) {
-          filters = { keywords: question.toLowerCase().split(/\s+/).filter((w) => w.length >= 3).slice(0, 6), route: "simple", category: "any" };
-          console.log("Synthesized minimal filters fallback");
-        }
       }
 
       if (!filters) {
-        throw new Error(`AI extraction failed: ${extractResp.status} - ${errBody.slice(0, 200)}`);
+        filters = await jsonModeRetry();
+        if (filters) console.log("Recovered filters via JSON-mode retry");
+      }
+
+      if (!filters) {
+        filters = { keywords: question.toLowerCase().split(/\s+/).filter((w) => w.length >= 3).slice(0, 6), route: "simple", category: "any", intent: "preference" };
+        console.log("Synthesized minimal filters fallback");
       }
     } else {
       const extractData = await extractResp.json();
@@ -248,12 +281,17 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       if (toolCall) {
         try { filters = JSON.parse(toolCall.function.arguments); } catch { /* fall through */ }
       }
-      // Fallback: model returned JSON as plain content
       if (!filters) {
         const content = extractData.choices?.[0]?.message?.content || "";
         filters = recoverFiltersFromText(content);
       }
-      if (!filters) throw new Error("No filter extracted");
+      if (!filters) {
+        filters = await jsonModeRetry();
+      }
+      if (!filters) {
+        filters = { keywords: question.toLowerCase().split(/\s+/).filter((w) => w.length >= 3).slice(0, 6), route: "simple", category: "any", intent: "preference" };
+        console.log("No filter extracted — using question synthesis fallback");
+      }
     }
     const normalizeTerm = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s&+-]/g, " ").replace(/\s+/g, " ").trim();
     const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and"]);
@@ -452,48 +490,87 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       });
     }
 
-    const getPollTopicalHitCount = (poll: any) => {
-      if (topicalTerms.length === 0) return 0;
-      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b].filter(Boolean).join(" "));
-      return topicalTerms.reduce((count, term) => count + (haystack.includes(term) ? 1 : 0), 0);
+    // Generate stem variants so "rent" matches "renting", "rents", "rented".
+    const expandStemVariants = (term: string): string[] => {
+      const t = term.toLowerCase().trim();
+      if (t.length < 3) return [t];
+      const variants = new Set<string>([t]);
+      // Plural / -s
+      if (!t.endsWith("s")) variants.add(t + "s"); else variants.add(t.replace(/s$/, ""));
+      // -ing / -ed (only for verb-like terms)
+      if (t.length >= 4 && !t.endsWith("ing") && !t.endsWith("ed")) {
+        variants.add(t + "ing");
+        variants.add(t + "ed");
+        if (t.endsWith("e")) {
+          variants.add(t.slice(0, -1) + "ing");
+          variants.add(t + "d");
+        }
+      }
+      return Array.from(variants);
     };
 
-    // Strict entity gate: every named entity must appear (any of its synonyms) in the poll text.
-    // For 1 entity (e.g. "iphone"): poll must mention iphone/apple.
-    // For 2 entities (e.g. "iphone vs samsung"): poll must mention BOTH sides.
+    const topicalTermVariants = topicalTerms.map((t) => expandStemVariants(t));
+
+    const getPollTopicalHitCount = (poll: any) => {
+      if (topicalTermVariants.length === 0) return 0;
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
+      return topicalTermVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+    };
+
+    // Entity gate: with 2+ entities require all (e.g. "iphone vs samsung" → both must appear).
+    // With a single entity, also require it (avoids false matches like "apt" matching everything),
+    // BUT we will softly relax this later if it produces zero polls.
     const pollMatchesAllEntities = (poll: any) => {
-      if (requiredEntityVariants.length === 0) return true; // no entity constraint
+      if (requiredEntityVariants.length === 0) return true;
       const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b].filter(Boolean).join(" "));
       return requiredEntityVariants.every((variants) => variants.some((v) => haystack.includes(v)));
     };
 
-    let matchedPolls = polls
-      .map((p) => {
-        const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
-        const realTotal = rawStats.total;
-        const baselineActive = realTotal < sunsetThreshold;
-        const baseA = baselineActive ? (p.baseline_votes_a || 0) : 0;
-        const baseB = baselineActive ? (p.baseline_votes_b || 0) : 0;
-        // Merge baselines into top-line a/b/total only (demographic splits stay 100% real)
-        const s = {
-          ...rawStats,
-          a: rawStats.a + baseA,
-          b: rawStats.b + baseB,
-          total: rawStats.total + baseA + baseB,
-          realTotal,
-          baselineActive,
-        };
-        const split = s.total > 0 ? s.a / s.total : 0.5;
-        const controversyScore = 1 - Math.abs(split - 0.5) * 2;
-        const topicalHits = getPollTopicalHitCount(p);
-        return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits };
-      })
-      .filter((p: any) => {
-        // Hard gate: when the question names entities, the poll MUST mention them all.
-        if (!pollMatchesAllEntities(p)) return false;
-        if (topicalTerms.length === 0) return categoryBuckets.length === 0 || categoryBuckets.includes(p.category);
-        return p._topicalHits >= 1;
-      });
+    const enrichedPollList = polls.map((p) => {
+      const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
+      const realTotal = rawStats.total;
+      const baselineActive = realTotal < sunsetThreshold;
+      const baseA = baselineActive ? (p.baseline_votes_a || 0) : 0;
+      const baseB = baselineActive ? (p.baseline_votes_b || 0) : 0;
+      const s = {
+        ...rawStats,
+        a: rawStats.a + baseA,
+        b: rawStats.b + baseB,
+        total: rawStats.total + baseA + baseB,
+        realTotal,
+        baselineActive,
+      };
+      const split = s.total > 0 ? s.a / s.total : 0.5;
+      const controversyScore = 1 - Math.abs(split - 0.5) * 2;
+      const topicalHits = getPollTopicalHitCount(p);
+      const entityMatch = pollMatchesAllEntities(p);
+      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _entityMatch: entityMatch };
+    });
+
+    let matchedPolls = enrichedPollList.filter((p: any) => {
+      if (!p._entityMatch) return false;
+      if (topicalTerms.length === 0) return categoryBuckets.length === 0 || categoryBuckets.includes(p.category);
+      return p._topicalHits >= 1;
+    });
+
+    // Soft relax: if entity gate killed everything but topical terms find polls,
+    // accept those (e.g. "rent or buy apt" — the entity 'apt' may not literally appear in poll text).
+    if (matchedPolls.length === 0 && topicalTerms.length > 0) {
+      const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1);
+      if (topicalOnly.length > 0) {
+        console.log(`Entity gate killed all ${requiredEntityVariants.length} entities — falling back to ${topicalOnly.length} topical matches`);
+        matchedPolls = topicalOnly;
+      }
+    }
+
+    // Final relax: if still empty and we have a category, fall back to category matches.
+    if (matchedPolls.length === 0 && categoryBuckets.length > 0) {
+      const catOnly = enrichedPollList.filter((p: any) => categoryBuckets.includes(p.category));
+      if (catOnly.length > 0) {
+        console.log(`Topical gate killed everything — falling back to ${catOnly.length} category matches`);
+        matchedPolls = catOnly;
+      }
+    }
 
     if (controversial) {
       matchedPolls = matchedPolls.filter((p: any) => p._stats.total >= 5).sort((a: any, b: any) => (b._topicalHits - a._topicalHits) || (b._controversyScore - a._controversyScore));
