@@ -29,12 +29,12 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
 
   useEffect(() => {
     const update = () => {
-      // Next drop at 9:00 AM Cairo time (UTC+2, no DST observed currently)
+      // Next drop at 7:00 AM Cairo time (UTC+2, no DST observed currently)
       const now = new Date();
       const cairoNow = new Date(now.getTime() + (now.getTimezoneOffset() + 120) * 60000);
       const next = new Date(cairoNow);
-      next.setHours(9, 0, 0, 0);
-      if (cairoNow.getHours() >= 9) next.setDate(next.getDate() + 1);
+      next.setHours(7, 0, 0, 0);
+      if (cairoNow.getHours() >= 7) next.setDate(next.getDate() + 1);
       const diff = next.getTime() - cairoNow.getTime();
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
