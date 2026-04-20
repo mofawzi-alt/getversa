@@ -150,38 +150,38 @@ export default function Friends() {
           </div>
         </div>
 
-        {/* Compare + Arena entries */}
-        <div className="space-y-1.5">
+        {/* Hero action cards */}
+        <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => navigate('/compare/group')}
-            className="w-full glass rounded-xl px-3 py-2 flex items-center gap-2.5 text-left hover:bg-primary/5 transition-colors border border-primary/20"
+            className="relative overflow-hidden rounded-2xl p-4 text-left bg-gradient-to-br from-blue-500/90 to-indigo-600/90 active:scale-[0.98] transition-transform shadow-lg min-h-[120px] flex flex-col justify-between"
           >
-            <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-white/10 blur-xl" />
+            <div className="relative w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-xs leading-tight">Crew Compare</p>
-              <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+            <div className="relative">
+              <p className="font-bold text-white text-sm leading-tight">Crew Compare</p>
+              <p className="text-[11px] text-white/80 leading-tight mt-1">
                 Battle two groups or vibe-check one crew
               </p>
             </div>
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
 
           <button
             onClick={() => navigate('/play/duels')}
-            className="w-full glass rounded-xl px-3 py-2 flex items-center gap-2.5 text-left hover:bg-primary/5 transition-colors border border-primary/20"
+            className="relative overflow-hidden rounded-2xl p-4 text-left bg-gradient-to-br from-primary to-red-600 active:scale-[0.98] transition-transform shadow-lg min-h-[120px] flex flex-col justify-between"
           >
-            <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-              <Swords className="h-3.5 w-3.5 text-primary" />
+            <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-white/10 blur-xl" />
+            <div className="relative w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <Swords className="h-5 w-5 text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-xs leading-tight">Versa Arena</p>
-              <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+            <div className="relative">
+              <p className="font-bold text-white text-sm leading-tight">Versa Arena</p>
+              <p className="text-[11px] text-white/80 leading-tight mt-1">
                 Challenge a friend to a live 10-poll duel
               </p>
             </div>
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
         </div>
 
