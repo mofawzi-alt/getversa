@@ -9,6 +9,7 @@ import { useOpenConversation, useConversations } from '@/hooks/useMessages';
 import FollowButton from '@/components/poll/FollowButton';
 import { useAuth } from '@/contexts/AuthContext';
 import SwipeableFriendRow from '@/components/friends/SwipeableFriendRow';
+import CompatibilityRing from '@/components/friends/CompatibilityRing';
 import UserAvatar from '@/components/UserAvatar';
 import { useIncomingDuels } from '@/hooks/useIncomingDuels';
 import { 
@@ -261,15 +262,8 @@ export default function Friends() {
                           )}
                         </div>
 
-                        {/* Compatibility Score with Trend */}
+                        {/* Compatibility trend / label (ring shown on the right) */}
                         <div className="flex items-center gap-2 mt-1">
-                          <div className={`flex items-center gap-1 ${getCompatibilityColor(friend.compatibility_score)}`}>
-                            <Heart className="h-4 w-4" />
-                            <span className="font-bold">
-                              {friend.compatibility_score !== null ? `${friend.compatibility_score}%` : '—'}
-                            </span>
-                          </div>
-
                           {friend.trend && friend.trend !== 'neutral' && friend.trend !== 'stable' && (
                             <div className="flex items-center gap-1">
                               {getTrendIcon(friend.trend)}
@@ -286,6 +280,9 @@ export default function Friends() {
                           )}
                         </div>
                       </div>
+
+                      {/* Compatibility Ring */}
+                      <CompatibilityRing score={friend.compatibility_score} />
 
                       {/* Message Button */}
                       <Button
@@ -305,9 +302,6 @@ export default function Friends() {
                           </span>
                         )}
                       </Button>
-
-                      {/* Arrow */}
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
                     </div>
                   </div>
                 </SwipeableFriendRow>
@@ -356,17 +350,13 @@ export default function Friends() {
                           </div>
                         </div>
                         
-                        {/* Similarity Score */}
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className={`flex items-center gap-1 ${getCompatibilityColor(voter.similarity_score)}`}>
-                            <Heart className="h-4 w-4" />
-                            <span className="font-bold">{voter.similarity_score}%</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {voter.matching_votes}/{voter.shared_polls} shared votes match
-                          </span>
-                        </div>
+                        {/* Similarity caption (ring shown on the right) */}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {voter.matching_votes}/{voter.shared_polls} shared votes match
+                        </p>
                       </div>
+
+                      <CompatibilityRing score={voter.similarity_score} />
 
                       <Button
                         size="sm"
