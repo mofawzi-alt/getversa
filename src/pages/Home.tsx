@@ -415,6 +415,36 @@ function LiveDebatesList({
 }) {
   const pollIds = useMemo(() => livePolls.map(p => p.id), [livePolls]);
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
+  const { user, profile } = useAuth();
+  const queryClient = useQueryClient();
+
+  const handleInlineVote = useCallback(async (poll: PollCard, choice: 'A' | 'B') => {
+    if (!user) {
+      try { sessionStorage.setItem('versa_vote_intent', poll.id); } catch {}
+      window.location.href = '/auth?mode=signup&reason=vote';
+      return;
+    }
+    const votePayload: any = {
+      poll_id: poll.id,
+      user_id: user.id,
+      choice,
+      ...(poll.category ? { category: poll.category } : {}),
+      ...(profile?.gender ? { voter_gender: profile.gender } : {}),
+      ...(profile?.age_range ? { voter_age_range: profile.age_range } : {}),
+      ...(profile?.country ? { voter_country: profile.country } : {}),
+      ...(profile?.city ? { voter_city: profile.city } : {}),
+    };
+    const { error } = await supabase.from('votes').insert(votePayload);
+    if (error && error.code !== '23505') {
+      const { toast } = await import('sonner');
+      toast.error('Vote failed');
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ['user-voted-ids', user.id] });
+    queryClient.invalidateQueries({ queryKey: ['user-vote-choices', user.id] });
+    queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
+    queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
+  }, [user, profile, queryClient]);
 
   return (
     <div className="flex flex-col gap-4 px-3">
@@ -434,6 +464,7 @@ function LiveDebatesList({
             chosenOptionLabel={chosenOptionLabel}
             isTrending={trendingIdSet?.has(poll.id) || false}
             friendsOnPoll={friendsOnPoll}
+            onVoteInline={(choice) => handleInlineVote(poll, choice)}
             onCardClick={() => {
               if (hasVoted) {
                 setModalPoll(poll);
