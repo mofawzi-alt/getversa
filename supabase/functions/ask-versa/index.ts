@@ -218,13 +218,45 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 
     let filters: any = null;
 
+    // Helper: retry without tool calling (uses JSON mode — far more reliable than Groq tool schema)
+    const jsonModeRetry = async (): Promise<any | null> => {
+      try {
+        const retryResp = await callGroq(GROQ_API_KEY, MODEL_FAST, {
+          messages: [
+            {
+              role: "system",
+              content: `Reply with ONLY a single JSON object (no prose, no markdown). Keys:
+{"intent": "preference"|"factual"|"offscope", "keywords": ["..."], "entities": ["..."], "category": "any" or one of (${KNOWN_CATEGORIES.join(", ")}), "route": "simple"|"medium"|"complex", "controversial": false, "intent_summary": "..."}
+Rules:
+- keywords/entities MUST be JSON arrays of lowercase strings (NEVER a single string).
+- "preference" = user asks which option people prefer (Versa polls answer this).
+- "factual" = needs a number/fact/news Versa votes can't answer.
+- "offscope" = harmful, code, math homework, gibberish.`,
+            },
+            ...historyMessages,
+            { role: "user", content: question },
+          ],
+          response_format: { type: "json_object" },
+        });
+        if (!retryResp.ok) {
+          await retryResp.text().catch(() => "");
+          return null;
+        }
+        const rd = await retryResp.json();
+        const content = rd.choices?.[0]?.message?.content || "";
+        try { return JSON.parse(content); } catch { return recoverFiltersFromText(content); }
+      } catch (e) {
+        console.error("JSON-mode retry failed", e);
+        return null;
+      }
+    };
+
     if (!extractResp.ok) {
       const errBody = await extractResp.text().catch(() => "");
       console.error(`Groq extract failed ${extractResp.status}:`, errBody);
       if (extractResp.status === 429) return new Response(JSON.stringify({ error: "Too many requests, try again in a moment." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (extractResp.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-      // Recover from any 400 where the model wrote JSON args as text (tool_use_failed OR schema validation)
       if (extractResp.status === 400) {
         try {
           const errJson = JSON.parse(errBody);
@@ -232,15 +264,16 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
           filters = recoverFiltersFromText(failedGen);
           if (filters) console.log("Recovered filters from 400 error body");
         } catch { /* ignore */ }
-        // Last-resort fallback: synthesize minimal filters from the question itself
-        if (!filters) {
-          filters = { keywords: question.toLowerCase().split(/\s+/).filter((w) => w.length >= 3).slice(0, 6), route: "simple", category: "any" };
-          console.log("Synthesized minimal filters fallback");
-        }
       }
 
       if (!filters) {
-        throw new Error(`AI extraction failed: ${extractResp.status} - ${errBody.slice(0, 200)}`);
+        filters = await jsonModeRetry();
+        if (filters) console.log("Recovered filters via JSON-mode retry");
+      }
+
+      if (!filters) {
+        filters = { keywords: question.toLowerCase().split(/\s+/).filter((w) => w.length >= 3).slice(0, 6), route: "simple", category: "any", intent: "preference" };
+        console.log("Synthesized minimal filters fallback");
       }
     } else {
       const extractData = await extractResp.json();
@@ -248,12 +281,17 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       if (toolCall) {
         try { filters = JSON.parse(toolCall.function.arguments); } catch { /* fall through */ }
       }
-      // Fallback: model returned JSON as plain content
       if (!filters) {
         const content = extractData.choices?.[0]?.message?.content || "";
         filters = recoverFiltersFromText(content);
       }
-      if (!filters) throw new Error("No filter extracted");
+      if (!filters) {
+        filters = await jsonModeRetry();
+      }
+      if (!filters) {
+        filters = { keywords: question.toLowerCase().split(/\s+/).filter((w) => w.length >= 3).slice(0, 6), route: "simple", category: "any", intent: "preference" };
+        console.log("No filter extracted — using question synthesis fallback");
+      }
     }
     const normalizeTerm = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s&+-]/g, " ").replace(/\s+/g, " ").trim();
     const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and"]);
