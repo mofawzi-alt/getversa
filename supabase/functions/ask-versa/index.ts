@@ -179,7 +179,7 @@ serve(async (req) => {
 Step 1 — INTENT (mandatory, exact value):
 - "preference": user is asking which option people PREFER, PICK, CHOOSE, LEAN toward, LOVE more, vote for, or "X or Y?". This is what Versa's polls answer.
 - "factual": user wants a number, fact, definition, market size, news, history, technical info, formula, or anything Versa votes cannot answer (e.g. "iPhone market size?", "Who founded Vodafone?", "When did Talabat launch?").
-- "offscope": rude, harmful, code-help, math homework, personal advice unrelated to consumer preferences, or gibberish.
+- "offscope": anything Versa shouldn't answer at all — rude, harmful, hate speech, illegal, code-writing requests ("write me python code"), math homework ("solve 2x+5=11"), personal advice unrelated to consumer choices ("should I dump my partner"), medical/legal advice, gibberish. When in doubt between factual and offscope, prefer factual.
 
 Step 2 — ENTITIES: every brand/product/person/place explicitly named, in canonical lowercase form. "iPhone vs Samsung" → ["iphone","samsung"]. "iPhone market size" → ["iphone"]. "How divided are Egyptians on Ahly vs Zamalek" → ["ahly","zamalek"]. NEVER hallucinate entities not in the question.
 
