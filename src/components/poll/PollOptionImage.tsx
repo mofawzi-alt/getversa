@@ -41,7 +41,7 @@ function isVideoUrl(url: string | null): boolean {
  * - Logo polls: brand color background + centered logo with object-fit: contain
  * - Photo polls: treatment varies by card variant
  */
-export default function PollOptionImage({
+function PollOptionImageComponent({
   imageUrl,
   option,
   question,
