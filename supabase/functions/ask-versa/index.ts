@@ -253,17 +253,38 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       }
       if (!filters) throw new Error("No filter extracted");
     }
-    const {
-      keywords = [],
-      category,
-      gender,
-      age_range,
-      controversial,
-      intent_summary,
-      route = "simple",
-      entities = [],
-      intent: rawIntent,
-    } = filters;
+    const normalizeTerm = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s&+-]/g, " ").replace(/\s+/g, " ").trim();
+    const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and"]);
+    const normalizeList = (value: unknown, minLength = 2): string[] => {
+      const rawItems = Array.isArray(value)
+        ? value
+        : typeof value === "string"
+          ? value.split(/,|\n|\||\/|\bvs\b|\bor\b|\band\b/gi)
+          : [];
+
+      return Array.from(new Set(rawItems
+        .map((item) => normalizeTerm(String(item || "")))
+        .flatMap((item) => item.split(/\s+/))
+        .map((item) => item.trim())
+        .filter((item) => item.length >= minLength && !STOP_TERMS.has(item))));
+    };
+    const normalizeOptionalString = (value: unknown) => typeof value === "string" ? value.trim() : "";
+    const normalizeBoolean = (value: unknown) => {
+      if (typeof value === "boolean") return value;
+      if (typeof value === "string") return value.trim().toLowerCase() === "true";
+      return false;
+    };
+
+    const keywords = normalizeList(filters?.keywords, 3);
+    const rawEntities = normalizeList(filters?.entities, 2);
+    const category = normalizeOptionalString(filters?.category).toLowerCase();
+    const gender = normalizeOptionalString(filters?.gender).toLowerCase();
+    const age_range = normalizeOptionalString(filters?.age_range).toLowerCase();
+    const controversial = normalizeBoolean(filters?.controversial);
+    const intent_summary = normalizeOptionalString(filters?.intent_summary);
+    const route = normalizeOptionalString(filters?.route).toLowerCase();
+    const rawIntent = normalizeOptionalString(filters?.intent).toLowerCase();
+
     const intent = (["preference", "factual", "offscope"].includes(rawIntent)
       ? rawIntent
       : "preference") as "preference" | "factual" | "offscope";
@@ -271,17 +292,12 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
     const cost = ROUTE_COSTS[safeRoute];
     const model = ROUTE_MODEL[safeRoute];
 
-    const normalizeTerm = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s&+-]/g, " ").replace(/\s+/g, " ").trim();
-    const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and"]);
-    const cleanedEntities: string[] = Array.from(new Set((Array.isArray(entities) ? entities : [])
-      .map((e: string) => normalizeTerm(String(e || "")))
-      .filter((e: string) => e.length >= 2 && !STOP_TERMS.has(e))));
-    // Entity variants we'll require to appear inside the poll text (strict gate).
+    const cleanedEntities: string[] = Array.from(new Set(rawEntities.filter((e) => e.length >= 2 && !STOP_TERMS.has(e))));
     const requiredEntityVariants = cleanedEntities.map((e) => expandEntityVariants(e));
     const topicalTerms = Array.from(new Set([...cleanedEntities, ...keywords]
       .map((term: string) => normalizeTerm(String(term || "")))
       .filter((term: string) => term.length >= 3 && !STOP_TERMS.has(term))));
-    const categoryBuckets = category && category !== "any" ? (CATEGORY_MAP[category.toLowerCase()] || []) : [];
+    const categoryBuckets = category && category !== "any" ? (CATEGORY_MAP[category] || []) : [];
 
     // ---- 1b. Off-scope or factual short-circuit (no charge, no DB hit) ----
     if (intent === "offscope") {
