@@ -353,8 +353,19 @@ function HomeLiveDebateCard({
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <button className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5">
-              Vote on this <ArrowRight className="h-3.5 w-3.5" />
+            <button
+              onClick={(e) => { e.stopPropagation(); handleInlineVote('A'); }}
+              disabled={isVoting}
+              className="flex-1 py-2.5 rounded-xl bg-option-a/10 text-option-a border border-option-a/30 font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition disabled:opacity-60"
+            >
+              Vote {poll.option_a.length > 12 ? poll.option_a.slice(0, 12) + '…' : poll.option_a}
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleInlineVote('B'); }}
+              disabled={isVoting}
+              className="flex-1 py-2.5 rounded-xl bg-option-b/10 text-option-b border border-option-b/30 font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition disabled:opacity-60"
+            >
+              Vote {poll.option_b.length > 12 ? poll.option_b.slice(0, 12) + '…' : poll.option_b}
             </button>
             {user && (
               <button
