@@ -440,6 +440,15 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       return topicalTerms.reduce((count, term) => count + (haystack.includes(term) ? 1 : 0), 0);
     };
 
+    // Strict entity gate: every named entity must appear (any of its synonyms) in the poll text.
+    // For 1 entity (e.g. "iphone"): poll must mention iphone/apple.
+    // For 2 entities (e.g. "iphone vs samsung"): poll must mention BOTH sides.
+    const pollMatchesAllEntities = (poll: any) => {
+      if (requiredEntityVariants.length === 0) return true; // no entity constraint
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b].filter(Boolean).join(" "));
+      return requiredEntityVariants.every((variants) => variants.some((v) => haystack.includes(v)));
+    };
+
     let matchedPolls = polls
       .map((p) => {
         const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
@@ -462,9 +471,9 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits };
       })
       .filter((p: any) => {
+        // Hard gate: when the question names entities, the poll MUST mention them all.
+        if (!pollMatchesAllEntities(p)) return false;
         if (topicalTerms.length === 0) return categoryBuckets.length === 0 || categoryBuckets.includes(p.category);
-        // Require at least 1 topical hit. Decide mode used to require 2, but brand
-        // synonyms (e.g. "coke" vs "Coca-Cola") often only match one side.
         return p._topicalHits >= 1;
       });
 
