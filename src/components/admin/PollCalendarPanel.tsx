@@ -114,45 +114,34 @@ export default function PollCalendarPanel() {
       const { rows: parsed, errors } = parseCalendarCsv(text);
       if (errors.length) throw new Error(errors.join(' • '));
       if (!parsed.length) throw new Error('No rows found');
+      // Append mode: keep all existing rows, just add the new ones.
+      // Only protection: skip rows whose date already has a *published* poll
+      // AND that exact question already exists (avoid pure duplicates).
       const dates = parsed.map((p) => p.release_date);
-      // Find existing rows on these dates that haven't been published yet
       const { data: existing, error: fetchErr } = await supabase
         .from('poll_calendar')
-        .select('id, release_date, status')
+        .select('release_date, question, status')
         .in('release_date', dates);
       if (fetchErr) throw fetchErr;
 
-      const replaceableIds = (existing || [])
-        .filter((r) => r.status !== 'published')
-        .map((r) => r.id);
-      const protectedDates = new Set(
-        (existing || []).filter((r) => r.status === 'published').map((r) => r.release_date)
+      const existingKeys = new Set(
+        (existing || []).map((r) => `${r.release_date}::${r.question.trim().toLowerCase()}`)
       );
 
-      // Delete the old draft/pending/approved rows on overlapping dates
-      if (replaceableIds.length) {
-        const { error: delErr } = await supabase
-          .from('poll_calendar')
-          .delete()
-          .in('id', replaceableIds);
-        if (delErr) throw delErr;
-      }
-
-      // Insert new rows, skipping any dates that already have a published poll
       const inserts = parsed
-        .filter((p) => !protectedDates.has(p.release_date))
+        .filter((p) => !existingKeys.has(`${p.release_date}::${p.question.trim().toLowerCase()}`))
         .map((p) => ({ ...p, status: 'draft', created_by: user!.id }));
+
       if (inserts.length) {
         const { error } = await supabase.from('poll_calendar').insert(inserts);
         if (error) throw error;
       }
-      const skipped = parsed.length - inserts.length;
-      return { inserted: inserts.length, replaced: replaceableIds.length, skipped };
+      const duplicates = parsed.length - inserts.length;
+      return { inserted: inserts.length, duplicates };
     },
-    onSuccess: ({ inserted, replaced, skipped }) => {
-      const parts = [`Imported ${inserted} polls`];
-      if (replaced) parts.push(`replaced ${replaced} existing draft${replaced > 1 ? 's' : ''}`);
-      if (skipped) parts.push(`skipped ${skipped} (already published)`);
+    onSuccess: ({ inserted, duplicates }) => {
+      const parts = [`Added ${inserted} polls`];
+      if (duplicates) parts.push(`skipped ${duplicates} duplicate${duplicates > 1 ? 's' : ''}`);
       toast.success(parts.join(' • '));
       qc.invalidateQueries({ queryKey: ['poll-calendar'] });
     },
