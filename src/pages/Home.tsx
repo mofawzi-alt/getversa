@@ -719,12 +719,18 @@ export default function Home() {
       // Filter by user demographics
       // Move explicitly targeted polls that match this user to the front,
       // but keep all other polls visible in their original weight order.
+      const queueSet = new Set(queuePollIds);
       let prioritized = mergedPolls;
       if (profile) {
         const matched: typeof mergedPolls = [];
         const others: typeof mergedPolls = [];
 
         mergedPolls.forEach(p => {
+          if (queueSet.has(p.id)) {
+            matched.push(p);
+            return;
+          }
+
           const countries = (p as any).target_countries as string[] | null;
           const hasExplicitTargeting = Boolean(
             (p.target_gender && p.target_gender !== 'All') ||
@@ -754,13 +760,11 @@ export default function Home() {
           }
 
           if (isMatch) matched.push(p);
-          // Exclude non-matching targeted polls entirely
         });
 
         prioritized = [...matched, ...others];
       }
 
-      const queueSet = new Set(queuePollIds);
       const selectedPolls = prioritized.filter((p, index) => index < 100 || queueSet.has(p.id));
       const pollIds = selectedPolls.map(p => p.id);
       if (pollIds.length === 0) return [];
