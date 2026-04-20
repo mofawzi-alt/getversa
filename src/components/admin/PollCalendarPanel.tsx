@@ -154,18 +154,28 @@ export default function PollCalendarPanel() {
   const acceptAiImage = (row: CalendarRow, opt: 'A' | 'B') => {
     const preview = opt === 'A' ? row.ai_image_a_preview : row.ai_image_b_preview;
     if (!preview) return;
+    const newAUrl = opt === 'A' ? preview : row.image_a_url;
+    const newBUrl = opt === 'B' ? preview : row.image_b_url;
     const patch: any = {
       id: row.id,
       [opt === 'A' ? 'image_a_url' : 'image_b_url']: preview,
       [opt === 'A' ? 'ai_image_a_preview' : 'ai_image_b_preview']: null,
     };
-    // If both images will now be set, drop status back to 'draft' so it's clearly ready to approve
-    const otherUrl = opt === 'A' ? row.image_b_url : row.image_a_url;
-    if (otherUrl && row.status === 'image_pending') {
+    // Always clear image_pending once both images exist
+    if (newAUrl && newBUrl && row.status === 'image_pending') {
       patch.status = 'draft';
     }
-    updateRow.mutate(patch);
-    toast.success(`Image ${opt} approved — ${otherUrl ? 'ready for final approval' : 'approve image ' + (opt === 'A' ? 'B' : 'A') + ' next'}`);
+    updateRow.mutate(patch, {
+      onSuccess: () => {
+        // Sync the open dialog to fresh DB state
+        setEditingRow((cur) =>
+          cur && cur.id === row.id
+            ? { ...cur, ...patch, image_a_url: newAUrl, image_b_url: newBUrl }
+            : cur
+        );
+      },
+    });
+    toast.success(`Image ${opt} approved${newAUrl && newBUrl ? ' — ready for final approval' : ''}`);
   };
 
   const setStatus = (row: CalendarRow, status: Status) => {
