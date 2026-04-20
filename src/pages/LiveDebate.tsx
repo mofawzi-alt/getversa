@@ -258,7 +258,11 @@ export default function LiveDebate() {
   }, [currentPoll, phase, voteMutation]);
 
   const handleExit = useCallback(() => {
-    navigate(returnTo === 'ask' ? '/ask' : '/home');
+    if (returnTo === 'ask') {
+      navigate('/ask', { replace: true, state: { fromLiveDebate: true, fallbackTo: '/home' } });
+      return;
+    }
+    navigate('/home', { replace: true });
   }, [navigate, returnTo]);
 
   // Swipe-down to exit

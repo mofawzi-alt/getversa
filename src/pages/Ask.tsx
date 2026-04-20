@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Loader2, Scale, FlaskConical, ArrowUp, RotateCcw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -49,8 +49,14 @@ interface PreviewState {
   history: Array<{ role: 'user' | 'assistant'; content: string }>;
 }
 
+interface AskLocationState {
+  fromLiveDebate?: boolean;
+  fallbackTo?: string;
+}
+
 export default function Ask() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile } = useAuth();
   const qc = useQueryClient();
   const [mode, setMode] = useState<Mode>('decide');
@@ -64,6 +70,19 @@ export default function Ask() {
 
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 200); }, []);
   useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
+
+  const handleBack = () => {
+    const state = location.state as AskLocationState | null;
+    if (state?.fromLiveDebate) {
+      navigate(state.fallbackTo || '/home', { replace: true });
+      return;
+    }
+    if (window.history.state?.idx > 0) {
+      navigate(-1);
+      return;
+    }
+    navigate('/home', { replace: true });
+  };
 
   const reset = () => {
     setQuery('');
@@ -209,7 +228,7 @@ export default function Ask() {
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
         <div className="flex items-center justify-between gap-2 px-3 py-3">
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-muted active:scale-95 transition" aria-label="Back">
+            <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-muted active:scale-95 transition" aria-label="Back">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-1.5">
