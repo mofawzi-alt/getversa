@@ -440,6 +440,10 @@ function LiveDebatesList({
       toast.error('Vote failed');
       return;
     }
+    try {
+      const { markFirstVote } = await import('@/components/PWAInstallPrompt');
+      markFirstVote();
+    } catch {}
     queryClient.invalidateQueries({ queryKey: ['user-voted-ids', user.id] });
     queryClient.invalidateQueries({ queryKey: ['user-vote-choices', user.id] });
     queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });

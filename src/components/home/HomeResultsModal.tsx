@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Users } from 'lucide-react';
 import ShareButton from '@/components/poll/ShareButton';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 
 interface HomeResultsModalProps {
   open: boolean;
@@ -102,6 +103,9 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
           {genderTeaser && (
             <p className="text-[11px] text-muted-foreground text-center pt-1">{genderTeaser.text}</p>
           )}
+
+          {/* Install-to-home-screen nudge after first vote */}
+          <PWAInstallPrompt />
         </div>
       </DialogContent>
     </Dialog>
