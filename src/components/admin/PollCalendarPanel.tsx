@@ -376,18 +376,22 @@ export default function PollCalendarPanel() {
           <DialogHeader>
             <DialogTitle>Edit calendar entry</DialogTitle>
           </DialogHeader>
-          {editingRow && (
-            <EditForm
-              row={editingRow}
-              onSave={(patch) => {
-                updateRow.mutate({ id: editingRow.id, ...patch });
-                setEditingRow(null);
-              }}
-              onAcceptAi={(opt) => acceptAiImage(editingRow, opt)}
-              onGen={(opt) => generateImage(editingRow, opt)}
-              generating={generatingId === editingRow.id}
-            />
-          )}
+          {editingRow && (() => {
+            const fresh = rows.find((r) => r.id === editingRow.id) || editingRow;
+            return (
+              <EditForm
+                key={`${fresh.id}-${fresh.image_a_url || ''}-${fresh.image_b_url || ''}-${fresh.ai_image_a_preview || ''}-${fresh.ai_image_b_preview || ''}`}
+                row={fresh}
+                onSave={(patch) => {
+                  updateRow.mutate({ id: fresh.id, ...patch });
+                  setEditingRow(null);
+                }}
+                onAcceptAi={(opt) => acceptAiImage(fresh, opt)}
+                onGen={(opt) => generateImage(fresh, opt)}
+                generating={generatingId === fresh.id}
+              />
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
