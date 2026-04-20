@@ -181,8 +181,8 @@ function HomeLiveDebateCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.05, 0.3) }}
       whileTap={{ scale: 0.985 }}
-      onClick={onCardClick}
-      className="rounded-2xl overflow-hidden cursor-pointer border border-border/60 bg-card shadow-md"
+      onClick={hasVoted ? onCardClick : undefined}
+      className={`rounded-2xl overflow-hidden border border-border/60 bg-card shadow-md ${hasVoted ? 'cursor-pointer' : ''}`}
     >
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
