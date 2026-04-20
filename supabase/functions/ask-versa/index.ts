@@ -43,12 +43,19 @@ const FILTER_TOOL = {
   type: "function",
   function: {
     name: "extract_poll_filters",
-    description: "Extract structured filter criteria + complexity route from a natural language question about polls.",
+    description: "Classify a user question about Egyptian opinion polls and extract structured filter criteria.",
     parameters: {
       type: "object",
       properties: {
+        intent: {
+          type: "string",
+          description: `Classify the user's intent EXACTLY as one of:
+- "preference": asks which option people prefer / pick / choose / lean toward / love more / vote for. e.g. "iPhone or Samsung?", "Do Egyptians prefer Coke or Pepsi?", "Which fast food brand wins with 18-24?"
+- "factual": asks for a number, fact, definition, news, market data, technical info — anything Versa polls cannot answer. e.g. "iPhone market size?", "Who founded Apple?", "When did Vodafone enter Egypt?"
+- "offscope": rude, harmful, nonsensical, code-help, math homework, personal life advice unrelated to consumer preferences.`,
+        },
         keywords: { type: "array", items: { type: "string" }, description: "Key topical terms (lowercase)." },
-        entities: { type: "array", items: { type: "string" }, description: "Named products, brands, people, or places explicitly mentioned." },
+        entities: { type: "array", items: { type: "string" }, description: "Named brands, products, people, or places explicitly mentioned (canonical form, lowercase). Include common synonyms inline, e.g. 'iphone' not 'apple iphone 15 pro'. For 'iPhone vs Samsung' return ['iphone','samsung']. For 'iPhone market size' return ['iphone']." },
         category: { type: "string", description: `One of: ${KNOWN_CATEGORIES.join(", ")}, or "any".` },
         gender: { type: "string", description: 'One of: male, female, any.' },
         age_range: { type: "string", description: 'One of: under_18, 18-24, 25-34, 35-44, 45+, any.' },
@@ -59,10 +66,46 @@ const FILTER_TOOL = {
           description: "simple = single poll/brand fact lookup; medium = one demographic OR one category summary; complex = synthesis across multiple polls/demographics or brand intelligence. Must be exactly 'simple', 'medium', or 'complex'.",
         },
       },
-      required: ["keywords", "route"],
+      required: ["intent", "keywords", "entities", "route"],
     },
   },
 };
+
+// Brand/entity synonyms — extend as the catalogue grows.
+// Each canonical key maps to a list of substrings we'll look for in poll text.
+const ENTITY_SYNONYMS: Record<string, string[]> = {
+  iphone: ["iphone", "apple"],
+  samsung: ["samsung", "galaxy"],
+  coke: ["coke", "coca", "cola"],
+  pepsi: ["pepsi"],
+  vodafone: ["vodafone"],
+  orange: ["orange"],
+  etisalat: ["etisalat"],
+  we: ["we telecom", "we mobile"],
+  talabat: ["talabat"],
+  elmenus: ["elmenus"],
+  uber: ["uber"],
+  careem: ["careem"],
+  costa: ["costa"],
+  cilantro: ["cilantro"],
+  starbucks: ["starbucks"],
+  carrefour: ["carrefour"],
+  spinneys: ["spinneys"],
+  ahly: ["ahly", "ahli"],
+  zamalek: ["zamalek"],
+};
+
+function expandEntityVariants(entity: string): string[] {
+  const e = entity.toLowerCase().trim();
+  if (!e) return [];
+  const direct = ENTITY_SYNONYMS[e];
+  if (direct) return direct;
+  // Look up by partial match (e.g. "iphone 15 pro" → iphone synonyms)
+  for (const [key, synonyms] of Object.entries(ENTITY_SYNONYMS)) {
+    if (e.includes(key)) return synonyms;
+  }
+  return [e];
+}
 
 async function callGroq(apiKey: string, model: string, payload: any) {
   const resp = await fetch(AI_URL, {
@@ -131,11 +174,22 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `You translate natural language questions about Egyptian opinion polls into structured filters AND classify complexity. Categories: ${KNOWN_CATEGORIES.join(", ")}. Be conservative — only set demographic filters when explicitly mentioned. Classify "route":
-- simple: single poll/brand fact lookup, one entity, asking for one number ("Who won iPhone vs Samsung?", "% chose Coke?")
-- medium: one demographic filter OR one category summary ("How did women vote on money polls?", "What does Cairo think about tech?")
-- complex: synthesis across multiple polls/demographics, cross-category, brand intelligence ("What does data say about Gen Z financial behavior?", "Compare Cairo vs Alex on lifestyle")
-If conversation history is provided, the new question may be a FOLLOW-UP — infer the underlying topic and merge with the new ask.`,
+          content: `You classify questions for an Egyptian opinion-poll app called Versa, then extract filters.
+
+Step 1 — INTENT (mandatory, exact value):
+- "preference": user is asking which option people PREFER, PICK, CHOOSE, LEAN toward, LOVE more, vote for, or "X or Y?". This is what Versa's polls answer.
+- "factual": user wants a number, fact, definition, market size, news, history, technical info, formula, or anything Versa votes cannot answer (e.g. "iPhone market size?", "Who founded Vodafone?", "When did Talabat launch?").
+- "offscope": anything Versa shouldn't answer at all — rude, harmful, hate speech, illegal, code-writing requests ("write me python code"), math homework ("solve 2x+5=11"), personal advice unrelated to consumer choices ("should I dump my partner"), medical/legal advice, gibberish. When in doubt between factual and offscope, prefer factual.
+
+Step 2 — ENTITIES: every brand/product/person/place explicitly named, in canonical lowercase form. "iPhone vs Samsung" → ["iphone","samsung"]. "iPhone market size" → ["iphone"]. "How divided are Egyptians on Ahly vs Zamalek" → ["ahly","zamalek"]. NEVER hallucinate entities not in the question.
+
+Step 3 — Other filters (only set demographics when the question explicitly mentions them) and "route" complexity:
+- simple: single poll/brand fact lookup
+- medium: one demographic filter OR one category summary
+- complex: synthesis across multiple polls/demographics
+
+Categories: ${KNOWN_CATEGORIES.join(", ")}.
+If conversation history is provided, the new question may be a FOLLOW-UP — infer underlying topic and merge entities from prior turns.`,
         },
         ...historyMessages,
         { role: "user", content: question },
@@ -208,17 +262,89 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       intent_summary,
       route = "simple",
       entities = [],
+      intent: rawIntent,
     } = filters;
+    const intent = (["preference", "factual", "offscope"].includes(rawIntent)
+      ? rawIntent
+      : "preference") as "preference" | "factual" | "offscope";
     const safeRoute = (["simple", "medium", "complex"].includes(route) ? route : "simple") as "simple" | "medium" | "complex";
     const cost = ROUTE_COSTS[safeRoute];
     const model = ROUTE_MODEL[safeRoute];
 
     const normalizeTerm = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s&+-]/g, " ").replace(/\s+/g, " ").trim();
     const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and"]);
-    const topicalTerms = Array.from(new Set([...(Array.isArray(entities) ? entities : []), ...keywords]
+    const cleanedEntities: string[] = Array.from(new Set((Array.isArray(entities) ? entities : [])
+      .map((e: string) => normalizeTerm(String(e || "")))
+      .filter((e: string) => e.length >= 2 && !STOP_TERMS.has(e))));
+    // Entity variants we'll require to appear inside the poll text (strict gate).
+    const requiredEntityVariants = cleanedEntities.map((e) => expandEntityVariants(e));
+    const topicalTerms = Array.from(new Set([...cleanedEntities, ...keywords]
       .map((term: string) => normalizeTerm(String(term || "")))
       .filter((term: string) => term.length >= 3 && !STOP_TERMS.has(term))));
     const categoryBuckets = category && category !== "any" ? (CATEGORY_MAP[category.toLowerCase()] || []) : [];
+
+    // ---- 1b. Off-scope or factual short-circuit (no charge, no DB hit) ----
+    if (intent === "offscope") {
+      let queryId: string | null = null;
+      if (userId) {
+        const { data: inserted } = await supabase.from("ask_versa_queries").insert({
+          user_id: userId, question, mode, route: safeRoute,
+          credits_charged: 0, answered: false, low_data: true,
+          model_used: model, total_votes_considered: 0, matched_poll_count: 0,
+          category_hint: category && category !== "any" ? category : null,
+        }).select("id").maybeSingle();
+        queryId = inserted?.id ?? null;
+      }
+      return new Response(JSON.stringify({
+        stage: "offscope",
+        summary: "Versa is built for consumer preference questions — things people in Egypt vote on, like brands, food, lifestyle, or relationships. Try a question like \"Coke or Pepsi?\" or \"What do students think about online learning?\".",
+        credits_balance: userBalance,
+        route: safeRoute,
+        mode,
+        query_id: queryId,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (intent === "factual") {
+      // Honest general-knowledge answer, clearly labeled. No vote data, no charge.
+      let factualAnswer = "I can answer this from general knowledge, but it's not from Versa votes.";
+      try {
+        const factResp = await callGroq(GROQ_API_KEY, MODEL_FAST, {
+          messages: [
+            { role: "system", content: "You answer factual questions in 2-3 short sentences. Be direct, accurate, and cite a rough year if possible. If you don't know, say so. Never invent statistics." },
+            { role: "user", content: question },
+          ],
+        });
+        if (factResp.ok) {
+          const fd = await factResp.json();
+          factualAnswer = fd.choices?.[0]?.message?.content?.trim() || factualAnswer;
+        }
+      } catch (e) {
+        console.error("factual answer failed", e);
+      }
+
+      let queryId: string | null = null;
+      if (userId) {
+        const { data: inserted } = await supabase.from("ask_versa_queries").insert({
+          user_id: userId, question, mode, route: safeRoute,
+          credits_charged: 0, answered: true, low_data: true,
+          model_used: MODEL_FAST, total_votes_considered: 0, matched_poll_count: 0,
+          category_hint: category && category !== "any" ? category : null,
+        }).select("id").maybeSingle();
+        queryId = inserted?.id ?? null;
+      }
+
+      return new Response(JSON.stringify({
+        stage: "factual",
+        summary: factualAnswer,
+        notice: "General knowledge — not from Versa votes.",
+        credits_balance: userBalance,
+        route: safeRoute,
+        mode,
+        query_id: queryId,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
 
     // ---- 2. Query polls ----
     const buildQuery = (useCategory: boolean, useKeywords: boolean) => {
@@ -314,6 +440,15 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
       return topicalTerms.reduce((count, term) => count + (haystack.includes(term) ? 1 : 0), 0);
     };
 
+    // Strict entity gate: every named entity must appear (any of its synonyms) in the poll text.
+    // For 1 entity (e.g. "iphone"): poll must mention iphone/apple.
+    // For 2 entities (e.g. "iphone vs samsung"): poll must mention BOTH sides.
+    const pollMatchesAllEntities = (poll: any) => {
+      if (requiredEntityVariants.length === 0) return true; // no entity constraint
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b].filter(Boolean).join(" "));
+      return requiredEntityVariants.every((variants) => variants.some((v) => haystack.includes(v)));
+    };
+
     let matchedPolls = polls
       .map((p) => {
         const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
@@ -336,9 +471,9 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits };
       })
       .filter((p: any) => {
+        // Hard gate: when the question names entities, the poll MUST mention them all.
+        if (!pollMatchesAllEntities(p)) return false;
         if (topicalTerms.length === 0) return categoryBuckets.length === 0 || categoryBuckets.includes(p.category);
-        // Require at least 1 topical hit. Decide mode used to require 2, but brand
-        // synonyms (e.g. "coke" vs "Coca-Cola") often only match one side.
         return p._topicalHits >= 1;
       });
 

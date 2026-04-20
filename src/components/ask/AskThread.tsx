@@ -17,6 +17,9 @@ export interface AskTurn {
   verdict?: Verdict | null;
   polls?: ResearchPoll[];
   lowData?: boolean;
+  /** "offscope" = polite refusal, "factual" = general-knowledge answer not from votes */
+  variant?: 'offscope' | 'factual' | null;
+  notice?: string | null;
   suggestions?: string[];
   guardrailPolls?: Array<{ id: string; question: string; option_a: string; option_b: string; image_a_url?: string | null; image_b_url?: string | null; category?: string | null }>;
   askQueryId?: string | null;
@@ -79,7 +82,25 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                   </div>
                 )}
 
-                {!t.loading && t.lowData && t.summary && (
+                {!t.loading && t.variant === 'offscope' && t.summary && (
+                  <div className="rounded-2xl rounded-tl-sm bg-muted/40 border border-border p-3.5 space-y-2">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Out of scope</p>
+                    <p className="text-sm text-foreground leading-relaxed">{t.summary}</p>
+                    <p className="text-[11px] text-muted-foreground">No credits charged.</p>
+                  </div>
+                )}
+
+                {!t.loading && t.variant === 'factual' && t.summary && (
+                  <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5 space-y-2">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                      {t.notice || 'General knowledge — not from Versa votes.'}
+                    </p>
+                    <p className="text-sm text-foreground leading-relaxed">{t.summary}</p>
+                    <p className="text-[11px] text-muted-foreground">No credits charged.</p>
+                  </div>
+                )}
+
+                {!t.loading && !t.variant && t.lowData && t.summary && (
                   <GuardrailCard summary={t.summary} polls={t.guardrailPolls || []} question={t.question} askQueryId={t.askQueryId} />
                 )}
 

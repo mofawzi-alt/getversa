@@ -100,6 +100,31 @@ export default function Ask() {
       if (error) throw error;
       if (data?.error) { toast.error(data.error); return; }
 
+      // Off-scope: polite refusal, no charge, no preview.
+      if (data.stage === 'offscope') {
+        const turnId = crypto.randomUUID();
+        setTurns((prev) => [...prev, {
+          id: turnId, question, mode,
+          loading: false,
+          summary: data.summary,
+          variant: 'offscope',
+        } as AskTurn]);
+        return;
+      }
+
+      // Factual: general-knowledge answer, clearly labeled, no charge.
+      if (data.stage === 'factual') {
+        const turnId = crypto.randomUUID();
+        setTurns((prev) => [...prev, {
+          id: turnId, question, mode,
+          loading: false,
+          summary: data.summary,
+          notice: data.notice,
+          variant: 'factual',
+        } as AskTurn]);
+        return;
+      }
+
       // Guardrail: render directly as a turn, no charge
       if (data.stage === 'guardrail') {
         const turnId = crypto.randomUUID();
