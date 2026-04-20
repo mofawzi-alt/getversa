@@ -203,3 +203,6 @@ function PollOptionImageComponent({
     </div>
   );
 }
+
+const PollOptionImage = memo(PollOptionImageComponent);
+export default PollOptionImage;
