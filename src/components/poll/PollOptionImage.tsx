@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { Loader2 } from 'lucide-react';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { getBrandColor, getImageTreatment } from '@/lib/brandDetection';
@@ -41,7 +41,7 @@ function isVideoUrl(url: string | null): boolean {
  * - Logo polls: brand color background + centered logo with object-fit: contain
  * - Photo polls: treatment varies by card variant
  */
-export default function PollOptionImage({
+function PollOptionImageComponent({
   imageUrl,
   option,
   question,
@@ -50,7 +50,7 @@ export default function PollOptionImage({
   maxLogoSize = '65%',
   showLoader = false,
   draggable = false,
-  loading = 'eager',
+  loading = 'lazy',
   variant = 'hero',
 }: PollOptionImageProps) {
   const [loaded, setLoaded] = useState(false);
@@ -203,3 +203,6 @@ export default function PollOptionImage({
     </div>
   );
 }
+
+const PollOptionImage = memo(PollOptionImageComponent);
+export default PollOptionImage;
