@@ -526,33 +526,51 @@ Rules:
       return requiredEntityVariants.every((variants) => variants.some((v) => haystack.includes(v)));
     };
 
-    let matchedPolls = polls
-      .map((p) => {
-        const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
-        const realTotal = rawStats.total;
-        const baselineActive = realTotal < sunsetThreshold;
-        const baseA = baselineActive ? (p.baseline_votes_a || 0) : 0;
-        const baseB = baselineActive ? (p.baseline_votes_b || 0) : 0;
-        // Merge baselines into top-line a/b/total only (demographic splits stay 100% real)
-        const s = {
-          ...rawStats,
-          a: rawStats.a + baseA,
-          b: rawStats.b + baseB,
-          total: rawStats.total + baseA + baseB,
-          realTotal,
-          baselineActive,
-        };
-        const split = s.total > 0 ? s.a / s.total : 0.5;
-        const controversyScore = 1 - Math.abs(split - 0.5) * 2;
-        const topicalHits = getPollTopicalHitCount(p);
-        return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits };
-      })
-      .filter((p: any) => {
-        // Hard gate: when the question names entities, the poll MUST mention them all.
-        if (!pollMatchesAllEntities(p)) return false;
-        if (topicalTerms.length === 0) return categoryBuckets.length === 0 || categoryBuckets.includes(p.category);
-        return p._topicalHits >= 1;
-      });
+    const enrichedPollList = polls.map((p) => {
+      const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
+      const realTotal = rawStats.total;
+      const baselineActive = realTotal < sunsetThreshold;
+      const baseA = baselineActive ? (p.baseline_votes_a || 0) : 0;
+      const baseB = baselineActive ? (p.baseline_votes_b || 0) : 0;
+      const s = {
+        ...rawStats,
+        a: rawStats.a + baseA,
+        b: rawStats.b + baseB,
+        total: rawStats.total + baseA + baseB,
+        realTotal,
+        baselineActive,
+      };
+      const split = s.total > 0 ? s.a / s.total : 0.5;
+      const controversyScore = 1 - Math.abs(split - 0.5) * 2;
+      const topicalHits = getPollTopicalHitCount(p);
+      const entityMatch = pollMatchesAllEntities(p);
+      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _entityMatch: entityMatch };
+    });
+
+    let matchedPolls = enrichedPollList.filter((p: any) => {
+      if (!p._entityMatch) return false;
+      if (topicalTerms.length === 0) return categoryBuckets.length === 0 || categoryBuckets.includes(p.category);
+      return p._topicalHits >= 1;
+    });
+
+    // Soft relax: if entity gate killed everything but topical terms find polls,
+    // accept those (e.g. "rent or buy apt" — the entity 'apt' may not literally appear in poll text).
+    if (matchedPolls.length === 0 && topicalTerms.length > 0) {
+      const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1);
+      if (topicalOnly.length > 0) {
+        console.log(`Entity gate killed all ${requiredEntityVariants.length} entities — falling back to ${topicalOnly.length} topical matches`);
+        matchedPolls = topicalOnly;
+      }
+    }
+
+    // Final relax: if still empty and we have a category, fall back to category matches.
+    if (matchedPolls.length === 0 && categoryBuckets.length > 0) {
+      const catOnly = enrichedPollList.filter((p: any) => categoryBuckets.includes(p.category));
+      if (catOnly.length > 0) {
+        console.log(`Topical gate killed everything — falling back to ${catOnly.length} category matches`);
+        matchedPolls = catOnly;
+      }
+    }
 
     if (controversial) {
       matchedPolls = matchedPolls.filter((p: any) => p._stats.total >= 5).sort((a: any, b: any) => (b._topicalHits - a._topicalHits) || (b._controversyScore - a._controversyScore));
