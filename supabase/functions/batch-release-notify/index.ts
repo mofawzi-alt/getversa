@@ -41,21 +41,49 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Daily poll batch notify — ${polls} fresh polls`);
 
+    // Hard idempotency guard: if this job gets triggered multiple times in the same morning,
+    // do not send the morning batch again to users who already received it recently.
+    const dedupeSince = new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString();
+    const { data: recentSends, error: recentSendsError } = await supabase
+      .from("notification_log")
+      .select("user_id")
+      .eq("notification_type", "daily_poll_batch")
+      .gte("sent_at", dedupeSince);
+
+    if (recentSendsError) throw recentSendsError;
+
+    const alreadySentUserIds = new Set((recentSends ?? []).map((row) => row.user_id));
+
     // Fetch all users
     const { data: users, error: usersError } = await supabase.from("users").select("id");
     if (usersError) throw usersError;
 
     if (!users?.length) {
       return new Response(
-        JSON.stringify({ success: true, sent: 0, total_users: 0 }),
+        JSON.stringify({ success: true, sent: 0, total_users: 0, skipped_already_sent: 0 }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // One governed notification per user — governance enforces 1/day naturally because
-    // the type is unique to this morning send and quiet hours / cap apply.
+    const eligibleUsers = users.filter((u) => !alreadySentUserIds.has(u.id));
+
+    if (!eligibleUsers.length) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          sent: 0,
+          skipped: 0,
+          skipped_already_sent: users.length,
+          total_users: users.length,
+          fresh_polls: polls,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // One governed notification per eligible user.
     const results = await Promise.allSettled(
-      users.map((u) =>
+      eligibleUsers.map((u) =>
         fetch(`${SUPABASE_URL}/functions/v1/send-governed-notification`, {
           method: "POST",
           headers: {
@@ -78,12 +106,13 @@ serve(async (req: Request): Promise<Response> => {
     const sent = results.filter(
       (r: any) => r.status === "fulfilled" && r.value?.sent
     ).length;
-    const skipped = users.length - sent;
+    const skipped = eligibleUsers.length - sent;
+    const skippedAlreadySent = users.length - eligibleUsers.length;
 
-    console.log(`Daily poll batch: ${sent} sent, ${skipped} skipped (cap/prefs/quiet)`);
+    console.log(`Daily poll batch: ${sent} sent, ${skipped} skipped (cap/prefs/quiet), ${skippedAlreadySent} skipped (already sent recently)`);
 
     return new Response(
-      JSON.stringify({ success: true, sent, skipped, total_users: users.length, fresh_polls: polls }),
+      JSON.stringify({ success: true, sent, skipped, skipped_already_sent: skippedAlreadySent, total_users: users.length, fresh_polls: polls }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
