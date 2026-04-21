@@ -347,8 +347,8 @@ export default function PulseStoriesRow() {
       });
     }
 
-    // ── New This Week (BLUE dot) — only if 5+
-    if (user && newPollsData && newPollsData.length >= 5) {
+    // ── New This Week (BLUE dot) — show if 1+
+    if (user && newPollsData && newPollsData.length >= 1) {
       list.push({
         topic: 'new_this_week',
         label: 'New',
