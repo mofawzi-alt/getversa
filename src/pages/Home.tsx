@@ -249,7 +249,7 @@ function HomeLiveDebateCard({
 
         {/* Frosted reveal overlay — only when NOT voted */}
         {!hasVoted && (
-          <div className="absolute inset-0 z-30 flex items-end justify-center pb-4 pointer-events-none">
+          <div className="absolute inset-0 z-30 flex items-end justify-center pb-16 pointer-events-none">
             <div className="px-3 py-1.5 rounded-full bg-black/55 backdrop-blur-md flex items-center gap-1.5 shadow-lg">
               <Lock className="h-3 w-3 text-white" />
               <span className="text-[11px] font-semibold text-white tracking-wide">Vote to reveal result</span>
