@@ -26,9 +26,9 @@ const CATEGORY_MAP: Record<string, string[]> = {
 };
 const KNOWN_CATEGORIES = Object.keys(CATEGORY_MAP);
 
-const AI_URL = "https://api.groq.com/openai/v1/chat/completions";
-const MODEL_FAST = "llama-3.1-8b-instant";        // simple route
-const MODEL_SMART = "llama-3.3-70b-versatile";    // medium + complex routes
+const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const MODEL_FAST = "google/gemini-2.5-flash-lite"; // extraction + factual fallback
+const MODEL_SMART = "openai/gpt-5-mini";           // verdict writing (medium + complex)
 
 const ROUTE_COSTS = { simple: 1, medium: 3, complex: 8 } as const;
 const ROUTE_MODEL: Record<string, string> = {
