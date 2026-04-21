@@ -6,7 +6,7 @@ import { hasSeenLocally } from '@/lib/pulseTime';
 import { trackStoryEvent } from '@/lib/storyAnalytics';
 import {
   Pin, Flame, MapPin, Building2, Bell, Users, Sparkles,
-  Swords, Layers, Brain, Clock, Trophy, PartyPopper, BarChart3,
+  Swords, Layers, Brain, Clock, Trophy, PartyPopper, BarChart3, Sunrise,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -92,6 +92,12 @@ const TOPIC_VISUALS: Record<string, CircleVisual> = {
     Icon: BarChart3,
     tileGradient: 'bg-gradient-to-br from-indigo-600 to-purple-800',
     ringGradient: 'bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500',
+    iconColor: 'text-white',
+  },
+  morning_recap: {
+    Icon: Sunrise,
+    tileGradient: 'bg-gradient-to-br from-orange-400 to-pink-500',
+    ringGradient: 'bg-gradient-to-tr from-amber-300 via-orange-400 to-pink-500',
     iconColor: 'text-white',
   },
 };
@@ -494,6 +500,65 @@ export default function PulseStoriesRow() {
         dot: hasSeenLocally('breakdown') ? null : 'blue',
         priority: 35,
       });
+    }
+
+    // ── Morning Recap (yesterday's big result, closest battle, surprise)
+    if (settings?.morning_pulse_enabled !== false && pulse.cards) {
+      const recapCards: StoryCardData[] = [];
+      if (pulse.cards.big_result) {
+        const c = pulse.cards.big_result;
+        recapCards.push({
+          backgroundImage: c.winning_image,
+          label: 'While you were sleeping…',
+          categoryEmoji: '🌅',
+          headline: c.question,
+          primaryText: `${c.winning_option} wins ${c.winning_pct}%`,
+          secondaryText: `${c.total_votes.toLocaleString()} votes`,
+          splitA: { label: c.option_a, pct: c.pct_a },
+          splitB: { label: c.option_b, pct: c.pct_b },
+          votePollId: c.poll_id,
+          shareable: true,
+        });
+      }
+      if (pulse.cards.closest_battle) {
+        const c = pulse.cards.closest_battle;
+        recapCards.push({
+          backgroundImage: c.winning_image,
+          label: 'Too close to call',
+          categoryEmoji: '⚖️',
+          headline: c.question,
+          primaryText: `${c.pct_a}% vs ${c.pct_b}%`,
+          secondaryText: `${c.total_votes.toLocaleString()} votes`,
+          splitA: { label: c.option_a, pct: c.pct_a },
+          splitB: { label: c.option_b, pct: c.pct_b },
+          votePollId: c.poll_id,
+          shareable: true,
+        });
+      }
+      if (pulse.cards.surprise) {
+        const c: any = pulse.cards.surprise;
+        recapCards.push({
+          backgroundImage: c.winning_image,
+          label: 'Nobody saw this coming',
+          categoryEmoji: '😮',
+          headline: c.question,
+          primaryText: `Predicted ${c.predicted_a}% — got ${c.pct_a}%`,
+          secondaryText: `${c.gap}% perception gap • ${c.total_votes.toLocaleString()} votes`,
+          splitA: { label: c.option_a, pct: c.pct_a },
+          splitB: { label: c.option_b, pct: c.pct_b },
+          votePollId: c.poll_id,
+          shareable: true,
+        });
+      }
+      if (recapCards.length > 0) {
+        list.push({
+          topic: 'morning_recap',
+          label: 'Recap',
+          cards: recapCards,
+          dot: hasSeenLocally('morning_recap') ? null : 'blue',
+          priority: 4, // high — surface near the top
+        });
+      }
     }
 
     return list;
