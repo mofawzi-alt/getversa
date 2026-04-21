@@ -109,7 +109,7 @@ function expandEntityVariants(entity: string): string[] {
   return [e];
 }
 
-async function callGroq(apiKey: string, model: string, payload: any) {
+async function callAI(apiKey: string, model: string, payload: any) {
   const resp = await fetch(AI_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -172,7 +172,7 @@ serve(async (req) => {
     }));
 
     // ---- 1. Extract filters + classify route (always uses fast model) ----
-    const extractResp = await callGroq(GROQ_API_KEY, MODEL_FAST, {
+    const extractResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
       messages: [
         {
           role: "system",
@@ -221,7 +221,7 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
     // Helper: retry without tool calling (uses JSON mode — far more reliable than Groq tool schema)
     const jsonModeRetry = async (): Promise<any | null> => {
       try {
-        const retryResp = await callGroq(GROQ_API_KEY, MODEL_FAST, {
+        const retryResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
           messages: [
             {
               role: "system",
@@ -365,7 +365,7 @@ Rules:
       // Honest general-knowledge answer, clearly labeled. No vote data, no charge.
       let factualAnswer = "I can answer this from general knowledge, but it's not from Versa votes.";
       try {
-        const factResp = await callGroq(GROQ_API_KEY, MODEL_FAST, {
+        const factResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
           messages: [
             { role: "system", content: "You answer factual questions in 2-3 short sentences. Be direct, accurate, and cite a rough year if possible. If you don't know, say so. Never invent statistics." },
             { role: "user", content: question },
@@ -753,7 +753,7 @@ Rules:
         viewerLine = `${vPct}% of ${viewer.age_range} agree`;
       }
 
-      const reasonResp = await callGroq(GROQ_API_KEY, model, {
+      const reasonResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
           { role: "system", content: "You write ONE punchy sentence (max 18 words) explaining why Egyptians lean a certain way on a poll. No preamble, no quotes. Direct and confident." },
           { role: "user", content: `Question: "${top.question}"\nWinner: ${winnerLabel} (${winnerPct}%)\nLoser: ${winnerSide === "A" ? top.option_b : top.option_a} (${100 - winnerPct}%)\nSample size: ${s.total}\n\nWhy did people pick ${winnerLabel}? One sentence.` },
@@ -787,7 +787,7 @@ Rules:
         const pctA = s.total > 0 ? Math.round((s.a / s.total) * 100) : 50;
         return `- "${p.question}" → ${p.option_a} ${pctA}% vs ${p.option_b} ${100 - pctA}% (n=${s.total})`;
       }).join("\n");
-      const sumResp = await callGroq(GROQ_API_KEY, model, {
+      const sumResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
           { role: "system", content: "You write a 2-3 sentence research-style insight summary. Lead with the strongest concrete number. No bullet points. No mention of 'Gen Z' or generations. Direct and citation-worthy." },
           { role: "user", content: `User's research question: "${question}"\n\nMatched polls with results:\n${sampleText}\n\nWrite 2-3 sentences leading with the most striking stat.` },
