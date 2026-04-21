@@ -283,7 +283,7 @@ export default function StoryViewer({
               )}
             </div>
 
-            {card.cta && (
+            {card.cta ? (
               <div className="absolute bottom-6 left-0 right-0 px-5 pointer-events-auto">
                 <button
                   type="button"
@@ -297,7 +297,21 @@ export default function StoryViewer({
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-            )}
+            ) : card.votePollId ? (
+              <div className="absolute bottom-6 left-0 right-0 px-5 pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleVote(card);
+                  }}
+                  className="w-full h-12 rounded-full bg-white text-black font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                >
+                  Open poll
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            ) : null}
           </motion.div>
         </div>
       </motion.div>
