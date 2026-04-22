@@ -38,7 +38,7 @@ export default function BiometricToggle({ email }: BiometricToggleProps) {
   // On native we still render even if unavailable, so user can see WHY.
   if (!isNative()) return null;
 
-  const label = type === 'face' ? 'Face ID' : type === 'fingerprint' ? 'Touch ID' : 'Biometric Login';
+  const label = type === 'face' ? 'Face ID' : type === 'fingerprint' ? 'Touch ID' : 'Face ID';
   const Icon = type === 'face' ? ScanFace : Fingerprint;
 
   const handleToggle = async (checked: boolean) => {
@@ -73,7 +73,9 @@ export default function BiometricToggle({ email }: BiometricToggleProps) {
         <div className="font-medium">{label}</div>
         <div className="text-xs text-muted-foreground">
           {!available
-            ? `Unavailable${reason ? ` (${reason})` : ''} — enroll Face ID in iOS Settings`
+            ? reason === 'web'
+              ? 'Open Versa from the installed iPhone app to use Face ID'
+              : `Unavailable${reason ? ` (${reason})` : ''} — turn on Face ID in iPhone Settings`
             : enabled
               ? `Sign in instantly with ${label}`
               : `Use ${label} for faster sign-in`}

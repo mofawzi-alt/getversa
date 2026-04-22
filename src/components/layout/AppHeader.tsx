@@ -12,8 +12,8 @@ export default function AppHeader() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-b border-border/40 z-50 safe-area-top">
-        <div className="flex items-center justify-between h-14 px-4 max-w-lg mx-auto">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/92 backdrop-blur-lg pt-[calc(env(safe-area-inset-top)+0.25rem)]">
+        <div className="flex h-14 items-center justify-between px-4 max-w-lg mx-auto">
           {/* Logo */}
           <button 
             onClick={() => navigate(user ? '/home' : '/')}

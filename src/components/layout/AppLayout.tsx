@@ -22,9 +22,9 @@ export default function AppLayout({ children, hideNav }: AppLayoutProps) {
   }, [queryClient]);
 
   return (
-    <div className="min-h-screen pt-14 pb-20 relative">
+    <div className="min-h-screen pb-20 relative bg-background">
       {!hideNav && <AppHeader />}
-      <main className="safe-area-top relative z-10">
+      <main className="relative z-10 pt-[calc(3.5rem+env(safe-area-inset-top)+0.5rem)]">
         <PullToRefresh onRefresh={handleRefresh}>
           {children}
         </PullToRefresh>
