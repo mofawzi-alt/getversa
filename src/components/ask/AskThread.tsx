@@ -47,7 +47,7 @@ const RESEARCH_FOLLOWUPS = [
 
 export default function AskThread({ turns, onPickSuggestion }: Props) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0">
       {turns.map((t, idx) => {
         const isLast = idx === turns.length - 1;
         const followups = t.mode === 'decide' ? DECIDE_FOLLOWUPS : RESEARCH_FOLLOWUPS;
@@ -55,10 +55,10 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
           (t.verdict || (t.polls && t.polls.length > 0));
 
         return (
-          <div key={t.id} className="space-y-3">
+          <div key={t.id} className="space-y-3 w-full min-w-0">
             {/* User question bubble */}
-            <div className="flex items-start gap-2 justify-end">
-              <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-3.5 py-2.5 text-sm font-medium">
+            <div className="flex items-start gap-2 justify-end w-full min-w-0">
+              <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-3.5 py-2.5 text-sm font-medium break-words">
                 {t.question}
               </div>
               <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
@@ -67,7 +67,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
             </div>
 
             {/* Versa response */}
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2 w-full min-w-0">
               <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
               </div>
@@ -87,7 +87,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                   <>
                     <div className="rounded-2xl rounded-tl-sm bg-muted/40 border border-border p-3.5 space-y-2">
                       <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">No polls on this yet</p>
-                      <p className="text-sm text-foreground leading-relaxed">{t.summary}</p>
+                      <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
                       <p className="text-[11px] text-muted-foreground">No credits charged.</p>
                     </div>
                     <SuggestPollButton question={t.question} askQueryId={t.askQueryId} />
@@ -96,10 +96,10 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
 
                 {!t.loading && t.variant === 'factual' && t.summary && (
                   <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5 space-y-2">
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground break-words">
                       {t.notice || 'General knowledge — not from Versa votes.'}
                     </p>
-                    <p className="text-sm text-foreground leading-relaxed">{t.summary}</p>
+                    <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
                     <p className="text-[11px] text-muted-foreground">No credits charged.</p>
                   </div>
                 )}
@@ -114,7 +114,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
 
                 {!t.loading && !t.lowData && t.mode === 'decide' && !t.verdict && t.summary && (
                   <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5">
-                    <p className="text-sm text-foreground">{t.summary}</p>
+                    <p className="text-sm text-foreground break-words">{t.summary}</p>
                   </div>
                 )}
 
@@ -124,7 +124,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
 
                 {!t.loading && !t.lowData && t.mode === 'research' && t.summary && (!t.polls || t.polls.length === 0) && (
                   <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5">
-                    <p className="text-sm text-foreground">{t.summary}</p>
+                    <p className="text-sm text-foreground break-words">{t.summary}</p>
                   </div>
                 )}
 
