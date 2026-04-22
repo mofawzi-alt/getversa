@@ -67,7 +67,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
             </div>
 
             {/* Versa response */}
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2 w-full min-w-0">
               <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
               </div>
