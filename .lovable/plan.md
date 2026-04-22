@@ -1,89 +1,63 @@
-# Campaigns Redesign Plan
 
-## Goals
-Fix the 3 pain points you flagged:
-1. **Builder UI** — too clunky / too many fields
-3. **Brand-client portal** — feels weak/empty
-4. **Analytics output** — not telling you enough (vs the rich Poll Analytics + Insights views)
 
-Concept of grouping polls into campaigns stays. No DB schema changes — reuses `poll_campaigns`, `campaign_polls`, `campaign_clients`.
+# App Store Assets: Icon + Splash for Versa
 
----
+You need a polished app icon and splash screen before Apple or Google will approve Versa. Here's the plan to generate everything from a single master design, plus update the in-app splash to match.
 
-## Part 1 — New Campaign Builder (3 modes, tabbed)
+## What the stores require
 
-### Mode A — Quick Launch (default)
-Minimal fields: campaign name, brand name, polls (question + A + B). Logo, description, dates, images, category hidden behind an "Advanced" toggle.
+- **Apple**: 1024×1024 master icon (no transparency, no rounded corners — iOS rounds automatically), plus auto-generated sizes (60, 76, 120, 152, 167, 180 px)
+- **Google Play**: 512×512 store listing icon, plus 432×432 adaptive icons (foreground + background layers)
+- **Splash screens**: iOS launch images (1242×2688, 1125×2436, 828×1792) and Android 12+ splash (centered logo on white)
 
-### Mode B — Templates (5 presets)
-1. **Brand Battle** — Brand A vs Brand B head-to-head across 5 dimensions (taste, price, packaging, ads, loyalty)
-2. **Product Intelligence** — Single brand, product feature trade-offs
-3. **Market Pulse** — Category-wide sentiment across multiple players
-4. **Perception Gap** — Identity / values polls
-5. **Brand Health Pulse** — Recurring tracker (recommend, modern, trustworthy)
+## Design direction
 
-Each template seeds 3-5 question stubs the user just edits.
+White background, signature red `#E8392A` mark, no text overlay, edge-to-edge fill. Three options — pick one:
 
-### Mode C — AI Draft
-- Inputs: brand + topic/goal + # of polls
-- Edge function `generate-campaign-polls` (Lovable AI Gateway, `google/gemini-2.5-flash`)
-- User reviews/edits drafts before launch
+- **A — Monogram "V"**: Bold red "V" letterform on white. Strongest brand tie.
+- **B — Red dot**: Single red circle (the vote dot) on white. Minimal, scales beautifully at small sizes.
+- **C — Split square**: Diagonal half-white / half-red. Represents binary choice. Most conceptual.
 
----
+## What I'll build
 
-## Part 2 — Unified Campaign Analytics
+1. Generate master `app-icon-1024.png` (1024×1024) in chosen direction
+2. Generate master `splash-2732.png` (2732×2732, centered logo on white)
+3. Generate adaptive Android icon layers (`icon-foreground.png`, `icon-background.png`)
+4. Replace `public/favicon.png`, `public/apple-touch-icon.png`, `public/icon-192.png`, `public/icon-512.png` so web/PWA icons match the new app icon
+5. Update `index.html` `<link>` tags and PWA `manifest.json` references
+6. Tweak `SplashScreen.tsx` to ensure the in-app splash matches the native launch screen (so handoff feels seamless)
+7. Drop all assets into a `resources/` folder ready for `@capacitor/assets` CLI to consume
 
-New `CampaignDetailView.tsx` with 4 tabs, used by BOTH admin dialog AND brand-client portal.
+## Files created/modified
 
-- **Overview** — KPI cards (total votes, unique voters, completion %, engagement), trend chart, top-line winner per poll.
-- **Polls** — Each poll's vote split + winner; click to expand into the existing rich `PollAnalytics` view inline.
-- **Demographics** — Gender / age / city / country splits across the campaign + per-poll toggle. Reuses existing chart components.
-- **AI Narrative** — Edge function `generate-campaign-insights` writes: what the campaign revealed, strongest signal, demographic insight, recommended next move. Cached + manual refresh.
+```text
+public/
+  app-icon-1024.png          (NEW — master)
+  splash-2732.png            (NEW — master)
+  favicon.png                (replaced)
+  apple-touch-icon.png       (replaced)
+  icon-192.png               (replaced)
+  icon-512.png               (replaced)
+  manifest.json              (updated icon refs)
+resources/
+  icon-only.png              (NEW — for capacitor-assets)
+  icon-foreground.png        (NEW — Android adaptive)
+  icon-background.png        (NEW — Android adaptive)
+  splash.png                 (NEW)
+index.html                   (updated favicon links)
+src/components/SplashScreen.tsx  (minor polish for native parity)
+```
 
-### PDF Export
-- "Export Report" on Overview, Versa-branded only
-- Available to BOTH admin and brand clients (clients self-serve)
-- Uses existing `jspdf` + `html2canvas`
-- Pages: Cover → Overview KPIs → Per-poll results → Demographics → AI Narrative
+## What you do later (on your Mac, after Capacitor is added)
 
----
+```text
+npm install @capacitor/assets --save-dev
+npx capacitor-assets generate
+```
 
-## Part 3 — Brand Client Portal Upgrade
+This auto-generates all 30+ platform-specific sizes from the masters and drops them into `ios/App/App/Assets.xcassets/` and `android/app/src/main/res/`.
 
-Replace `BrandClientPortal`'s main panel with the same `CampaignDetailView`. Same quality view as admin + self-serve PDF.
+## Decision needed
 
----
+Reply with **A**, **B**, or **C** (or describe a different direction) and I'll switch to build mode and execute steps 1–7 in one go.
 
-## File changes
-
-**New**
-- `src/components/admin/campaigns/CampaignDetailView.tsx`
-- `src/components/admin/campaigns/QuickLaunchForm.tsx`
-- `src/components/admin/campaigns/TemplatesForm.tsx`
-- `src/components/admin/campaigns/AIDraftForm.tsx`
-- `src/lib/campaignTemplates.ts`
-- `src/lib/campaignPdf.ts`
-- `supabase/functions/generate-campaign-polls/index.ts`
-- `supabase/functions/generate-campaign-insights/index.ts`
-
-**Refactored**
-- `BrandCampaignBuilder.tsx` → shell with 3-mode tabs
-- `CampaignAnalyticsDialog.tsx` → thin wrapper around `CampaignDetailView`
-- `BrandClientPortal.tsx` → embeds `CampaignDetailView`
-
-**Untouched**
-- DB schema (no migrations)
-- How campaign polls appear in Home / Browse feed
-- All other admin tabs
-- Existing live campaigns keep working
-
----
-
-## Order of work (each step shippable on its own)
-1. `CampaignDetailView` tabs 1-3 + wire into admin dialog
-2. PDF export
-3. Wire same view into Brand Client Portal
-4. Builder: Quick Launch mode
-5. Builder: Templates mode
-6. `generate-campaign-insights` edge function (Tab 4)
-7. `generate-campaign-polls` edge function (AI Draft mode)
