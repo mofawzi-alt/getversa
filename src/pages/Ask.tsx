@@ -224,8 +224,11 @@ export default function Ask() {
   const empty = turns.length === 0;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden w-full">
+      <div
+        className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
         <div className="flex items-center justify-between gap-2 px-3 py-3">
           <div className="flex items-center gap-2">
             <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-muted active:scale-95 transition" aria-label="Back">
