@@ -87,7 +87,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                   <>
                     <div className="rounded-2xl rounded-tl-sm bg-muted/40 border border-border p-3.5 space-y-2">
                       <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">No polls on this yet</p>
-                      <p className="text-sm text-foreground leading-relaxed">{t.summary}</p>
+                      <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
                       <p className="text-[11px] text-muted-foreground">No credits charged.</p>
                     </div>
                     <SuggestPollButton question={t.question} askQueryId={t.askQueryId} />
@@ -96,10 +96,10 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
 
                 {!t.loading && t.variant === 'factual' && t.summary && (
                   <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5 space-y-2">
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground break-words">
                       {t.notice || 'General knowledge — not from Versa votes.'}
                     </p>
-                    <p className="text-sm text-foreground leading-relaxed">{t.summary}</p>
+                    <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
                     <p className="text-[11px] text-muted-foreground">No credits charged.</p>
                   </div>
                 )}
@@ -114,7 +114,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
 
                 {!t.loading && !t.lowData && t.mode === 'decide' && !t.verdict && t.summary && (
                   <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5">
-                    <p className="text-sm text-foreground">{t.summary}</p>
+                    <p className="text-sm text-foreground break-words">{t.summary}</p>
                   </div>
                 )}
 
@@ -124,7 +124,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
 
                 {!t.loading && !t.lowData && t.mode === 'research' && t.summary && (!t.polls || t.polls.length === 0) && (
                   <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5">
-                    <p className="text-sm text-foreground">{t.summary}</p>
+                    <p className="text-sm text-foreground break-words">{t.summary}</p>
                   </div>
                 )}
 
