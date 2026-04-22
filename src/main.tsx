@@ -1,6 +1,23 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { Capacitor } from "@capacitor/core";
+
+// Native iOS: make the WebView extend under the status bar so our
+// safe-area CSS (env(safe-area-inset-top)) is the single source of truth
+// for the header offset. Without this, iOS leaves a white bar AND our
+// CSS adds extra padding, causing the logo to overlap the notch.
+if (Capacitor?.isNativePlatform?.()) {
+  void (async () => {
+    try {
+      const { StatusBar, Style } = await import("@capacitor/status-bar");
+      await StatusBar.setOverlaysWebView({ overlay: true });
+      await StatusBar.setStyle({ style: Style.Dark });
+    } catch (err) {
+      console.warn("[StatusBar] setup failed", err);
+    }
+  })();
+}
 
 const isInIframe = (() => {
   try {
