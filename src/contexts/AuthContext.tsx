@@ -107,22 +107,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // Get initial session — onAuthStateChange with INITIAL_SESSION will handle state
-    // Only use this as fallback if onAuthStateChange doesn't fire quickly
-    const fallbackTimer = setTimeout(() => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setSession(prev => prev ?? session);
-        setUser(prev => prev ?? (session?.user ?? null));
-        
-        if (session?.user) {
-          fetchProfile(session.user.id);
+    // Mirror Supabase sessions into native secure storage (iOS Keychain / Android EncryptedSharedPreferences)
+    installNativeSessionMirror();
+
+    // On native cold-start, try to restore the session from Keychain BEFORE
+    // falling back to web localStorage (which WKWebView can wipe under storage pressure).
+    let cancelled = false;
+    const fallbackTimer = setTimeout(async () => {
+      const { data: { session: webSession } } = await supabase.auth.getSession();
+      if (cancelled) return;
+
+      if (!webSession) {
+        const restored = await restoreSessionNative();
+        if (cancelled) return;
+        if (restored) {
+          // onAuthStateChange will fire and populate state — nothing else to do.
+          return;
         }
-        
-        setLoading(false);
-      });
+      }
+
+      setSession(prev => prev ?? webSession);
+      setUser(prev => prev ?? (webSession?.user ?? null));
+      if (webSession?.user) fetchProfile(webSession.user.id);
+      setLoading(false);
     }, 100);
 
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
       clearTimeout(fallbackTimer);
     };
