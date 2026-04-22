@@ -30,6 +30,17 @@ self.addEventListener('message', (event) => {
   }
 });
 
+// Network-first for HTML and JS/CSS assets to avoid stale-bundle errors
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+  if (req.mode === 'navigate' || /\.(html|js|css)$/.test(url.pathname) || url.pathname.startsWith('/assets/')) {
+    event.respondWith(fetch(req).catch(() => caches.match(req)));
+  }
+});
+
 self.addEventListener('push', (event) => {
   let data = {
     title: 'Versa',
