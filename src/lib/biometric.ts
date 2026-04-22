@@ -45,7 +45,16 @@ const loadPlugin = async () => {
   return mod;
 };
 
-const resolveBiometryType = (biometryType: number, BiometryType: Record<string, number>): BiometricAvailability['type'] => {
+const resolveBiometryType = (
+  biometryType: number,
+  BiometryType: {
+    faceId?: number;
+    faceAuthentication?: number;
+    touchId?: number;
+    fingerprintAuthentication?: number;
+    irisAuthentication?: number;
+  },
+): BiometricAvailability['type'] => {
   switch (biometryType) {
     case BiometryType.faceId:
     case BiometryType.faceAuthentication:
