@@ -9,11 +9,15 @@ export default function AppHeader() {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
+  const safeTopInset = 'max(env(safe-area-inset-top), 1.75rem)';
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/92 backdrop-blur-lg pt-[calc(env(safe-area-inset-top)+0.25rem)]">
-        <div className="flex h-14 items-center justify-between px-4 max-w-lg mx-auto">
+      <header
+        className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/92 backdrop-blur-lg"
+        style={{ paddingTop: safeTopInset }}
+      >
+        <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
           {/* Logo */}
           <button 
             onClick={() => navigate(user ? '/home' : '/')}

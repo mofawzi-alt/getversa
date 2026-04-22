@@ -6,8 +6,26 @@ const BIO_ENABLED_KEY = 'versa_biometric_enabled';
 const BIO_EMAIL_KEY = 'versa_biometric_email';
 
 export const isNative = () => {
-  try { return Capacitor?.isNativePlatform?.() === true; } catch { return false; }
+  try {
+    return Capacitor?.isNativePlatform?.() === true;
+  } catch {
+    return false;
+  }
 };
+
+export const isAppleMobileDevice = () => {
+  try {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    const platform = navigator.platform || '';
+    const isTouchMac = platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+    return /iPhone|iPad|iPod/i.test(ua) || isTouchMac;
+  } catch {
+    return false;
+  }
+};
+
+export const shouldRenderBiometricSettings = () => isNative() || isAppleMobileDevice();
 
 export interface BiometricAvailability {
   available: boolean;
@@ -33,12 +51,15 @@ export const checkBiometricAvailability = async (): Promise<BiometricAvailabilit
     switch (info.biometryType) {
       case BiometryType.faceId:
       case BiometryType.faceAuthentication:
-        type = 'face'; break;
+        type = 'face';
+        break;
       case BiometryType.touchId:
       case BiometryType.fingerprintAuthentication:
-        type = 'fingerprint'; break;
+        type = 'fingerprint';
+        break;
       case BiometryType.irisAuthentication:
-        type = 'iris'; break;
+        type = 'iris';
+        break;
     }
     return { available: true, type };
   } catch {
@@ -46,7 +67,7 @@ export const checkBiometricAvailability = async (): Promise<BiometricAvailabilit
   }
 };
 
-export const promptBiometric = async (reason = 'Sign in to Versa'): Promise<boolean> => {
+export const promptBiometric = async (reason = 'Sign in to GetVersa'): Promise<boolean> => {
   if (!isNative()) return false;
   try {
     const { BiometricAuth } = await loadPlugin();
@@ -54,7 +75,7 @@ export const promptBiometric = async (reason = 'Sign in to Versa'): Promise<bool
       reason,
       cancelTitle: 'Cancel',
       iosFallbackTitle: 'Use Passcode',
-      androidTitle: 'Versa',
+      androidTitle: 'GetVersa',
       androidSubtitle: reason,
       androidConfirmationRequired: false,
     });
@@ -65,11 +86,19 @@ export const promptBiometric = async (reason = 'Sign in to Versa'): Promise<bool
 };
 
 export const isBiometricEnabled = (): boolean => {
-  try { return localStorage.getItem(BIO_ENABLED_KEY) === 'true'; } catch { return false; }
+  try {
+    return localStorage.getItem(BIO_ENABLED_KEY) === 'true';
+  } catch {
+    return false;
+  }
 };
 
 export const getBiometricEmail = (): string | null => {
-  try { return localStorage.getItem(BIO_EMAIL_KEY); } catch { return null; }
+  try {
+    return localStorage.getItem(BIO_EMAIL_KEY);
+  } catch {
+    return null;
+  }
 };
 
 export const enableBiometric = (email: string) => {

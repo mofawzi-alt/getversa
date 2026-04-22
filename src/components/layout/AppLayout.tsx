@@ -14,6 +14,7 @@ interface AppLayoutProps {
 export default function AppLayout({ children, hideNav }: AppLayoutProps) {
   const queryClient = useQueryClient();
   useDuelAutoOpen();
+  const safeTopInset = 'max(env(safe-area-inset-top), 1.75rem)';
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries();
@@ -24,7 +25,10 @@ export default function AppLayout({ children, hideNav }: AppLayoutProps) {
   return (
     <div className="min-h-screen pb-20 relative bg-background">
       {!hideNav && <AppHeader />}
-      <main className="relative z-10 pt-[calc(3.5rem+env(safe-area-inset-top)+0.5rem)]">
+      <main
+        className="relative z-10"
+        style={{ paddingTop: `calc(3.5rem + ${safeTopInset} + 0.5rem)` }}
+      >
         <PullToRefresh onRefresh={handleRefresh}>
           {children}
         </PullToRefresh>
