@@ -24,43 +24,64 @@ export default function BiometricToggle({ email }: BiometricToggleProps) {
   const [reason, setReason] = useState<string | undefined>();
 
   useEffect(() => {
-    (async () => {
+    let mounted = true;
+
+    const loadAvailability = async () => {
       const info = await checkBiometricAvailability();
-      console.log('[BiometricToggle] availability:', info);
+      if (!mounted) return;
       setAvailable(info.available);
       setType(info.type);
       setReason(info.reason);
       setEnabled(isBiometricEnabled());
-    })();
+    };
+
+    void loadAvailability();
+
+    const handleFocus = () => {
+      void loadAvailability();
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      mounted = false;
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
-  // Show on native devices and on iPhone/iPad contexts so the user can
-  // still see the setting row and why it may be unavailable.
   if (!shouldRenderBiometricSettings()) return null;
 
   const label = type === 'face' ? 'Face ID' : type === 'fingerprint' ? 'Touch ID' : 'Face ID';
   const Icon = type === 'face' ? ScanFace : Fingerprint;
+  const faceIdNeedsNativePermission = reason?.includes('NSFaceIDUsageDescription');
 
   const handleToggle = async (checked: boolean) => {
     if (loading) return;
     setLoading(true);
+
     try {
       if (checked) {
-        const ok = await promptBiometric(`Enable ${label} for Versa`);
-        if (!ok) {
+        const result = await promptBiometric(`Enable ${label} for Versa`);
+        if (!result.ok) {
           hapticError();
-          toast.error(`${label} authentication failed`);
+          if (faceIdNeedsNativePermission || result.message?.includes('NSFaceIDUsageDescription')) {
+            toast.error('Face ID needs the native iPhone permission. Sync the iOS app again and reopen it.');
+          } else if (result.code !== 'userCancel') {
+            toast.error(result.message || `${label} authentication failed`);
+          }
           return;
         }
+
         enableBiometric(email);
         setEnabled(true);
         hapticSuccess();
         toast.success(`${label} enabled`);
-      } else {
-        disableBiometric();
-        setEnabled(false);
-        toast.success(`${label} disabled`);
+        return;
       }
+
+      disableBiometric();
+      setEnabled(false);
+      toast.success(`${label} disabled`);
     } finally {
       setLoading(false);
     }
@@ -75,7 +96,9 @@ export default function BiometricToggle({ email }: BiometricToggleProps) {
           {!available
             ? reason === 'web'
               ? 'Face ID appears here on iPhone and turns on inside the installed app'
-              : `Unavailable${reason ? ` (${reason})` : ''} — turn on ${label} in iPhone Settings`
+              : faceIdNeedsNativePermission
+                ? 'Face ID is blocked in the current iPhone build until the native permission is synced'
+                : `Unavailable${reason ? ` (${reason})` : ''} — turn on ${label} in iPhone Settings`
             : enabled
               ? `Sign in instantly with ${label}`
               : `Use ${label} for faster sign-in`}

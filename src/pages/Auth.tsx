@@ -114,8 +114,8 @@ export default function Auth() {
     // Only auto-prompt once per mount
     let cancelled = false;
     (async () => {
-      const ok = await promptBiometric(`Sign in as ${bioEmail}`);
-      if (cancelled || !ok) return;
+      const result = await promptBiometric(`Sign in as ${bioEmail}`);
+      if (cancelled || !result.ok) return;
       // If Supabase already has a refresh token, getSession will hydrate it
       const { data } = await supabase.auth.getSession();
       if (data.session) {
@@ -147,8 +147,8 @@ export default function Auth() {
 
   const handleBiometricUnlock = async () => {
     if (!bioAvailable || !bioEnabled || !bioEmail) return;
-    const ok = await promptBiometric(`Sign in as ${bioEmail}`);
-    if (!ok) { hapticError(); return; }
+    const result = await promptBiometric(`Sign in as ${bioEmail}`);
+    if (!result.ok) { hapticError(); return; }
     const { data } = await supabase.auth.getSession();
     if (data.session) {
       hapticSuccess();
@@ -182,8 +182,8 @@ export default function Auth() {
           toast.success('Welcome back!');
           // Offer to enable biometrics on first successful native login
           if (isNativePlatform() && bioAvailable && !bioEnabled) {
-            const ok = await promptBiometric(`Enable ${bioLabel} for faster sign-in?`);
-            if (ok) {
+            const result = await promptBiometric(`Enable ${bioLabel} for faster sign-in?`);
+            if (result.ok) {
               enableBiometric(email);
               toast.success(`${bioLabel} enabled`);
             }

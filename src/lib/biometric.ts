@@ -31,57 +31,85 @@ export interface BiometricAvailability {
   available: boolean;
   type: 'face' | 'fingerprint' | 'iris' | 'generic' | 'none';
   reason?: string;
+  code?: string;
+}
+
+export interface BiometricPromptResult {
+  ok: boolean;
+  code?: string;
+  message?: string;
 }
 
 const loadPlugin = async () => {
-  // Dynamic import — only resolved on native, never bundled into the web entry.
   const mod = await import('@aparajita/capacitor-biometric-auth');
   return mod;
 };
 
-export const checkBiometricAvailability = async (): Promise<BiometricAvailability> => {
-  if (!isNative()) return { available: false, type: 'none', reason: 'web' };
-  try {
-    const { BiometricAuth, BiometryType } = await loadPlugin();
-    const info = await BiometricAuth.checkBiometry();
-    if (!info.isAvailable) {
-      return { available: false, type: 'none', reason: info.reason || 'unavailable' };
-    }
-    let type: BiometricAvailability['type'] = 'generic';
-    switch (info.biometryType) {
-      case BiometryType.faceId:
-      case BiometryType.faceAuthentication:
-        type = 'face';
-        break;
-      case BiometryType.touchId:
-      case BiometryType.fingerprintAuthentication:
-        type = 'fingerprint';
-        break;
-      case BiometryType.irisAuthentication:
-        type = 'iris';
-        break;
-    }
-    return { available: true, type };
-  } catch {
-    return { available: false, type: 'none', reason: 'error' };
+const resolveBiometryType = (biometryType: number, BiometryType: Record<string, number>): BiometricAvailability['type'] => {
+  switch (biometryType) {
+    case BiometryType.faceId:
+    case BiometryType.faceAuthentication:
+      return 'face';
+    case BiometryType.touchId:
+    case BiometryType.fingerprintAuthentication:
+      return 'fingerprint';
+    case BiometryType.irisAuthentication:
+      return 'iris';
+    default:
+      return 'generic';
   }
 };
 
-export const promptBiometric = async (reason = 'Sign in to GetVersa'): Promise<boolean> => {
-  if (!isNative()) return false;
+export const checkBiometricAvailability = async (): Promise<BiometricAvailability> => {
+  if (!isNative()) return { available: false, type: 'none', reason: 'web' };
+
+  try {
+    const { BiometricAuth, BiometryType } = await loadPlugin();
+    const info = await BiometricAuth.checkBiometry();
+    const type = resolveBiometryType(info.biometryType, BiometryType);
+
+    if (!info.isAvailable) {
+      return {
+        available: false,
+        type: type === 'generic' ? 'none' : type,
+        reason: info.reason || 'unavailable',
+        code: info.code || undefined,
+      };
+    }
+
+    return {
+      available: true,
+      type,
+      reason: info.reason || undefined,
+      code: info.code || undefined,
+    };
+  } catch {
+    return { available: false, type: 'none', reason: 'error', code: 'error' };
+  }
+};
+
+export const promptBiometric = async (reason = 'Sign in to Versa'): Promise<BiometricPromptResult> => {
+  if (!isNative()) return { ok: false, code: 'web', message: 'Biometrics require the installed app.' };
+
   try {
     const { BiometricAuth } = await loadPlugin();
     await BiometricAuth.authenticate({
       reason,
       cancelTitle: 'Cancel',
       iosFallbackTitle: 'Use Passcode',
-      androidTitle: 'GetVersa',
+      androidTitle: 'Versa',
       androidSubtitle: reason,
       androidConfirmationRequired: false,
     });
-    return true;
-  } catch {
-    return false;
+
+    return { ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Authentication failed';
+    const code = typeof error === 'object' && error !== null && 'code' in error
+      ? String((error as { code?: unknown }).code ?? '') || undefined
+      : undefined;
+
+    return { ok: false, code, message };
   }
 };
 
