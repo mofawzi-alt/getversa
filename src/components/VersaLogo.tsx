@@ -1,14 +1,16 @@
+import wordmark from '@/assets/versa-wordmark.png';
+
 interface VersaLogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'hero';
 }
 
 const sizeMap = {
-  sm: 'text-xl',
-  md: 'text-2xl',
-  lg: 'text-3xl',
-  xl: 'text-4xl',
-  hero: 'text-5xl',
+  sm: 'h-5',
+  md: 'h-6',
+  lg: 'h-8',
+  xl: 'h-10',
+  hero: 'h-12',
 } as const;
 
 export default function VersaLogo({ className = '', size = 'md' }: VersaLogoProps) {
@@ -18,9 +20,12 @@ export default function VersaLogo({ className = '', size = 'md' }: VersaLogoProp
       role="img"
       aria-label="Versa"
     >
-      <span className={`font-display font-bold tracking-tight leading-none text-foreground ${sizeMap[size]}`}>
-        Versa
-      </span>
+      <img
+        src={wordmark}
+        alt="Versa"
+        className={`${sizeMap[size]} w-auto select-none`}
+        draggable={false}
+      />
     </div>
   );
 }
