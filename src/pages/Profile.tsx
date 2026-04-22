@@ -17,6 +17,7 @@ import VoteHistoryGrid from '@/components/profile/VoteHistoryGrid';
 import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
 import SuggestPollDialog from '@/components/profile/SuggestPollDialog';
 import BiometricToggle from '@/components/profile/BiometricToggle';
+import DeleteAccountButton from '@/components/profile/DeleteAccountButton';
 
 export default function Profile() {
   const { profile, isAdmin, signOut, user } = useAuth();
@@ -210,6 +211,11 @@ export default function Profile() {
           <LogOut className="mr-2 h-5 w-5" />
           Log Out
         </Button>
+
+        {/* Account deletion — required by Apple App Store Guideline 5.1.1(v) */}
+        <div className="glass rounded-2xl overflow-hidden">
+          <DeleteAccountButton />
+        </div>
       </div>
     </AppLayout>
   );

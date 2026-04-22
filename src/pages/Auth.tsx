@@ -21,6 +21,7 @@ import {
   isNative as isNativePlatform,
 } from '@/lib/biometric';
 import { hapticSuccess, hapticError } from '@/lib/haptics';
+import SocialAuthButtons from '@/components/auth/SocialAuthButtons';
 
 const AGE_RANGES = ['Under 18', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDERS = ['Male', 'Female'];
@@ -274,6 +275,15 @@ export default function Auth() {
 
         {/* Auth Form */}
         <div className="bg-card/80 backdrop-blur-lg rounded-2xl p-5 shadow-card border border-border/50">
+          {/* Social sign-in (Apple required by App Store guideline 4.8) */}
+          <SocialAuthButtons mode={isLogin ? 'signin' : 'signup'} />
+
+          <div className="my-4 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">or {isLogin ? 'sign in with email' : 'with email'}</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-3">
             {/* Signup-only fields */}
             {!isLogin && (
