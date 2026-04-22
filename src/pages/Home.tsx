@@ -925,6 +925,25 @@ export default function Home() {
     };
 
     const h24Ago = nowMs - 24 * 60 * 60 * 1000;
+
+    // ── Daily rotation seed: same user sees a different ordering each day ──
+    // Combines today's date with poll ID hash → stable within a day, shuffles across days.
+    const todaySeed = (() => {
+      const d = new Date();
+      return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
+    })();
+    const dailyJitter = (pollId: string) => {
+      let h = todaySeed;
+      for (let i = 0; i < pollId.length; i++) h = ((h << 5) - h + pollId.charCodeAt(i)) | 0;
+      // Returns 0..1
+      return ((h >>> 0) % 1000) / 1000;
+    };
+    // Cap admin weight influence so a single weight=9999 evergreen can't lock position #1 forever
+    const cappedWeight = (p: PollCard) => Math.min(((p as any).weight_score || 1), 50);
+    // Penalize very old evergreen polls so they rotate out of the top after a few days
+    const ageDays = (p: PollCard) => Math.max(0, (nowMs - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24));
+    const stalenessPenalty = (p: PollCard) => Math.min(ageDays(p) / 14, 1); // 0 → 1 over 14 days
+
     const livePollsRaw = allPolls.filter(p => {
       const hasStarted = p.starts_at ? new Date(p.starts_at) <= now : true;
       const isExpired = p.ends_at ? new Date(p.ends_at) < now : false;
@@ -935,15 +954,18 @@ export default function Home() {
       const bNew = new Date(b.created_at).getTime() > h24Ago ? 1 : 0;
       if (aNew !== bNew) return bNew - aNew;
 
-      // If user has a taste profile, use blended scoring (taste + trending + admin weight)
-      if (userTasteProfile && userTasteProfile.totalVotes >= 3) {
-        return blendedPollScore(b as any, userTasteProfile, nowMs) - blendedPollScore(a as any, userTasteProfile, nowMs);
-      }
-      // Fallback for new users / guests: weight_score → time-decay
-      const wA = (a as any).weight_score || 1;
-      const wB = (b as any).weight_score || 1;
-      if (wA !== wB) return wB - wA;
-      return decayScore(b) - decayScore(a);
+      // Composite score: taste/trending + capped admin weight − staleness + daily jitter
+      const baseA = (userTasteProfile && userTasteProfile.totalVotes >= 3)
+        ? blendedPollScore(a as any, userTasteProfile, nowMs)
+        : decayScore(a);
+      const baseB = (userTasteProfile && userTasteProfile.totalVotes >= 3)
+        ? blendedPollScore(b as any, userTasteProfile, nowMs)
+        : decayScore(b);
+
+      const scoreA = baseA + cappedWeight(a) * 0.3 - stalenessPenalty(a) * baseA * 0.4 + dailyJitter(a.id) * Math.max(baseA, 1) * 0.5;
+      const scoreB = baseB + cappedWeight(b) * 0.3 - stalenessPenalty(b) * baseB * 0.4 + dailyJitter(b.id) * Math.max(baseB, 1) * 0.5;
+
+      return scoreB - scoreA;
     });
 
     const prioritizeLiveBucket = (items: PollCard[]) => {
