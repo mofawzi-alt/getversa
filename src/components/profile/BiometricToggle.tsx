@@ -8,7 +8,7 @@ import {
   isBiometricEnabled,
   enableBiometric,
   disableBiometric,
-  isNative,
+  shouldRenderBiometricSettings,
 } from '@/lib/biometric';
 import { hapticSuccess, hapticError } from '@/lib/haptics';
 
@@ -34,9 +34,9 @@ export default function BiometricToggle({ email }: BiometricToggleProps) {
     })();
   }, []);
 
-  // Hide entirely on web — biometrics are a native-only capability.
-  // On native we still render even if unavailable, so user can see WHY.
-  if (!isNative()) return null;
+  // Show on native devices and on iPhone/iPad contexts so the user can
+  // still see the setting row and why it may be unavailable.
+  if (!shouldRenderBiometricSettings()) return null;
 
   const label = type === 'face' ? 'Face ID' : type === 'fingerprint' ? 'Touch ID' : 'Face ID';
   const Icon = type === 'face' ? ScanFace : Fingerprint;
@@ -74,8 +74,8 @@ export default function BiometricToggle({ email }: BiometricToggleProps) {
         <div className="text-xs text-muted-foreground">
           {!available
             ? reason === 'web'
-              ? 'Open Versa from the installed iPhone app to use Face ID'
-              : `Unavailable${reason ? ` (${reason})` : ''} — turn on Face ID in iPhone Settings`
+              ? 'Face ID appears here on iPhone and turns on inside the installed app'
+              : `Unavailable${reason ? ` (${reason})` : ''} — turn on ${label} in iPhone Settings`
             : enabled
               ? `Sign in instantly with ${label}`
               : `Use ${label} for faster sign-in`}

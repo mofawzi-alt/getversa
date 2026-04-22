@@ -1,6 +1,6 @@
 {
-  "name": "Versa",
-  "short_name": "Versa",
+  "name": "GetVersa",
+  "short_name": "GetVersa",
   "description": "Where you decide.",
   "start_url": "/",
   "display": "standalone",
