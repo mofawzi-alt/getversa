@@ -6,11 +6,11 @@ interface VersaLogoProps {
 }
 
 const sizeMap = {
-  sm: 'h-5',
-  md: 'h-6',
-  lg: 'h-8',
-  xl: 'h-10',
-  hero: 'h-12',
+  sm: 'h-8',
+  md: 'h-10',
+  lg: 'h-14',
+  xl: 'h-16',
+  hero: 'h-20',
 } as const;
 
 export default function VersaLogo({ className = '', size = 'md' }: VersaLogoProps) {
