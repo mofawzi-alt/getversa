@@ -6,11 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Eye, EyeOff, ChevronDown } from 'lucide-react';
+import { Loader2, Eye, EyeOff, ChevronDown, Fingerprint, ScanFace } from 'lucide-react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
+import {
+  checkBiometricAvailability,
+  promptBiometric,
+  isBiometricEnabled,
+  getBiometricEmail,
+  enableBiometric,
+  disableBiometric,
+  isNative as isNativePlatform,
+} from '@/lib/biometric';
+import { hapticSuccess, hapticError } from '@/lib/haptics';
 
 const AGE_RANGES = ['Under 18', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDERS = ['Male', 'Female'];
@@ -76,8 +86,51 @@ export default function Auth() {
   const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const [ageConfirm, setAgeConfirm] = useState(false);
-  const { user, signIn, signUp, refreshProfile } = useAuth();
+  const { user, session, signIn, signUp, refreshProfile } = useAuth();
   const navigate = useNavigate();
+
+  // Biometric state (Face ID / Touch ID on native)
+  const [bioType, setBioType] = useState<'face' | 'fingerprint' | 'iris' | 'generic' | 'none'>('none');
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [bioEnabled, setBioEnabled] = useState(false);
+  const [bioEmail, setBioEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const info = await checkBiometricAvailability();
+      setBioAvailable(info.available);
+      setBioType(info.type);
+      setBioEnabled(isBiometricEnabled());
+      setBioEmail(getBiometricEmail());
+    })();
+  }, []);
+
+  // Auto-trigger Face ID on launch if previously enrolled and we're on the login screen
+  useEffect(() => {
+    if (!isNativePlatform()) return;
+    if (!isLogin) return;
+    if (!bioAvailable || !bioEnabled || !bioEmail) return;
+    if (user) return;
+    // Only auto-prompt once per mount
+    let cancelled = false;
+    (async () => {
+      const ok = await promptBiometric(`Sign in as ${bioEmail}`);
+      if (cancelled || !ok) return;
+      // If Supabase already has a refresh token, getSession will hydrate it
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        hapticSuccess();
+        toast.success('Welcome back!');
+        navigate('/home', { replace: true });
+      } else {
+        // Pre-fill email so the user only types password
+        setEmail(bioEmail);
+        toast('Enter your password to finish signing in', { duration: 3000 });
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bioAvailable, bioEnabled, bioEmail, isLogin]);
 
   // Redirect authenticated users to home
   useEffect(() => {
@@ -88,6 +141,25 @@ export default function Auth() {
   useEffect(() => { setCity(''); }, [country]);
 
   const availableCities = CITIES[country] || [];
+
+  const bioLabel = bioType === 'face' ? 'Face ID' : bioType === 'fingerprint' ? 'Touch ID' : 'Biometrics';
+  const BioIcon = bioType === 'face' ? ScanFace : Fingerprint;
+
+  const handleBiometricUnlock = async () => {
+    if (!bioAvailable || !bioEnabled || !bioEmail) return;
+    const ok = await promptBiometric(`Sign in as ${bioEmail}`);
+    if (!ok) { hapticError(); return; }
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      hapticSuccess();
+      toast.success('Welcome back!');
+      navigate('/home', { replace: true });
+    } else {
+      setEmail(bioEmail);
+      toast(`Session expired — enter your password to re-enable ${bioLabel}`, { duration: 3500 });
+    }
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,9 +175,22 @@ export default function Auth() {
       try {
         const { error } = await signIn(email, password);
         if (error) {
+          hapticError();
           toast.error(error.message.includes('Invalid login credentials') ? 'Invalid email or password' : error.message);
         } else {
+          hapticSuccess();
           toast.success('Welcome back!');
+          // Offer to enable biometrics on first successful native login
+          if (isNativePlatform() && bioAvailable && !bioEnabled) {
+            const ok = await promptBiometric(`Enable ${bioLabel} for faster sign-in?`);
+            if (ok) {
+              enableBiometric(email);
+              toast.success(`${bioLabel} enabled`);
+            }
+          } else if (bioEnabled && bioEmail !== email) {
+            // Re-enroll for the new account
+            enableBiometric(email);
+          }
           navigate('/home');
         }
       } catch { toast.error('An unexpected error occurred'); }
@@ -338,6 +423,19 @@ export default function Auth() {
                 'Join Versa'
               )}
             </Button>
+
+            {/* Face ID / Touch ID quick unlock — only on native, only after first enrollment */}
+            {isLogin && isNativePlatform() && bioAvailable && bioEnabled && bioEmail && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBiometricUnlock}
+                className="w-full h-12 rounded-full mt-2 gap-2"
+              >
+                <BioIcon className="h-5 w-5" />
+                Sign in with {bioLabel}
+              </Button>
+            )}
           </form>
 
           <div className="mt-4 text-center">

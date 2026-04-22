@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
+import { hapticVote, hapticSuccess } from '@/lib/haptics';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
@@ -123,7 +124,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
   const submitVote = useCallback(async (choice: 'A' | 'B') => {
     if (!poll || result || isVoting) return;
-    
+
+    // Native haptic feedback the moment a vote is committed
+    hapticVote();
+
     // Guest gate: allow 5 free votes, then require signup
     if (!user) {
       const guestVotes = parseInt(localStorage.getItem('versa_guest_votes') || '0', 10);
