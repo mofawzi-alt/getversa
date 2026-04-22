@@ -36,7 +36,7 @@ export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <VersaLogo size="hero" />
+          <VersaLogo size="hero" className="[&_img]:!h-40" />
         </motion.div>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
