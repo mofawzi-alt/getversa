@@ -72,10 +72,14 @@ export default function BiometricToggle({ email }: BiometricToggleProps) {
       <div className="flex-1 text-left">
         <div className="font-medium">{label}</div>
         <div className="text-xs text-muted-foreground">
-          {enabled ? `Sign in instantly with ${label}` : `Use ${label} for faster sign-in`}
+          {!available
+            ? `Unavailable${reason ? ` (${reason})` : ''} — enroll Face ID in iOS Settings`
+            : enabled
+              ? `Sign in instantly with ${label}`
+              : `Use ${label} for faster sign-in`}
         </div>
       </div>
-      <Switch checked={enabled} onCheckedChange={handleToggle} disabled={loading} />
+      <Switch checked={enabled} onCheckedChange={handleToggle} disabled={loading || !available} />
     </div>
   );
 }
