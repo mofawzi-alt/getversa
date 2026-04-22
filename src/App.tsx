@@ -57,6 +57,7 @@ const BrandClientPortal = lazy(() => import("./pages/BrandClientPortal"));
 const FocusGroup = lazy(() => import("./pages/FocusGroup"));
 const Rewards = lazy(() => import("./pages/Rewards"));
 const Ask = lazy(() => import("./pages/Ask"));
+const Support = lazy(() => import("./pages/Support"));
 
 import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
@@ -211,6 +212,7 @@ function AppInner() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/support" element={<Support />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
