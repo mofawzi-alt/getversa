@@ -21,18 +21,22 @@ export default function BiometricToggle({ email }: BiometricToggleProps) {
   const [type, setType] = useState<'face' | 'fingerprint' | 'iris' | 'generic' | 'none'>('none');
   const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [reason, setReason] = useState<string | undefined>();
 
   useEffect(() => {
     (async () => {
       const info = await checkBiometricAvailability();
+      console.log('[BiometricToggle] availability:', info);
       setAvailable(info.available);
       setType(info.type);
+      setReason(info.reason);
       setEnabled(isBiometricEnabled());
     })();
   }, []);
 
-  // Hide entirely on web — biometrics are a native-only capability
-  if (!isNative() || !available) return null;
+  // Hide entirely on web — biometrics are a native-only capability.
+  // On native we still render even if unavailable, so user can see WHY.
+  if (!isNative()) return null;
 
   const label = type === 'face' ? 'Face ID' : type === 'fingerprint' ? 'Touch ID' : 'Biometric Login';
   const Icon = type === 'face' ? ScanFace : Fingerprint;
