@@ -16,6 +16,7 @@ import ShareCompatibilityCard from '@/components/compare/ShareCompatibilityCard'
 import VoteHistoryGrid from '@/components/profile/VoteHistoryGrid';
 import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
 import SuggestPollDialog from '@/components/profile/SuggestPollDialog';
+import BiometricToggle from '@/components/profile/BiometricToggle';
 
 export default function Profile() {
   const { profile, isAdmin, signOut, user } = useAuth();
@@ -197,6 +198,7 @@ export default function Profile() {
               <ChevronRight className="h-5 w-5 text-card-foreground/70" />
             </button>
           ))}
+          {user?.email && <BiometricToggle email={user.email} />}
         </div>
 
         {/* Logout */}
