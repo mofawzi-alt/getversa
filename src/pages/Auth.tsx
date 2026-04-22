@@ -423,6 +423,19 @@ export default function Auth() {
                 'Join Versa'
               )}
             </Button>
+
+            {/* Face ID / Touch ID quick unlock — only on native, only after first enrollment */}
+            {isLogin && isNativePlatform() && bioAvailable && bioEnabled && bioEmail && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBiometricUnlock}
+                className="w-full h-12 rounded-full mt-2 gap-2"
+              >
+                <BioIcon className="h-5 w-5" />
+                Sign in with {bioLabel}
+              </Button>
+            )}
           </form>
 
           <div className="mt-4 text-center">
