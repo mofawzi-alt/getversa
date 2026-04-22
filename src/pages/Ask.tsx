@@ -224,9 +224,12 @@ export default function Ask() {
   const empty = turns.length === 0;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden w-full">
+    <div
+      className="fixed inset-0 bg-background flex flex-col overflow-hidden w-full"
+      style={{ height: '100dvh' }}
+    >
       <div
-        className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border"
+        className="flex-shrink-0 bg-background/95 backdrop-blur border-b border-border"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="flex items-center justify-between gap-2 px-3 py-3">
