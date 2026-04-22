@@ -265,7 +265,7 @@ export default function Ask() {
         </div>
       </div>
 
-      <div className="flex-1 px-3 pt-4 pb-32 space-y-4 w-full max-w-lg mx-auto min-w-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 pt-4 pb-4 space-y-4 w-full max-w-lg mx-auto min-w-0">
         {empty && (
           <>
             <div className="text-center pt-4 pb-2">
@@ -287,7 +287,11 @@ export default function Ask() {
         <div ref={threadEndRef} />
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); runPreview(); }} className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 safe-area-bottom z-30">
+      <form
+        onSubmit={(e) => { e.preventDefault(); runPreview(); }}
+        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+      >
         <div className="relative max-w-lg mx-auto">
           <input
             ref={inputRef}
