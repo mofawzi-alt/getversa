@@ -47,7 +47,7 @@ const RESEARCH_FOLLOWUPS = [
 
 export default function AskThread({ turns, onPickSuggestion }: Props) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0">
       {turns.map((t, idx) => {
         const isLast = idx === turns.length - 1;
         const followups = t.mode === 'decide' ? DECIDE_FOLLOWUPS : RESEARCH_FOLLOWUPS;
