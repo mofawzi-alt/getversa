@@ -262,7 +262,7 @@ export default function Ask() {
         </div>
       </div>
 
-      <div className="flex-1 px-3 pt-4 pb-32 space-y-4 w-full max-w-lg mx-auto">
+      <div className="flex-1 px-3 pt-4 pb-32 space-y-4 w-full max-w-lg mx-auto min-w-0">
         {empty && (
           <>
             <div className="text-center pt-4 pb-2">
