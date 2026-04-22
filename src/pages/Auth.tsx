@@ -175,9 +175,22 @@ export default function Auth() {
       try {
         const { error } = await signIn(email, password);
         if (error) {
+          hapticError();
           toast.error(error.message.includes('Invalid login credentials') ? 'Invalid email or password' : error.message);
         } else {
+          hapticSuccess();
           toast.success('Welcome back!');
+          // Offer to enable biometrics on first successful native login
+          if (isNativePlatform() && bioAvailable && !bioEnabled) {
+            const ok = await promptBiometric(`Enable ${bioLabel} for faster sign-in?`);
+            if (ok) {
+              enableBiometric(email);
+              toast.success(`${bioLabel} enabled`);
+            }
+          } else if (bioEnabled && bioEmail !== email) {
+            // Re-enroll for the new account
+            enableBiometric(email);
+          }
           navigate('/home');
         }
       } catch { toast.error('An unexpected error occurred'); }
