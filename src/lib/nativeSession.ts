@@ -1,0 +1,76 @@
+// Persists Supabase tokens into Capacitor Preferences (iOS Keychain / Android EncryptedSharedPreferences)
+// so the session survives WKWebView localStorage purges between cold launches.
+// Web is a no-op.
+import { Capacitor } from '@capacitor/core';
+import { supabase } from '@/integrations/supabase/client';
+
+const KEY = 'versa.sb.session.v1';
+
+const isNative = () => {
+  try { return Capacitor?.isNativePlatform?.() === true; } catch { return false; }
+};
+
+const getPrefs = async () => {
+  if (!isNative()) return null;
+  try {
+    const mod = await import('@capacitor/preferences');
+    return mod.Preferences;
+  } catch {
+    return null;
+  }
+};
+
+export const persistSessionNative = async (session: { access_token: string; refresh_token: string } | null) => {
+  const Preferences = await getPrefs();
+  if (!Preferences) return;
+  try {
+    if (!session) {
+      await Preferences.remove({ key: KEY });
+      return;
+    }
+    await Preferences.set({
+      key: KEY,
+      value: JSON.stringify({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+      }),
+    });
+  } catch {}
+};
+
+export const restoreSessionNative = async (): Promise<boolean> => {
+  const Preferences = await getPrefs();
+  if (!Preferences) return false;
+  try {
+    const { value } = await Preferences.get({ key: KEY });
+    if (!value) return false;
+    const parsed = JSON.parse(value) as { access_token: string; refresh_token: string };
+    if (!parsed?.refresh_token) return false;
+    const { data, error } = await supabase.auth.setSession(parsed);
+    if (error || !data.session) return false;
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const clearNativeSession = async () => {
+  const Preferences = await getPrefs();
+  if (!Preferences) return;
+  try { await Preferences.remove({ key: KEY }); } catch {}
+};
+
+/** Wire Supabase auth changes to native persistence. Call once at app boot. */
+export const installNativeSessionMirror = () => {
+  if (!isNative()) return;
+  supabase.auth.onAuthStateChange((_event, session) => {
+    if (session) {
+      void persistSessionNative({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+      });
+    } else {
+      void clearNativeSession();
+    }
+  });
+};

@@ -161,6 +161,8 @@ function PollOptionImageComponent({
           onError={(e) => handlePollImageError(e, { option, question, side })}
           draggable={draggable}
           loading={loading}
+          decoding="async"
+          {...(loading === 'eager' ? { fetchPriority: 'high' as any } : {})}
         />
       </div>
     );
@@ -199,6 +201,8 @@ function PollOptionImageComponent({
         onError={(e) => handlePollImageError(e, { option, question, side })}
         draggable={draggable}
         loading={loading}
+        decoding="async"
+        {...(loading === 'eager' ? { fetchPriority: 'high' as any } : {})}
       />
     </div>
   );

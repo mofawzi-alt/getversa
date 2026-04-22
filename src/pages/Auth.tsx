@@ -115,16 +115,22 @@ export default function Auth() {
     // Only auto-prompt once per mount
     let cancelled = false;
     (async () => {
+      // First, check if we already have a session (AuthContext may have restored from Keychain)
+      const { data: pre } = await supabase.auth.getSession();
+      if (pre.session) {
+        // No need to prompt — session is alive. AuthContext will redirect.
+        return;
+      }
       const result = await promptBiometric(`Sign in as ${bioEmail}`);
       if (cancelled || !result.ok) return;
-      // If Supabase already has a refresh token, getSession will hydrate it
+      // After Face ID, re-check session (Keychain restore may have happened)
       const { data } = await supabase.auth.getSession();
       if (data.session) {
         hapticSuccess();
         toast.success('Welcome back!');
         navigate('/home', { replace: true });
       } else {
-        // Pre-fill email so the user only types password
+        // Session truly expired and refresh token is gone — user must re-enter password
         setEmail(bioEmail);
         toast('Enter your password to finish signing in', { duration: 3000 });
       }
