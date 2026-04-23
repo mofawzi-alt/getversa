@@ -1,7 +1,14 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { installNativeSessionMirror, restoreSessionNative, clearNativeSession, getAuthRedirectUrl } from '@/lib/nativeSession';
+import {
+  installNativeSessionMirror,
+  restoreSessionNative,
+  clearNativeSession,
+  getAuthRedirectUrl,
+  markNativeLoggedOut,
+  clearNativeLoggedOut,
+} from '@/lib/nativeSession';
 import { disableBiometric } from '@/lib/biometric';
 
 interface UserProfile {
