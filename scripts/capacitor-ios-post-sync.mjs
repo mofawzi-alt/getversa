@@ -61,7 +61,13 @@ async function generateIcons() {
 
   for (const def of iconDefinitions) {
     const pixelSize = Math.round(def.size * def.scale);
-    const baseName = `${def.idiom}-${String(def.size).replace('.', '_')}@${def.scale}x.png`;
+    // Apple's marketing icon (1024@1x) must be named "AppIcon-512@2x.png" historically,
+    // but with modern Xcode any unique filename works. Use idiom-size@scale, where the
+    // 1024 marketing icon drops the "@1x" suffix to match Xcode's default template.
+    const sizeStr = String(def.size).replace('.', '_');
+    const baseName = def.size === 1024
+      ? `AppIcon-${sizeStr}.png`
+      : `${def.idiom}-${sizeStr}@${def.scale}x.png`;
     const outPath = path.join(assetCatalogDir, baseName);
 
     await sharp(sourceIconPath)
