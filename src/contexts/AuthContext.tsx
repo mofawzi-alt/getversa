@@ -158,12 +158,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    return { error };
+    // Race the auth call against a 15s timeout so the UI never hangs forever
+    // (WKWebView on iOS can silently drop fetches under low-memory conditions).
+    try {
+      const result = await Promise.race([
+        supabase.auth.signInWithPassword({ email, password }),
+        new Promise<{ error: Error }>((_, reject) =>
+          setTimeout(() => reject(new Error('Sign-in timed out. Check your connection and try again.')), 15000)
+        ),
+      ]);
+      return { error: (result as { error: Error | null }).error };
+    } catch (e) {
+      return { error: e instanceof Error ? e : new Error('Sign-in failed') };
+    }
   };
 
   const signOut = async () => {
