@@ -1,8 +1,15 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { installNativeSessionMirror, restoreSessionNative, clearNativeSession, getAuthRedirectUrl } from '@/lib/nativeSession';
-import { disableBiometric } from '@/lib/biometric';
+import {
+  installNativeSessionMirror,
+  restoreSessionNative,
+  clearNativeSession,
+  getAuthRedirectUrl,
+  markNativeLoggedOut,
+  clearNativeLoggedOut,
+} from '@/lib/nativeSession';
+import { clearBiometricUnlocked } from '@/lib/biometric';
 
 interface UserProfile {
   id: string;
@@ -167,13 +174,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(() => reject(new Error('Sign-in timed out. Check your connection and try again.')), 15000)
         ),
       ]);
-      return { error: (result as { error: Error | null }).error };
+      const error = (result as { error: Error | null }).error;
+      if (!error) {
+        try { await clearNativeLoggedOut(); } catch {}
+      }
+      return { error };
     } catch (e) {
       return { error: e instanceof Error ? e : new Error('Sign-in failed') };
     }
   };
 
   const signOut = async () => {
+    // Stop native session restore first so a stale session cannot come back.
+    try { await markNativeLoggedOut(); } catch {}
+
     // Clear local UI state IMMEDIATELY so the rest of the app re-renders to
     // logged-out even if the network calls below stall.
     setUser(null);
@@ -181,9 +195,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     setIsAdmin(false);
 
-    // Clear biometric enrollment + native keychain session so the next user
-    // on the same device does NOT inherit Face ID prompts or restored tokens.
-    try { disableBiometric(); } catch {}
+    // Keep Face ID enabled for future app locks, but clear the current
+    // unlocked flag and the mirrored native session.
+    try { clearBiometricUnlocked(); } catch {}
     try { await clearNativeSession(); } catch {}
 
     // Hard-clear any lingering Supabase tokens in localStorage / sessionStorage
@@ -198,8 +212,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } catch {}
 
-    // WKWebView on iOS can silently drop the /logout fetch and hang forever.
-    // Race against a 3s timeout — we've already cleared local state above.
     try {
       await Promise.race([
         supabase.auth.signOut({ scope: 'local' }),

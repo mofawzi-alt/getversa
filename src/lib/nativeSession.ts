@@ -5,6 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 
 const KEY = 'versa.sb.session.v1';
+const FORCE_LOGGED_OUT_KEY = 'versa.sb.force_logged_out.v1';
 
 export const isNative = () => {
   try { return Capacitor?.isNativePlatform?.() === true; } catch { return false; }
@@ -30,6 +31,33 @@ const getPrefs = async () => {
   }
 };
 
+export const markNativeLoggedOut = async () => {
+  const Preferences = await getPrefs();
+  if (!Preferences) return;
+  try {
+    await Preferences.set({ key: FORCE_LOGGED_OUT_KEY, value: 'true' });
+  } catch {}
+};
+
+export const clearNativeLoggedOut = async () => {
+  const Preferences = await getPrefs();
+  if (!Preferences) return;
+  try {
+    await Preferences.remove({ key: FORCE_LOGGED_OUT_KEY });
+  } catch {}
+};
+
+export const isNativeLoggedOut = async (): Promise<boolean> => {
+  const Preferences = await getPrefs();
+  if (!Preferences) return false;
+  try {
+    const { value } = await Preferences.get({ key: FORCE_LOGGED_OUT_KEY });
+    return value === 'true';
+  } catch {
+    return false;
+  }
+};
+
 export const persistSessionNative = async (session: { access_token: string; refresh_token: string } | null) => {
   const Preferences = await getPrefs();
   if (!Preferences) return;
@@ -38,6 +66,7 @@ export const persistSessionNative = async (session: { access_token: string; refr
       await Preferences.remove({ key: KEY });
       return;
     }
+    await Preferences.remove({ key: FORCE_LOGGED_OUT_KEY });
     await Preferences.set({
       key: KEY,
       value: JSON.stringify({
@@ -52,6 +81,9 @@ export const restoreSessionNative = async (): Promise<boolean> => {
   const Preferences = await getPrefs();
   if (!Preferences) return false;
   try {
+    const { value: forcedLoggedOut } = await Preferences.get({ key: FORCE_LOGGED_OUT_KEY });
+    if (forcedLoggedOut === 'true') return false;
+
     const { value } = await Preferences.get({ key: KEY });
     if (!value) return false;
     const parsed = JSON.parse(value) as { access_token: string; refresh_token: string };
