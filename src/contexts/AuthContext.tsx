@@ -174,33 +174,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    // Clear local UI state IMMEDIATELY so the rest of the app re-renders to
+    // logged-out even if the network calls below stall.
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setIsAdmin(false);
+
     // Clear biometric enrollment + native keychain session so the next user
     // on the same device does NOT inherit Face ID prompts or restored tokens.
     try { disableBiometric(); } catch {}
     try { await clearNativeSession(); } catch {}
 
-    // WKWebView on iOS can silently drop the /logout fetch and hang forever.
-    // Race against a 5s timeout and always clear local state so the user is
-    // logged out from the app's perspective even if the network call stalls.
-    try {
-      await Promise.race([
-        supabase.auth.signOut({ scope: 'local' }),
-        new Promise((resolve) => setTimeout(resolve, 5000)),
-      ]);
-    } catch {}
-
-    // Hard-clear any lingering Supabase tokens in localStorage so a stale
-    // session can't be restored on next app open.
+    // Hard-clear any lingering Supabase tokens in localStorage / sessionStorage
+    // so a stale session can't be restored on next app open. Do this BEFORE the
+    // network call so even if signOut() hangs we're already locally logged out.
     try {
       Object.keys(localStorage).forEach((k) => {
-        if (k.startsWith('sb-') || k.includes('supabase.auth')) localStorage.removeItem(k);
+        if (k.startsWith('sb-') || k.includes('supabase')) localStorage.removeItem(k);
+      });
+      Object.keys(sessionStorage).forEach((k) => {
+        if (k.startsWith('sb-') || k.includes('supabase')) sessionStorage.removeItem(k);
       });
     } catch {}
 
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setIsAdmin(false);
+    // WKWebView on iOS can silently drop the /logout fetch and hang forever.
+    // Race against a 3s timeout — we've already cleared local state above.
+    try {
+      await Promise.race([
+        supabase.auth.signOut({ scope: 'local' }),
+        new Promise((resolve) => setTimeout(resolve, 3000)),
+      ]);
+    } catch {}
   };
 
   return (
