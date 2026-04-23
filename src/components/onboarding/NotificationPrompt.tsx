@@ -27,7 +27,7 @@ interface NotificationPromptProps {
 }
 
 export default function NotificationPrompt({ open, onClose }: NotificationPromptProps) {
-  const { subscribe, isLoading } = usePushNotifications();
+  const { subscribe, isLoading, isSupported, supportMessage } = usePushNotifications();
   const [closing, setClosing] = useState(false);
 
   const handleEnable = async () => {
@@ -91,7 +91,7 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
             <div className="space-y-3">
               <Button
                 onClick={handleEnable}
-                disabled={isLoading}
+                disabled={isLoading || !isSupported}
                 className="w-full h-12 text-base font-bold rounded-xl"
               >
                 {isLoading ? (
@@ -114,7 +114,7 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
 
             {/* Platform hint */}
             <p className="text-[10px] text-muted-foreground/60">
-              Works on Safari, Chrome & all major browsers
+              {isSupported ? 'Works on Safari, Chrome & all major browsers' : supportMessage}
             </p>
           </motion.div>
         </motion.div>

@@ -8,9 +8,34 @@ import {
   getAuthRedirectUrl,
   markNativeLoggedOut,
   clearNativeLoggedOut,
-  persistSessionNative,
 } from '@/lib/nativeSession';
 import { clearBiometricUnlocked } from '@/lib/biometric';
+
+const LOGOUT_GUARD_KEY = 'versa.force_logged_out.guard';
+const BIO_ENABLED_KEY = 'versa_biometric_enabled';
+const BIO_EMAIL_KEY = 'versa_biometric_email';
+
+const hasLogoutGuard = () => {
+  try {
+    return sessionStorage.getItem(LOGOUT_GUARD_KEY) === 'true' || localStorage.getItem(LOGOUT_GUARD_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const setLogoutGuard = () => {
+  try {
+    sessionStorage.setItem(LOGOUT_GUARD_KEY, 'true');
+    localStorage.setItem(LOGOUT_GUARD_KEY, 'true');
+  } catch {}
+};
+
+const clearLogoutGuard = () => {
+  try {
+    sessionStorage.removeItem(LOGOUT_GUARD_KEY);
+    localStorage.removeItem(LOGOUT_GUARD_KEY);
+  } catch {}
+};
 
 interface UserProfile {
   id: string;
@@ -100,10 +125,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Set up auth listener FIRST, then get initial session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (hasLogoutGuard()) {
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setIsAdmin(false);
+        setLoading(false);
+
+        if (session) {
+          void supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+        }
+
+        return;
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        clearLogoutGuard();
         // Defer profile fetch to avoid Supabase deadlock
         setTimeout(() => {
           fetchProfile(session.user.id);
@@ -123,8 +163,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // falling back to web localStorage (which WKWebView can wipe under storage pressure).
     let cancelled = false;
     const fallbackTimer = setTimeout(async () => {
+      if (hasLogoutGuard()) {
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setIsAdmin(false);
+        setLoading(false);
+        return;
+      }
+
       const { data: { session: webSession } } = await supabase.auth.getSession();
       if (cancelled) return;
+
+      if (hasLogoutGuard()) {
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setIsAdmin(false);
+        setLoading(false);
+        return;
+      }
 
       if (!webSession) {
         const restored = await restoreSessionNative();
@@ -137,7 +195,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setSession(prev => prev ?? webSession);
       setUser(prev => prev ?? (webSession?.user ?? null));
-      if (webSession?.user) fetchProfile(webSession.user.id);
+      if (webSession?.user) {
+        clearLogoutGuard();
+        fetchProfile(webSession.user.id);
+      }
       setLoading(false);
     }, 100);
 
@@ -178,6 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const error = (result as { error: Error | null }).error;
       if (!error) {
         try { await clearNativeLoggedOut(); } catch {}
+        clearLogoutGuard();
       }
       return { error };
     } catch (e) {
@@ -186,6 +248,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    let preservedBiometricEnabled: string | null = null;
+    let preservedBiometricEmail: string | null = null;
+
+    try {
+      preservedBiometricEnabled = localStorage.getItem(BIO_ENABLED_KEY);
+      preservedBiometricEmail = localStorage.getItem(BIO_EMAIL_KEY);
+    } catch {}
+
+    setLogoutGuard();
+
     // Stop native session restore first so a stale session cannot come back.
     try { await markNativeLoggedOut(); } catch {}
 
@@ -211,11 +283,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       Object.keys(sessionStorage).forEach((k) => {
         if (k.startsWith('sb-') || k.includes('supabase')) sessionStorage.removeItem(k);
       });
+
+      if (preservedBiometricEnabled === 'true') {
+        localStorage.setItem(BIO_ENABLED_KEY, 'true');
+      }
+      if (preservedBiometricEmail) {
+        localStorage.setItem(BIO_EMAIL_KEY, preservedBiometricEmail);
+      }
     } catch {}
 
     try {
       await Promise.race([
-        supabase.auth.signOut({ scope: 'local' }),
+        supabase.auth.signOut(),
         new Promise((resolve) => setTimeout(resolve, 3000)),
       ]);
     } catch {}

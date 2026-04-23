@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -81,6 +82,8 @@ export function usePushNotifications() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isLoading, setIsLoading] = useState(false);
+  const [supportMessage, setSupportMessage] = useState('Not supported in this browser');
+  const isNativeApp = Capacitor?.isNativePlatform?.() === true;
 
   const checkSubscription = useCallback(async () => {
     if (!user) {
@@ -130,8 +133,22 @@ export function usePushNotifications() {
   }, [user]);
 
   useEffect(() => {
+    if (isNativeApp) {
+      setIsSupported(false);
+      setIsSubscribed(false);
+      setSupportMessage('Notifications are not wired into the native phone app yet');
+      return;
+    }
+
     const supported = 'serviceWorker' in navigator && 'PushManager' in window;
     setIsSupported(supported);
+    setSupportMessage(
+      supported
+        ? 'Enable notifications to stay updated'
+        : isIosDevice()
+          ? 'Open Versa from your Home Screen to enable notifications'
+          : 'Push notifications are not supported on this device',
+    );
 
     if (!supported) {
       setIsSubscribed(false);
@@ -140,7 +157,7 @@ export function usePushNotifications() {
 
     setPermission(Notification.permission);
     void checkSubscription();
-  }, [checkSubscription, user]);
+  }, [checkSubscription, user, isNativeApp]);
 
   const registerServiceWorker = async (): Promise<ServiceWorkerRegistration> => {
     await navigator.serviceWorker.register('/sw.js', {
@@ -157,7 +174,7 @@ export function usePushNotifications() {
     }
 
     if (!isSupported) {
-      toast.error('Push notifications are not supported on this device');
+      toast.error(isNativeApp ? 'Notifications are not available in the native phone app yet' : supportMessage);
       return false;
     }
 
@@ -252,6 +269,7 @@ export function usePushNotifications() {
     isSubscribed,
     permission,
     isLoading,
+    supportMessage,
     subscribe,
     unsubscribe,
   };
