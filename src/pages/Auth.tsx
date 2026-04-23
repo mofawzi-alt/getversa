@@ -18,6 +18,7 @@ import {
   getBiometricEmail,
   enableBiometric,
   disableBiometric,
+  markBiometricUnlocked,
   isNative as isNativePlatform,
 } from '@/lib/biometric';
 import { hapticSuccess, hapticError } from '@/lib/haptics';
@@ -131,6 +132,7 @@ export default function Auth() {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
       hapticSuccess();
+      markBiometricUnlocked();
       toast.success('Welcome back!');
       navigate('/home', { replace: true });
     } else {
@@ -164,11 +166,16 @@ export default function Auth() {
             const result = await promptBiometric(`Enable ${bioLabel} for faster sign-in?`);
             if (result.ok) {
               enableBiometric(email);
+              markBiometricUnlocked();
               toast.success(`${bioLabel} enabled`);
             }
           } else if (bioEnabled && bioEmail !== email) {
             // Re-enroll for the new account
             enableBiometric(email);
+            markBiometricUnlocked();
+          } else if (bioEnabled) {
+            // Fresh password sign-in counts as a deliberate unlock for this session.
+            markBiometricUnlocked();
           }
           navigate('/home');
         }
