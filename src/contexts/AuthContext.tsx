@@ -9,7 +9,7 @@ import {
   markNativeLoggedOut,
   clearNativeLoggedOut,
 } from '@/lib/nativeSession';
-import { disableBiometric } from '@/lib/biometric';
+import { clearBiometricUnlocked } from '@/lib/biometric';
 
 interface UserProfile {
   id: string;
