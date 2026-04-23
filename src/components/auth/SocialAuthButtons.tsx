@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { lovable } from '@/integrations/lovable';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { getAuthRedirectUrl } from '@/lib/nativeSession';
 
 /**
  * Apple HIG-compliant Sign in with Apple button + Google button.
@@ -14,8 +15,10 @@ export default function SocialAuthButtons({ mode = 'signin' }: { mode?: 'signin'
   const handleOAuth = async (provider: 'apple' | 'google') => {
     setBusy(provider);
     try {
+      // On native iOS/Android, window.location.origin is capacitor:// or
+      // localhost — Supabase rejects those. Use the production web URL.
       const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin,
+        redirect_uri: getAuthRedirectUrl(),
       });
       if (result.error) {
         toast.error(result.error.message || `${provider === 'apple' ? 'Apple' : 'Google'} sign-in failed`);
