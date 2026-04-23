@@ -1029,7 +1029,7 @@ export type Database = {
           quality: number | null
           taste: number | null
           uniqueness: number | null
-          user_id: string
+          user_id: string | null
           versatility: number | null
           voter_age_range: string | null
           voter_city: string | null
@@ -1045,7 +1045,7 @@ export type Database = {
           quality?: number | null
           taste?: number | null
           uniqueness?: number | null
-          user_id: string
+          user_id?: string | null
           versatility?: number | null
           voter_age_range?: string | null
           voter_city?: string | null
@@ -1061,7 +1061,7 @@ export type Database = {
           quality?: number | null
           taste?: number | null
           uniqueness?: number | null
-          user_id?: string
+          user_id?: string | null
           versatility?: number | null
           voter_age_range?: string | null
           voter_city?: string | null
@@ -1568,7 +1568,7 @@ export type Database = {
           feedback: string
           id: string
           poll_id: string
-          user_id: string
+          user_id: string | null
           voter_age_range: string | null
           voter_city: string | null
           voter_country: string | null
@@ -1580,7 +1580,7 @@ export type Database = {
           feedback: string
           id?: string
           poll_id: string
-          user_id: string
+          user_id?: string | null
           voter_age_range?: string | null
           voter_city?: string | null
           voter_country?: string | null
@@ -1592,7 +1592,7 @@ export type Database = {
           feedback?: string
           id?: string
           poll_id?: string
-          user_id?: string
+          user_id?: string | null
           voter_age_range?: string | null
           voter_city?: string | null
           voter_country?: string | null
@@ -1766,7 +1766,7 @@ export type Database = {
           is_correct: boolean | null
           poll_id: string
           predicted_choice: string
-          user_id: string
+          user_id: string | null
           voter_age_range: string | null
           voter_city: string | null
           voter_country: string | null
@@ -1780,7 +1780,7 @@ export type Database = {
           is_correct?: boolean | null
           poll_id: string
           predicted_choice: string
-          user_id: string
+          user_id?: string | null
           voter_age_range?: string | null
           voter_city?: string | null
           voter_country?: string | null
@@ -1794,7 +1794,7 @@ export type Database = {
           is_correct?: boolean | null
           poll_id?: string
           predicted_choice?: string
-          user_id?: string
+          user_id?: string | null
           voter_age_range?: string | null
           voter_city?: string | null
           voter_country?: string | null
@@ -2612,7 +2612,7 @@ export type Database = {
           is_public_vote: boolean
           poll_id: string
           session_duration_ms: number | null
-          user_id: string
+          user_id: string | null
           voter_age_range: string | null
           voter_city: string | null
           voter_country: string | null
@@ -2627,7 +2627,7 @@ export type Database = {
           is_public_vote?: boolean
           poll_id: string
           session_duration_ms?: number | null
-          user_id: string
+          user_id?: string | null
           voter_age_range?: string | null
           voter_city?: string | null
           voter_country?: string | null
@@ -2642,7 +2642,7 @@ export type Database = {
           is_public_vote?: boolean
           poll_id?: string
           session_duration_ms?: number | null
-          user_id?: string
+          user_id?: string | null
           voter_age_range?: string | null
           voter_city?: string | null
           voter_country?: string | null
