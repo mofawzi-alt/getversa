@@ -47,13 +47,14 @@ function ensureFaceIdUsageDescription() {
 }
 
 async function generateIcons() {
-  if (!fs.existsSync(assetCatalogDir)) {
-    console.log('[cap-sync] AppIcon.appiconset not found, skipping icon generation');
-    return;
-  }
   if (!fs.existsSync(sourceIconPath)) {
     console.log('[cap-sync] Source app icon not found, skipping icon generation');
     return;
+  }
+  // Auto-create the AppIcon.appiconset folder if it was wiped or never existed
+  if (!fs.existsSync(assetCatalogDir)) {
+    fs.mkdirSync(assetCatalogDir, { recursive: true });
+    console.log('[cap-sync] Created AppIcon.appiconset folder');
   }
 
   const { default: sharp } = await import('sharp');
