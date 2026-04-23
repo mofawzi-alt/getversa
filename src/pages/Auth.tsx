@@ -106,38 +106,10 @@ export default function Auth() {
     })();
   }, []);
 
-  // Auto-trigger Face ID on launch if previously enrolled and we're on the login screen
-  useEffect(() => {
-    if (!isNativePlatform()) return;
-    if (!isLogin) return;
-    if (!bioAvailable || !bioEnabled || !bioEmail) return;
-    if (user) return;
-    // Only auto-prompt once per mount
-    let cancelled = false;
-    (async () => {
-      // First, check if we already have a session (AuthContext may have restored from Keychain)
-      const { data: pre } = await supabase.auth.getSession();
-      if (pre.session) {
-        // No need to prompt — session is alive. AuthContext will redirect.
-        return;
-      }
-      const result = await promptBiometric(`Sign in as ${bioEmail}`);
-      if (cancelled || !result.ok) return;
-      // After Face ID, re-check session (Keychain restore may have happened)
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        hapticSuccess();
-        toast.success('Welcome back!');
-        navigate('/home', { replace: true });
-      } else {
-        // Session truly expired and refresh token is gone — user must re-enter password
-        setEmail(bioEmail);
-        toast('Enter your password to finish signing in', { duration: 3000 });
-      }
-    })();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bioAvailable, bioEnabled, bioEmail, isLogin]);
+  // NOTE: Biometric (Face ID / Touch ID) prompt is intentionally NOT
+  // auto-triggered on mount. Apple App Store guideline 2.5.1 requires
+  // biometrics to be initiated by an explicit user action — the user must
+  // tap the "Unlock with Face ID" button below (handleBiometricUnlock).
 
   // Redirect authenticated users to home
   useEffect(() => {
