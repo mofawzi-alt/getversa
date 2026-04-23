@@ -3,20 +3,38 @@ import { lovable } from '@/integrations/lovable';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { getAuthRedirectUrl } from '@/lib/nativeSession';
+import { isNativePlatform, signInWithAppleNative, signInWithGoogleNative } from '@/lib/nativeAuth';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Apple HIG-compliant Sign in with Apple button + Google button.
- * Apple Guideline 4.8: any app offering Google or other social login
- * MUST also offer Sign in with Apple.
+ * On native iOS/Android: uses platform plugins (Apple Sign-In, Google Sign-In)
+ * On web: uses Lovable Cloud managed OAuth (browser redirect).
  */
 export default function SocialAuthButtons({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const [busy, setBusy] = useState<'apple' | 'google' | null>(null);
+  const navigate = useNavigate();
 
   const handleOAuth = async (provider: 'apple' | 'google') => {
     setBusy(provider);
     try {
-      // On native iOS/Android, window.location.origin is capacitor:// or
-      // localhost — Supabase rejects those. Use the production web URL.
+      // ---- NATIVE path (iOS / Android) ----
+      if (isNativePlatform()) {
+        const { error } = provider === 'apple'
+          ? await signInWithAppleNative()
+          : await signInWithGoogleNative();
+        if (error) {
+          toast.error(error.message || `${provider === 'apple' ? 'Apple' : 'Google'} sign-in failed`);
+          setBusy(null);
+          return;
+        }
+        // Session is set by signInWithIdToken — onAuthStateChange will fire.
+        navigate('/home');
+        setBusy(null);
+        return;
+      }
+
+      // ---- WEB path ----
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: getAuthRedirectUrl(),
       });
@@ -27,7 +45,8 @@ export default function SocialAuthButtons({ mode = 'signin' }: { mode?: 'signin'
       }
       // result.redirected → browser redirects, nothing more to do
     } catch (e) {
-      toast.error('Sign-in failed. Please try again.');
+      const msg = e instanceof Error ? e.message : 'Sign-in failed. Please try again.';
+      toast.error(msg);
       setBusy(null);
     }
   };
