@@ -6,8 +6,18 @@ import { supabase } from '@/integrations/supabase/client';
 
 const KEY = 'versa.sb.session.v1';
 
-const isNative = () => {
+export const isNative = () => {
   try { return Capacitor?.isNativePlatform?.() === true; } catch { return false; }
+};
+
+/** Production URL used for native OAuth redirects (window.location.origin
+ *  resolves to capacitor:// or localhost on native, which Supabase rejects). */
+export const NATIVE_AUTH_REDIRECT_URL = 'https://getversa.app/';
+
+/** Returns the right redirect URL for `emailRedirectTo` / OAuth on each platform. */
+export const getAuthRedirectUrl = (): string => {
+  if (isNative()) return NATIVE_AUTH_REDIRECT_URL;
+  try { return `${window.location.origin}/`; } catch { return NATIVE_AUTH_REDIRECT_URL; }
 };
 
 const getPrefs = async () => {
