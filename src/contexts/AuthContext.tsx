@@ -178,7 +178,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // on the same device does NOT inherit Face ID prompts or restored tokens.
     try { disableBiometric(); } catch {}
     try { await clearNativeSession(); } catch {}
-    await supabase.auth.signOut();
+
+    // WKWebView on iOS can silently drop the /logout fetch and hang forever.
+    // Race against a 5s timeout and always clear local state so the user is
+    // logged out from the app's perspective even if the network call stalls.
+    try {
+      await Promise.race([
+        supabase.auth.signOut({ scope: 'local' }),
+        new Promise((resolve) => setTimeout(resolve, 5000)),
+      ]);
+    } catch {}
+
+    // Hard-clear any lingering Supabase tokens in localStorage so a stale
+    // session can't be restored on next app open.
+    try {
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith('sb-') || k.includes('supabase.auth')) localStorage.removeItem(k);
+      });
+    } catch {}
+
     setUser(null);
     setSession(null);
     setProfile(null);
