@@ -47,7 +47,12 @@ interface HeroVoteCardProps {
 }
 
 const SWIPE_THRESHOLD = 50;
-const SWIPE_UP_THRESHOLD = 50;
+// Skip-by-swipe-up requires a long, deliberate upward flick. Previously 50px
+// was firing accidentally during normal scroll/tap interactions, causing the
+// first polls in a session to be silently logged as skips and disappear from
+// the deck. Raised so only an obvious upward gesture counts.
+const SWIPE_UP_THRESHOLD = 140;
+const SWIPE_UP_HORIZONTAL_LOCK = 40;
 const FLASH_RESULT_MS = 1500;
 const RESULT_MS = 1500;
 const TAP_MOVE_TOLERANCE = 12;
@@ -382,8 +387,9 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     const finalDragX = currentDragX.current;
     const finalDragY = currentDragY.current;
 
-    // Swipe up = skip
-    if (finalDragY < -SWIPE_UP_THRESHOLD && Math.abs(finalDragX) < SWIPE_THRESHOLD) {
+    // Swipe up = skip — requires a long, clearly-vertical flick to avoid
+    // accidental skips from normal taps or near-horizontal drags.
+    if (finalDragY < -SWIPE_UP_THRESHOLD && Math.abs(finalDragX) < SWIPE_UP_HORIZONTAL_LOCK) {
       submitSkip();
       return;
     }
