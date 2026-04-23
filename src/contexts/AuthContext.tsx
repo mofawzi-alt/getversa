@@ -195,9 +195,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     setIsAdmin(false);
 
-    // Clear biometric enrollment + native keychain session so the next user
-    // on the same device does NOT inherit Face ID prompts or restored tokens.
-    try { disableBiometric(); } catch {}
+    // Keep Face ID enabled for future app locks, but clear the current
+    // unlocked flag and the mirrored native session.
+    try { clearBiometricUnlocked(); } catch {}
     try { await clearNativeSession(); } catch {}
 
     // Hard-clear any lingering Supabase tokens in localStorage / sessionStorage
