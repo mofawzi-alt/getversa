@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export function NotificationToggle() {
-  const { isSupported, isSubscribed, isLoading, subscribe, unsubscribe } = usePushNotifications();
+  const { isSupported, isSubscribed, isLoading, supportMessage, subscribe, unsubscribe } = usePushNotifications();
 
   if (!isSupported) {
     return (
@@ -11,7 +11,7 @@ export function NotificationToggle() {
         <BellOff className="h-5 w-5 text-muted-foreground" />
         <div className="flex-1">
           <p className="font-medium text-card-foreground">Push Notifications</p>
-          <p className="text-sm text-muted-foreground">Not supported in this browser</p>
+          <p className="text-sm text-muted-foreground">{supportMessage}</p>
         </div>
       </div>
     );
