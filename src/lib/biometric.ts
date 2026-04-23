@@ -149,5 +149,27 @@ export const disableBiometric = () => {
   try {
     localStorage.removeItem(BIO_ENABLED_KEY);
     localStorage.removeItem(BIO_EMAIL_KEY);
+    clearBiometricUnlocked();
   } catch {}
+};
+
+// Session-scoped unlock flag — sessionStorage clears when the app process is
+// killed / reopened (cold start), but persists across in-app navigation and
+// soft refreshes. This is what enforces "Face ID required on app reopen".
+const BIO_UNLOCKED_KEY = 'versa_biometric_unlocked_session';
+
+export const isBiometricUnlocked = (): boolean => {
+  try {
+    return sessionStorage.getItem(BIO_UNLOCKED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+export const markBiometricUnlocked = () => {
+  try { sessionStorage.setItem(BIO_UNLOCKED_KEY, 'true'); } catch {}
+};
+
+export const clearBiometricUnlocked = () => {
+  try { sessionStorage.removeItem(BIO_UNLOCKED_KEY); } catch {}
 };
