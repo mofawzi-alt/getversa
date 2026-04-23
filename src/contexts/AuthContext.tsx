@@ -8,6 +8,7 @@ import {
   getAuthRedirectUrl,
   markNativeLoggedOut,
   clearNativeLoggedOut,
+  persistSessionNative,
 } from '@/lib/nativeSession';
 import { clearBiometricUnlocked } from '@/lib/biometric';
 
