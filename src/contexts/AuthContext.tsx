@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { installNativeSessionMirror, restoreSessionNative } from '@/lib/nativeSession';
+import { installNativeSessionMirror, restoreSessionNative, clearNativeSession, getAuthRedirectUrl } from '@/lib/nativeSession';
+import { disableBiometric } from '@/lib/biometric';
 
 interface UserProfile {
   id: string;
@@ -140,8 +141,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
+    // On native (iOS/Android Capacitor) window.location.origin resolves to
+    // capacitor:// or localhost — Supabase rejects those redirects. Always
+    // route email-confirmation links to the production web URL on native.
+    const redirectUrl = getAuthRedirectUrl();
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -149,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         emailRedirectTo: redirectUrl,
       },
     });
-    
+
     return { error };
   };
 
@@ -158,11 +162,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
     });
-    
+
     return { error };
   };
 
   const signOut = async () => {
+    // Clear biometric enrollment + native keychain session so the next user
+    // on the same device does NOT inherit Face ID prompts or restored tokens.
+    try { disableBiometric(); } catch {}
+    try { await clearNativeSession(); } catch {}
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
