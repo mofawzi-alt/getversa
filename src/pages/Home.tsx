@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteScoring';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import CategoryBadge from '@/components/category/CategoryBadge';
