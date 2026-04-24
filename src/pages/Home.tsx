@@ -214,17 +214,13 @@ function HomeLiveDebateCard({
         />
       )}
 
-      {/* ═══ IMAGES ON TOP — 4:3 squared grid with overlaid labels ═══ */}
+      {/* ═══ IMAGES ON TOP — 4:3 squared grid (no overlaid labels) ═══ */}
       <div className="relative grid grid-cols-2 overflow-hidden" style={{ aspectRatio: '4/3' }}>
         <div
           className={`relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('A'); } : undefined}
         >
           <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading={index < 2 ? 'eager' : 'lazy'} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-2.5">
-            <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_a}</p>
-          </div>
           {hasVoted && chosenOptionLabel === poll.option_a && (
             <div className="absolute inset-0 border-[3px] border-option-a pointer-events-none" />
           )}
@@ -235,10 +231,6 @@ function HomeLiveDebateCard({
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('B'); } : undefined}
         >
           <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading={index < 2 ? 'eager' : 'lazy'} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-2.5">
-            <p className="text-white text-sm font-bold drop-shadow-lg truncate text-right">{poll.option_b}</p>
-          </div>
           {hasVoted && chosenOptionLabel === poll.option_b && (
             <div className="absolute inset-0 border-[3px] border-option-b pointer-events-none" />
           )}
@@ -274,6 +266,16 @@ function HomeLiveDebateCard({
             </span>
           </div>
         )}
+      </div>
+
+      {/* ═══ OPTION LABELS — under the images, attached as part of the card ═══ */}
+      <div className="grid grid-cols-2 bg-muted/40 border-t border-border/50">
+        <div className="px-3 py-2 border-r border-border/50">
+          <p className="text-[13px] font-bold text-option-a leading-snug break-words">{poll.option_a}</p>
+        </div>
+        <div className="px-3 py-2">
+          <p className="text-[13px] font-bold text-option-b leading-snug break-words text-right">{poll.option_b}</p>
+        </div>
       </div>
 
       {/* ═══ BIG PERCENTAGES — post-vote ═══ */}
