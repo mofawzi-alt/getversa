@@ -540,16 +540,62 @@ function ImageBlock({
   onUrlChange: (v: string) => void;
   generating: boolean;
 }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be under 10MB');
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const path = `uploads/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('poll-calendar-images')
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from('poll-calendar-images').getPublicUrl(path);
+      onUrlChange(pub.publicUrl);
+      toast.success('Image uploaded');
+    } catch (err: any) {
+      toast.error(err?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="rounded-lg border p-3 space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <Label className="text-xs font-semibold">{label}</Label>
-        <Button size="sm" variant="outline" onClick={onGen} disabled={generating}>
-          {generating ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
-          AI generate
-        </Button>
+        <div className="flex gap-1">
+          <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+            {uploading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Upload className="h-3.5 w-3.5 mr-1" />}
+            Upload
+          </Button>
+          <Button size="sm" variant="outline" onClick={onGen} disabled={generating}>
+            {generating ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+            AI generate
+          </Button>
+        </div>
       </div>
-      <Input value={approved || ''} onChange={(e) => onUrlChange(e.target.value)} placeholder="https://..." className="text-xs" />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleUpload}
+      />
+      <Input value={approved || ''} onChange={(e) => onUrlChange(e.target.value)} placeholder="https://... or upload above" className="text-xs" />
       <div className="grid grid-cols-2 gap-2">
         <div className="text-center">
           <div className="text-[10px] text-muted-foreground mb-1">Approved</div>
