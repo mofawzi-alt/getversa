@@ -298,7 +298,7 @@ function HomeLiveDebateCard({
 
         {/* Friend avatar stack — centered in bottom 25% band of image, both states */}
         {friendsOnPoll.length > 0 && (
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-[12%] z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md max-w-[85%] pointer-events-none">
+          <div className="absolute left-1/2 -translate-x-1/2 top-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 max-w-[85%] pointer-events-none shadow-md">
             <div className="flex -space-x-1.5">
               {friendsOnPoll.slice(0, 3).map((f) => (
                 <UserAvatar
