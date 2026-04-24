@@ -242,15 +242,16 @@ export default function StoryViewer({
             transition={{ duration: 0.25 }}
             className="absolute inset-0 pointer-events-none"
           >
-            {card.backgroundImage ? (
+            {/* Always render gradient — image overlays on top when available. */}
+            {/* Skipping non-absolute URLs (like local /polls/* paths missing on iOS native) */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-background to-black" />
+            {card.backgroundImage && /^https?:\/\//i.test(card.backgroundImage) && (
               <img
                 src={card.backgroundImage}
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
               />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-black" />
             )}
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/85" />
 
