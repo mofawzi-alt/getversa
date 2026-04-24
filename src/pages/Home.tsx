@@ -327,7 +327,7 @@ function HomeLiveDebateCard({
               <span className="text-option-a truncate max-w-[45%]">{poll.option_a} {poll.percentA}%</span>
               <span className="text-option-b truncate max-w-[45%] text-right">{poll.percentB}% {poll.option_b}</span>
             </div>
-            <div className="h-2 w-full rounded-full overflow-hidden flex bg-muted">
+            <div className="h-3 w-full rounded-full overflow-hidden flex bg-muted">
               <motion.div
                 className="h-full bg-option-a"
                 initial={{ width: '0%' }}
