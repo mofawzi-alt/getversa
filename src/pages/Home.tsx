@@ -196,94 +196,151 @@ function HomeLiveDebateCard({
     poll.percentB
   );
 
+  const chosenA = hasVoted && chosenOptionLabel === poll.option_a;
+  const chosenB = hasVoted && chosenOptionLabel === poll.option_b;
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const pollUrl = `${window.location.origin}/poll/${poll.id}`;
+    if (navigator.share) {
+      navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
+    } else {
+      navigator.clipboard.writeText(pollUrl);
+      import('sonner').then(m => m.toast.success('Link copied!'));
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.025, 0.15), duration: 0.25 }}
-      whileTap={{ scale: 0.985 }}
+      whileTap={{ scale: 0.99 }}
       onClick={hasVoted ? onCardClick : undefined}
-      className={`relative rounded-2xl overflow-hidden border bg-card shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
+      className={`relative rounded-3xl overflow-hidden border bg-card shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
     >
       {!hasVoted && (
         <motion.div
           aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-primary/50 z-40"
+          className="pointer-events-none absolute inset-0 rounded-3xl ring-2 ring-primary/50 z-40"
           animate={{ opacity: [0.35, 0.9, 0.35] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
         />
       )}
 
-      {/* ═══ QUESTION HEADER — top of card so users see it first ═══ */}
-      <div className="px-4 pt-4 pb-3 bg-card text-center">
-        <p className="text-[18px] font-extrabold text-foreground leading-tight tracking-tight break-words">{poll.question}</p>
-        {'subtitle' in poll && poll.subtitle && (
-          <p className="text-xs text-muted-foreground mt-1 leading-snug">{poll.subtitle}</p>
-        )}
-      </div>
-
-      {/* ═══ IMAGES — 4:3 squared grid (no overlaid labels) ═══ */}
-      <div className="relative grid grid-cols-2 overflow-hidden" style={{ aspectRatio: '4/3' }}>
-        <div
-          className={`relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
-          onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('A'); } : undefined}
-        >
-          <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading={index < 2 ? 'eager' : 'lazy'} />
-          {hasVoted && chosenOptionLabel === poll.option_a && (
-            <div className="absolute inset-0 border-[3px] border-option-a pointer-events-none" />
-          )}
+      {/* ═══ 1) EYEBROW ROW — Hot Poll badge + friends voted ═══ */}
+      <div className="px-4 pt-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-full bg-destructive/10 flex items-center justify-center">
+            <Flame className="h-3.5 w-3.5 text-destructive" />
+          </div>
+          <span className="text-[13px] font-bold text-destructive">Today's Hot Poll</span>
         </div>
-        <div className="absolute inset-y-0 left-1/2 w-[1px] bg-white/30 z-10" />
-        <div
-          className={`relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
-          onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('B'); } : undefined}
-        >
-          <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading={index < 2 ? 'eager' : 'lazy'} />
-          {hasVoted && chosenOptionLabel === poll.option_b && (
-            <div className="absolute inset-0 border-[3px] border-option-b pointer-events-none" />
-          )}
-        </div>
-
-        {/* Frosted reveal overlay — only when NOT voted */}
-        {!hasVoted && (
-          <div className="absolute inset-x-0 bottom-12 z-30 flex justify-center pointer-events-none">
-            <div className="px-3 py-1.5 rounded-full bg-black/55 backdrop-blur-md flex items-center gap-1.5 shadow-lg">
-              <Lock className="h-3 w-3 text-white" />
-              <span className="text-[11px] font-semibold text-white tracking-wide">Vote to reveal</span>
+        {friendsOnPoll.length > 0 && (
+          <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex -space-x-1.5 shrink-0">
+              {friendsOnPoll.slice(0, 3).map((f) => (
+                <UserAvatar
+                  key={f.friendId}
+                  url={f.friendAvatarUrl}
+                  username={f.friendName}
+                  className="w-5 h-5 ring-2 ring-card"
+                />
+              ))}
             </div>
+            <span className="text-[11px] font-medium text-muted-foreground truncate">
+              +{friendsOnPoll.length} friend{friendsOnPoll.length === 1 ? '' : 's'} voted
+            </span>
           </div>
         )}
-
       </div>
 
-      {/* ═══ OPTION LABELS — under the images, attached as part of the card ═══ */}
-      <div className="grid grid-cols-2 bg-muted/40 border-t border-border/50">
-        <div className="px-3 py-2 border-r border-border/50 flex items-center justify-center">
-          <p className="text-[13px] font-bold text-option-a leading-snug break-words text-center">{poll.option_a}</p>
+      {/* ═══ 2) QUESTION + SUBTITLE — left aligned, big & bold ═══ */}
+      <div className="px-4 pt-3 pb-4">
+        <h3 className="text-[26px] font-extrabold text-foreground leading-[1.1] tracking-tight break-words">
+          {poll.question}
+        </h3>
+        {'subtitle' in poll && poll.subtitle && (
+          <p className="text-[14px] text-muted-foreground mt-1.5 leading-snug">{poll.subtitle}</p>
+        )}
+      </div>
+
+      {/* ═══ 3) IMAGE CARDS — rounded with gap, label box below image, ring on selected ═══ */}
+      <div className="px-4 grid grid-cols-2 gap-2.5">
+        {/* Option A */}
+        <div
+          className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
+            chosenA ? 'border-option-a shadow-md' : hasVoted ? 'border-border/40' : 'border-border/40 cursor-pointer active:opacity-90'
+          }`}
+          onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('A'); } : undefined}
+        >
+          <div className="relative aspect-square overflow-hidden">
+            <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading={index < 2 ? 'eager' : 'lazy'} />
+            {/* Selection indicator top-right */}
+            <div className="absolute top-2 right-2 h-7 w-7 rounded-full bg-card shadow-md flex items-center justify-center">
+              {chosenA ? (
+                <Check className="h-4 w-4 text-option-a" strokeWidth={3} />
+              ) : (
+                <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/40" />
+              )}
+            </div>
+          </div>
+          <div className="px-3 py-2 bg-card">
+            <p className={`text-[14px] font-bold leading-tight break-words ${chosenA ? 'text-option-a' : 'text-foreground'}`}>
+              {poll.option_a}
+            </p>
+            {(poll as any).option_a_tag && (
+              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug truncate">{(poll as any).option_a_tag}</p>
+            )}
+          </div>
         </div>
-        <div className="px-3 py-2 flex items-center justify-center">
-          <p className="text-[13px] font-bold text-option-b leading-snug break-words text-center">{poll.option_b}</p>
+
+        {/* Option B */}
+        <div
+          className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
+            chosenB ? 'border-option-b shadow-md' : hasVoted ? 'border-border/40' : 'border-border/40 cursor-pointer active:opacity-90'
+          }`}
+          onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('B'); } : undefined}
+        >
+          <div className="relative aspect-square overflow-hidden">
+            <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading={index < 2 ? 'eager' : 'lazy'} />
+            <div className="absolute top-2 right-2 h-7 w-7 rounded-full bg-card shadow-md flex items-center justify-center">
+              {chosenB ? (
+                <Check className="h-4 w-4 text-option-b" strokeWidth={3} />
+              ) : (
+                <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/40" />
+              )}
+            </div>
+          </div>
+          <div className="px-3 py-2 bg-card">
+            <p className={`text-[14px] font-bold leading-tight break-words ${chosenB ? 'text-option-b' : 'text-foreground'}`}>
+              {poll.option_b}
+            </p>
+            {(poll as any).option_b_tag && (
+              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug truncate">{(poll as any).option_b_tag}</p>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ═══ SPLIT RESULT BAR — outside % labels, satisfying spring fill ═══ */}
-      {hasVoted && (
+      {/* ═══ 4) BIG OUTSIDE % BAR (only after vote) ═══ */}
+      {hasVoted ? (
         <motion.div
-          className="px-4 pt-3"
-          initial={{ scale: 0.96, opacity: 0 }}
+          className="px-4 pt-4"
+          initial={{ scale: 0.97, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 320, damping: 18, delay: 0.05 }}
         >
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <motion.span
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, type: 'spring', stiffness: 400, damping: 14 }}
-              className="text-[20px] font-extrabold text-option-a tabular-nums w-[44px] text-left"
+              transition={{ delay: 0.4, type: 'spring', stiffness: 400, damping: 14 }}
+              className="text-[24px] font-extrabold text-option-a tabular-nums shrink-0"
             >
               {poll.percentA}%
             </motion.span>
-            <div className="relative h-3 flex-1 rounded-full overflow-hidden flex bg-muted shadow-inner ring-1 ring-border/50">
+            <div className="relative h-3.5 flex-1 rounded-full overflow-hidden flex bg-muted">
               <motion.div
                 className="relative h-full bg-option-a overflow-hidden"
                 initial={{ width: '50%' }}
@@ -303,195 +360,156 @@ function HomeLiveDebateCard({
                 initial={{ width: '50%' }}
                 animate={{ width: `${poll.percentB}%` }}
                 transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
-              >
-                <motion.span
-                  aria-hidden
-                  initial={{ x: '-220%' }}
-                  animate={{ x: '120%' }}
-                  transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
-                  className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent"
-                />
-              </motion.div>
+              />
             </div>
             <motion.span
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, type: 'spring', stiffness: 400, damping: 14 }}
-              className="text-[20px] font-extrabold text-option-b tabular-nums w-[44px] text-right"
+              transition={{ delay: 0.4, type: 'spring', stiffness: 400, damping: 14 }}
+              className="text-[24px] font-extrabold text-option-b tabular-nums shrink-0"
             >
               {poll.percentB}%
             </motion.span>
           </div>
         </motion.div>
-      )}
-
-      {/* ═══ FRIENDS VOTED — below labels, not on images ═══ */}
-      {friendsOnPoll.length > 0 && (
-        <div className="px-4 pt-2.5 flex items-center justify-center gap-2">
-          <div className="flex -space-x-1.5">
-            {friendsOnPoll.slice(0, 3).map((f) => (
-              <UserAvatar
-                key={f.friendId}
-                url={f.friendAvatarUrl}
-                username={f.friendName}
-                className="w-5 h-5 ring-2 ring-card"
-              />
-            ))}
+      ) : (
+        <div className="px-4 pt-4">
+          <div className="rounded-xl bg-primary/5 border border-primary/20 px-3 py-2.5 flex items-center justify-center gap-2">
+            <Lock className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[12px] font-semibold text-primary">Tap an option to vote & reveal results</span>
           </div>
-          <span className="text-[11px] font-medium text-muted-foreground">
-            {friendsOnPoll.length === 1
-              ? `${friendsOnPoll[0].friendName} voted`
-              : `${friendsOnPoll[0].friendName} +${friendsOnPoll.length - 1} voted`}
-          </span>
         </div>
       )}
 
-
-      {/* ═══ BODY — meta, question, bars, actions ═══ */}
-      <div className="px-4 pt-3 pb-4 space-y-2.5">
-        <div className="flex items-center gap-2 flex-wrap">
-          <LiveIndicator variant="badge" />
-          {!hasVoted && (
-            <motion.div
-              animate={{ scale: [1, 1.06, 1] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wide shadow-sm"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
-              Vote
-            </motion.div>
-          )}
-          {isTrending && <TrendingBadge size="xs" />}
-          {poll.category && (
-            <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
-          )}
-          <div className="ml-auto flex items-center gap-1.5">
-            {poll.ends_at && (
-              <CountdownTimer endsAt={poll.ends_at} size="xs" showIcon={false} />
-            )}
-            <div onClick={(e) => e.stopPropagation()}>
-              <PinButton pollId={poll.id} size="sm" className="!bg-muted !text-muted-foreground hover:!bg-muted/80" />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <p className="text-[11px] text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</p>
-        </div>
-
-        {hasVoted && genderTeaser && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: 0.9, type: 'spring', stiffness: 280, damping: 20 }}
-            className="mt-3 relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-primary/8 to-transparent border border-primary/25 shadow-sm"
-          >
-            <div className="px-3 py-3 flex items-center gap-3">
-              {/* Gradient icon badge */}
-              <div className="shrink-0 h-11 w-11 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-md">
-                <TrendingUp className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
-              </div>
-              {/* Eyebrow + text */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-primary mb-0.5">
-                  <span>🔥</span>
-                  <span>Insight</span>
-                </div>
-                <p className="text-[13px] font-bold text-foreground leading-snug">
-                  {genderTeaser.text}
-                </p>
-              </div>
-              {/* Mini donut showing split */}
-              <div className="shrink-0 relative h-12 w-12">
-                <svg viewBox="0 0 36 36" className="h-12 w-12 -rotate-90">
-                  <circle cx="18" cy="18" r="15.5" fill="none" className="stroke-option-b" strokeWidth="5" />
-                  <circle
-                    cx="18"
-                    cy="18"
-                    r="15.5"
-                    fill="none"
-                    className="stroke-option-a"
-                    strokeWidth="5"
-                    strokeDasharray={`${(poll.percentA / 100) * 97.39} 97.39`}
-                    strokeLinecap="butt"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[10px] font-extrabold text-foreground tabular-nums">{poll.percentA}%</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-        {!hasVoted && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={(e) => { e.stopPropagation(); handleInlineVote('A'); }}
-              disabled={isVoting}
-              className="flex-1 py-2.5 rounded-xl bg-option-a/10 text-option-a border border-option-a/30 font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition disabled:opacity-60"
-            >
-              Vote {poll.option_a.length > 12 ? poll.option_a.slice(0, 12) + '…' : poll.option_a}
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleInlineVote('B'); }}
-              disabled={isVoting}
-              className="flex-1 py-2.5 rounded-xl bg-option-b/10 text-option-b border border-option-b/30 font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition disabled:opacity-60"
-            >
-              Vote {poll.option_b.length > 12 ? poll.option_b.slice(0, 12) + '…' : poll.option_b}
-            </button>
-            {user && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShareSheetOpen(true);
-                }}
-                aria-label="Send to friend"
-                className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-foreground hover:bg-muted/70 transition-colors shrink-0"
-              >
-                <Send className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-      {/* ═══ FOOTER CTA STRIP — separated bar, primary Share + outline Send ═══ */}
+      {/* ═══ 5) VOTE COUNT + LIVE RESULTS ROW ═══ */}
       {hasVoted && (
-        <div className="border-t border-border/60 bg-muted/30 px-4 py-2.5 flex items-center gap-2">
-          <div className="flex items-center gap-1.5 flex-1 min-w-0">
-            <div className="h-5 w-5 rounded-full bg-success/15 flex items-center justify-center shrink-0">
-              <Check className="h-3 w-3 text-success" strokeWidth={3} />
+        <div className="px-4 pt-2.5 flex items-center justify-between text-[12px]">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <Users className="h-3.5 w-3.5" />
+            <span className="font-medium">{poll.totalVotes.toLocaleString()} votes</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-destructive">
+            <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
+            <span className="font-medium">Live results</span>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ 6) META PILLS ROW — LIVE + Category + Pin ═══ */}
+      <div className="px-4 pt-3 flex items-center gap-2 flex-wrap">
+        <LiveIndicator variant="badge" />
+        {isTrending && <TrendingBadge size="xs" />}
+        {poll.category && (
+          <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
+        )}
+        <div className="ml-auto flex items-center gap-1.5">
+          {poll.ends_at && (
+            <CountdownTimer endsAt={poll.ends_at} size="xs" showIcon={false} />
+          )}
+          <div onClick={(e) => e.stopPropagation()}>
+            <PinButton pollId={poll.id} size="sm" className="!bg-muted !text-muted-foreground hover:!bg-muted/80" />
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ 7) INSIGHT CARD — gradient bg, icon, eyebrow, copy, donut ═══ */}
+      {hasVoted && genderTeaser && (
+        <motion.div
+          initial={{ opacity: 0, y: 8, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.9, type: 'spring', stiffness: 280, damping: 20 }}
+          className="mx-4 mt-3 relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-primary/8 to-transparent border border-primary/25 shadow-sm"
+        >
+          <div className="px-3 py-3 flex items-center gap-3">
+            <div className="shrink-0 h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-md">
+              <TrendingUp className="h-5.5 w-5.5 text-primary-foreground" strokeWidth={2.5} />
             </div>
-            <span className="text-[12px] font-semibold text-foreground truncate">
-              You voted <span className="text-primary">{chosenOptionLabel && chosenOptionLabel.length > 16 ? chosenOptionLabel.slice(0, 16) + '…' : chosenOptionLabel}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-primary mb-0.5">
+                <Flame className="h-3 w-3" />
+                <span>Insight</span>
+              </div>
+              <p className="text-[13px] font-bold text-foreground leading-snug">
+                {genderTeaser.text}
+              </p>
+            </div>
+            <div className="shrink-0 relative h-12 w-12">
+              <svg viewBox="0 0 36 36" className="h-12 w-12 -rotate-90">
+                <circle cx="18" cy="18" r="15.5" fill="none" className="stroke-option-b" strokeWidth="5" />
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="15.5"
+                  fill="none"
+                  className="stroke-option-a"
+                  strokeWidth="5"
+                  strokeDasharray={`${(poll.percentA / 100) * 97.39} 97.39`}
+                  strokeLinecap="butt"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[10px] font-extrabold text-foreground tabular-nums">{poll.percentA}%</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* spacer when no insight */}
+      {!hasVoted || !genderTeaser ? <div className="h-3" /> : null}
+
+      {/* ═══ 8) FOOTER CTA STRIP — voted-badge left, Send + Share right ═══ */}
+      {hasVoted ? (
+        <div className="border-t border-border/60 bg-card px-4 py-3 flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="h-6 w-6 rounded-full bg-success/15 flex items-center justify-center shrink-0">
+              <Check className="h-3.5 w-3.5 text-success" strokeWidth={3} />
+            </div>
+            <span className="text-[13px] font-semibold text-foreground truncate">
+              You voted <span className="text-primary">{chosenOptionLabel && chosenOptionLabel.length > 14 ? chosenOptionLabel.slice(0, 14) + '…' : chosenOptionLabel}</span>
             </span>
           </div>
           {user && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShareSheetOpen(true);
-              }}
+              onClick={(e) => { e.stopPropagation(); setShareSheetOpen(true); }}
               aria-label="Send to friend"
-              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/30 bg-card text-primary text-xs font-semibold active:scale-95 transition"
+              className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-primary/30 bg-card text-primary text-[12px] font-bold active:scale-95 transition"
             >
               <Send className="h-3.5 w-3.5" /> Send
             </button>
           )}
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              const pollUrl = `${window.location.origin}/poll/${poll.id}`;
-              if (navigator.share) {
-                navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
-              } else {
-                navigator.clipboard.writeText(pollUrl);
-                import('sonner').then(m => m.toast.success('Link copied!'));
-              }
-            }}
-            className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm active:scale-95 transition"
+            onClick={handleShareClick}
+            className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-primary-foreground text-[12px] font-bold shadow-sm active:scale-95 transition"
           >
             <Share2 className="h-3.5 w-3.5" /> Share
           </button>
+        </div>
+      ) : (
+        <div className="px-4 pb-4 pt-1 flex items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); handleInlineVote('A'); }}
+            disabled={isVoting}
+            className="flex-1 py-2.5 rounded-xl bg-option-a/10 text-option-a border border-option-a/30 font-bold text-sm active:scale-[0.98] transition disabled:opacity-60 truncate"
+          >
+            Vote {poll.option_a.length > 12 ? poll.option_a.slice(0, 12) + '…' : poll.option_a}
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleInlineVote('B'); }}
+            disabled={isVoting}
+            className="flex-1 py-2.5 rounded-xl bg-option-b/10 text-option-b border border-option-b/30 font-bold text-sm active:scale-[0.98] transition disabled:opacity-60 truncate"
+          >
+            Vote {poll.option_b.length > 12 ? poll.option_b.slice(0, 12) + '…' : poll.option_b}
+          </button>
+          {user && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setShareSheetOpen(true); }}
+              aria-label="Send to friend"
+              className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-foreground hover:bg-muted/70 transition-colors shrink-0"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          )}
         </div>
       )}
       <SharePollToFriendSheet
