@@ -31,7 +31,9 @@ const isPreviewHost =
   window.location.hostname.includes("id-preview--") ||
   window.location.hostname.includes("lovableproject.com");
 
-const clearPreviewServiceWorkers = async () => {
+const isNativeApp = Capacitor?.isNativePlatform?.() === true;
+
+const clearServiceWorkersAndCaches = async () => {
   if (!("serviceWorker" in navigator)) return;
 
   const registrations = await navigator.serviceWorker.getRegistrations();
@@ -43,41 +45,8 @@ const clearPreviewServiceWorkers = async () => {
   }
 };
 
-const registerAppServiceWorker = async () => {
-  if (!("serviceWorker" in navigator)) return;
-
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (sessionStorage.getItem("versa-sw-reloaded") === "1") return;
-    sessionStorage.setItem("versa-sw-reloaded", "1");
-    window.location.reload();
-  });
-
-  const registration = await navigator.serviceWorker.register("/sw.js", {
-    scope: "/",
-  });
-
-  await registration.update();
-
-  if (registration.waiting) {
-    registration.waiting.postMessage({ type: "SKIP_WAITING" });
-  }
-
-  registration.addEventListener("updatefound", () => {
-    const nextWorker = registration.installing;
-    if (!nextWorker) return;
-
-    nextWorker.addEventListener("statechange", () => {
-      if (nextWorker.state === "installed" && navigator.serviceWorker.controller) {
-        registration.waiting?.postMessage({ type: "SKIP_WAITING" });
-      }
-    });
-  });
-};
-
-if (isPreviewHost || isInIframe) {
-  void clearPreviewServiceWorkers();
-} else {
-  void registerAppServiceWorker();
+if (isPreviewHost || isInIframe || isNativeApp) {
+  void clearServiceWorkersAndCaches();
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
