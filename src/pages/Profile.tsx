@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Target, Swords, BarChart3, Coins } from 'lucide-react';
+import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Target, Swords, BarChart3, Coins, FileText, ScrollText, LifeBuoy } from 'lucide-react';
 import { useAskCredits } from '@/hooks/useAskCredits';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
