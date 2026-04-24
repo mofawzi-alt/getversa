@@ -287,17 +287,6 @@ function HomeLiveDebateCard({
         </div>
       )}
 
-      {/* ═══ BIG PERCENTAGES — post-vote ═══ */}
-      {hasVoted && (
-        <div className="grid grid-cols-2 gap-2 px-3 pt-3">
-          <div className="text-left">
-            <p className="text-3xl font-extrabold text-option-a leading-none">{poll.percentA}%</p>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-extrabold text-option-b leading-none">{poll.percentB}%</p>
-          </div>
-        </div>
-      )}
 
       {/* ═══ BODY — meta, question, bars, actions ═══ */}
       <div className="px-4 pt-3 pb-4 space-y-2.5">
@@ -331,14 +320,14 @@ function HomeLiveDebateCard({
           <p className="text-[11px] text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</p>
         </div>
 
-        {/* Single split result bar */}
+        {/* Single split result bar — bigger, with inline labels */}
         {hasVoted && (
           <div className="space-y-1.5 pt-1">
-            <div className="flex items-center justify-between text-[11px] font-semibold">
+            <div className="flex items-center justify-between text-[12px] font-semibold">
               <span className="text-option-a truncate max-w-[45%]">{poll.option_a} {poll.percentA}%</span>
               <span className="text-option-b truncate max-w-[45%] text-right">{poll.percentB}% {poll.option_b}</span>
             </div>
-            <div className="h-2 w-full rounded-full overflow-hidden flex bg-muted">
+            <div className="h-3 w-full rounded-full overflow-hidden flex bg-muted">
               <motion.div
                 className="h-full bg-option-a"
                 initial={{ width: '0%' }}
