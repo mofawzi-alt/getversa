@@ -144,36 +144,17 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
       onMouseUp={hasResult ? undefined : handleEnd}
       onMouseLeave={hasResult ? undefined : () => isDragging && handleEnd()}
     >
-      {/* Question header — clean, fully readable */}
-      <div className="w-full px-4 pt-2 pb-2.5 shrink-0">
-        {poll.category && (
-          <div className="flex justify-center mb-1.5">
-            <CategoryBadge
-              category={mapToVersaCategory(poll.category)}
-              variant="overlay"
-              size="xs"
-            />
-          </div>
-        )}
-        <p className="text-[17px] font-bold text-foreground leading-snug text-center">{poll.question}</p>
-        {poll.subtitle && (
-          <p className="text-xs text-muted-foreground text-center mt-1">{poll.subtitle}</p>
-        )}
-      </div>
-
-      {/* Images — clean, no overlay competition */}
-      <div className="relative grid grid-cols-2 gap-0 flex-1 min-h-0 w-full max-h-[58vh] rounded-2xl overflow-hidden mx-2 border border-border/60 shadow-sm">
-        {/* Option A */}
-        <div
-          className="relative overflow-hidden transition-transform duration-200"
-          style={{
-            transform: !hasResult && dragOffset < -30 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
-            boxShadow: !hasResult && dragOffset < -30
-              ? `inset 0 0 ${highlightIntensity * 30}px hsl(var(--option-a) / ${highlightIntensity * 0.3})`
-              : hasResult && result?.choice === 'A' ? 'inset 0 0 20px hsl(var(--option-a) / 0.3)' : 'none',
-          }}
-        >
-          <div className="h-full overflow-hidden relative">
+      {/* Card container — white rounded shell like reference */}
+      <div className="w-full max-w-[440px] mx-auto bg-card rounded-3xl shadow-lg border border-border/60 overflow-hidden flex flex-col">
+        {/* Images — slightly squared, labels overlaid in corners */}
+        <div className="relative grid grid-cols-2 gap-0 w-full aspect-[4/3] overflow-hidden">
+          {/* Option A */}
+          <div
+            className="relative overflow-hidden transition-transform duration-200"
+            style={{
+              transform: !hasResult && dragOffset < -30 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
+            }}
+          >
             <PollOptionImage
               imageUrl={poll.image_a_url}
               option={poll.option_a}
@@ -182,27 +163,25 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               maxLogoSize="70%"
               showLoader={true}
             />
+            {/* Label overlay bottom-left */}
+            <div className="absolute bottom-0 left-0 right-0 p-2.5 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+              <p className="text-white text-sm font-bold leading-tight drop-shadow-md line-clamp-2">{poll.option_a}</p>
+            </div>
+            {!hasResult && dragOffset < -30 && (
+              <div className="absolute inset-0 border-2 border-option-a/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
+            )}
+            {hasResult && result?.choice === 'A' && (
+              <div className="absolute inset-0 border-2 border-option-a pointer-events-none" />
+            )}
           </div>
 
-          {!hasResult && dragOffset < -30 && (
-            <div className="absolute inset-0 border-2 border-option-a/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
-          )}
-          {hasResult && result?.choice === 'A' && (
-            <div className="absolute inset-0 border-2 border-option-a pointer-events-none" />
-          )}
-        </div>
-
-        {/* Option B */}
-        <div
-          className="relative overflow-hidden transition-transform duration-200"
-          style={{
-            transform: !hasResult && dragOffset > 30 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
-            boxShadow: !hasResult && dragOffset > 30
-              ? `inset 0 0 ${highlightIntensity * 30}px hsl(var(--option-b) / ${highlightIntensity * 0.3})`
-              : hasResult && result?.choice === 'B' ? 'inset 0 0 20px hsl(var(--option-b) / 0.3)' : 'none',
-          }}
-        >
-          <div className="h-full overflow-hidden relative">
+          {/* Option B */}
+          <div
+            className="relative overflow-hidden transition-transform duration-200"
+            style={{
+              transform: !hasResult && dragOffset > 30 ? `scale(${1 + highlightIntensity * 0.04})` : 'scale(1)',
+            }}
+          >
             <PollOptionImage
               imageUrl={poll.image_b_url}
               option={poll.option_b}
@@ -211,72 +190,97 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               maxLogoSize="70%"
               showLoader={true}
             />
+            <div className="absolute bottom-0 left-0 right-0 p-2.5 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+              <p className="text-white text-sm font-bold leading-tight drop-shadow-md line-clamp-2 text-right">{poll.option_b}</p>
+            </div>
+            {!hasResult && dragOffset > 30 && (
+              <div className="absolute inset-0 border-2 border-option-b/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
+            )}
+            {hasResult && result?.choice === 'B' && (
+              <div className="absolute inset-0 border-2 border-option-b pointer-events-none" />
+            )}
+          </div>
+        </div>
+
+        {/* Big percentages row — only after vote */}
+        {hasResult && (
+          <div className="grid grid-cols-2 px-4 pt-4 pb-2 animate-fade-in">
+            <div className="text-center">
+              <span className="text-4xl font-extrabold text-option-a tracking-tight">{result!.percentA}<span className="text-2xl">%</span></span>
+            </div>
+            <div className="text-center">
+              <span className="text-4xl font-extrabold text-option-b tracking-tight">{result!.percentB}<span className="text-2xl">%</span></span>
+            </div>
+          </div>
+        )}
+
+        {/* Body — question + meta */}
+        <div className="px-4 pt-3 pb-3">
+          <p className="text-[17px] font-bold text-foreground leading-snug">{poll.question}</p>
+          {poll.subtitle && (
+            <p className="text-xs text-muted-foreground mt-1">{poll.subtitle}</p>
+          )}
+
+          <div className="flex items-center gap-2 mt-2.5">
+            {hasResult && (
+              <span className="text-xs text-muted-foreground">{result!.totalVotes.toLocaleString()} votes</span>
+            )}
+            {poll.category && (
+              <CategoryBadge
+                category={mapToVersaCategory(poll.category)}
+                variant="pill"
+                size="sm"
+              />
+            )}
+            {isLive && !hasResult && <LiveIndicator variant="badge" />}
+            {isExpired && !hasResult && (
+              <span className="inline-flex items-center gap-1 text-xs text-foreground/50">
+                <Clock className="h-3 w-3" /> Expired
+              </span>
+            )}
           </div>
 
-          {!hasResult && dragOffset > 30 && (
-            <div className="absolute inset-0 border-2 border-option-b/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
+          {/* Result bars — match reference */}
+          {hasResult && (
+            <div className="mt-3 space-y-2 animate-fade-in">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-foreground line-clamp-1">{poll.option_a}</span>
+                  <span className="text-sm font-bold text-foreground shrink-0 ml-2">{result!.percentA}%</span>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-option-a rounded-full" style={{ width: `${result!.percentA}%`, transition: 'width 0.7s ease-out' }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-foreground line-clamp-1">{poll.option_b}</span>
+                  <span className="text-sm font-bold text-foreground shrink-0 ml-2">{result!.percentB}%</span>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-option-b rounded-full" style={{ width: `${result!.percentB}%`, transition: 'width 0.7s ease-out' }} />
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className={`font-semibold px-2 py-0.5 rounded-full text-[10px] ${userPickedWinner ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                  {userPickedWinner ? 'Majority' : 'Minority'}
+                </span>
+                <div className="flex-1 mx-2 h-0.5 bg-border rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full" style={{ animation: `progress-fill ${RESULT_DISPLAY_MS}ms linear forwards` }} />
+                </div>
+              </div>
+            </div>
           )}
-          {hasResult && result?.choice === 'B' && (
-            <div className="absolute inset-0 border-2 border-option-b pointer-events-none" />
+
+          {/* Swipe hint — minimal */}
+          {!hasResult && !isExpired && (
+            <div className="flex justify-center gap-8 text-[10px] uppercase tracking-wider text-muted-foreground/60 mt-2">
+              <span>← Swipe</span>
+              <span>Swipe →</span>
+            </div>
           )}
         </div>
       </div>
-
-      {/* Option labels row — clean, full text, never truncated */}
-      <div className="flex items-stretch gap-2 px-3 mt-2 shrink-0">
-        <div className={`flex-1 min-w-0 rounded-xl px-3 py-2 text-center border ${hasResult && result?.choice === 'A' ? 'border-option-a bg-option-a/10' : 'border-border bg-card'}`}>
-          <p className="text-sm font-bold text-foreground leading-tight break-words">{poll.option_a}</p>
-          {hasResult && (
-            <p className="text-lg font-extrabold text-option-a mt-0.5">{result!.percentA}%</p>
-          )}
-        </div>
-        <div className={`flex-1 min-w-0 rounded-xl px-3 py-2 text-center border ${hasResult && result?.choice === 'B' ? 'border-option-b bg-option-b/10' : 'border-border bg-card'}`}>
-          <p className="text-sm font-bold text-foreground leading-tight break-words">{poll.option_b}</p>
-          {hasResult && (
-            <p className="text-lg font-extrabold text-option-b mt-0.5">{result!.percentB}%</p>
-          )}
-        </div>
-      </div>
-
-      {/* Swipe hint — minimal, just arrows */}
-      {!hasResult && !isExpired && (
-        <div className="flex justify-center gap-8 text-[10px] uppercase tracking-wider text-muted-foreground/60 py-1.5 shrink-0">
-          <span>← Swipe</span>
-          <span>Swipe →</span>
-        </div>
-      )}
-
-      {/* Result footer */}
-      {hasResult && (
-        <div className="animate-fade-in space-y-1.5 px-3 py-2 shrink-0">
-          <div className="h-2 bg-muted rounded-full overflow-hidden flex">
-            <div className="h-full bg-option-a rounded-l-full" style={{ width: `${result!.percentA}%`, transition: 'width 0.7s ease-out' }} />
-            <div className="h-full bg-option-b rounded-r-full" style={{ width: `${result!.percentB}%`, transition: 'width 0.7s ease-out' }} />
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">{result!.totalVotes.toLocaleString()} perspectives</span>
-            <span className={`font-semibold px-2 py-0.5 rounded-full text-[10px] ${userPickedWinner ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-              {userPickedWinner ? 'Majority' : 'Minority'}
-            </span>
-          </div>
-          <p className="text-xs text-center text-foreground/50 italic">That says something about you.</p>
-          <div className="h-0.5 bg-border rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full" style={{ animation: `progress-fill ${RESULT_DISPLAY_MS}ms linear forwards` }} />
-          </div>
-        </div>
-      )}
-
-      {isLive && !hasResult && (
-        <div className="flex items-center justify-center py-1 shrink-0">
-          <LiveIndicator variant="badge" />
-        </div>
-      )}
-      {isExpired && !hasResult && (
-        <div className="flex items-center justify-center gap-2 py-1.5 shrink-0 text-foreground/50">
-          <Clock className="h-3 w-3" />
-          <span className="text-xs font-medium">Expired</span>
-        </div>
-      )}
       <BrandDisclaimer optionA={poll.option_a} optionB={poll.option_b} question={poll.question} />
     </div>
   );
