@@ -17,9 +17,13 @@ const LOGOUT_GUARD_KEY = 'versa.force_logged_out.guard';
 const BIO_ENABLED_KEY = 'versa_biometric_enabled';
 const BIO_EMAIL_KEY = 'versa_biometric_email';
 
+// Logout guard is intentionally sessionStorage-only so it never survives a
+// process cold-start. Cross-launch logout state is tracked in Capacitor
+// Preferences via markNativeLoggedOut() / isNativeLoggedOut(), which IS
+// cleared explicitly on a deliberate new sign-in or biometric unlock.
 const hasLogoutGuard = () => {
   try {
-    return sessionStorage.getItem(LOGOUT_GUARD_KEY) === 'true' || localStorage.getItem(LOGOUT_GUARD_KEY) === 'true';
+    return sessionStorage.getItem(LOGOUT_GUARD_KEY) === 'true';
   } catch {
     return false;
   }
@@ -28,14 +32,13 @@ const hasLogoutGuard = () => {
 const setLogoutGuard = () => {
   try {
     sessionStorage.setItem(LOGOUT_GUARD_KEY, 'true');
-    localStorage.setItem(LOGOUT_GUARD_KEY, 'true');
   } catch {}
 };
 
 const clearLogoutGuard = () => {
   try {
     sessionStorage.removeItem(LOGOUT_GUARD_KEY);
-    localStorage.removeItem(LOGOUT_GUARD_KEY);
+    localStorage.removeItem(LOGOUT_GUARD_KEY); // legacy cleanup
   } catch {}
 };
 
