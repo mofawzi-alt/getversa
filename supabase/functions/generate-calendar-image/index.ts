@@ -48,16 +48,19 @@ Deno.serve(async (req) => {
 
     for (const opt of targets) {
       const optionText = opt === "A" ? row.option_a : row.option_b;
-      const prompt = `Editorial magazine-style photo, no text. Subject: "${optionText}". Context: poll about "${row.question}" (category: ${row.category || "lifestyle"}). Bright, clean, vibrant, mobile-optimized. Centered composition, high quality, no logos, no watermarks.`;
+      const prompt = `Generate an image (do not reply with text). Editorial magazine-style photograph, vibrant, clean, mobile-optimized, centered composition, high quality. No text, no logos, no watermarks, no brand names. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}.`;
 
+      // Try pro image model first, fallback to flash image on failure
+      const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
       let dataUrl: string | undefined;
       let lastErr = "";
       for (let attempt = 0; attempt < 3 && !dataUrl; attempt++) {
+        const model = models[Math.min(attempt, models.length - 1)];
         const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash-image",
+            model,
             messages: [{ role: "user", content: prompt }],
             modalities: ["image", "text"],
           }),
