@@ -38,6 +38,34 @@ const clearLogoutGuard = () => {
   } catch {}
 };
 
+const withTimeout = async <T,>(
+  operation: () => Promise<T>,
+  fallback: T,
+  timeoutMs = 1500,
+): Promise<T> => {
+  let timeoutId: number | undefined;
+
+  try {
+    return await Promise.race([
+      operation().catch(() => fallback),
+      new Promise<T>((resolve) => {
+        timeoutId = window.setTimeout(() => resolve(fallback), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutId !== undefined) {
+      window.clearTimeout(timeoutId);
+    }
+  }
+};
+
+const getSessionWithTimeout = async (timeoutMs = 1500): Promise<Session | null> => {
+  return withTimeout(async () => {
+    const { data } = await supabase.auth.getSession();
+    return data.session ?? null;
+  }, null, timeoutMs);
+};
+
 interface UserProfile {
   id: string;
   email: string;
@@ -125,39 +153,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    let cancelled = false;
+    let bootSettled = false;
+
+    const finishBoot = () => {
+      if (cancelled || bootSettled) return;
+      bootSettled = true;
+      setLoading(false);
+    };
+
+    const clearAuthState = () => {
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setIsAdmin(false);
+    };
+
+    const bootFailsafeTimer = window.setTimeout(() => {
+      console.warn('[Auth] Startup timed out; continuing without blocking UI');
+      finishBoot();
+    }, 3500);
+
     // Set up auth listener FIRST, then get initial session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const forcedNativeLogout = await isNativeLoggedOut();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+      const forcedNativeLogout = await withTimeout(() => isNativeLoggedOut(), false, 800);
 
       if (hasLogoutGuard() || forcedNativeLogout) {
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setIsAdmin(false);
-        setLoading(false);
+        clearAuthState();
+        finishBoot();
 
-        if (session) {
+        if (nextSession) {
           void supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
         }
 
         return;
       }
 
-      setSession(session);
-      setUser(session?.user ?? null);
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
       
-      if (session?.user) {
+      if (nextSession?.user) {
         clearLogoutGuard();
-        // Defer profile fetch to avoid Supabase deadlock
         setTimeout(() => {
-          fetchProfile(session.user.id);
+          void fetchProfile(nextSession.user.id);
         }, 0);
       } else {
         setProfile(null);
         setIsAdmin(false);
       }
       
-      setLoading(false);
+      finishBoot();
     });
 
     // Mirror Supabase sessions into native secure storage (iOS Keychain / Android EncryptedSharedPreferences)
@@ -165,33 +210,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // On native cold-start, try to restore the session from Keychain BEFORE
     // falling back to web localStorage (which WKWebView can wipe under storage pressure).
-    let cancelled = false;
-    const fallbackTimer = setTimeout(async () => {
-      const forcedNativeLogout = await isNativeLoggedOut();
+    const fallbackTimer = window.setTimeout(async () => {
+      const forcedNativeLogout = await withTimeout(() => isNativeLoggedOut(), false, 800);
 
       if (hasLogoutGuard() || forcedNativeLogout) {
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setIsAdmin(false);
-        setLoading(false);
+        clearAuthState();
+        finishBoot();
         return;
       }
 
-      const { data: { session: webSession } } = await supabase.auth.getSession();
+      const webSession = await getSessionWithTimeout(1200);
       if (cancelled) return;
 
-      if (hasLogoutGuard() || await isNativeLoggedOut()) {
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setIsAdmin(false);
-        setLoading(false);
+      if (hasLogoutGuard() || await withTimeout(() => isNativeLoggedOut(), false, 800)) {
+        clearAuthState();
+        finishBoot();
         return;
       }
 
       if (!webSession) {
-        const restored = await restoreSessionNative();
+        const restored = await withTimeout(() => restoreSessionNative(), false, 1200);
         if (cancelled) return;
         if (restored) {
           // onAuthStateChange will fire and populate state — nothing else to do.
@@ -199,19 +237,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      setSession(prev => prev ?? webSession);
-      setUser(prev => prev ?? (webSession?.user ?? null));
+      setSession((prev) => prev ?? webSession);
+      setUser((prev) => prev ?? (webSession?.user ?? null));
       if (webSession?.user) {
         clearLogoutGuard();
-        fetchProfile(webSession.user.id);
+        void fetchProfile(webSession.user.id);
       }
-      setLoading(false);
+      finishBoot();
     }, 100);
 
     return () => {
       cancelled = true;
       subscription.unsubscribe();
-      clearTimeout(fallbackTimer);
+      window.clearTimeout(fallbackTimer);
+      window.clearTimeout(bootFailsafeTimer);
     };
   }, []);
 
