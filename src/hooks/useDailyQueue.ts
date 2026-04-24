@@ -7,6 +7,27 @@ export interface DailyQueueItem {
   queue_order: number;
 }
 
+const withQueryTimeout = async <T,>(
+  operation: () => Promise<T>,
+  fallback: T,
+  timeoutMs = 5000,
+): Promise<T> => {
+  let timeoutId: number | undefined;
+
+  try {
+    return await Promise.race([
+      operation().catch(() => fallback),
+      new Promise<T>((resolve) => {
+        timeoutId = window.setTimeout(() => resolve(fallback), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutId !== undefined) {
+      window.clearTimeout(timeoutId);
+    }
+  }
+};
+
 export function useDailyQueue() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -16,12 +37,14 @@ export function useDailyQueue() {
     queryKey: ['daily-queue', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data, error } = await supabase.rpc('generate_daily_queue', { p_user_id: user.id });
-      if (error) {
-        console.error('Daily queue error:', error);
-        return null;
-      }
-      return (data as DailyQueueItem[]) || [];
+      return withQueryTimeout(async () => {
+        const { data, error } = await supabase.rpc('generate_daily_queue', { p_user_id: user.id });
+        if (error) {
+          console.error('Daily queue error:', error);
+          return null;
+        }
+        return (data as DailyQueueItem[]) || [];
+      }, null, 5000);
     },
     staleTime: 1000 * 30,
     refetchInterval: 1000 * 60,
@@ -35,12 +58,14 @@ export function useDailyQueue() {
     queryFn: async () => {
       if (!user || !dailyQueue || dailyQueue.length === 0) return new Set<string>();
       const queuePollIds = dailyQueue.map(q => q.poll_id);
-      const { data: votes } = await supabase
-        .from('votes')
-        .select('poll_id')
-        .eq('user_id', user.id)
-        .in('poll_id', queuePollIds);
-      return new Set(votes?.map(v => v.poll_id) || []);
+      return withQueryTimeout(async () => {
+        const { data: votes } = await supabase
+          .from('votes')
+          .select('poll_id')
+          .eq('user_id', user.id)
+          .in('poll_id', queuePollIds);
+        return new Set(votes?.map(v => v.poll_id) || []);
+      }, new Set<string>(), 4000);
     },
     staleTime: 1000 * 30,
     enabled: !!user && !!dailyQueue && dailyQueue.length > 0,
@@ -50,12 +75,14 @@ export function useDailyQueue() {
   const { data: settings } = useQuery({
     queryKey: ['daily-poll-settings'],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('daily_poll_settings')
-        .select('daily_limit, first_day_limit')
-        .limit(1)
-        .single();
-      return data || { daily_limit: 15, first_day_limit: 20 };
+      return withQueryTimeout(async () => {
+        const { data } = await supabase
+          .from('daily_poll_settings')
+          .select('daily_limit, first_day_limit')
+          .limit(1)
+          .single();
+        return data || { daily_limit: 15, first_day_limit: 20 };
+      }, { daily_limit: 15, first_day_limit: 20 }, 4000);
     },
     staleTime: 1000 * 60 * 30,
   });
