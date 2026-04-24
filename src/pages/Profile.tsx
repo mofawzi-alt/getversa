@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +25,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const { isVerified: selfVerified, category: selfCategory } = useVerifiedUser(user?.id);
   const { data: credits = 0 } = useAskCredits();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const { data: stats } = useQuery({
     queryKey: ['user-stats-v2', profile?.id],
@@ -56,6 +58,9 @@ export default function Profile() {
   });
 
   const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+
     try {
       toast.loading('Logging out...', { id: 'logout' });
       await signOut();
@@ -216,9 +221,10 @@ export default function Profile() {
           variant="outline"
           className="w-full h-14 border-destructive text-destructive hover:bg-destructive/10"
           onClick={handleLogout}
+          disabled={loggingOut}
         >
           <LogOut className="mr-2 h-5 w-5" />
-          Log Out
+          {loggingOut ? 'Logging out…' : 'Log Out'}
         </Button>
 
         {/* Account deletion — required by Apple App Store Guideline 5.1.1(v) */}
