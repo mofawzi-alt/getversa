@@ -266,64 +266,61 @@ function HomeLiveDebateCard({
         </div>
       </div>
 
-      {/* ═══ SPLIT RESULT BAR — bouncy fill, satisfying animation ═══ */}
+      {/* ═══ SPLIT RESULT BAR — outside % labels, satisfying spring fill ═══ */}
       {hasVoted && (
         <motion.div
-          className="px-4 pt-2.5"
+          className="px-4 pt-3"
           initial={{ scale: 0.96, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 320, damping: 18, delay: 0.05 }}
         >
-          <div className="relative h-8 w-full rounded-full overflow-hidden flex bg-muted shadow-md ring-1 ring-border/50">
-            <motion.div
-              className="relative h-full bg-option-a flex items-center justify-start pl-3 overflow-hidden"
-              initial={{ width: '50%' }}
-              animate={{ width: `${poll.percentA}%` }}
-              transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
+          <div className="flex items-center gap-2.5">
+            <motion.span
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: 'spring', stiffness: 400, damping: 14 }}
+              className="text-[20px] font-extrabold text-option-a tabular-nums w-[44px] text-left"
             >
-              {poll.percentA >= 12 && (
+              {poll.percentA}%
+            </motion.span>
+            <div className="relative h-3 flex-1 rounded-full overflow-hidden flex bg-muted shadow-inner ring-1 ring-border/50">
+              <motion.div
+                className="relative h-full bg-option-a overflow-hidden"
+                initial={{ width: '50%' }}
+                animate={{ width: `${poll.percentA}%` }}
+                transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
+              >
                 <motion.span
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.55, type: 'spring', stiffness: 400, damping: 14 }}
-                  className="text-[15px] font-extrabold text-white drop-shadow-md tabular-nums"
-                >
-                  {poll.percentA}%
-                </motion.span>
-              )}
-              {/* shimmer sweep */}
-              <motion.span
-                aria-hidden
-                initial={{ x: '-120%' }}
-                animate={{ x: '220%' }}
-                transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
-                className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-              />
-            </motion.div>
-            <motion.div
-              className="relative h-full bg-option-b flex items-center justify-end pr-3 overflow-hidden"
-              initial={{ width: '50%' }}
-              animate={{ width: `${poll.percentB}%` }}
-              transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
+                  aria-hidden
+                  initial={{ x: '-120%' }}
+                  animate={{ x: '220%' }}
+                  transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
+                  className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                />
+              </motion.div>
+              <motion.div
+                className="relative h-full bg-option-b overflow-hidden"
+                initial={{ width: '50%' }}
+                animate={{ width: `${poll.percentB}%` }}
+                transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
+              >
+                <motion.span
+                  aria-hidden
+                  initial={{ x: '-220%' }}
+                  animate={{ x: '120%' }}
+                  transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
+                  className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                />
+              </motion.div>
+            </div>
+            <motion.span
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: 'spring', stiffness: 400, damping: 14 }}
+              className="text-[20px] font-extrabold text-option-b tabular-nums w-[44px] text-right"
             >
-              {poll.percentB >= 12 && (
-                <motion.span
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.55, type: 'spring', stiffness: 400, damping: 14 }}
-                  className="text-[15px] font-extrabold text-white drop-shadow-md tabular-nums"
-                >
-                  {poll.percentB}%
-                </motion.span>
-              )}
-              <motion.span
-                aria-hidden
-                initial={{ x: '-220%' }}
-                animate={{ x: '120%' }}
-                transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
-                className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-              />
-            </motion.div>
+              {poll.percentB}%
+            </motion.span>
           </div>
         </motion.div>
       )}
