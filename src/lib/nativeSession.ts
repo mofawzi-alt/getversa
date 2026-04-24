@@ -105,24 +105,26 @@ export const clearNativeSession = async () => {
 /** Wire Supabase auth changes to native persistence. Call once at app boot. */
 export const installNativeSessionMirror = () => {
   if (!isNative()) return;
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    const forcedLoggedOut = await isNativeLoggedOut();
+  supabase.auth.onAuthStateChange((_event, session) => {
+    window.setTimeout(async () => {
+      const forcedLoggedOut = await isNativeLoggedOut();
 
-    if (forcedLoggedOut) {
-      // During/after logout, never mirror an in-memory session back into native storage.
-      if (!session) {
+      if (forcedLoggedOut) {
+        // During/after logout, never mirror an in-memory session back into native storage.
+        if (!session) {
+          void clearNativeSession();
+        }
+        return;
+      }
+
+      if (session) {
+        void persistSessionNative({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        });
+      } else {
         void clearNativeSession();
       }
-      return;
-    }
-
-    if (session) {
-      void persistSessionNative({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
-      });
-    } else {
-      void clearNativeSession();
-    }
+    }, 0);
   });
 };
