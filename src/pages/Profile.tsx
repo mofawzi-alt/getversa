@@ -216,6 +216,25 @@ export default function Profile() {
           {user?.email && <BiometricToggle email={user.email} />}
         </div>
 
+        {/* Legal & Support */}
+        <div className="glass rounded-2xl divide-y divide-border overflow-hidden">
+          {[
+            { icon: FileText, label: 'Privacy Policy', path: '/privacy-policy' },
+            { icon: ScrollText, label: 'Terms of Service', path: '/terms' },
+            { icon: LifeBuoy, label: 'Support', path: '/support' },
+          ].map(({ icon: Icon, label, path }) => (
+            <button
+              key={path}
+              onClick={() => navigate(path)}
+              className="w-full flex items-center gap-4 p-4 hover:bg-secondary/50 transition-colors"
+            >
+              <Icon className="h-5 w-5 text-card-foreground/70" />
+              <span className="flex-1 text-left font-medium">{label}</span>
+              <ChevronRight className="h-5 w-5 text-card-foreground/70" />
+            </button>
+          ))}
+        </div>
+
         {/* Logout */}
         <Button
           variant="outline"
@@ -226,6 +245,10 @@ export default function Profile() {
           <LogOut className="mr-2 h-5 w-5" />
           {loggingOut ? 'Logging out…' : 'Log Out'}
         </Button>
+
+        <p className="text-center text-[11px] text-muted-foreground/60">
+          Versa v1.0 · © 2026
+        </p>
 
         {/* Account deletion — required by Apple App Store Guideline 5.1.1(v) */}
         <div className="glass rounded-2xl overflow-hidden">
