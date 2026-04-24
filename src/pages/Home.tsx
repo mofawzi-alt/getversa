@@ -107,6 +107,27 @@ type PollCard = {
 
 const EXPLORE_THRESHOLD = 5;
 
+const withQueryTimeout = async <T,>(
+  operation: () => Promise<T>,
+  fallback: T,
+  timeoutMs = 6000,
+): Promise<T> => {
+  let timeoutId: number | undefined;
+
+  try {
+    return await Promise.race([
+      operation().catch(() => fallback),
+      new Promise<T>((resolve) => {
+        timeoutId = window.setTimeout(() => resolve(fallback), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutId !== undefined) {
+      window.clearTimeout(timeoutId);
+    }
+  }
+};
+
 // Animated counter component
 function AnimatedNumber({ value, className }: { value: number; className?: string }) {
   const [display, setDisplay] = useState(value);
