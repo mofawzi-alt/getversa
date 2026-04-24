@@ -259,12 +259,36 @@ function HomeLiveDebateCard({
       {/* ═══ OPTION LABELS — under the images, attached as part of the card ═══ */}
       <div className="grid grid-cols-2 bg-muted/40 border-t border-border/50">
         <div className="px-3 py-2 border-r border-border/50 flex items-center justify-center">
-          <p className="text-[13px] font-bold text-option-a leading-snug break-words text-center">{poll.option_a}</p>
+          <p className="text-[13px] font-bold text-option-a leading-snug break-words text-center">
+            {poll.option_a}{hasVoted && <span className="ml-1">{poll.percentA}%</span>}
+          </p>
         </div>
         <div className="px-3 py-2 flex items-center justify-center">
-          <p className="text-[13px] font-bold text-option-b leading-snug break-words text-center">{poll.option_b}</p>
+          <p className="text-[13px] font-bold text-option-b leading-snug break-words text-center">
+            {poll.option_b}{hasVoted && <span className="ml-1">{poll.percentB}%</span>}
+          </p>
         </div>
       </div>
+
+      {/* ═══ SPLIT RESULT BAR — directly under the labels ═══ */}
+      {hasVoted && (
+        <div className="px-4 pt-2">
+          <div className="h-3 w-full rounded-full overflow-hidden flex bg-muted">
+            <motion.div
+              className="h-full bg-option-a"
+              initial={{ width: '0%' }}
+              animate={{ width: `${poll.percentA}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+            />
+            <motion.div
+              className="h-full bg-option-b"
+              initial={{ width: '0%' }}
+              animate={{ width: `${poll.percentB}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* ═══ FRIENDS VOTED — below labels, not on images ═══ */}
       {friendsOnPoll.length > 0 && (
