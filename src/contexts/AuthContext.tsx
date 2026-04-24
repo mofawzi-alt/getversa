@@ -181,7 +181,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (isExplicitSignIn) {
         clearLogoutGuard();
-        try { await clearNativeLoggedOut(); } catch {}
+        void withTimeout(async () => {
+          await clearNativeLoggedOut();
+        }, undefined, 1200);
       }
 
       const forcedNativeLogout = isExplicitSignIn
@@ -289,7 +291,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Otherwise the auth listener can reject the fresh session as if it were
       // a stale restored session from the previous account.
       clearLogoutGuard();
-      try { await clearNativeLoggedOut(); } catch {}
+      void withTimeout(async () => {
+        await clearNativeLoggedOut();
+      }, undefined, 1200);
 
       const result = await Promise.race([
         supabase.auth.signInWithPassword({ email, password }),
@@ -303,19 +307,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       const error = authResult.error;
       if (!error) {
-        try { await clearNativeLoggedOut(); } catch {}
         clearLogoutGuard();
+        void withTimeout(async () => {
+          await clearNativeLoggedOut();
+        }, undefined, 1200);
 
         const nextSession = authResult.data?.session ?? await getSessionWithTimeout(1500);
         if (nextSession) {
           setSession(nextSession);
           setUser(nextSession.user ?? null);
-          try {
+          void withTimeout(async () => {
             await persistSessionNative({
               access_token: nextSession.access_token,
               refresh_token: nextSession.refresh_token,
             });
-          } catch {}
+          }, undefined, 1200);
 
           if (nextSession.user) {
             void fetchProfile(nextSession.user.id);
