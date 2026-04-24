@@ -179,8 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       finishBoot();
     }, 3500);
 
-    // Set up auth listener FIRST, then get initial session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+    const processAuthStateChange = async (event: string, nextSession: Session | null) => {
       const isExplicitSignIn = event === 'SIGNED_IN' && !!nextSession && deliberateSignInRef.current;
 
       if (isExplicitSignIn) {
@@ -195,13 +194,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ? false
         : await withTimeout(() => isNativeLoggedOut(), false, 800);
 
+      if (cancelled) return;
+
       if (hasLogoutGuard() || forcedNativeLogout) {
         deliberateSignInRef.current = false;
         clearAuthState();
         finishBoot();
 
         if (nextSession) {
-          void supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+          window.setTimeout(() => {
+            void supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+          }, 0);
         }
 
         return;
@@ -209,17 +212,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
-      
+
       if (nextSession?.user) {
-        setTimeout(() => {
+        window.setTimeout(() => {
           void fetchProfile(nextSession.user.id);
         }, 0);
       } else {
         setProfile(null);
         setIsAdmin(false);
       }
-      
+
       finishBoot();
+    };
+
+    // Set up auth listener FIRST, then get initial session.
+    // Keep the callback synchronous: Supabase warns async callbacks can deadlock
+    // auth/session restoration on iOS/Capacitor cold-starts.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      window.setTimeout(() => {
+        void processAuthStateChange(event, nextSession);
+      }, 0);
     });
 
     // Mirror Supabase sessions into native secure storage (iOS Keychain / Android EncryptedSharedPreferences)
