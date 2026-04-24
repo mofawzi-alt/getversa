@@ -216,7 +216,7 @@ function HomeLiveDebateCard({
 
       {/* ═══ QUESTION HEADER — top of card so users see it first ═══ */}
       <div className="px-4 pt-4 pb-3 bg-card text-center">
-        <p className="text-[15px] font-bold text-foreground leading-snug break-words">{poll.question}</p>
+        <p className="text-[18px] font-extrabold text-foreground leading-tight tracking-tight break-words">{poll.question}</p>
         {'subtitle' in poll && poll.subtitle && (
           <p className="text-xs text-muted-foreground mt-1 leading-snug">{poll.subtitle}</p>
         )}
