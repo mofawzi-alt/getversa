@@ -331,22 +331,26 @@ function HomeLiveDebateCard({
           <p className="text-[11px] text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</p>
         </div>
 
-        {/* Detailed result bars */}
+        {/* Single split result bar */}
         {hasVoted && (
           <div className="space-y-1.5 pt-1">
             <div className="flex items-center justify-between text-[11px] font-semibold">
-              <span className="text-option-a truncate max-w-[70%]">{poll.option_a}</span>
-              <span className="text-option-a">{poll.percentA}%</span>
+              <span className="text-option-a truncate max-w-[45%]">{poll.option_a} {poll.percentA}%</span>
+              <span className="text-option-b truncate max-w-[45%] text-right">{poll.percentB}% {poll.option_b}</span>
             </div>
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-              <motion.div className="h-full bg-option-a rounded-full" initial={{ width: '0%' }} animate={{ width: `${poll.percentA}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
-            </div>
-            <div className="flex items-center justify-between text-[11px] font-semibold">
-              <span className="text-option-b truncate max-w-[70%]">{poll.option_b}</span>
-              <span className="text-option-b">{poll.percentB}%</span>
-            </div>
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-              <motion.div className="h-full bg-option-b rounded-full" initial={{ width: '0%' }} animate={{ width: `${poll.percentB}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
+            <div className="h-2 w-full rounded-full overflow-hidden flex bg-muted">
+              <motion.div
+                className="h-full bg-option-a"
+                initial={{ width: '0%' }}
+                animate={{ width: `${poll.percentA}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+              />
+              <motion.div
+                className="h-full bg-option-b"
+                initial={{ width: '0%' }}
+                animate={{ width: `${poll.percentB}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+              />
             </div>
           </div>
         )}
