@@ -203,11 +203,29 @@ function HomeLiveDebateCard({
       transition={{ delay: Math.min(index * 0.025, 0.15), duration: 0.25 }}
       whileTap={{ scale: 0.985 }}
       onClick={hasVoted ? onCardClick : undefined}
-      className={`rounded-2xl overflow-hidden border border-border/60 bg-card shadow-md ${hasVoted ? 'cursor-pointer' : ''}`}
+      className={`relative rounded-2xl overflow-hidden border bg-card shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
     >
+      {!hasVoted && (
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-primary/50 z-40"
+          animate={{ opacity: [0.35, 0.9, 0.35] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
           <LiveIndicator variant="badge" />
+          {!hasVoted && (
+            <motion.div
+              animate={{ scale: [1, 1.06, 1] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wide shadow-sm"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
+              Vote
+            </motion.div>
+          )}
           {isTrending && <TrendingBadge size="xs" />}
           <span className="text-xs text-muted-foreground font-semibold">{poll.totalVotes.toLocaleString()} votes</span>
           <div className="ml-auto flex items-center gap-1.5">
