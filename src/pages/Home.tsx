@@ -764,122 +764,120 @@ export default function Home() {
   const { data: polls, isLoading } = useQuery({
     queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, queuePollIds.join('|')],
     queryFn: async () => {
-      const now = new Date().toISOString();
-      const pollSelect = 'id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries, option_a_tag, option_b_tag, tags, is_hot_take';
+      return withQueryTimeout(async () => {
+        const now = new Date().toISOString();
+        const pollSelect = 'id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries, option_a_tag, option_b_tag, tags, is_hot_take';
 
-      const { data: rawPolls, error: rawPollsError } = await supabase
-        .from('polls')
-        .select(pollSelect)
-        .eq('is_active', true)
-        .or(`starts_at.is.null,starts_at.lte.${now}`)
-        .order('weight_score', { ascending: false, nullsFirst: false })
-        .order('created_at', { ascending: false })
-        .limit(200);
-
-      if (rawPollsError) throw rawPollsError;
-      if (!rawPolls || rawPolls.length === 0) return [];
-
-      const fetchedIds = new Set(rawPolls.map(p => p.id));
-      const missingQueuePollIds = queuePollIds.filter(id => !fetchedIds.has(id));
-      let mergedPolls = rawPolls;
-
-      if (missingQueuePollIds.length > 0) {
-        const { data: queuedPolls, error: queuedPollsError } = await supabase
+        const { data: rawPolls, error: rawPollsError } = await supabase
           .from('polls')
           .select(pollSelect)
-          .in('id', missingQueuePollIds)
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .or(`starts_at.is.null,starts_at.lte.${now}`)
+          .order('weight_score', { ascending: false, nullsFirst: false })
+          .order('created_at', { ascending: false })
+          .limit(200);
 
-        if (queuedPollsError) throw queuedPollsError;
+        if (rawPollsError) throw rawPollsError;
+        if (!rawPolls || rawPolls.length === 0) return [];
 
-        if (queuedPolls?.length) {
-          mergedPolls = [...rawPolls, ...queuedPolls.filter(p => !fetchedIds.has(p.id))];
+        const fetchedIds = new Set(rawPolls.map(p => p.id));
+        const missingQueuePollIds = queuePollIds.filter(id => !fetchedIds.has(id));
+        let mergedPolls = rawPolls;
+
+        if (missingQueuePollIds.length > 0) {
+          const { data: queuedPolls, error: queuedPollsError } = await supabase
+            .from('polls')
+            .select(pollSelect)
+            .in('id', missingQueuePollIds)
+            .eq('is_active', true);
+
+          if (queuedPollsError) throw queuedPollsError;
+
+          if (queuedPolls?.length) {
+            mergedPolls = [...rawPolls, ...queuedPolls.filter(p => !fetchedIds.has(p.id))];
+          }
         }
-      }
 
-      // Filter by user demographics
-      // Move explicitly targeted polls that match this user to the front,
-      // but keep all other polls visible in their original weight order.
-      const queueSet = new Set(queuePollIds);
-      let prioritized = mergedPolls;
-      if (profile) {
-        const matched: typeof mergedPolls = [];
-        const others: typeof mergedPolls = [];
+        const queueSet = new Set(queuePollIds);
+        let prioritized = mergedPolls;
+        if (profile) {
+          const matched: typeof mergedPolls = [];
+          const others: typeof mergedPolls = [];
 
-        mergedPolls.forEach(p => {
-          if (queueSet.has(p.id)) {
-            matched.push(p);
-            return;
-          }
+          mergedPolls.forEach(p => {
+            if (queueSet.has(p.id)) {
+              matched.push(p);
+              return;
+            }
 
-          const countries = (p as any).target_countries as string[] | null;
-          const hasExplicitTargeting = Boolean(
-            (p.target_gender && p.target_gender !== 'All') ||
-            (p.target_age_range && p.target_age_range !== 'All') ||
-            (countries && countries.length > 0) ||
-            (p.target_country && p.target_country !== 'All')
-          );
+            const countries = (p as any).target_countries as string[] | null;
+            const hasExplicitTargeting = Boolean(
+              (p.target_gender && p.target_gender !== 'All') ||
+              (p.target_age_range && p.target_age_range !== 'All') ||
+              (countries && countries.length > 0) ||
+              (p.target_country && p.target_country !== 'All')
+            );
 
-          if (!hasExplicitTargeting) {
-            others.push(p);
-            return;
-          }
+            if (!hasExplicitTargeting) {
+              others.push(p);
+              return;
+            }
 
-          let isMatch = true;
-          if (p.target_gender && p.target_gender !== 'All' && profile.gender) {
-            const genders = p.target_gender.split(',').map((g: string) => g.trim());
-            if (!genders.includes(profile.gender)) isMatch = false;
-          }
-          if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range) {
-            const ages = p.target_age_range.split(',').map((a: string) => a.trim());
-            if (!ages.includes(profile.age_range)) isMatch = false;
-          }
-          if (countries && countries.length > 0) {
-            if (profile.country && !countries.includes(profile.country)) isMatch = false;
-          } else if (p.target_country && p.target_country !== 'All' && profile.country && p.target_country !== profile.country) {
-            isMatch = false;
-          }
+            let isMatch = true;
+            if (p.target_gender && p.target_gender !== 'All' && profile.gender) {
+              const genders = p.target_gender.split(',').map((g: string) => g.trim());
+              if (!genders.includes(profile.gender)) isMatch = false;
+            }
+            if (p.target_age_range && p.target_age_range !== 'All' && profile.age_range) {
+              const ages = p.target_age_range.split(',').map((a: string) => a.trim());
+              if (!ages.includes(profile.age_range)) isMatch = false;
+            }
+            if (countries && countries.length > 0) {
+              if (profile.country && !countries.includes(profile.country)) isMatch = false;
+            } else if (p.target_country && p.target_country !== 'All' && profile.country && p.target_country !== profile.country) {
+              isMatch = false;
+            }
 
-          if (isMatch) matched.push(p);
+            if (isMatch) matched.push(p);
+          });
+
+          prioritized = [...matched, ...others];
+        }
+
+        const selectedPolls = prioritized.filter((p, index) => index < 100 || queueSet.has(p.id));
+        const pollIds = selectedPolls.map(p => p.id);
+        if (pollIds.length === 0) return [];
+
+        const { data: results, error: resultsError } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
+        if (resultsError) throw resultsError;
+        const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
+
+        const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+        const recentPollIds = pollIds.slice(0, 20);
+        const { data: recentVotesData, error: recentVotesError } = await supabase
+          .from('votes')
+          .select('poll_id, user_id')
+          .in('poll_id', recentPollIds)
+          .gte('created_at', fiveMinAgo)
+          .limit(200);
+
+        if (recentVotesError) throw recentVotesError;
+
+        const recentVotesMap = new Map<string, Set<string>>();
+        recentVotesData?.forEach(v => {
+          if (!recentVotesMap.has(v.poll_id)) recentVotesMap.set(v.poll_id, new Set());
+          recentVotesMap.get(v.poll_id)!.add(v.user_id);
         });
 
-        prioritized = [...matched, ...others];
-      }
-
-      const selectedPolls = prioritized.filter((p, index) => index < 100 || queueSet.has(p.id));
-      const pollIds = selectedPolls.map(p => p.id);
-      if (pollIds.length === 0) return [];
-
-      const { data: results, error: resultsError } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
-      if (resultsError) throw resultsError;
-      const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
-
-      // Get recent votes (last 5 minutes) — only for top 20 polls to keep it fast
-      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      const recentPollIds = pollIds.slice(0, 20);
-      const { data: recentVotesData, error: recentVotesError } = await supabase
-        .from('votes')
-        .select('poll_id, user_id')
-        .in('poll_id', recentPollIds)
-        .gte('created_at', fiveMinAgo)
-        .limit(200);
-
-      if (recentVotesError) throw recentVotesError;
-
-      const recentVotesMap = new Map<string, Set<string>>();
-      recentVotesData?.forEach(v => {
-        if (!recentVotesMap.has(v.poll_id)) recentVotesMap.set(v.poll_id, new Set());
-        recentVotesMap.get(v.poll_id)!.add(v.user_id);
-      });
-
-      return selectedPolls.map(p => {
-        const r = resultsMap.get(p.id) as any;
-        const total = (r?.total_votes as number) || 0;
-        const votesA = (r?.votes_a as number) || 0;
-        const votesB = (r?.votes_b as number) || 0;
-        const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
-        return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: recentVotesMap.get(p.id)?.size || 0, _recentVoterIds: Array.from(recentVotesMap.get(p.id) || []) };
-      });
+        return selectedPolls.map(p => {
+          const r = resultsMap.get(p.id) as any;
+          const total = (r?.total_votes as number) || 0;
+          const votesA = (r?.votes_a as number) || 0;
+          const votesB = (r?.votes_b as number) || 0;
+          const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
+          return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: recentVotesMap.get(p.id)?.size || 0, _recentVoterIds: Array.from(recentVotesMap.get(p.id) || []) };
+        });
+      }, [], 6000);
     },
     staleTime: 1000 * 30,
     refetchInterval: 1000 * 60,
