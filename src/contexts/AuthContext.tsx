@@ -359,9 +359,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLogoutGuard();
     deliberateSignInRef.current = false;
 
-    // Stop native session restore first so a stale session cannot come back.
-    try { await markNativeLoggedOut(); } catch {}
-
     // Clear local UI state IMMEDIATELY so the rest of the app re-renders to
     // logged-out even if the network calls below stall.
     setUser(null);
@@ -369,14 +366,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     setIsAdmin(false);
 
-    // Keep Face ID enabled for future app locks, but clear the current
-    // unlocked flag and the mirrored native session.
-    try { clearBiometricUnlocked(); } catch {}
-    try { await clearNativeSession(); } catch {}
-
     // Hard-clear any lingering Supabase tokens in localStorage / sessionStorage
-    // so a stale session can't be restored on next app open. Do this BEFORE the
-    // network call so even if signOut() hangs we're already locally logged out.
+    // synchronously so a stale session can't be restored on next app open.
     try {
       Object.keys(localStorage).forEach((k) => {
         if (k.startsWith('sb-') || k.includes('supabase')) localStorage.removeItem(k);
@@ -393,18 +384,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch {}
 
-    try {
-      await Promise.race([
-        supabase.auth.signOut({ scope: 'global' }),
-        new Promise((resolve) => setTimeout(resolve, 3000)),
-      ]);
-    } catch {}
+    // Fire-and-forget all native + network teardown so the UI never hangs
+    // on a stalled WKWebView fetch or Capacitor bridge call.
+    void withTimeout(async () => { await markNativeLoggedOut(); }, undefined, 1500);
+    try { clearBiometricUnlocked(); } catch {}
+    void withTimeout(async () => { await clearNativeSession(); }, undefined, 1500);
+    void withTimeout(async () => { await supabase.auth.signOut({ scope: 'global' }); }, undefined, 3000);
+    void withTimeout(async () => { await supabase.auth.signOut({ scope: 'local' }); }, undefined, 1500);
 
-    try {
-      await supabase.auth.signOut({ scope: 'local' });
-    } catch {}
-
-    logoutInFlightRef.current = false;
+    // Release the guard quickly so a second tap never appears stuck. We've
+    // already cleared local state; the background tasks will finish on their own.
+    window.setTimeout(() => {
+      logoutInFlightRef.current = false;
+    }, 400);
   };
 
   return (
