@@ -161,6 +161,10 @@ export function usePushNotifications() {
   }, [checkSubscription, user, isNativeApp]);
 
   const registerServiceWorker = async (): Promise<ServiceWorkerRegistration> => {
+    if (isNativeApp) {
+      throw new Error('Native app notifications are not active in this build yet');
+    }
+
     await navigator.serviceWorker.register('/sw.js', {
       scope: '/',
     });
