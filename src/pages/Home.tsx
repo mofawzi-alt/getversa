@@ -268,26 +268,26 @@ function HomeLiveDebateCard({
 
       {/* ═══ SPLIT RESULT BAR — directly under the labels, % inline on bar ═══ */}
       {hasVoted && (
-        <div className="px-4 pt-2">
-          <div className="relative h-5 w-full rounded-full overflow-hidden flex bg-muted">
+        <div className="px-4 pt-2.5">
+          <div className="relative h-7 w-full rounded-full overflow-hidden flex bg-muted shadow-sm ring-1 ring-border/50">
             <motion.div
-              className="h-full bg-option-a flex items-center justify-start pl-2"
+              className="h-full bg-option-a flex items-center justify-start pl-3"
               initial={{ width: '0%' }}
               animate={{ width: `${poll.percentA}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
             >
               {poll.percentA >= 12 && (
-                <span className="text-[11px] font-bold text-white drop-shadow-sm">{poll.percentA}%</span>
+                <span className="text-[14px] font-extrabold text-white drop-shadow-md">{poll.percentA}%</span>
               )}
             </motion.div>
             <motion.div
-              className="h-full bg-option-b flex items-center justify-end pr-2"
+              className="h-full bg-option-b flex items-center justify-end pr-3"
               initial={{ width: '0%' }}
               animate={{ width: `${poll.percentB}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
             >
               {poll.percentB >= 12 && (
-                <span className="text-[11px] font-bold text-white drop-shadow-sm">{poll.percentB}%</span>
+                <span className="text-[14px] font-extrabold text-white drop-shadow-md">{poll.percentB}%</span>
               )}
             </motion.div>
           </div>
