@@ -254,37 +254,38 @@ function HomeLiveDebateCard({
           </div>
         )}
 
-        {/* Friend avatar stack */}
-        {friendsOnPoll.length > 0 && (
-          <div className="absolute left-1/2 -translate-x-1/2 top-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 max-w-[85%] pointer-events-none shadow-md">
-            <div className="flex -space-x-1.5">
-              {friendsOnPoll.slice(0, 3).map((f) => (
-                <UserAvatar
-                  key={f.friendId}
-                  url={f.friendAvatarUrl}
-                  username={f.friendName}
-                  className="w-5 h-5 ring-1 ring-black/40"
-                />
-              ))}
-            </div>
-            <span className="text-[10px] font-semibold text-white truncate">
-              {friendsOnPoll.length === 1
-                ? `${friendsOnPoll[0].friendName} voted`
-                : `${friendsOnPoll[0].friendName} +${friendsOnPoll.length - 1}`}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* ═══ OPTION LABELS — under the images, attached as part of the card ═══ */}
       <div className="grid grid-cols-2 bg-muted/40 border-t border-border/50">
-        <div className="px-3 py-2 border-r border-border/50">
-          <p className="text-[13px] font-bold text-option-a leading-snug break-words">{poll.option_a}</p>
+        <div className="px-3 py-2 border-r border-border/50 flex items-center justify-center">
+          <p className="text-[13px] font-bold text-option-a leading-snug break-words text-center">{poll.option_a}</p>
         </div>
-        <div className="px-3 py-2">
-          <p className="text-[13px] font-bold text-option-b leading-snug break-words text-right">{poll.option_b}</p>
+        <div className="px-3 py-2 flex items-center justify-center">
+          <p className="text-[13px] font-bold text-option-b leading-snug break-words text-center">{poll.option_b}</p>
         </div>
       </div>
+
+      {/* ═══ FRIENDS VOTED — below labels, not on images ═══ */}
+      {friendsOnPoll.length > 0 && (
+        <div className="px-4 pt-2.5 flex items-center justify-center gap-2">
+          <div className="flex -space-x-1.5">
+            {friendsOnPoll.slice(0, 3).map((f) => (
+              <UserAvatar
+                key={f.friendId}
+                url={f.friendAvatarUrl}
+                username={f.friendName}
+                className="w-5 h-5 ring-2 ring-card"
+              />
+            ))}
+          </div>
+          <span className="text-[11px] font-medium text-muted-foreground">
+            {friendsOnPoll.length === 1
+              ? `${friendsOnPoll[0].friendName} voted`
+              : `${friendsOnPoll[0].friendName} +${friendsOnPoll.length - 1} voted`}
+          </span>
+        </div>
+      )}
 
       {/* ═══ BIG PERCENTAGES — post-vote ═══ */}
       {hasVoted && (
