@@ -259,12 +259,36 @@ function HomeLiveDebateCard({
       {/* ═══ OPTION LABELS — under the images, attached as part of the card ═══ */}
       <div className="grid grid-cols-2 bg-muted/40 border-t border-border/50">
         <div className="px-3 py-2 border-r border-border/50 flex items-center justify-center">
-          <p className="text-[13px] font-bold text-option-a leading-snug break-words text-center">{poll.option_a}</p>
+          <p className="text-[13px] font-bold text-option-a leading-snug break-words text-center">
+            {poll.option_a}{hasVoted && <span className="ml-1">{poll.percentA}%</span>}
+          </p>
         </div>
         <div className="px-3 py-2 flex items-center justify-center">
-          <p className="text-[13px] font-bold text-option-b leading-snug break-words text-center">{poll.option_b}</p>
+          <p className="text-[13px] font-bold text-option-b leading-snug break-words text-center">
+            {poll.option_b}{hasVoted && <span className="ml-1">{poll.percentB}%</span>}
+          </p>
         </div>
       </div>
+
+      {/* ═══ SPLIT RESULT BAR — directly under the labels ═══ */}
+      {hasVoted && (
+        <div className="px-4 pt-2">
+          <div className="h-3 w-full rounded-full overflow-hidden flex bg-muted">
+            <motion.div
+              className="h-full bg-option-a"
+              initial={{ width: '0%' }}
+              animate={{ width: `${poll.percentA}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+            />
+            <motion.div
+              className="h-full bg-option-b"
+              initial={{ width: '0%' }}
+              animate={{ width: `${poll.percentB}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* ═══ FRIENDS VOTED — below labels, not on images ═══ */}
       {friendsOnPoll.length > 0 && (
@@ -320,29 +344,6 @@ function HomeLiveDebateCard({
           <p className="text-[11px] text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</p>
         </div>
 
-        {/* Single split result bar — bigger, with inline labels */}
-        {hasVoted && (
-          <div className="space-y-1.5 pt-1">
-            <div className="flex items-center justify-between text-[12px] font-semibold">
-              <span className="text-option-a truncate max-w-[45%]">{poll.option_a} {poll.percentA}%</span>
-              <span className="text-option-b truncate max-w-[45%] text-right">{poll.percentB}% {poll.option_b}</span>
-            </div>
-            <div className="h-3 w-full rounded-full overflow-hidden flex bg-muted">
-              <motion.div
-                className="h-full bg-option-a"
-                initial={{ width: '0%' }}
-                animate={{ width: `${poll.percentA}%` }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-              />
-              <motion.div
-                className="h-full bg-option-b"
-                initial={{ width: '0%' }}
-                animate={{ width: `${poll.percentB}%` }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-              />
-            </div>
-          </div>
-        )}
         {hasVoted && genderTeaser && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
