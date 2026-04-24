@@ -41,11 +41,17 @@ export default function BiometricToggle({ email }: BiometricToggleProps) {
       void loadAvailability();
     };
 
+    const handleStorage = () => {
+      void loadAvailability();
+    };
+
     window.addEventListener('focus', handleFocus);
+    window.addEventListener('storage', handleStorage);
 
     return () => {
       mounted = false;
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('storage', handleStorage);
     };
   }, []);
 
@@ -99,9 +105,9 @@ export default function BiometricToggle({ email }: BiometricToggleProps) {
               : faceIdNeedsNativePermission
                 ? 'Face ID is blocked in the current iPhone build until the native permission is synced'
                 : `Unavailable${reason ? ` (${reason})` : ''} — turn on ${label} in iPhone Settings`
-            : enabled
-              ? `Sign in instantly with ${label}`
-              : `Use ${label} for faster sign-in`}
+              : enabled
+                ? `${label} is on and will lock the app when you reopen it`
+                : `Use ${label} for faster sign-in`}
         </div>
       </div>
       <Switch checked={enabled} onCheckedChange={handleToggle} disabled={loading || !available} />

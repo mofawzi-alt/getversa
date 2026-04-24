@@ -84,6 +84,7 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
   const [supportMessage, setSupportMessage] = useState('Not supported in this browser');
   const isNativeApp = Capacitor?.isNativePlatform?.() === true;
+  const nativeNotificationsImplemented = false;
 
   const checkSubscription = useCallback(async () => {
     if (!user) {
@@ -133,10 +134,10 @@ export function usePushNotifications() {
   }, [user]);
 
   useEffect(() => {
-    if (isNativeApp) {
+    if (isNativeApp && !nativeNotificationsImplemented) {
       setIsSupported(false);
       setIsSubscribed(false);
-      setSupportMessage('Notifications are not wired into the native phone app yet');
+      setSupportMessage('Native app notifications are not active in this build yet');
       return;
     }
 
@@ -174,7 +175,7 @@ export function usePushNotifications() {
     }
 
     if (!isSupported) {
-      toast.error(isNativeApp ? 'Notifications are not available in the native phone app yet' : supportMessage);
+      toast.error(isNativeApp ? 'Native app notifications are not active in this build yet' : supportMessage);
       return false;
     }
 
@@ -226,7 +227,7 @@ export function usePushNotifications() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, isSupported]);
+  }, [user, isSupported, isNativeApp, supportMessage]);
 
   const unsubscribe = useCallback(async () => {
     if (!user) {

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -75,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const logoutInFlightRef = useRef(false);
 
   const fetchProfile = async (userId: string) => {
     let { data: profileData } = await supabase
@@ -248,6 +249,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    if (logoutInFlightRef.current) return;
+    logoutInFlightRef.current = true;
+
     let preservedBiometricEnabled: string | null = null;
     let preservedBiometricEmail: string | null = null;
 
@@ -294,10 +298,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       await Promise.race([
-        supabase.auth.signOut(),
+        supabase.auth.signOut({ scope: 'global' }),
         new Promise((resolve) => setTimeout(resolve, 3000)),
       ]);
     } catch {}
+
+    try {
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch {}
+
+    logoutInFlightRef.current = false;
   };
 
   return (
