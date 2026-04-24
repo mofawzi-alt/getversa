@@ -289,8 +289,8 @@ function HomeLiveDebateCard({
             <p className={`text-[14px] font-bold leading-tight break-words ${chosenA ? 'text-option-a' : 'text-foreground'}`}>
               {poll.option_a}
             </p>
-            {poll.option_a_tag && (
-              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug truncate">{poll.option_a_tag}</p>
+            {(poll as any).option_a_tag && (
+              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug truncate">{(poll as any).option_a_tag}</p>
             )}
           </div>
         </div>
