@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteScoring';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import CategoryBadge from '@/components/category/CategoryBadge';
@@ -266,64 +266,61 @@ function HomeLiveDebateCard({
         </div>
       </div>
 
-      {/* ═══ SPLIT RESULT BAR — bouncy fill, satisfying animation ═══ */}
+      {/* ═══ SPLIT RESULT BAR — outside % labels, satisfying spring fill ═══ */}
       {hasVoted && (
         <motion.div
-          className="px-4 pt-2.5"
+          className="px-4 pt-3"
           initial={{ scale: 0.96, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 320, damping: 18, delay: 0.05 }}
         >
-          <div className="relative h-8 w-full rounded-full overflow-hidden flex bg-muted shadow-md ring-1 ring-border/50">
-            <motion.div
-              className="relative h-full bg-option-a flex items-center justify-start pl-3 overflow-hidden"
-              initial={{ width: '50%' }}
-              animate={{ width: `${poll.percentA}%` }}
-              transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
+          <div className="flex items-center gap-2.5">
+            <motion.span
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: 'spring', stiffness: 400, damping: 14 }}
+              className="text-[20px] font-extrabold text-option-a tabular-nums w-[44px] text-left"
             >
-              {poll.percentA >= 12 && (
+              {poll.percentA}%
+            </motion.span>
+            <div className="relative h-3 flex-1 rounded-full overflow-hidden flex bg-muted shadow-inner ring-1 ring-border/50">
+              <motion.div
+                className="relative h-full bg-option-a overflow-hidden"
+                initial={{ width: '50%' }}
+                animate={{ width: `${poll.percentA}%` }}
+                transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
+              >
                 <motion.span
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.55, type: 'spring', stiffness: 400, damping: 14 }}
-                  className="text-[15px] font-extrabold text-white drop-shadow-md tabular-nums"
-                >
-                  {poll.percentA}%
-                </motion.span>
-              )}
-              {/* shimmer sweep */}
-              <motion.span
-                aria-hidden
-                initial={{ x: '-120%' }}
-                animate={{ x: '220%' }}
-                transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
-                className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-              />
-            </motion.div>
-            <motion.div
-              className="relative h-full bg-option-b flex items-center justify-end pr-3 overflow-hidden"
-              initial={{ width: '50%' }}
-              animate={{ width: `${poll.percentB}%` }}
-              transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
+                  aria-hidden
+                  initial={{ x: '-120%' }}
+                  animate={{ x: '220%' }}
+                  transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
+                  className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                />
+              </motion.div>
+              <motion.div
+                className="relative h-full bg-option-b overflow-hidden"
+                initial={{ width: '50%' }}
+                animate={{ width: `${poll.percentB}%` }}
+                transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
+              >
+                <motion.span
+                  aria-hidden
+                  initial={{ x: '-220%' }}
+                  animate={{ x: '120%' }}
+                  transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
+                  className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                />
+              </motion.div>
+            </div>
+            <motion.span
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: 'spring', stiffness: 400, damping: 14 }}
+              className="text-[20px] font-extrabold text-option-b tabular-nums w-[44px] text-right"
             >
-              {poll.percentB >= 12 && (
-                <motion.span
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.55, type: 'spring', stiffness: 400, damping: 14 }}
-                  className="text-[15px] font-extrabold text-white drop-shadow-md tabular-nums"
-                >
-                  {poll.percentB}%
-                </motion.span>
-              )}
-              <motion.span
-                aria-hidden
-                initial={{ x: '-220%' }}
-                animate={{ x: '120%' }}
-                transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
-                className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-              />
-            </motion.div>
+              {poll.percentB}%
+            </motion.span>
           </div>
         </motion.div>
       )}
@@ -387,52 +384,46 @@ function HomeLiveDebateCard({
             initial={{ opacity: 0, y: 8, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.9, type: 'spring', stiffness: 280, damping: 20 }}
-            className="mt-4 relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/15 via-primary/10 to-transparent border-2 border-primary/30 shadow-sm"
+            className="mt-3 relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-primary/8 to-transparent border border-primary/25 shadow-sm"
           >
-            <div className="px-3 py-2.5 flex items-start gap-2.5">
-              <div className="shrink-0 mt-0.5 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground text-[9px] font-extrabold uppercase tracking-wider">
-                🔥 Insight
+            <div className="px-3 py-3 flex items-center gap-3">
+              {/* Gradient icon badge */}
+              <div className="shrink-0 h-11 w-11 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-md">
+                <TrendingUp className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
               </div>
-              <p className="text-[13px] font-bold text-foreground leading-snug flex-1">
-                {genderTeaser.text}
-              </p>
+              {/* Eyebrow + text */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-primary mb-0.5">
+                  <span>🔥</span>
+                  <span>Insight</span>
+                </div>
+                <p className="text-[13px] font-bold text-foreground leading-snug">
+                  {genderTeaser.text}
+                </p>
+              </div>
+              {/* Mini donut showing split */}
+              <div className="shrink-0 relative h-12 w-12">
+                <svg viewBox="0 0 36 36" className="h-12 w-12 -rotate-90">
+                  <circle cx="18" cy="18" r="15.5" fill="none" className="stroke-option-b" strokeWidth="5" />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="15.5"
+                    fill="none"
+                    className="stroke-option-a"
+                    strokeWidth="5"
+                    strokeDasharray={`${(poll.percentA / 100) * 97.39} 97.39`}
+                    strokeLinecap="butt"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[10px] font-extrabold text-foreground tabular-nums">{poll.percentA}%</span>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
-        {hasVoted ? (
-          <div className="flex items-center gap-2 pt-2">
-            <span className="text-xs font-semibold text-primary truncate flex-1">
-              You voted {chosenOptionLabel && chosenOptionLabel.length > 20 ? chosenOptionLabel.slice(0, 20) + '…' : chosenOptionLabel}
-            </span>
-            {user && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShareSheetOpen(true);
-                }}
-                aria-label="Send to friend"
-                className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full bg-muted text-foreground text-xs font-semibold active:scale-95 transition"
-              >
-                <Send className="h-3.5 w-3.5" /> Send
-              </button>
-            )}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const pollUrl = `${window.location.origin}/poll/${poll.id}`;
-                if (navigator.share) {
-                  navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
-                } else {
-                  navigator.clipboard.writeText(pollUrl);
-                  import('sonner').then(m => m.toast.success('Link copied!'));
-                }
-              }}
-              className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm active:scale-95 transition"
-            >
-              <Share2 className="h-3.5 w-3.5" /> Share
-            </button>
-          </div>
-        ) : (
+        {!hasVoted && (
           <div className="flex items-center gap-2">
             <button
               onClick={(e) => { e.stopPropagation(); handleInlineVote('A'); }}
@@ -463,6 +454,46 @@ function HomeLiveDebateCard({
           </div>
         )}
       </div>
+      {/* ═══ FOOTER CTA STRIP — separated bar, primary Share + outline Send ═══ */}
+      {hasVoted && (
+        <div className="border-t border-border/60 bg-muted/30 px-4 py-2.5 flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            <div className="h-5 w-5 rounded-full bg-success/15 flex items-center justify-center shrink-0">
+              <Check className="h-3 w-3 text-success" strokeWidth={3} />
+            </div>
+            <span className="text-[12px] font-semibold text-foreground truncate">
+              You voted <span className="text-primary">{chosenOptionLabel && chosenOptionLabel.length > 16 ? chosenOptionLabel.slice(0, 16) + '…' : chosenOptionLabel}</span>
+            </span>
+          </div>
+          {user && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShareSheetOpen(true);
+              }}
+              aria-label="Send to friend"
+              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/30 bg-card text-primary text-xs font-semibold active:scale-95 transition"
+            >
+              <Send className="h-3.5 w-3.5" /> Send
+            </button>
+          )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const pollUrl = `${window.location.origin}/poll/${poll.id}`;
+              if (navigator.share) {
+                navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
+              } else {
+                navigator.clipboard.writeText(pollUrl);
+                import('sonner').then(m => m.toast.success('Link copied!'));
+              }
+            }}
+            className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm active:scale-95 transition"
+          >
+            <Share2 className="h-3.5 w-3.5" /> Share
+          </button>
+        </div>
+      )}
       <SharePollToFriendSheet
         pollId={poll.id}
         pollQuestion={poll.question}
