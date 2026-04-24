@@ -327,11 +327,7 @@ function HomeLiveDebateCard({
         </div>
 
         <div>
-          <p className="text-base font-bold text-foreground leading-snug">{poll.question}</p>
-          {'subtitle' in poll && poll.subtitle && (
-            <p className="text-xs text-muted-foreground mt-0.5">{poll.subtitle}</p>
-          )}
-          <p className="text-[11px] text-muted-foreground mt-1 font-medium">{poll.totalVotes.toLocaleString()} votes</p>
+          <p className="text-[11px] text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</p>
         </div>
 
         {/* Detailed result bars */}
