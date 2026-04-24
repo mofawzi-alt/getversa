@@ -144,12 +144,10 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
       onMouseUp={hasResult ? undefined : handleEnd}
       onMouseLeave={hasResult ? undefined : () => isDragging && handleEnd()}
     >
-      {/* Images — fixed height matching home screen cards */}
-      <div className="relative grid grid-cols-2 gap-0 h-[75vh] max-h-[650px] rounded-2xl overflow-hidden mx-2 border border-border/60 shadow-sm">
-
-        {/* Category badge */}
+      {/* Question header — clean, fully readable */}
+      <div className="w-full px-4 pt-2 pb-2.5 shrink-0">
         {poll.category && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+          <div className="flex justify-center mb-1.5">
             <CategoryBadge
               category={mapToVersaCategory(poll.category)}
               variant="overlay"
@@ -157,16 +155,14 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
             />
           </div>
         )}
+        <p className="text-[17px] font-bold text-foreground leading-snug text-center">{poll.question}</p>
+        {poll.subtitle && (
+          <p className="text-xs text-muted-foreground text-center mt-1">{poll.subtitle}</p>
+        )}
+      </div>
 
-        {/* Question overlay centered in middle of images */}
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-5 pointer-events-none">
-          <div className="px-2 py-1">
-            <p className="text-lg font-bold text-white leading-snug text-center drop-shadow-lg">{poll.question}</p>
-            {poll.subtitle && (
-              <p className="text-sm text-white/80 text-center mt-0.5 drop-shadow-md">{poll.subtitle}</p>
-            )}
-          </div>
-        </div>
+      {/* Images — clean, no overlay competition */}
+      <div className="relative grid grid-cols-2 gap-0 flex-1 min-h-0 w-full max-h-[58vh] rounded-2xl overflow-hidden mx-2 border border-border/60 shadow-sm">
         {/* Option A */}
         <div
           className="relative overflow-hidden transition-transform duration-200"
