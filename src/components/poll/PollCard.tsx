@@ -179,12 +179,9 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               option={poll.option_a}
               question={poll.question}
               side="A"
-              maxLogoSize="65%"
+              maxLogoSize="70%"
               showLoader={true}
             />
-
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
-            <div className="absolute inset-y-0 right-0 w-3 bg-gradient-to-l from-black/20 to-transparent pointer-events-none" />
           </div>
 
           {!hasResult && dragOffset < -30 && (
@@ -193,10 +190,6 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           {hasResult && result?.choice === 'A' && (
             <div className="absolute inset-0 border-2 border-option-a pointer-events-none" />
           )}
-
-          <div className="absolute bottom-0 left-0 right-0 p-4 pt-8">
-            <p className="text-white text-2xl font-extrabold truncate drop-shadow-lg">{poll.option_a}</p>
-          </div>
         </div>
 
         {/* Option B */}
