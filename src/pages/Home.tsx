@@ -320,10 +320,10 @@ function HomeLiveDebateCard({
           <p className="text-[11px] text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</p>
         </div>
 
-        {/* Single split result bar */}
+        {/* Single split result bar — bigger, with inline labels */}
         {hasVoted && (
           <div className="space-y-1.5 pt-1">
-            <div className="flex items-center justify-between text-[11px] font-semibold">
+            <div className="flex items-center justify-between text-[12px] font-semibold">
               <span className="text-option-a truncate max-w-[45%]">{poll.option_a} {poll.percentA}%</span>
               <span className="text-option-b truncate max-w-[45%] text-right">{poll.percentB}% {poll.option_b}</span>
             </div>
