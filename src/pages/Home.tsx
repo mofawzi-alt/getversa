@@ -228,32 +228,68 @@ function HomeLiveDebateCard({
         />
       )}
 
-      {/* ═══ 1) EYEBROW ROW — Hot Poll badge + friends voted ═══ */}
-      <div className="px-4 pt-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-destructive/10 flex items-center justify-center">
-            <Flame className="h-3.5 w-3.5 text-destructive" />
+      {/* ═══ 1) EYEBROW ROW — dynamic badge (only when earned) + friends voted ═══ */}
+      {(() => {
+        const isHotTake = (poll as any).is_hot_take === true;
+        const closingSoon = poll.ends_at ? (new Date(poll.ends_at).getTime() - Date.now()) < 6 * 60 * 60 * 1000 && new Date(poll.ends_at).getTime() > Date.now() : false;
+        const isNew = poll.created_at ? (Date.now() - new Date(poll.created_at).getTime()) < 24 * 60 * 60 * 1000 : false;
+
+        let badgeLabel: string | null = null;
+        let badgeIcon = <Flame className="h-3.5 w-3.5 text-destructive" />;
+        let badgeColor = 'text-destructive';
+        let badgeBg = 'bg-destructive/10';
+
+        if (isHotTake) {
+          badgeLabel = 'Hot Take';
+        } else if (isTrending) {
+          badgeLabel = 'Trending Now';
+          badgeIcon = <TrendingUp className="h-3.5 w-3.5 text-primary" />;
+          badgeColor = 'text-primary';
+          badgeBg = 'bg-primary/10';
+        } else if (closingSoon) {
+          badgeLabel = 'Closing Soon';
+          badgeIcon = <Timer className="h-3.5 w-3.5 text-amber-600" />;
+          badgeColor = 'text-amber-600';
+          badgeBg = 'bg-amber-500/10';
+        } else if (isNew) {
+          badgeLabel = 'New Poll';
+          badgeIcon = <Sparkles className="h-3.5 w-3.5 text-primary" />;
+          badgeColor = 'text-primary';
+          badgeBg = 'bg-primary/10';
+        }
+
+        if (!badgeLabel && friendsOnPoll.length === 0) return null;
+
+        return (
+          <div className="px-4 pt-4 flex items-center justify-between gap-3">
+            {badgeLabel ? (
+              <div className="flex items-center gap-2">
+                <div className={`h-7 w-7 rounded-full ${badgeBg} flex items-center justify-center`}>
+                  {badgeIcon}
+                </div>
+                <span className={`text-[13px] font-bold ${badgeColor}`}>{badgeLabel}</span>
+              </div>
+            ) : <div />}
+            {friendsOnPoll.length > 0 && (
+              <div className="flex items-center gap-1.5 min-w-0">
+                <div className="flex -space-x-1.5 shrink-0">
+                  {friendsOnPoll.slice(0, 3).map((f) => (
+                    <UserAvatar
+                      key={f.friendId}
+                      url={f.friendAvatarUrl}
+                      username={f.friendName}
+                      className="w-5 h-5 ring-2 ring-card"
+                    />
+                  ))}
+                </div>
+                <span className="text-[11px] font-medium text-muted-foreground truncate">
+                  +{friendsOnPoll.length} friend{friendsOnPoll.length === 1 ? '' : 's'} voted
+                </span>
+              </div>
+            )}
           </div>
-          <span className="text-[13px] font-bold text-destructive">Today's Hot Poll</span>
-        </div>
-        {friendsOnPoll.length > 0 && (
-          <div className="flex items-center gap-1.5 min-w-0">
-            <div className="flex -space-x-1.5 shrink-0">
-              {friendsOnPoll.slice(0, 3).map((f) => (
-                <UserAvatar
-                  key={f.friendId}
-                  url={f.friendAvatarUrl}
-                  username={f.friendName}
-                  className="w-5 h-5 ring-2 ring-card"
-                />
-              ))}
-            </div>
-            <span className="text-[11px] font-medium text-muted-foreground truncate">
-              +{friendsOnPoll.length} friend{friendsOnPoll.length === 1 ? '' : 's'} voted
-            </span>
-          </div>
-        )}
-      </div>
+        );
+      })()}
 
       {/* ═══ 2) QUESTION + SUBTITLE — left aligned, big & bold ═══ */}
       <div className="px-4 pt-3 pb-4">
@@ -398,7 +434,7 @@ function HomeLiveDebateCard({
       {/* ═══ 6) META PILLS ROW — LIVE + Category + Pin ═══ */}
       <div className="px-4 pt-3 flex items-center gap-2 flex-wrap">
         <LiveIndicator variant="badge" />
-        {isTrending && <TrendingBadge size="xs" />}
+        
         {poll.category && (
           <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
         )}
