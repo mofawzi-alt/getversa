@@ -246,12 +246,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (!webSession) {
+        // Treat a successful native restore as a deliberate sign-in so the
+        // SIGNED_IN listener accepts it and clears any stale logout flags.
+        deliberateSignInRef.current = true;
         const restored = await withTimeout(() => restoreSessionNative(), false, 1200);
         if (cancelled) return;
         if (restored) {
           // onAuthStateChange will fire and populate state — nothing else to do.
           return;
         }
+        deliberateSignInRef.current = false;
       }
 
       setSession((prev) => prev ?? webSession);
