@@ -24,14 +24,8 @@ export default function SocialAuthButtons({ mode = 'signin' }: { mode?: 'signin'
           ? await signInWithAppleNative()
           : await signInWithGoogleNative();
         if (error) {
-          toast.error(error.message || `${provider === 'apple' ? 'Apple' : 'Google'} sign-in failed`);
-          setBusy(null);
-          return;
+          toast.message('Native social sign-in is not active in this build yet. Opening web sign-in…');
         }
-        // Session is set by signInWithIdToken — onAuthStateChange will fire.
-        navigate('/home');
-        setBusy(null);
-        return;
       }
 
       // ---- WEB path ----

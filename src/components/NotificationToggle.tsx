@@ -13,6 +13,9 @@ export function NotificationToggle() {
           <p className="font-medium text-card-foreground">Push Notifications</p>
           <p className="text-sm text-muted-foreground">{supportMessage}</p>
         </div>
+        <Button variant="outline" size="sm" disabled>
+          Unavailable
+        </Button>
       </div>
     );
   }
