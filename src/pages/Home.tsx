@@ -434,7 +434,7 @@ function HomeLiveDebateCard({
       {/* ═══ 6) META PILLS ROW — LIVE + Category + Pin ═══ */}
       <div className="px-4 pt-3 flex items-center gap-2 flex-wrap">
         <LiveIndicator variant="badge" />
-        {isTrending && <TrendingBadge size="xs" />}
+        
         {poll.category && (
           <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
         )}
