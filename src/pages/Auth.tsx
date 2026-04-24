@@ -137,7 +137,7 @@ export default function Auth() {
       navigate('/home', { replace: true });
     } else {
       setEmail(bioEmail);
-      toast(`Session expired — enter your password to re-enable ${bioLabel}`, { duration: 3500 });
+      toast(`${bioLabel} can only unlock an existing session — after logout, sign in with your password first.`, { duration: 4200 });
     }
   };
 
