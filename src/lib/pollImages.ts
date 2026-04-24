@@ -1059,9 +1059,10 @@ export function getPollDisplayImageSrc(params: PollImageParams) {
     return params.imageUrl;
   }
 
-  const preferredLocal = getPreferredLocalImage(params);
-  if (preferredLocal) return preferredLocal;
-
+  // NOTE: We intentionally skip the local /polls/* alias lookup here.
+  // Those files are not bundled into the production iOS native app, so they
+  // 404 silently and leave the card visually empty until onError fires.
+  // Going straight to a stable Unsplash fallback ensures something always paints.
   return params.genericFallback || getGenericFallback(params.option || params.question);
 }
 
