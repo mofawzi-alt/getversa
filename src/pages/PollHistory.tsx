@@ -1,16 +1,19 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ArrowLeft, Users, Search, Send } from 'lucide-react';
+import { Loader2, ArrowLeft, Users, Search, Send, Check, Share2, TrendingUp, Flame } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp as TrendUp } from 'lucide-react';
 import PollOptionImage from '@/components/poll/PollOptionImage';
-import ShareButton from '@/components/poll/ShareButton';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
+import LiveIndicator from '@/components/poll/LiveIndicator';
+import CategoryBadge from '@/components/category/CategoryBadge';
+import PinButton from '@/components/poll/PinButton';
+import { mapToVersaCategory } from '@/lib/categoryMeta';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
 interface VoteHistoryItem {
