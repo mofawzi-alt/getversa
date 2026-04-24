@@ -302,7 +302,7 @@ function HomeLiveDebateCard({
       </div>
 
       {/* ═══ 3) IMAGE CARDS — rounded with gap, label box below image, ring on selected ═══ */}
-      <div className="px-4 grid grid-cols-2 gap-2.5">
+      <div className="px-2 grid grid-cols-2 gap-1.5">
         {/* Option A */}
         <div
           className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
