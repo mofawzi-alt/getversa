@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: 'app.lovable.c889c415dd2249d6b1128e85df955085',
   appName: 'Versa',
   webDir: 'dist',
+  server: {
+    url: 'https://getversa.app',
+  },
   ios: {
     contentInset: 'never',
   },
