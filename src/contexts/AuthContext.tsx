@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import {
   installNativeSessionMirror,
+  persistSessionNative,
   restoreSessionNative,
   clearNativeSession,
   getAuthRedirectUrl,
@@ -296,10 +297,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(() => reject(new Error('Sign-in timed out. Check your connection and try again.')), 15000)
         ),
       ]);
-      const error = (result as { error: Error | null }).error;
+      const authResult = result as {
+        error: Error | null;
+        data?: { session: Session | null };
+      };
+      const error = authResult.error;
       if (!error) {
         try { await clearNativeLoggedOut(); } catch {}
         clearLogoutGuard();
+
+        const nextSession = authResult.data?.session ?? await getSessionWithTimeout(1500);
+        if (nextSession) {
+          setSession(nextSession);
+          setUser(nextSession.user ?? null);
+          try {
+            await persistSessionNative({
+              access_token: nextSession.access_token,
+              refresh_token: nextSession.refresh_token,
+            });
+          } catch {}
+
+          if (nextSession.user) {
+            void fetchProfile(nextSession.user.id);
+          }
+        }
       }
       return { error };
     } catch (e) {
