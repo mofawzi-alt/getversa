@@ -208,12 +208,9 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               option={poll.option_b}
               question={poll.question}
               side="B"
-              maxLogoSize="65%"
+              maxLogoSize="70%"
               showLoader={true}
             />
-
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
-            <div className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/20 to-transparent pointer-events-none" />
           </div>
 
           {!hasResult && dragOffset > 30 && (
@@ -222,32 +219,30 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           {hasResult && result?.choice === 'B' && (
             <div className="absolute inset-0 border-2 border-option-b pointer-events-none" />
           )}
-
-          <div className="absolute bottom-0 left-0 right-0 p-4 pt-8">
-            <p className="text-white text-2xl font-extrabold truncate drop-shadow-lg">{poll.option_b}</p>
-          </div>
         </div>
       </div>
 
-      {/* Results below the image */}
-      {hasResult && (
-        <div className="flex justify-between items-center mx-3 mt-2 shrink-0">
-          <div className="flex flex-col items-center flex-1">
-            <span className="text-2xl font-bold text-option-a">{result!.percentA}%</span>
-            {result?.choice === 'A' && <span className="text-sm font-bold text-option-a">Your vote</span>}
-          </div>
-          <div className="flex flex-col items-center flex-1">
-            <span className="text-2xl font-bold text-option-b">{result!.percentB}%</span>
-            {result?.choice === 'B' && <span className="text-sm font-bold text-option-b">Your vote</span>}
-          </div>
+      {/* Option labels row — clean, full text, never truncated */}
+      <div className="flex items-stretch gap-2 px-3 mt-2 shrink-0">
+        <div className={`flex-1 min-w-0 rounded-xl px-3 py-2 text-center border ${hasResult && result?.choice === 'A' ? 'border-option-a bg-option-a/10' : 'border-border bg-card'}`}>
+          <p className="text-sm font-bold text-foreground leading-tight break-words">{poll.option_a}</p>
+          {hasResult && (
+            <p className="text-lg font-extrabold text-option-a mt-0.5">{result!.percentA}%</p>
+          )}
         </div>
-      )}
+        <div className={`flex-1 min-w-0 rounded-xl px-3 py-2 text-center border ${hasResult && result?.choice === 'B' ? 'border-option-b bg-option-b/10' : 'border-border bg-card'}`}>
+          <p className="text-sm font-bold text-foreground leading-tight break-words">{poll.option_b}</p>
+          {hasResult && (
+            <p className="text-lg font-extrabold text-option-b mt-0.5">{result!.percentB}%</p>
+          )}
+        </div>
+      </div>
 
-      {/* Swipe hints */}
+      {/* Swipe hint — minimal, just arrows */}
       {!hasResult && !isExpired && (
-        <div className="flex justify-center gap-6 text-xs text-foreground/40 py-1.5 shrink-0">
-          <span>← {poll.option_a.length > 12 ? poll.option_a.slice(0, 12) + '…' : poll.option_a}</span>
-          <span>{poll.option_b.length > 12 ? poll.option_b.slice(0, 12) + '…' : poll.option_b} →</span>
+        <div className="flex justify-center gap-8 text-[10px] uppercase tracking-wider text-muted-foreground/60 py-1.5 shrink-0">
+          <span>← Swipe</span>
+          <span>Swipe →</span>
         </div>
       )}
 
