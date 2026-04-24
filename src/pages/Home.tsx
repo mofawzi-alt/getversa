@@ -266,32 +266,66 @@ function HomeLiveDebateCard({
         </div>
       </div>
 
-      {/* ═══ SPLIT RESULT BAR — directly under the labels, % inline on bar ═══ */}
+      {/* ═══ SPLIT RESULT BAR — bouncy fill, satisfying animation ═══ */}
       {hasVoted && (
-        <div className="px-4 pt-2.5">
-          <div className="relative h-7 w-full rounded-full overflow-hidden flex bg-muted shadow-sm ring-1 ring-border/50">
+        <motion.div
+          className="px-4 pt-2.5"
+          initial={{ scale: 0.96, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 320, damping: 18, delay: 0.05 }}
+        >
+          <div className="relative h-8 w-full rounded-full overflow-hidden flex bg-muted shadow-md ring-1 ring-border/50">
             <motion.div
-              className="h-full bg-option-a flex items-center justify-start pl-3"
-              initial={{ width: '0%' }}
+              className="relative h-full bg-option-a flex items-center justify-start pl-3 overflow-hidden"
+              initial={{ width: '50%' }}
               animate={{ width: `${poll.percentA}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
+              transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
             >
               {poll.percentA >= 12 && (
-                <span className="text-[14px] font-extrabold text-white drop-shadow-md">{poll.percentA}%</span>
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.55, type: 'spring', stiffness: 400, damping: 14 }}
+                  className="text-[15px] font-extrabold text-white drop-shadow-md tabular-nums"
+                >
+                  {poll.percentA}%
+                </motion.span>
               )}
+              {/* shimmer sweep */}
+              <motion.span
+                aria-hidden
+                initial={{ x: '-120%' }}
+                animate={{ x: '220%' }}
+                transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
+                className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+              />
             </motion.div>
             <motion.div
-              className="h-full bg-option-b flex items-center justify-end pr-3"
-              initial={{ width: '0%' }}
+              className="relative h-full bg-option-b flex items-center justify-end pr-3 overflow-hidden"
+              initial={{ width: '50%' }}
               animate={{ width: `${poll.percentB}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
+              transition={{ type: 'spring', stiffness: 140, damping: 16, mass: 0.8, delay: 0.15 }}
             >
               {poll.percentB >= 12 && (
-                <span className="text-[14px] font-extrabold text-white drop-shadow-md">{poll.percentB}%</span>
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.55, type: 'spring', stiffness: 400, damping: 14 }}
+                  className="text-[15px] font-extrabold text-white drop-shadow-md tabular-nums"
+                >
+                  {poll.percentB}%
+                </motion.span>
               )}
+              <motion.span
+                aria-hidden
+                initial={{ x: '-220%' }}
+                animate={{ x: '120%' }}
+                transition={{ delay: 0.7, duration: 1.1, ease: 'easeOut' }}
+                className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+              />
             </motion.div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* ═══ FRIENDS VOTED — below labels, not on images ═══ */}
@@ -350,50 +384,53 @@ function HomeLiveDebateCard({
 
         {hasVoted && genderTeaser && (
           <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 px-3 py-2.5 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-2"
+            initial={{ opacity: 0, y: 8, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.9, type: 'spring', stiffness: 280, damping: 20 }}
+            className="mt-4 relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/15 via-primary/10 to-transparent border-2 border-primary/30 shadow-sm"
           >
-            <span className="text-base">💡</span>
-            <p className="text-[12px] font-semibold text-foreground leading-snug">
-              {genderTeaser.text}
-            </p>
+            <div className="px-3 py-2.5 flex items-start gap-2.5">
+              <div className="shrink-0 mt-0.5 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground text-[9px] font-extrabold uppercase tracking-wider">
+                🔥 Insight
+              </div>
+              <p className="text-[13px] font-bold text-foreground leading-snug flex-1">
+                {genderTeaser.text}
+              </p>
+            </div>
           </motion.div>
         )}
         {hasVoted ? (
-          <div className="flex items-center justify-between pt-1 gap-2">
-            <span className="text-xs font-semibold text-primary truncate">
+          <div className="flex items-center gap-2 pt-2">
+            <span className="text-xs font-semibold text-primary truncate flex-1">
               You voted {chosenOptionLabel && chosenOptionLabel.length > 20 ? chosenOptionLabel.slice(0, 20) + '…' : chosenOptionLabel}
             </span>
-            <div className="flex items-center gap-2 shrink-0">
-              {user && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShareSheetOpen(true);
-                  }}
-                  aria-label="Send to friend"
-                  className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Send className="h-3 w-3" /> Send
-                </button>
-              )}
+            {user && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  const pollUrl = `${window.location.origin}/poll/${poll.id}`;
-                  if (navigator.share) {
-                    navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
-                  } else {
-                    navigator.clipboard.writeText(pollUrl);
-                    import('sonner').then(m => m.toast.success('Link copied!'));
-                  }
+                  setShareSheetOpen(true);
                 }}
-                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Send to friend"
+                className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full bg-muted text-foreground text-xs font-semibold active:scale-95 transition"
               >
-                <Share2 className="h-3 w-3" /> Share
+                <Send className="h-3.5 w-3.5" /> Send
               </button>
-            </div>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const pollUrl = `${window.location.origin}/poll/${poll.id}`;
+                if (navigator.share) {
+                  navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
+                } else {
+                  navigator.clipboard.writeText(pollUrl);
+                  import('sonner').then(m => m.toast.success('Link copied!'));
+                }
+              }}
+              className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm active:scale-95 transition"
+            >
+              <Share2 className="h-3.5 w-3.5" /> Share
+            </button>
           </div>
         ) : (
           <div className="flex items-center gap-2">
