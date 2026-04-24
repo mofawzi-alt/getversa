@@ -50,22 +50,37 @@ Deno.serve(async (req) => {
       const optionText = opt === "A" ? row.option_a : row.option_b;
       const prompt = `Editorial magazine-style photo, no text. Subject: "${optionText}". Context: poll about "${row.question}" (category: ${row.category || "lifestyle"}). Bright, clean, vibrant, mobile-optimized. Centered composition, high quality, no logos, no watermarks.`;
 
-      const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image",
-          messages: [{ role: "user", content: prompt }],
-          modalities: ["image", "text"],
-        }),
-      });
-      if (!aiRes.ok) {
-        const t = await aiRes.text();
-        throw new Error(`AI gen failed (${aiRes.status}): ${t.slice(0, 200)}`);
+      let dataUrl: string | undefined;
+      let lastErr = "";
+      for (let attempt = 0; attempt < 3 && !dataUrl; attempt++) {
+        const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash-image",
+            messages: [{ role: "user", content: prompt }],
+            modalities: ["image", "text"],
+          }),
+        });
+        if (!aiRes.ok) {
+          const t = await aiRes.text();
+          lastErr = `AI gen ${aiRes.status}: ${t.slice(0, 200)}`;
+          console.warn(`Attempt ${attempt + 1} failed for option ${opt}: ${lastErr}`);
+          if (aiRes.status === 429 || aiRes.status >= 500) {
+            await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+            continue;
+          }
+          throw new Error(lastErr);
+        }
+        const aiJson = await aiRes.json();
+        dataUrl = aiJson?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        if (!dataUrl) {
+          lastErr = `No image in response (text: ${(aiJson?.choices?.[0]?.message?.content || "").slice(0, 120)})`;
+          console.warn(`Attempt ${attempt + 1} for option ${opt}: ${lastErr}`);
+          await new Promise((r) => setTimeout(r, 1000));
+        }
       }
-      const aiJson = await aiRes.json();
-      const dataUrl = aiJson?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-      if (!dataUrl) throw new Error("AI returned no image");
+      if (!dataUrl) throw new Error(`AI returned no image after 3 attempts. ${lastErr}`);
 
       // data:image/png;base64,xxx -> Uint8Array
       const base64 = dataUrl.split(",")[1];
