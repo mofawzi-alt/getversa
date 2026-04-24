@@ -198,9 +198,9 @@ function HomeLiveDebateCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.05, 0.3) }}
+      transition={{ delay: Math.min(index * 0.025, 0.15), duration: 0.25 }}
       whileTap={{ scale: 0.985 }}
       onClick={hasVoted ? onCardClick : undefined}
       className={`rounded-2xl overflow-hidden border border-border/60 bg-card shadow-md ${hasVoted ? 'cursor-pointer' : ''}`}
