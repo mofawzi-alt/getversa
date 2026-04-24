@@ -198,9 +198,9 @@ function HomeLiveDebateCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.05, 0.3) }}
+      transition={{ delay: Math.min(index * 0.025, 0.15), duration: 0.25 }}
       whileTap={{ scale: 0.985 }}
       onClick={hasVoted ? onCardClick : undefined}
       className={`rounded-2xl overflow-hidden border border-border/60 bg-card shadow-md ${hasVoted ? 'cursor-pointer' : ''}`}
@@ -234,7 +234,7 @@ function HomeLiveDebateCard({
           className={`w-1/2 h-full relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('A'); } : undefined}
         >
-          <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading="lazy" />
+          <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading={index < 2 ? 'eager' : 'lazy'} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-3">
             <p className="text-white text-base font-extrabold drop-shadow-lg truncate">{poll.option_a}</p>
@@ -253,7 +253,7 @@ function HomeLiveDebateCard({
           className={`w-1/2 h-full relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('B'); } : undefined}
         >
-          <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading="lazy" />
+          <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading={index < 2 ? 'eager' : 'lazy'} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-3">
             <p className="text-white text-base font-extrabold drop-shadow-lg truncate text-right">{poll.option_b}</p>
