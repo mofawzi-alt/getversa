@@ -175,8 +175,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, 3500);
 
     // Set up auth listener FIRST, then get initial session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
-      const forcedNativeLogout = await withTimeout(() => isNativeLoggedOut(), false, 800);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+      const isExplicitSignIn = event === 'SIGNED_IN' && !!nextSession;
+
+      if (isExplicitSignIn) {
+        clearLogoutGuard();
+        try { await clearNativeLoggedOut(); } catch {}
+      }
+
+      const forcedNativeLogout = isExplicitSignIn
+        ? false
+        : await withTimeout(() => isNativeLoggedOut(), false, 800);
 
       if (hasLogoutGuard() || forcedNativeLogout) {
         clearAuthState();
@@ -275,6 +284,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Race the auth call against a 15s timeout so the UI never hangs forever
     // (WKWebView on iOS can silently drop fetches under low-memory conditions).
     try {
+      // Clear explicit logout guards before a deliberate new sign-in attempt.
+      // Otherwise the auth listener can reject the fresh session as if it were
+      // a stale restored session from the previous account.
+      clearLogoutGuard();
+      try { await clearNativeLoggedOut(); } catch {}
+
       const result = await Promise.race([
         supabase.auth.signInWithPassword({ email, password }),
         new Promise<{ error: Error }>((_, reject) =>
