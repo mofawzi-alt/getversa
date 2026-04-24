@@ -69,7 +69,19 @@ Deno.serve(async (req) => {
           const t = await aiRes.text();
           lastErr = `AI gen ${aiRes.status}: ${t.slice(0, 200)}`;
           console.warn(`Attempt ${attempt + 1} failed for option ${opt}: ${lastErr}`);
-          if (aiRes.status === 429 || aiRes.status >= 500) {
+          if (aiRes.status === 402) {
+            return new Response(JSON.stringify({
+              error: "AI_PAYMENT_REQUIRED",
+              message: "Lovable AI is out of credits. Add funds in Settings → Workspace → Usage, or use the Upload button to add an image manually.",
+            }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          }
+          if (aiRes.status === 429) {
+            return new Response(JSON.stringify({
+              error: "AI_RATE_LIMITED",
+              message: "AI image service is rate limited. Please wait a moment and try again, or use Upload.",
+            }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          }
+          if (aiRes.status >= 500) {
             await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
             continue;
           }
