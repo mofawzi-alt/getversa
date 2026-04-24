@@ -352,7 +352,7 @@ function HomeLiveDebateCard({
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-1 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-2"
+            className="mt-4 px-3 py-2.5 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-2"
           >
             <span className="text-base">💡</span>
             <p className="text-[12px] font-semibold text-foreground leading-snug">
