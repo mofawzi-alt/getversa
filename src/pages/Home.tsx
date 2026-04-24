@@ -351,13 +351,16 @@ function HomeLiveDebateCard({
           </div>
         )}
         {hasVoted && genderTeaser && (
-          <motion.p
-            initial={{ opacity: 0, y: 4 }}
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-[11px] text-muted-foreground"
+            className="mt-1 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-2"
           >
-            {genderTeaser.text}
-          </motion.p>
+            <span className="text-base">💡</span>
+            <p className="text-[12px] font-semibold text-foreground leading-snug">
+              {genderTeaser.text}
+            </p>
+          </motion.div>
         )}
         {hasVoted ? (
           <div className="flex items-center justify-between pt-1 gap-2">
