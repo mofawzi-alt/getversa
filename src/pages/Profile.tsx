@@ -65,13 +65,11 @@ export default function Profile() {
       toast.loading('Logging out...', { id: 'logout' });
       await signOut();
       toast.success('Logged out successfully', { id: 'logout' });
+      navigate('/auth', { replace: true });
     } catch (e) {
       console.error('Logout error', e);
-      toast.error('Logout failed, forcing reload', { id: 'logout' });
-    } finally {
-      // Hard reload to /auth — guarantees the app drops all in-memory state
-      // even if signOut() hung or threw on iOS WKWebView.
-      window.location.replace('/auth');
+      toast.error('Logout failed', { id: 'logout' });
+      setLoggingOut(false);
     }
   };
 
