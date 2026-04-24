@@ -287,17 +287,6 @@ function HomeLiveDebateCard({
         </div>
       )}
 
-      {/* ═══ BIG PERCENTAGES — post-vote ═══ */}
-      {hasVoted && (
-        <div className="grid grid-cols-2 gap-2 px-3 pt-3">
-          <div className="text-left">
-            <p className="text-3xl font-extrabold text-option-a leading-none">{poll.percentA}%</p>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-extrabold text-option-b leading-none">{poll.percentB}%</p>
-          </div>
-        </div>
-      )}
 
       {/* ═══ BODY — meta, question, bars, actions ═══ */}
       <div className="px-4 pt-3 pb-4 space-y-2.5">
