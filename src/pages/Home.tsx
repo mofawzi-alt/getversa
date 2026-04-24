@@ -213,90 +213,48 @@ function HomeLiveDebateCard({
           transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
         />
       )}
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-          <LiveIndicator variant="badge" />
-          {!hasVoted && (
-            <motion.div
-              animate={{ scale: [1, 1.06, 1] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wide shadow-sm"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
-              Vote
-            </motion.div>
-          )}
-          {isTrending && <TrendingBadge size="xs" />}
-          <span className="text-xs text-muted-foreground font-semibold">{poll.totalVotes.toLocaleString()} votes</span>
-          <div className="ml-auto flex items-center gap-1.5">
-            {poll.ends_at && (
-              <CountdownTimer endsAt={poll.ends_at} size="xs" showIcon={false} />
-            )}
-            <div onClick={(e) => e.stopPropagation()}>
-              <PinButton pollId={poll.id} size="sm" className="!bg-muted !text-muted-foreground hover:!bg-muted/80" />
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <div className="flex relative mx-2 rounded-xl overflow-hidden" style={{ aspectRatio: '4/5' }}>
-        <div className="absolute inset-0 z-20 flex items-center justify-center px-5 pointer-events-none">
-          <div className="max-w-[82%] px-2 py-1">
-            <p className="text-lg font-bold text-white leading-snug text-center drop-shadow-lg">{poll.question}</p>
-            {'subtitle' in poll && poll.subtitle && (
-              <p className="text-sm text-white/80 text-center mt-0.5 drop-shadow-md">{poll.subtitle}</p>
-            )}
-          </div>
-        </div>
+      {/* ═══ IMAGES ON TOP — 4:3 squared grid with overlaid labels ═══ */}
+      <div className="relative grid grid-cols-2 overflow-hidden" style={{ aspectRatio: '4/3' }}>
         <div
-          className={`w-1/2 h-full relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
+          className={`relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('A'); } : undefined}
         >
           <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading={index < 2 ? 'eager' : 'lazy'} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <p className="text-white text-base font-extrabold drop-shadow-lg truncate">{poll.option_a}</p>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-2.5">
+            <p className="text-white text-sm font-bold drop-shadow-lg truncate">{poll.option_a}</p>
           </div>
-          {hasVoted && (
-            <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1">
-              <span className="text-lg font-bold text-option-a">{poll.percentA}%</span>
-            </div>
-          )}
           {hasVoted && chosenOptionLabel === poll.option_a && (
-            <div className="absolute inset-0 border-2 border-option-a rounded-l-xl pointer-events-none" />
+            <div className="absolute inset-0 border-[3px] border-option-a pointer-events-none" />
           )}
         </div>
         <div className="absolute inset-y-0 left-1/2 w-[1px] bg-white/30 z-10" />
         <div
-          className={`w-1/2 h-full relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
+          className={`relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('B'); } : undefined}
         >
           <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading={index < 2 ? 'eager' : 'lazy'} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <p className="text-white text-base font-extrabold drop-shadow-lg truncate text-right">{poll.option_b}</p>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-2.5">
+            <p className="text-white text-sm font-bold drop-shadow-lg truncate text-right">{poll.option_b}</p>
           </div>
-          {hasVoted && (
-            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1">
-              <span className="text-lg font-bold text-option-b">{poll.percentB}%</span>
-            </div>
-          )}
           {hasVoted && chosenOptionLabel === poll.option_b && (
-            <div className="absolute inset-0 border-2 border-option-b rounded-r-xl pointer-events-none" />
+            <div className="absolute inset-0 border-[3px] border-option-b pointer-events-none" />
           )}
         </div>
 
         {/* Frosted reveal overlay — only when NOT voted */}
         {!hasVoted && (
-          <div className="absolute inset-0 z-30 flex items-end justify-center pb-16 pointer-events-none">
+          <div className="absolute inset-x-0 bottom-12 z-30 flex justify-center pointer-events-none">
             <div className="px-3 py-1.5 rounded-full bg-black/55 backdrop-blur-md flex items-center gap-1.5 shadow-lg">
               <Lock className="h-3 w-3 text-white" />
-              <span className="text-[11px] font-semibold text-white tracking-wide">Vote to reveal result</span>
+              <span className="text-[11px] font-semibold text-white tracking-wide">Vote to reveal</span>
             </div>
           </div>
         )}
 
-        {/* Friend avatar stack — centered in bottom 25% band of image, both states */}
+        {/* Friend avatar stack */}
         {friendsOnPoll.length > 0 && (
           <div className="absolute left-1/2 -translate-x-1/2 top-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 max-w-[85%] pointer-events-none shadow-md">
             <div className="flex -space-x-1.5">
@@ -312,38 +270,77 @@ function HomeLiveDebateCard({
             <span className="text-[10px] font-semibold text-white truncate">
               {friendsOnPoll.length === 1
                 ? `${friendsOnPoll[0].friendName} voted`
-                : `${friendsOnPoll[0].friendName} and ${friendsOnPoll.length - 1} other${friendsOnPoll.length - 1 > 1 ? 's' : ''} voted`}
+                : `${friendsOnPoll[0].friendName} +${friendsOnPoll.length - 1}`}
             </span>
           </div>
         )}
       </div>
 
-      <div className="px-4 pt-3 pb-4 space-y-2">
-        <div className="h-2.5 bg-muted rounded-full overflow-hidden flex">
-          <motion.div className="h-full bg-option-a rounded-l-full" initial={{ width: '50%' }} animate={{ width: hasVoted ? `${poll.percentA}%` : '50%' }} transition={{ duration: 0.8, ease: 'easeOut' }} />
-          <motion.div className="h-full bg-option-b rounded-r-full" initial={{ width: '50%' }} animate={{ width: hasVoted ? `${poll.percentB}%` : '50%' }} transition={{ duration: 0.8, ease: 'easeOut' }} />
-        </div>
-        {hasVoted && (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-            <span className="text-sm font-bold text-option-a">{poll.percentA}%</span>
-            {poll.category ? (
-              <CategoryBadge
-                category={mapToVersaCategory(poll.category)}
-                size="xs"
-                className="justify-self-center"
-              />
-            ) : (
-              <span />
-            )}
-            <span className="text-sm font-bold text-option-b justify-self-end">{poll.percentB}%</span>
+      {/* ═══ BIG PERCENTAGES — post-vote ═══ */}
+      {hasVoted && (
+        <div className="grid grid-cols-2 gap-2 px-3 pt-3">
+          <div className="text-left">
+            <p className="text-3xl font-extrabold text-option-a leading-none">{poll.percentA}%</p>
           </div>
-        )}
-        {!hasVoted && poll.category && (
-          <div className="flex justify-center pt-0.5">
-            <CategoryBadge
-              category={mapToVersaCategory(poll.category)}
-              size="xs"
-            />
+          <div className="text-right">
+            <p className="text-3xl font-extrabold text-option-b leading-none">{poll.percentB}%</p>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ BODY — meta, question, bars, actions ═══ */}
+      <div className="px-4 pt-3 pb-4 space-y-2.5">
+        <div className="flex items-center gap-2 flex-wrap">
+          <LiveIndicator variant="badge" />
+          {!hasVoted && (
+            <motion.div
+              animate={{ scale: [1, 1.06, 1] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wide shadow-sm"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
+              Vote
+            </motion.div>
+          )}
+          {isTrending && <TrendingBadge size="xs" />}
+          {poll.category && (
+            <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
+          )}
+          <div className="ml-auto flex items-center gap-1.5">
+            {poll.ends_at && (
+              <CountdownTimer endsAt={poll.ends_at} size="xs" showIcon={false} />
+            )}
+            <div onClick={(e) => e.stopPropagation()}>
+              <PinButton pollId={poll.id} size="sm" className="!bg-muted !text-muted-foreground hover:!bg-muted/80" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-base font-bold text-foreground leading-snug">{poll.question}</p>
+          {'subtitle' in poll && poll.subtitle && (
+            <p className="text-xs text-muted-foreground mt-0.5">{poll.subtitle}</p>
+          )}
+          <p className="text-[11px] text-muted-foreground mt-1 font-medium">{poll.totalVotes.toLocaleString()} votes</p>
+        </div>
+
+        {/* Detailed result bars */}
+        {hasVoted && (
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-between text-[11px] font-semibold">
+              <span className="text-option-a truncate max-w-[70%]">{poll.option_a}</span>
+              <span className="text-option-a">{poll.percentA}%</span>
+            </div>
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+              <motion.div className="h-full bg-option-a rounded-full" initial={{ width: '0%' }} animate={{ width: `${poll.percentA}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
+            </div>
+            <div className="flex items-center justify-between text-[11px] font-semibold">
+              <span className="text-option-b truncate max-w-[70%]">{poll.option_b}</span>
+              <span className="text-option-b">{poll.percentB}%</span>
+            </div>
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+              <motion.div className="h-full bg-option-b rounded-full" initial={{ width: '0%' }} animate={{ width: `${poll.percentB}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
+            </div>
           </div>
         )}
         {hasVoted && genderTeaser && (
