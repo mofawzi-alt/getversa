@@ -214,7 +214,15 @@ function HomeLiveDebateCard({
         />
       )}
 
-      {/* ═══ IMAGES ON TOP — 4:3 squared grid (no overlaid labels) ═══ */}
+      {/* ═══ QUESTION HEADER — top of card so users see it first ═══ */}
+      <div className="px-4 pt-4 pb-3 bg-card">
+        <p className="text-[15px] font-bold text-foreground leading-snug break-words">{poll.question}</p>
+        {'subtitle' in poll && poll.subtitle && (
+          <p className="text-xs text-muted-foreground mt-1 leading-snug">{poll.subtitle}</p>
+        )}
+      </div>
+
+      {/* ═══ IMAGES — 4:3 squared grid (no overlaid labels) ═══ */}
       <div className="relative grid grid-cols-2 overflow-hidden" style={{ aspectRatio: '4/3' }}>
         <div
           className={`relative overflow-hidden ${!hasVoted ? 'cursor-pointer active:opacity-90' : ''}`}
@@ -319,11 +327,7 @@ function HomeLiveDebateCard({
         </div>
 
         <div>
-          <p className="text-base font-bold text-foreground leading-snug">{poll.question}</p>
-          {'subtitle' in poll && poll.subtitle && (
-            <p className="text-xs text-muted-foreground mt-0.5">{poll.subtitle}</p>
-          )}
-          <p className="text-[11px] text-muted-foreground mt-1 font-medium">{poll.totalVotes.toLocaleString()} votes</p>
+          <p className="text-[11px] text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</p>
         </div>
 
         {/* Detailed result bars */}
