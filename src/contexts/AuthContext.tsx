@@ -180,7 +180,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, 3500);
 
     const processAuthStateChange = async (event: string, nextSession: Session | null) => {
-      const isExplicitSignIn = event === 'SIGNED_IN' && !!nextSession && deliberateSignInRef.current;
+      // Accept SIGNED_IN, INITIAL_SESSION, and TOKEN_REFRESHED as "deliberate"
+      // when our ref is set — Supabase can emit any of these after a native
+      // session restore on iOS cold-start.
+      const isExplicitSignIn =
+        !!nextSession &&
+        deliberateSignInRef.current &&
+        (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED');
 
       if (isExplicitSignIn) {
         deliberateSignInRef.current = false;
