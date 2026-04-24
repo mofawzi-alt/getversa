@@ -106,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const logoutInFlightRef = useRef(false);
+  const deliberateSignInRef = useRef(false);
 
   const fetchProfile = async (userId: string) => {
     let { data: profileData } = await supabase
@@ -177,9 +178,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Set up auth listener FIRST, then get initial session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
-      const isExplicitSignIn = event === 'SIGNED_IN' && !!nextSession;
+      const isExplicitSignIn = event === 'SIGNED_IN' && !!nextSession && deliberateSignInRef.current;
 
       if (isExplicitSignIn) {
+        deliberateSignInRef.current = false;
         clearLogoutGuard();
         void withTimeout(async () => {
           await clearNativeLoggedOut();
@@ -191,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         : await withTimeout(() => isNativeLoggedOut(), false, 800);
 
       if (hasLogoutGuard() || forcedNativeLogout) {
+        deliberateSignInRef.current = false;
         clearAuthState();
         finishBoot();
 
@@ -205,7 +208,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(nextSession?.user ?? null);
       
       if (nextSession?.user) {
-        clearLogoutGuard();
         setTimeout(() => {
           void fetchProfile(nextSession.user.id);
         }, 0);
@@ -287,6 +289,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Race the auth call against a 15s timeout so the UI never hangs forever
     // (WKWebView on iOS can silently drop fetches under low-memory conditions).
     try {
+      deliberateSignInRef.current = true;
       // Clear explicit logout guards before a deliberate new sign-in attempt.
       // Otherwise the auth listener can reject the fresh session as if it were
       // a stale restored session from the previous account.
@@ -306,6 +309,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data?: { session: Session | null };
       };
       const error = authResult.error;
+      if (error) {
+        deliberateSignInRef.current = false;
+      }
       if (!error) {
         clearLogoutGuard();
         void withTimeout(async () => {
@@ -330,6 +336,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return { error };
     } catch (e) {
+      deliberateSignInRef.current = false;
       return { error: e instanceof Error ? e : new Error('Sign-in failed') };
     }
   };
@@ -347,6 +354,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {}
 
     setLogoutGuard();
+    deliberateSignInRef.current = false;
 
     // Stop native session restore first so a stale session cannot come back.
     try { await markNativeLoggedOut(); } catch {}
