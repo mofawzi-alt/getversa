@@ -6,6 +6,7 @@ import {
   restoreSessionNative,
   clearNativeSession,
   getAuthRedirectUrl,
+  isNativeLoggedOut,
   markNativeLoggedOut,
   clearNativeLoggedOut,
 } from '@/lib/nativeSession';
@@ -125,8 +126,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Set up auth listener FIRST, then get initial session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (hasLogoutGuard()) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const forcedNativeLogout = await isNativeLoggedOut();
+
+      if (hasLogoutGuard() || forcedNativeLogout) {
         setSession(null);
         setUser(null);
         setProfile(null);
@@ -164,7 +167,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // falling back to web localStorage (which WKWebView can wipe under storage pressure).
     let cancelled = false;
     const fallbackTimer = setTimeout(async () => {
-      if (hasLogoutGuard()) {
+      const forcedNativeLogout = await isNativeLoggedOut();
+
+      if (hasLogoutGuard() || forcedNativeLogout) {
         setSession(null);
         setUser(null);
         setProfile(null);
@@ -176,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data: { session: webSession } } = await supabase.auth.getSession();
       if (cancelled) return;
 
-      if (hasLogoutGuard()) {
+      if (hasLogoutGuard() || await isNativeLoggedOut()) {
         setSession(null);
         setUser(null);
         setProfile(null);
