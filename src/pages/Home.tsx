@@ -384,52 +384,46 @@ function HomeLiveDebateCard({
             initial={{ opacity: 0, y: 8, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.9, type: 'spring', stiffness: 280, damping: 20 }}
-            className="mt-4 relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/15 via-primary/10 to-transparent border-2 border-primary/30 shadow-sm"
+            className="mt-3 relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-primary/8 to-transparent border border-primary/25 shadow-sm"
           >
-            <div className="px-3 py-2.5 flex items-start gap-2.5">
-              <div className="shrink-0 mt-0.5 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground text-[9px] font-extrabold uppercase tracking-wider">
-                🔥 Insight
+            <div className="px-3 py-3 flex items-center gap-3">
+              {/* Gradient icon badge */}
+              <div className="shrink-0 h-11 w-11 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-md">
+                <TrendingUp className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
               </div>
-              <p className="text-[13px] font-bold text-foreground leading-snug flex-1">
-                {genderTeaser.text}
-              </p>
+              {/* Eyebrow + text */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-primary mb-0.5">
+                  <span>🔥</span>
+                  <span>Insight</span>
+                </div>
+                <p className="text-[13px] font-bold text-foreground leading-snug">
+                  {genderTeaser.text}
+                </p>
+              </div>
+              {/* Mini donut showing split */}
+              <div className="shrink-0 relative h-12 w-12">
+                <svg viewBox="0 0 36 36" className="h-12 w-12 -rotate-90">
+                  <circle cx="18" cy="18" r="15.5" fill="none" className="stroke-option-b" strokeWidth="5" />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="15.5"
+                    fill="none"
+                    className="stroke-option-a"
+                    strokeWidth="5"
+                    strokeDasharray={`${(poll.percentA / 100) * 97.39} 97.39`}
+                    strokeLinecap="butt"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[10px] font-extrabold text-foreground tabular-nums">{poll.percentA}%</span>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
-        {hasVoted ? (
-          <div className="flex items-center gap-2 pt-2">
-            <span className="text-xs font-semibold text-primary truncate flex-1">
-              You voted {chosenOptionLabel && chosenOptionLabel.length > 20 ? chosenOptionLabel.slice(0, 20) + '…' : chosenOptionLabel}
-            </span>
-            {user && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShareSheetOpen(true);
-                }}
-                aria-label="Send to friend"
-                className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full bg-muted text-foreground text-xs font-semibold active:scale-95 transition"
-              >
-                <Send className="h-3.5 w-3.5" /> Send
-              </button>
-            )}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const pollUrl = `${window.location.origin}/poll/${poll.id}`;
-                if (navigator.share) {
-                  navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
-                } else {
-                  navigator.clipboard.writeText(pollUrl);
-                  import('sonner').then(m => m.toast.success('Link copied!'));
-                }
-              }}
-              className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm active:scale-95 transition"
-            >
-              <Share2 className="h-3.5 w-3.5" /> Share
-            </button>
-          </div>
-        ) : (
+        {!hasVoted && (
           <div className="flex items-center gap-2">
             <button
               onClick={(e) => { e.stopPropagation(); handleInlineVote('A'); }}
@@ -460,6 +454,46 @@ function HomeLiveDebateCard({
           </div>
         )}
       </div>
+      {/* ═══ FOOTER CTA STRIP — separated bar, primary Share + outline Send ═══ */}
+      {hasVoted && (
+        <div className="border-t border-border/60 bg-muted/30 px-4 py-2.5 flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            <div className="h-5 w-5 rounded-full bg-success/15 flex items-center justify-center shrink-0">
+              <Check className="h-3 w-3 text-success" strokeWidth={3} />
+            </div>
+            <span className="text-[12px] font-semibold text-foreground truncate">
+              You voted <span className="text-primary">{chosenOptionLabel && chosenOptionLabel.length > 16 ? chosenOptionLabel.slice(0, 16) + '…' : chosenOptionLabel}</span>
+            </span>
+          </div>
+          {user && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShareSheetOpen(true);
+              }}
+              aria-label="Send to friend"
+              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/30 bg-card text-primary text-xs font-semibold active:scale-95 transition"
+            >
+              <Send className="h-3.5 w-3.5" /> Send
+            </button>
+          )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const pollUrl = `${window.location.origin}/poll/${poll.id}`;
+              if (navigator.share) {
+                navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
+              } else {
+                navigator.clipboard.writeText(pollUrl);
+                import('sonner').then(m => m.toast.success('Link copied!'));
+              }
+            }}
+            className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm active:scale-95 transition"
+          >
+            <Share2 className="h-3.5 w-3.5" /> Share
+          </button>
+        </div>
+      )}
       <SharePollToFriendSheet
         pollId={poll.id}
         pollQuestion={poll.question}
