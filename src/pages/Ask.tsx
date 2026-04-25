@@ -71,7 +71,13 @@ export default function Ask() {
   const inputRef = useRef<HTMLInputElement>(null);
   const threadEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 200); }, []);
+  const focusInputIfDesktop = () => {
+    if (typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches) {
+      inputRef.current?.focus();
+    }
+  };
+
+  useEffect(() => { setTimeout(focusInputIfDesktop, 200); }, []);
   useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
 
   // Track visual viewport so layout shrinks correctly when mobile keyboard opens
@@ -111,7 +117,7 @@ export default function Ask() {
     setQuery('');
     setTurns([]);
     setPreview(null);
-    setTimeout(() => inputRef.current?.focus(), 100);
+    setTimeout(focusInputIfDesktop, 100);
   };
 
   const switchMode = (m: Mode) => {
@@ -197,7 +203,7 @@ export default function Ask() {
       toast.error(e?.message || 'Search failed');
     } finally {
       setLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(focusInputIfDesktop, 50);
     }
   };
 
