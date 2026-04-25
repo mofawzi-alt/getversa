@@ -262,6 +262,15 @@ function BrowseCard({
   // Independent thinker badge: if user voted for the loser, round their pct down to nearest 5
   const independentPct = !userPickedWinner && userPct != null ? Math.max(5, Math.round(userPct / 5) * 5) : null;
 
+  // Threshold logic
+  const isDivided = poll.winnerPct >= 45 && poll.winnerPct <= 55;
+  const verdictLabel =
+    poll.winnerPct >= 80 ? 'Egypt overwhelmingly chose this'
+    : poll.winnerPct >= 65 ? 'Egypt chose this'
+    : poll.winnerPct >= 56 ? 'Slight majority chose this'
+    : 'Egypt chose this';
+  const dividedGap = Math.abs(poll.percentA - poll.percentB);
+
   return (
     <div className="h-full w-full flex flex-col relative bg-[#111111] overflow-hidden">
       {/* TOP BAR: question on dark background */}
@@ -294,22 +303,125 @@ function BrowseCard({
         </div>
       </div>
 
-      {/* MIDDLE: full-bleed winner image */}
+      {/* MIDDLE: split-card if divided, else full-bleed winner */}
       <div className="flex-1 relative overflow-hidden min-h-0 bg-black">
-        <div
-          className="absolute inset-0"
-          style={{ filter: userVoted && !userPickedWinner ? 'brightness(0.7)' : 'none' }}
-        >
-          <PollOptionImage
-            imageUrl={winnerImg}
-            option={winnerLabel}
-            question={poll.question}
-            side={poll.winner}
-            maxLogoSize="80%"
-            loading="lazy"
-            variant="browse"
-          />
-        </div>
+        {isDivided ? (
+          <>
+            {/* Split layout */}
+            <div className="absolute inset-0 flex">
+              <div className="w-1/2 h-full relative overflow-hidden">
+                <PollOptionImage
+                  imageUrl={poll.image_a_url}
+                  option={poll.option_a}
+                  question={poll.question}
+                  side="A"
+                  maxLogoSize="80%"
+                  loading="lazy"
+                  variant="browse"
+                />
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                  <p className="text-white font-bold text-[14px] line-clamp-2 leading-tight">{poll.option_a}</p>
+                  <p className="text-white text-[20px] font-display font-bold">{poll.percentA}%</p>
+                </div>
+              </div>
+              <div className="w-[2px] bg-white/30 z-10" />
+              <div className="w-1/2 h-full relative overflow-hidden">
+                <PollOptionImage
+                  imageUrl={poll.image_b_url}
+                  option={poll.option_b}
+                  question={poll.question}
+                  side="B"
+                  maxLogoSize="80%"
+                  loading="lazy"
+                  variant="browse"
+                />
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                  <p className="text-white font-bold text-[14px] line-clamp-2 leading-tight">{poll.option_b}</p>
+                  <p className="text-white text-[20px] font-display font-bold">{poll.percentB}%</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Fire emoji badge — top-right of image area */}
+            <div className="absolute top-3 right-3 z-30 w-10 h-10 rounded-full bg-orange-500 shadow-lg flex items-center justify-center text-xl">
+              🔥
+            </div>
+
+            {/* Centered "Egypt is divided" label */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+              <div className="bg-black/70 backdrop-blur-md px-5 py-3 rounded-2xl text-center border border-white/20 shadow-2xl">
+                <p className="text-white font-display font-bold text-[20px] leading-tight">Egypt is divided</p>
+                <p className="text-white/70 text-[12px] mt-0.5">Only {dividedGap}% separates the two sides</p>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div
+              className="absolute inset-0"
+              style={{ filter: userVoted && !userPickedWinner ? 'brightness(0.7)' : 'none' }}
+            >
+              <PollOptionImage
+                imageUrl={winnerImg}
+                option={winnerLabel}
+                question={poll.question}
+                side={poll.winner}
+                maxLogoSize="80%"
+                loading="lazy"
+                variant="browse"
+              />
+            </div>
+
+            {/* Bottom 40% gradient overlay with result text */}
+            <div
+              className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-4 pb-3"
+              style={{
+                height: '40%',
+                background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%)',
+              }}
+            >
+              {/* Verdict label */}
+              <p className="text-white/80 text-[12px] font-medium mb-1 uppercase tracking-wide">
+                {verdictLabel}
+              </p>
+
+              {userVoted ? (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    {userPickedWinner ? (
+                      <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                        <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                      </div>
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center shrink-0">
+                        <X className="h-3 w-3 text-white" strokeWidth={3} />
+                      </div>
+                    )}
+                    <span className="text-[18px] font-bold text-white leading-tight">
+                      {userLabel} · {userPct}%
+                    </span>
+                  </div>
+
+                  {!userPickedWinner && (
+                    <div className="flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-yellow-400 shrink-0" />
+                      <span className="text-[16px] font-bold text-white/90 leading-tight">
+                        {winnerLabel} · {poll.winnerPct}%
+                      </span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-yellow-400 shrink-0" />
+                  <span className="text-[18px] font-bold text-white leading-tight">
+                    {winnerLabel} · {poll.winnerPct}%
+                  </span>
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
         {/* Floating side-actions over image */}
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-20">
@@ -325,8 +437,8 @@ function BrowseCard({
           <FireReactionButton pollId={poll.id} />
         </div>
 
-        {/* Independent thinker badge — top-left of image */}
-        {independentPct != null && (
+        {/* Independent thinker badge — top-left of image (not in divided mode) */}
+        {!isDivided && independentPct != null && (
           <div className="absolute top-3 left-3 z-20">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500 text-white shadow-lg">
               <Sparkles className="h-3.5 w-3.5" />
@@ -334,52 +446,6 @@ function BrowseCard({
             </div>
           </div>
         )}
-
-        {/* Bottom 40% gradient overlay with result text */}
-        <div
-          className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-4 pb-3"
-          style={{
-            height: '40%',
-            background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%)',
-          }}
-        >
-          {userVoted ? (
-            <>
-              {/* User's choice line */}
-              <div className="flex items-center gap-2 mb-1">
-                {userPickedWinner ? (
-                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                    <Check className="h-3 w-3 text-white" strokeWidth={3} />
-                  </div>
-                ) : (
-                  <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center shrink-0">
-                    <X className="h-3 w-3 text-white" strokeWidth={3} />
-                  </div>
-                )}
-                <span className="text-[18px] font-bold text-white leading-tight">
-                  {userLabel} · {userPct}%
-                </span>
-              </div>
-
-              {/* Winner label if user lost */}
-              {!userPickedWinner && (
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4 text-yellow-400 shrink-0" />
-                  <span className="text-[16px] font-bold text-white/90 leading-tight">
-                    {winnerLabel} · {poll.winnerPct}%
-                  </span>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-yellow-400 shrink-0" />
-              <span className="text-[18px] font-bold text-white leading-tight">
-                {winnerLabel} · {poll.winnerPct}%
-              </span>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* DEMOGRAPHIC TAGS — dark bar */}
