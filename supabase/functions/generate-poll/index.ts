@@ -21,21 +21,26 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
         messages: [
           {
             role: 'user',
-            content: `Generate a stunning, ultra high resolution photorealistic photograph of: "${prompt}". 
-            
-Style requirements:
-- Must look like a real photograph taken with a high-end DSLR or mirrorless camera
-- Ultra sharp focus, fine detail, rich textures throughout
-- Natural cinematic lighting with realistic shadows and highlights
-- Lifestyle or editorial photography style, magazine-quality
-- Real world setting, authentic environment
-- 4:5 portrait aspect ratio
-- NO illustrations, NO cartoons, NO digital art, NO graphics, NO AI artifacts
-- NO text, NO watermarks, NO logos, NO borders
-- Vibrant but natural color grading
-- Shallow depth of field for subject emphasis
+            content: `Cinematic lifestyle photograph that REPRESENTS the real-life experience and feeling of: "${prompt}".
 
-The image should look like it was shot by a top-tier professional photographer for a luxury lifestyle brand or Vogue editorial. Ultra high resolution.`
+MANDATORY STYLE:
+- Real DSLR/mirrorless photography (NOT illustration, 3D, render, or AI art)
+- Cinematic high-contrast lighting, editorial mood
+- Close-up immersive framing, ONE clear subject
+- Shallow depth of field, blurred background
+- Emotion-driven, candid real-life moment
+- TikTok / Instagram social-media aesthetic
+- 4:5 portrait, ultra sharp, magazine quality
+- Use Egyptian / Middle Eastern environments and people when culturally relevant; avoid defaulting to Western-only visuals
+
+STRICTLY FORBIDDEN:
+- NO logos, NO brand names, NO wordmarks, NO typography
+- NO text of any kind inside the image
+- NO app interfaces, NO UI screenshots, NO phone mockups showing apps
+- NO collages, NO split visuals, NO posters, NO graphics
+- NO watermarks, NO borders
+
+Show the EXPERIENCE — people, hands, environments, products in authentic use — not a label or a brand.`
           }
         ],
         modalities: ['image', 'text']
