@@ -655,11 +655,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 >
                   {result.percentA}%
                 </motion.span>
-              ) : (
-                <span className="mt-1.5 inline-block px-3 py-1 rounded-full bg-white/25 backdrop-blur-sm text-white text-[11px] font-medium">
-                  Tap to choose
-                </span>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -723,11 +719,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 >
                   {result.percentB}%
                 </motion.span>
-              ) : (
-                <span className="mt-1.5 inline-block px-3 py-1 rounded-full bg-white/25 backdrop-blur-sm text-white text-[11px] font-medium">
-                  Tap to choose
-                </span>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
