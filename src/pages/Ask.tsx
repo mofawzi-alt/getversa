@@ -254,8 +254,12 @@ export default function Ask() {
 
   return (
     <div
-      className="fixed inset-0 bg-background flex flex-col overflow-hidden w-screen max-w-[100vw] touch-pan-y"
-      style={{ height: viewportHeight ? `${viewportHeight}px` : '100dvh' }}
+      className="fixed inset-0 bg-background flex flex-col overflow-hidden w-full max-w-full touch-pan-y"
+      style={{
+        height: viewportHeight ? `${viewportHeight}px` : '100dvh',
+        width: '100%',
+        maxWidth: '100%',
+      }}
     >
       <div
         className="flex-shrink-0 bg-background/95 backdrop-blur border-b border-border w-full max-w-[100vw] overflow-x-hidden"
@@ -327,7 +331,7 @@ export default function Ask() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder={placeholder}
             disabled={loading}
-            className="block w-full min-w-0 max-w-full h-12 pl-4 pr-14 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+            className="block w-full min-w-0 max-w-full h-12 pl-4 pr-14 rounded-full border border-border bg-card text-base focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
           />
           <button
             type="submit"
