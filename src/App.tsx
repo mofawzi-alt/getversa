@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import BiometricLockGate from "@/components/auth/BiometricLockGate";
+
 import SplashScreen, { isSplashSeen, markSplashSeen } from "@/components/SplashScreen";
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/components/onboarding/SwipeOverlay";
 import { AnimatePresence } from "framer-motion";
@@ -167,7 +167,6 @@ function AppInner() {
       <Toaster />
       <Sonner />
       <CookieConsent />
-      <BiometricLockGate>
       <BrowserRouter>
         <Suspense fallback={<RouteFallback />}>
           <Routes>
@@ -221,7 +220,6 @@ function AppInner() {
           </Routes>
         </Suspense>
       </BrowserRouter>
-      </BiometricLockGate>
     </>
   );
 }
