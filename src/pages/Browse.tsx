@@ -249,120 +249,176 @@ function BrowseCard({
   onShare: () => void;
   onSendToFriend: () => void;
 }) {
-  // Images handled by PollOptionImage component
-  const isCloseResult = !isSignedIn && poll.totalVotes >= 5 && poll.percentA >= 45 && poll.percentA <= 55;
+  const winnerLabel = poll.winner === 'A' ? poll.option_a : poll.option_b;
+  const winnerImg = poll.winner === 'A' ? poll.image_a_url : poll.image_b_url;
+  const loserLabel = poll.winner === 'A' ? poll.option_b : poll.option_a;
+  const loserPct = poll.winner === 'A' ? poll.percentB : poll.percentA;
+
+  const userPickedWinner = userChoice ? userChoice === poll.winner : null;
+  const userVoted = !!userChoice;
+  const userPct = userChoice ? (userChoice === 'A' ? poll.percentA : poll.percentB) : null;
+  const userLabel = userChoice ? (userChoice === 'A' ? poll.option_a : poll.option_b) : null;
+
+  // Independent thinker badge: if user voted for the loser, round their pct down to nearest 5
+  const independentPct = !userPickedWinner && userPct != null ? Math.max(5, Math.round(userPct / 5) * 5) : null;
 
   return (
-    <div className="h-full w-full flex flex-col relative bg-background">
-      {/* Question overlay at top */}
-      <div className="shrink-0 px-3 py-1.5 bg-gradient-to-b from-background via-background/90 to-transparent z-20">
-        <p className="font-display font-bold text-[13px] leading-tight pr-16 line-clamp-2">{poll.question}</p>
-        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+    <div className="h-full w-full flex flex-col relative bg-[#111111] overflow-hidden">
+      {/* TOP BAR: question on dark background */}
+      <div className="shrink-0 px-4 pt-3 pb-2 bg-[#111111] z-20 relative">
+        <p className="font-display font-bold text-[18px] leading-tight text-white line-clamp-2 pr-12">
+          {poll.question}
+        </p>
+        <div className="flex items-center gap-1.5 mt-1">
           {poll.category && (
-            <span className="inline-block px-1.5 py-0 rounded-full bg-primary/10 text-primary text-[9px] font-medium">
+            <span className="inline-block px-2 py-0.5 rounded-full bg-white/10 text-white/70 text-[10px] font-medium">
               {poll.category}
             </span>
           )}
           {poll.isClosed && (
-            <span className="inline-block px-1.5 py-0 rounded-full bg-muted text-muted-foreground text-[9px] font-medium border border-border">
+            <span className="inline-block px-2 py-0.5 rounded-full bg-white/10 text-white/70 text-[10px] font-medium">
               🔒 Closed
             </span>
           )}
         </div>
-      </div>
 
-      {/* Side action buttons */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-4 items-end">
-        {isSignedIn && (
+        {/* Action buttons top-right */}
+        <div className="absolute top-3 right-3 flex flex-col gap-2 items-end z-30">
           <button
-            onClick={onSendToFriend}
-            className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-lg"
-            aria-label="Send in chat"
+            onClick={onShare}
+            className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            aria-label="Share"
           >
-            <Send className="h-4 w-4" />
+            <Share2 className="h-4 w-4" />
           </button>
+        </div>
+      </div>
+
+      {/* MIDDLE: full-bleed winner image */}
+      <div className="flex-1 relative overflow-hidden min-h-0 bg-black">
+        <div
+          className="absolute inset-0"
+          style={{ filter: userVoted && !userPickedWinner ? 'brightness(0.7)' : 'none' }}
+        >
+          <PollOptionImage
+            imageUrl={winnerImg}
+            option={winnerLabel}
+            question={poll.question}
+            side={poll.winner}
+            maxLogoSize="80%"
+            loading="lazy"
+            variant="browse"
+          />
+        </div>
+
+        {/* Floating side-actions over image */}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-20">
+          {isSignedIn && (
+            <button
+              onClick={onSendToFriend}
+              className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg"
+              aria-label="Send in chat"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          )}
+          <FireReactionButton pollId={poll.id} />
+        </div>
+
+        {/* Independent thinker badge — top-left of image */}
+        {independentPct != null && (
+          <div className="absolute top-3 left-3 z-20">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500 text-white shadow-lg">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-bold">Top {independentPct}% independent thinker</span>
+            </div>
+          </div>
         )}
-        <button onClick={onShare} className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center text-foreground hover:bg-primary/10 transition-colors">
-          <Share2 className="h-4 w-4" />
-        </button>
-        <FireReactionButton pollId={poll.id} />
-      </div>
 
+        {/* Bottom 40% gradient overlay with result text */}
+        <div
+          className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-4 pb-3"
+          style={{
+            height: '40%',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%)',
+          }}
+        >
+          {userVoted ? (
+            <>
+              {/* User's choice line */}
+              <div className="flex items-center gap-2 mb-1">
+                {userPickedWinner ? (
+                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                    <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center shrink-0">
+                    <X className="h-3 w-3 text-white" strokeWidth={3} />
+                  </div>
+                )}
+                <span className="text-[18px] font-bold text-white leading-tight">
+                  {userLabel} · {userPct}%
+                </span>
+              </div>
 
-      {/* Images — filling available space */}
-      <div className="flex-1 flex relative min-h-0">
-        {/* Option A */}
-        <div className="w-1/2 h-full relative overflow-hidden">
-          <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading="lazy" variant="browse" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-          {poll.winner === 'A' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
-          <div className="absolute bottom-0 left-0 right-0 p-2.5 text-white">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              {userChoice === 'A' && (
-                <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                  <Check className="h-2.5 w-2.5 text-white" />
+              {/* Winner label if user lost */}
+              {!userPickedWinner && (
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-yellow-400 shrink-0" />
+                  <span className="text-[16px] font-bold text-white/90 leading-tight">
+                    {winnerLabel} · {poll.winnerPct}%
+                  </span>
                 </div>
               )}
-              <span className="font-bold text-[13px] leading-tight line-clamp-2 break-words">{poll.option_a}</span>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-yellow-400 shrink-0" />
+              <span className="text-[18px] font-bold text-white leading-tight">
+                {winnerLabel} · {poll.winnerPct}%
+              </span>
             </div>
-            <span className={`text-xl font-display font-bold ${poll.winner === 'A' ? 'text-green-400' : 'text-white/70'}`}>
-              {poll.percentA}%
-            </span>
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
-
-        {/* Option B */}
-        <div className="w-1/2 h-full relative overflow-hidden">
-          <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading="lazy" variant="browse" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-          {poll.winner === 'B' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
-          <div className="absolute bottom-0 left-0 right-0 p-2.5 text-white">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              {userChoice === 'B' && (
-                <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                  <Check className="h-2.5 w-2.5 text-white" />
-                </div>
-              )}
-              <span className="font-bold text-[13px] leading-tight line-clamp-2 break-words">{poll.option_b}</span>
-            </div>
-            <span className={`text-xl font-display font-bold ${poll.winner === 'B' ? 'text-green-400' : 'text-white/70'}`}>
-              {poll.percentB}%
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom info bar — compact, no extra padding */}
-      <div className="shrink-0 bg-background border-t border-border/30 px-4 py-2 space-y-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</span>
-          {poll.demographicInsight && (
-            <span className="text-[11px] text-muted-foreground italic">{poll.demographicInsight}</span>
           )}
         </div>
+      </div>
 
-        {/* Result bar */}
-        <div className="h-1.5 rounded-full bg-muted overflow-hidden flex">
-          <div className="bg-primary h-full transition-all duration-500" style={{ width: `${poll.percentA}%` }} />
-          <div className="bg-accent h-full transition-all duration-500" style={{ width: `${poll.percentB}%` }} />
+      {/* DEMOGRAPHIC TAGS — dark bar */}
+      <div className="shrink-0 bg-[#111111] px-4 py-2.5 space-y-1.5">
+        {poll.demoTags.length > 0 ? (
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
+            {poll.demoTags.map((tag, i) => (
+              <span
+                key={i}
+                className="text-[14px] leading-snug"
+                style={{ color: 'rgba(255,255,255,0.8)' }}
+              >
+                {tag.emoji} {tag.label}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="text-[14px]" style={{ color: 'rgba(255,255,255,0.8)' }}>
+            🇪🇬 Egypt chose this — {poll.winnerPct}%
+          </span>
+        )}
+
+        {/* Loser pill — small subtle */}
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] text-white/40">
+            {loserLabel} · {loserPct}%
+          </span>
+          <span className="text-[11px] text-white/30 ml-auto">
+            {poll.totalVotes.toLocaleString()} votes
+          </span>
         </div>
 
-        {/* Nudge: Vote from Home for unvoted polls (hide when closed) */}
-        {!userChoice && !poll.isClosed && (
+        {!userVoted && !poll.isClosed && (
           <button
             onClick={onVote}
-            className="w-full text-center text-xs text-primary/80 hover:text-primary transition-colors py-0.5"
+            className="w-full text-center text-[12px] text-blue-400 hover:text-blue-300 transition-colors pt-1"
           >
             Vote on today's battles from Home →
           </button>
-        )}
-        {poll.isClosed && (
-          <p className="w-full text-center text-[11px] text-muted-foreground py-0.5">
-            Results only — voting has ended
-          </p>
         )}
       </div>
     </div>
