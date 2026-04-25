@@ -65,11 +65,34 @@ export default function Ask() {
   const [confirming, setConfirming] = useState(false);
   const [turns, setTurns] = useState<AskTurn[]>([]);
   const [preview, setPreview] = useState<PreviewState | null>(null);
+  const [viewportHeight, setViewportHeight] = useState<number>(
+    typeof window !== 'undefined' ? window.innerHeight : 0
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const threadEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 200); }, []);
   useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
+
+  // Track visual viewport so layout shrinks correctly when mobile keyboard opens
+  useEffect(() => {
+    const vv = (typeof window !== 'undefined' ? window.visualViewport : null);
+    const update = () => {
+      const h = vv?.height ?? window.innerHeight;
+      setViewportHeight(h);
+    };
+    update();
+    if (vv) {
+      vv.addEventListener('resize', update);
+      vv.addEventListener('scroll', update);
+      return () => {
+        vv.removeEventListener('resize', update);
+        vv.removeEventListener('scroll', update);
+      };
+    }
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const handleBack = () => {
     const state = location.state as AskLocationState | null;
