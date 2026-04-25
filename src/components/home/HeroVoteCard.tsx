@@ -147,7 +147,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     staleTime: 60_000,
   });
 
-
+  const startX = useRef(0);
   const startY = useRef(0);
   const currentDragX = useRef(0);
   const currentDragY = useRef(0);
