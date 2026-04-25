@@ -74,9 +74,27 @@ If the question/option is not in this list, derive the SINGLE most literal physi
 
 REJECTION TEST: If a stranger glanced at this image for 1 second, would they say the EXACT word "${subject}"? If no → you are generating wrong. The action must be unmistakable.`;
 
+  // Detect explicit venue/location in the question and lock to it
+  const ql = question.toLowerCase();
+  const sl = subject.toLowerCase();
+  let locationLock = '';
+  if (ql.includes('supermarket') || sl.includes('supermarket')) {
+    locationLock = `\n\n🔒 LOCATION LOCK: Scene MUST be INSIDE A MODERN UPSCALE EGYPTIAN SUPERMARKET (Gourmet / Seoudi / Carrefour / Spinneys style) — clean bright indoor aisles, white tiled floors, organized shelves with generic packaged goods. ABSOLUTELY FORBIDDEN: outdoor street markets, wet alleys, souks, vendors, stalls, crates on the ground, tuk-tuks, motorbikes. If your scene is outdoors → WRONG.`;
+  } else if (ql.includes('food market') || sl.includes('food market') || sl.includes('souk') || ql.includes('souk')) {
+    locationLock = `\n\n🔒 LOCATION LOCK: Scene MUST be at a traditional outdoor Egyptian food market / souk — open-air stalls, fresh produce piled high, vendors, baskets, warm chaotic atmosphere.`;
+  } else if (ql.includes('gym')) {
+    locationLock = `\n\n🔒 LOCATION LOCK: Scene MUST be inside a modern gym (mirrors, equipment, dumbbells, athletic wear) unless the option explicitly opposes the gym.`;
+  } else if (ql.includes('cafe') || ql.includes('café')) {
+    locationLock = `\n\n🔒 LOCATION LOCK: Scene MUST be inside a modern Cairo cafe (espresso machine, wood tables, plants, soft daylight).`;
+  } else if (ql.includes('butcher')) {
+    locationLock = sl.includes('supermarket')
+      ? `\n\n🔒 LOCATION LOCK: Scene MUST be at the refrigerated meat counter INSIDE a modern supermarket (cold case, plastic-wrapped trays, price labels). NOT a butcher shop.`
+      : `\n\n🔒 LOCATION LOCK: Scene MUST be inside a traditional butcher shop (hanging meat, white tile, butcher in apron with cleaver, wooden block).`;
+  }
+
   return `Cinematic photograph for a Gen Z poll: "${question}". This image represents "${subject}" (vs "${otherOption}"). The "this is me" moment must be obvious in under 1 second.
 
-${isProduct ? hybridBlock : lifestyleBlock}
+${isProduct ? hybridBlock : lifestyleBlock}${locationLock}
 
 SAME-CATEGORY DIFFERENTIATION: If "${subject}" and "${otherOption}" belong to the same category, contrast via lifestyle, environment, mood, energy (group vs solo), lighting, framing, time of day.
 
