@@ -596,11 +596,6 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           {poll.subtitle && (
             <p className="text-sm text-muted-foreground mt-1.5">{poll.subtitle}</p>
           )}
-          {!result && !isVoting && (
-            <div className="inline-flex items-center gap-2 mt-3 px-3.5 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
-              ← Swipe or tap to vote →
-            </div>
-          )}
         </div>
 
         {/* Two-image split */}
