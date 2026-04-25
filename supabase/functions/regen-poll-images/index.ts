@@ -92,7 +92,11 @@ REJECTION TEST: If a stranger glanced at this image for 1 second, would they say
       : `\n\n🔒 LOCATION LOCK: Scene MUST be inside a traditional butcher shop (hanging meat, white tile, butcher in apron with cleaver, wooden block).`;
   }
 
-  return `Cinematic photograph for a Gen Z poll: "${question}". This image represents "${subject}" (vs "${otherOption}"). The "this is me" moment must be obvious in under 1 second.
+  return `VERSA POLL CONTENT SYSTEM — VERSION 2.0
+Last updated: April 2026
+Apply to every poll generated for the Versa platform without exception.
+
+Cinematic photograph for a Gen Z poll: "${question}". This image represents "${subject}" (vs "${otherOption}"). The "this is me" moment must be obvious in under 1 second.
 
 ${isProduct ? hybridBlock : lifestyleBlock}${locationLock}
 
@@ -102,11 +106,23 @@ WHO: ONE visible human aged 18–30, modern Gen Z appearance, casual trendy 2026
 
 WHERE: realistic 2026 environment — modern Cairo / MENA apartment, rooftop, cafe, university, street, gym, park, or social hangout. Culturally grounded.
 
+RULE 9B — EGYPTIAN CULTURAL ACCURACY: When setting scenes in Egypt: coffee shops must show local ahwa aesthetic OR modern specialty cafe — never generic Starbucks-style. Food scenes must show real Egyptian context — home kitchen with Arabic tiles, street food setting, family table. Fashion must show Egyptian Gen Z naturally — women may or may not wear hijab, never stereotype, show both across different polls. Social settings must be grounded in real Cairo locations — New Cairo compounds, Zamalek rooftops, Maadi streets, university campuses, local markets. Aspirational polls lean North Coast and compound aesthetic. Everyday polls lean downtown Cairo and local street aesthetic. Never show generic Arab stock photo aesthetic or settings that could be any country.
+
 VISUAL CONTRAST: must differ from the paired image in at least 3 of: lighting, location, framing, emotion, activity energy, social setting.
+
+RULE 11B — CONTRAST INTENSITY: The two images must feel like they belong to two completely different worlds — not just two different moments. Test: cover the option labels and show both images to someone — they must immediately understand these are two completely different lifestyle choices without reading any text. If the images could belong to the same person on different days — REJECT and regenerate. The contrast must be felt instantly — not noticed on close inspection.
+
+RULE 12B — EMOTIONAL AUTHENTICITY: The emotion shown must be the natural result of the action — not performed for the camera. The subject must appear unaware of being photographed — caught in a real moment. This is the difference between a lifestyle photo and a stock photo. Always lifestyle. RIGHT: person laughing while eating street food with friends — emotion caused by the moment. WRONG: person smiling directly at camera while holding a product — this is advertising not authenticity.
 
 STYLE: real DSLR / mirrorless photography, cinematic lighting, shallow depth of field, candid, vertical 9:16, magazine-grade TikTok / Instagram aesthetic.
 
-STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography or text, NO app UI, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO watermarks, NO borders, NO visible packaging labels. Mode: ${mode}.`;
+STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography or text, NO app UI, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO watermarks, NO borders, NO visible packaging labels. Mode: ${mode}.
+
+RULE 17B — PAIR COMPATIBILITY CHECK: Before finalizing — check both images together as a pair. Do they feel like a genuine A vs B choice? Does the visual contrast create an instant opinion in the viewer before the question is read? Would someone who has never seen Versa immediately understand this is a choice between two things? A great poll image pair creates a gut reaction before the question is even read. If the pair does not create that reaction — regenerate one or both images.
+
+RULE 19 — CATEGORY SPECIFIC IMAGE RULES: FMCG and Food: show product being consumed or enjoyed — never just sitting on a surface. Food must look delicious enough to make someone hungry. Financial: show the emotional state and lifestyle of the financial choice — not just the transaction. Telco and Tech: show device in active use — screen visible and active, never held statically. Lifestyle: show the full environment — background tells as much story as the subject. The Pulse: maximum Egyptian cultural authenticity — these polls are about identity. Generic images are unacceptable for this category.
+
+RULE 20 — THE 1 SECOND TEST (MANDATORY FINAL STEP): Before finalizing any image — mentally show it for 1 second then look away. Ask: what did I see? If the answer matches the option exactly — PASS. If the answer is vague or wrong — FAIL — REGENERATE. This test cannot be skipped. A poll image that fails the 1 second test will never be approved regardless of how good it looks on longer inspection.`;
 };
 
 function slugify(s: string) {
