@@ -12,7 +12,7 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 import { toast } from 'sonner';
-import { Check, Send } from 'lucide-react';
+import { Check, Send, ArrowUp, Equal } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import HeroCaughtUp from './HeroCaughtUp';
 
