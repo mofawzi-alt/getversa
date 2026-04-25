@@ -182,11 +182,13 @@ serve(async (req) => {
     }));
 
     // ---- 1. Extract filters + classify route (always uses fast model) ----
-    const extractResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
-      messages: [
-        {
-          role: "system",
-          content: `You classify questions for an Egyptian opinion-poll app called Versa, then extract filters.
+    let extractResp: Response | null = null;
+    try {
+      extractResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
+        messages: [
+          {
+            role: "system",
+            content: `You classify questions for an Egyptian opinion-poll app called Versa, then extract filters.
 
 Step 1 — INTENT (mandatory, exact value):
 - "preference": user is asking which option people PREFER, PICK, CHOOSE, LEAN toward, LOVE more, vote for, or "X or Y?". This is what Versa's polls answer.
@@ -205,10 +207,13 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         },
         ...historyMessages,
         { role: "user", content: question },
-      ],
-      tools: [FILTER_TOOL],
-      tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
-    });
+        ],
+        tools: [FILTER_TOOL],
+        tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
+      });
+    } catch (e) {
+      console.error("AI extract failed before response", e);
+    }
 
     // Helper: extract JSON args from a Groq tool_use_failed body or message content
     const recoverFiltersFromText = (text: string): any | null => {
@@ -262,7 +267,14 @@ Rules:
       }
     };
 
-    if (!extractResp.ok) {
+    if (!extractResp || !extractResp.ok) {
+      if (!extractResp) {
+        filters = { keywords: question.toLowerCase().split(/\s+/).filter((w) => w.length >= 3).slice(0, 6), route: "simple", category: "any", intent: "preference" };
+        console.log("AI extract unavailable — using minimal filters fallback");
+      }
+      if (!extractResp) {
+        // Skip response-body recovery when fetch failed or timed out.
+      } else {
       const errBody = await extractResp.text().catch(() => "");
       console.error(`Groq extract failed ${extractResp.status}:`, errBody);
       if (extractResp.status === 429) return new Response(JSON.stringify({ error: "Too many requests, try again in a moment." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -275,6 +287,7 @@ Rules:
           filters = recoverFiltersFromText(failedGen);
           if (filters) console.log("Recovered filters from 400 error body");
         } catch { /* ignore */ }
+      }
       }
 
       if (!filters) {
