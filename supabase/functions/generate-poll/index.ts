@@ -23,24 +23,14 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
             role: 'user',
             content: `Cinematic lifestyle photograph that REPRESENTS the real-life experience and feeling of: "${prompt}".
 
-MANDATORY STYLE:
-- Real DSLR/mirrorless photography (NOT illustration, 3D, render, or AI art)
-- Cinematic high-contrast lighting, editorial mood
-- Close-up immersive framing, ONE clear subject
-- Shallow depth of field, blurred background
-- Emotion-driven, candid real-life moment
-- TikTok / Instagram social-media aesthetic
-- 4:5 portrait, ultra sharp, magazine quality
-- Use Egyptian / Middle Eastern environments and people when culturally relevant; avoid defaulting to Western-only visuals
+WHO (mandatory): a visible human subject aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing — no formal wear, no older models (30+ only if the option requires it), no empty scenes without human presence.
+WHERE: realistic 2026 environment — modern apartment, cafe, Cairo / MENA street, university, or co-working space. Use Egyptian / Middle-Eastern context when culturally relevant; avoid defaulting to Western-only visuals.
+WHAT: the action must directly and obviously represent the option behavior, readable in 1 second.
+VIBE: candid, natural, social, expressive, slightly imperfect — NOT posed, NOT stock-photo perfect, NOT generic stock behavior.
 
-STRICTLY FORBIDDEN:
-- NO logos, NO brand names, NO wordmarks, NO typography
-- NO text of any kind inside the image
-- NO app interfaces, NO UI screenshots, NO phone mockups showing apps
-- NO collages, NO split visuals, NO posters, NO graphics
-- NO watermarks, NO borders
+STYLE: real DSLR / mirrorless photography, cinematic high-contrast lighting, close-up immersive framing, shallow depth of field, ONE clear subject, 4:5 portrait, ultra sharp, magazine quality, TikTok / Instagram aesthetic.
 
-Show the EXPERIENCE — people, hands, environments, products in authentic use — not a label or a brand.`
+STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography, NO text of any kind inside the image, NO app interfaces, NO UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO watermarks, NO borders.`
           }
         ],
         modalities: ['image', 'text']
