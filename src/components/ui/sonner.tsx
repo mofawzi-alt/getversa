@@ -11,10 +11,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       position="top-center"
-      mobileOffset={{ top: 'calc(env(safe-area-inset-top) + 16px)', left: 16, right: 16 }}
-      offset={{ top: 'calc(env(safe-area-inset-top) + 16px)', left: 16, right: 16 }}
+      mobileOffset={{ top: 'calc(env(safe-area-inset-top) + 16px)' }}
+      offset={{ top: 'calc(env(safe-area-inset-top) + 16px)' }}
       toastOptions={{
-        style: { maxWidth: '92vw' },
+        style: { maxWidth: 'calc(100vw - 32px)', width: 'calc(100vw - 32px)' },
         classNames: {
           toast:
             "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
