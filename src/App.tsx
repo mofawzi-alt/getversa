@@ -60,6 +60,7 @@ const FocusGroup = lazy(() => import("./pages/FocusGroup"));
 const Rewards = lazy(() => import("./pages/Rewards"));
 const Ask = lazy(() => import("./pages/Ask"));
 const Support = lazy(() => import("./pages/Support"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
@@ -172,6 +173,7 @@ function AppInner() {
           <Routes>
             <Route path="/" element={<SmartLanding />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><Onboarding /></ProtectedRoute>} />
             <Route path="/vote" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<DemographicsGuard><Home /></DemographicsGuard>} />
