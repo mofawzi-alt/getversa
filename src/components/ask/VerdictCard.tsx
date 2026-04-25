@@ -26,17 +26,17 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
   const winSideA = verdict.winner_side === 'A';
 
   return (
-    <div className="rounded-3xl overflow-hidden bg-card border border-border shadow-sm">
+    <div className="rounded-2xl overflow-hidden bg-card border border-border shadow-sm w-full min-w-0">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary/15 via-primary/5 to-transparent p-4 pb-3">
-        <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-primary font-bold mb-2">
-          <Trophy className="h-3.5 w-3.5" />
+      <div className="bg-gradient-to-br from-primary/15 via-primary/5 to-transparent p-3">
+        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-primary font-bold mb-1.5">
+          <Trophy className="h-3 w-3" />
           Versa says
         </div>
-        <p className="text-2xl font-extrabold leading-tight">
+        <p className="text-xl font-extrabold leading-tight break-words">
           Pick <span className="text-primary">{verdict.winner_label}</span>
         </p>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground mt-1 break-words">
           <span className="font-bold text-foreground">{verdict.winner_pct}%</span> of Egyptians agree
           <span className="text-muted-foreground"> · {verdict.total_votes.toLocaleString()} votes</span>
         </p>
@@ -48,7 +48,7 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
       </div>
 
       {/* Images */}
-      <div className="grid grid-cols-2 aspect-[5/3] relative">
+      <div className="grid grid-cols-2 aspect-[2/1] relative">
         <div className={`relative ${winSideA ? '' : 'opacity-50 grayscale'}`}>
           <PollOptionImage
             imageUrl={verdict.image_a_url}
