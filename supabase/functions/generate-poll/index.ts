@@ -21,16 +21,19 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
         messages: [
           {
             role: 'user',
-            content: `Cinematic lifestyle photograph that REPRESENTS the real-life experience and feeling of: "${prompt}".
+            content: `Cinematic lifestyle photograph that shows a Gen Z person performing the EXACT real-life behavior of: "${prompt}". The behavior must be obvious in under 1 second; this is the user's "this is me" moment.
 
-WHO (mandatory): a visible human subject aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing — no formal wear, no older models (30+ only if the option requires it), no empty scenes without human presence.
-WHERE: realistic 2026 environment — modern apartment, cafe, Cairo / MENA street, university, or co-working space. Use Egyptian / Middle-Eastern context when culturally relevant; avoid defaulting to Western-only visuals.
-WHAT: the action must directly and obviously represent the option behavior, readable in 1 second.
-VIBE: candid, natural, social, expressive, slightly imperfect — NOT posed, NOT stock-photo perfect, NOT generic stock behavior.
+WHO (mandatory): ONE visible human subject aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing, natural and expressive. NO older subjects (30+ only if the option requires it), NO formal/corporate styling, NO empty scenes without a person.
 
-STYLE: real DSLR / mirrorless photography, cinematic high-contrast lighting, close-up immersive framing, shallow depth of field, ONE clear subject, 4:5 portrait, ultra sharp, magazine quality, TikTok / Instagram aesthetic.
+WHERE: realistic 2026 environment — modern apartment, cafe, Cairo / MENA street, university, or co-working / social space. Use Egyptian / Middle-Eastern context when culturally relevant. NO outdated interiors, NO generic Western stock backgrounds.
 
-STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography, NO text of any kind inside the image, NO app interfaces, NO UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO watermarks, NO borders.`
+ACTION (critical): the subject must be visibly DOING the behavior of "${prompt}" — e.g. paying with phone for "mobile wallet", handing cash for "cash", eating with friends for "orders often", solo home meal for "rarely orders", inside a car for "private car", in a crowded bus/train for "public transport", watching screen with screen-light on face for streaming. If the option is a brand name, translate it into a real-life usage scene — NEVER show the logo.
+
+VIBE: candid, natural, slightly imperfect, social, expressive — NOT posed, NOT polished advertising, NOT stock-photo perfect.
+
+STYLE: real DSLR / mirrorless photography, cinematic high-contrast lighting, close-up immersive framing, shallow depth of field, ONE clear subject, no clutter, 4:5 portrait, magazine-grade, TikTok / Instagram aesthetic.
+
+STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography, NO text of any kind inside the image, NO app interfaces, NO UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO abstract or symbolic visuals, NO watermarks, NO borders.`
           }
         ],
         modalities: ['image', 'text']
