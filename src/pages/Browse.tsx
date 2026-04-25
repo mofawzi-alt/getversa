@@ -313,16 +313,16 @@ function BrowseCard({
           <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading="lazy" variant="browse" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
           {poll.winner === 'B' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
-          <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-            <div className="flex items-center gap-1.5">
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 text-white">
+            <div className="flex items-center gap-1.5 mb-0.5">
               {userChoice === 'B' && (
-                <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                  <Check className="h-3 w-3 text-white" />
+                <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                  <Check className="h-2.5 w-2.5 text-white" />
                 </div>
               )}
-              <span className="font-bold text-sm truncate">{poll.option_b}</span>
+              <span className="font-bold text-[13px] leading-tight line-clamp-2 break-words">{poll.option_b}</span>
             </div>
-            <span className={`text-2xl font-display font-bold ${poll.winner === 'B' ? 'text-green-400' : 'text-white/70'}`}>
+            <span className={`text-xl font-display font-bold ${poll.winner === 'B' ? 'text-green-400' : 'text-white/70'}`}>
               {poll.percentB}%
             </span>
           </div>
