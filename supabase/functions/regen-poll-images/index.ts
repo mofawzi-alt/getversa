@@ -37,17 +37,23 @@ ACTION DERIVATION RULES (read the question literally):
 - "social media/scrolling" → close-up of phone screen reflection on face
 - "morning routine" → bathroom mirror, coffee, getting ready
 
-NEVER substitute the action with food/delivery/shopping unless the question is literally about food/delivery/shopping. The question topic is the law.
+NEVER substitute the action with food/delivery/shopping unless the question is literally about food/delivery/shopping. The question topic is the law.`;
 
-WHO: ONE visible human aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing (oversized tees, cargos, layered jewelry, modern hairstyles), natural expression — reacting, thinking, choosing, or enjoying. NO older subjects. NO corporate/formal styling. NO posed stock-photo neutrality.
+  return `Cinematic photograph for a Gen Z poll: "${question}". This image represents "${subject}" (vs "${otherOption}"). The "this is me" moment must be obvious in under 1 second.
 
-WHERE: realistic 2026 environment — modern Cairo / MENA apartment, rooftop, cafe, university, street, or social hangout. Culturally grounded when relevant. NO outdated interiors, NO western generic stock backdrops.
+${isProduct ? hybridBlock : lifestyleBlock}
 
-VISUAL CONTRAST RULES (must differ from the paired image in at least 3 of): lighting temperature, location, camera framing (close vs wide), facial emotion, activity energy, social setting (group vs alone).
+SAME-CATEGORY DIFFERENTIATION: If "${subject}" and "${otherOption}" belong to the same category, contrast via lifestyle, environment, mood, energy (group vs solo), lighting, framing, time of day.
 
-STYLE: real DSLR / mirrorless photography, cinematic lighting, shallow depth of field, candid and slightly imperfect, vertical 9:16, magazine-grade TikTok / Instagram aesthetic.
+WHO: ONE visible human aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing, natural expression. NO older subjects. NO corporate styling.
 
-STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography or text of any kind, NO app interfaces / UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO abstract visuals, NO watermarks, NO borders, NO visible packaging labels, NO recognizable brand silhouettes. Mode applied: ${mode}.`;
+WHERE: realistic 2026 environment — modern Cairo / MENA apartment, rooftop, cafe, university, street, gym, park, or social hangout. Culturally grounded.
+
+VISUAL CONTRAST: must differ from the paired image in at least 3 of: lighting, location, framing, emotion, activity energy, social setting.
+
+STYLE: real DSLR / mirrorless photography, cinematic lighting, shallow depth of field, candid, vertical 9:16, magazine-grade TikTok / Instagram aesthetic.
+
+STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography or text, NO app UI, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO watermarks, NO borders, NO visible packaging labels. Mode: ${mode}.`;
 };
 
 function slugify(s: string) {
