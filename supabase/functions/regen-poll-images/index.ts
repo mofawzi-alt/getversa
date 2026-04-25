@@ -6,24 +6,43 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PROMPT_TPL = (subject: string, question: string, otherOption: string) =>
-  `Cinematic lifestyle photograph for a poll question: "${question}". This image represents the option "${subject}" (vs. the other option "${otherOption}"). Show ONE Gen Z person performing the EXACT real-life behavior associated with choosing "${subject}" in this context. The behavior must be obvious in under 1 second; this is the user's "this is me" moment.
+// Heuristic: detect product/brand vs behavior options
+function isProductOrBrand(s: string): boolean {
+  const t = s.trim();
+  if (!t) return false;
+  // Multi-word phrases that read like behaviors usually contain verbs/spaces > 3 words
+  const wordCount = t.split(/\s+/).length;
+  if (wordCount >= 4) return false;
+  // Capitalized proper noun, or single short token (typical brand/product)
+  const firstChar = t[0];
+  const looksProper = firstChar === firstChar.toUpperCase() && /[A-Za-z]/.test(firstChar);
+  return looksProper && wordCount <= 3;
+}
 
-CRITICAL BRAND HANDLING: If "${subject}" is a brand name, product name, app, or proper noun, DO NOT show that brand's product, packaging, logo, wordmark, color scheme, or any identifying detail. Instead, depict the GENERIC real-life behavior or lifestyle of someone who would choose that brand in the context of "${question}". Examples: "Dyson" in a vacuum question → young person casually vacuuming a modern apartment with a generic unbranded cordless stick vacuum. "Netflix" → person on couch watching a generic screen, no UI visible. "Talabat" → person receiving a plain unbranded food bag at the door. "iPhone" → person using a generic black smartphone with no visible logo or UI. The brand must be UNRECOGNIZABLE in the final image.
+const PROMPT_TPL = (subject: string, question: string, otherOption: string) => {
+  const isProduct = isProductOrBrand(subject) && isProductOrBrand(otherOption);
+  const mode = isProduct ? 'HYBRID' : 'LIFESTYLE';
 
-SAME-CATEGORY DIFFERENTIATION: If "${subject}" and "${otherOption}" are in the SAME category (e.g. both online shopping apps like Noon vs Amazon, both food delivery apps like Talabat vs Elmenus, both ride-hail apps like Uber vs Careem), the action is the same — DO NOT differentiate by inventing a fake offline behavior (e.g. do NOT show one as "in-store"). Instead, both images depict the same core action (e.g. unboxing a delivery, ordering on phone) but differentiate by mood, time of day, package style, product type, or setting. For "${subject}" specifically, pick a unique unboxing / browsing / using moment that visually contrasts with the other option without misrepresenting the platform.
+  const hybridBlock = `MODE: HYBRID (product-in-context). Show ONE Gen Z person actively USING, HOLDING, OPENING, EATING, DRINKING, OR INTERACTING WITH a generic version of the product "${subject}" inside a real-life moment. The product must be CLEARLY VISIBLE and recognizable as the correct CATEGORY (e.g. soda can, chocolate bar, food delivery bag, smartphone, sneakers) but with NO logos, NO wordmarks, NO brand colors, NO packaging text. The human interaction is mandatory — never a static product-only shot. Examples: soda → person cracking open a generic cola can with friends at a rooftop; chocolate → person biting a generic chocolate bar while walking a Cairo street; delivery app → person receiving a plain brown food bag at apartment door; sneakers → close-up of person lacing generic white sneakers on a cafe step.`;
 
-WHO (mandatory): ONE visible human subject aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing, natural and expressive. NO older subjects, NO formal/corporate styling, NO empty scenes without a person.
+  const lifestyleBlock = `MODE: LIFESTYLE (behavior). Show ONE Gen Z person visibly DOING the exact behavior of "${subject}" in this context — the action must be unmistakable in under 1 second. e.g. mobile wallet → phone tap at terminal; cash → handing physical bills; orders often → multiple food boxes spread across table with friends; rarely orders → simple home-cooked plate alone; private car → driver inside a car interior; public transport → packed bus/train moment.`;
 
-WHERE: realistic 2026 environment — modern apartment, cafe, Cairo / MENA street, university, or co-working / social space. Use Egyptian / Middle-Eastern context when culturally relevant. NO outdated interiors, NO generic Western stock backgrounds.
+  return `Cinematic photograph for a Gen Z poll: "${question}". This image represents "${subject}" (vs "${otherOption}"). The "this is me" moment must be obvious in under 1 second.
 
-ACTION (critical): the subject must be visibly DOING the behavior — e.g. paying with phone for "mobile wallet", handing cash for "cash", eating with friends for "orders often", solo home meal for "rarely orders", inside a car for "private car", in a crowded bus/train for "public transport", watching screen with screen-light on face for streaming.
+${isProduct ? hybridBlock : lifestyleBlock}
 
-VIBE: candid, natural, slightly imperfect, social, expressive — NOT posed, NOT polished advertising, NOT stock-photo perfect.
+SAME-CATEGORY DIFFERENTIATION: If "${subject}" and "${otherOption}" belong to the same category (both sodas, both delivery apps, both shopping platforms, both phones), the core action is identical — DO NOT fake an offline alternative. Instead create CONTRAST through: lifestyle (premium vs everyday), environment (clean modern apartment vs busy street cafe), mood (confident vs uncertain), energy (group vs solo), lighting (warm golden vs cool blue), framing (tight close-up vs wider context shot), time of day, and outfit style. Pick the contrast angle for "${subject}" that visually opposes "${otherOption}" without misrepresenting either.
 
-STYLE: real DSLR / mirrorless photography, cinematic high-contrast lighting, close-up immersive framing, shallow depth of field, ONE clear subject, no clutter, vertical 9:16, TikTok / Instagram aesthetic, magazine-grade.
+WHO: ONE visible human aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing (oversized tees, cargos, layered jewelry, modern hairstyles), natural expression — reacting, thinking, choosing, or enjoying. NO older subjects. NO corporate/formal styling. NO posed stock-photo neutrality.
 
-STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography, NO text of any kind, NO app interfaces, NO UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO abstract or symbolic visuals, NO watermarks, NO borders, NO product packaging with visible labels, NO recognizable product silhouettes that identify a specific brand.`;
+WHERE: realistic 2026 environment — modern Cairo / MENA apartment, rooftop, cafe, university, street, or social hangout. Culturally grounded when relevant. NO outdated interiors, NO western generic stock backdrops.
+
+VISUAL CONTRAST RULES (must differ from the paired image in at least 3 of): lighting temperature, location, camera framing (close vs wide), facial emotion, activity energy, social setting (group vs alone).
+
+STYLE: real DSLR / mirrorless photography, cinematic lighting, shallow depth of field, candid and slightly imperfect, vertical 9:16, magazine-grade TikTok / Instagram aesthetic.
+
+STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography or text of any kind, NO app interfaces / UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO abstract visuals, NO watermarks, NO borders, NO visible packaging labels, NO recognizable brand silhouettes. Mode applied: ${mode}.`;
+};
 
 function slugify(s: string) {
   return (s.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 30).replace(/^_|_$/g, '')) || 'img';
