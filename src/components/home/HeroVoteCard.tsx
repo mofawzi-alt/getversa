@@ -473,30 +473,36 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const highlightA = !result && !isVoting && visualDragX < -10 ? Math.min(Math.abs(visualDragX) / SWIPE_THRESHOLD, 1) : 0;
   const highlightB = !result && !isVoting && visualDragX > 10 ? Math.min(visualDragX / SWIPE_THRESHOLD, 1) : 0;
 
-  return (
-    <section className="px-3 pt-4 pb-2">
-      {/* Unseen count badge + live countdown */}
-      <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
-        {unseenCount > 0 && (
-          <motion.span
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="text-xs px-3 py-1 rounded-full bg-primary text-primary-foreground font-bold"
-          >
-            🔥 {unseenCount} battle{unseenCount !== 1 ? 's' : ''} left today
-          </motion.span>
-        )}
-        {poll.ends_at && (
-          <CountdownTimer endsAt={poll.ends_at} size="sm" />
-        )}
-      </div>
+  // Split question into a "lead" + "tail" so the trailing clause can render in
+  // the brand green for visual rhythm (matches reference design).
+  const splitQuestion = (q: string): { lead: string; tail: string | null } => {
+    const connectors = [' than ', ' or ', ' vs ', ' versus '];
+    for (const c of connectors) {
+      const idx = q.toLowerCase().indexOf(c);
+      if (idx > 0) {
+        return { lead: q.slice(0, idx).trim(), tail: q.slice(idx).trim() };
+      }
+    }
+    // Fallback: split roughly in half on a space if long
+    if (q.length > 32) {
+      const mid = Math.floor(q.length / 2);
+      const space = q.indexOf(' ', mid);
+      if (space > 0) return { lead: q.slice(0, space).trim(), tail: q.slice(space).trim() };
+    }
+    return { lead: q, tail: null };
+  };
+  const { lead: qLead, tail: qTail } = splitQuestion(poll.question);
+  const avatars = recentVoters?.avatars ?? [];
+  const extraVoters = recentVoters?.extra ?? 0;
 
+  return (
+    <section className="px-3 pt-3 pb-2">
       {/* Main card */}
       <motion.div
         ref={cardRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className={`relative isolate rounded-2xl overflow-hidden border border-border/60 shadow-xl select-none ${
+        className={`relative isolate rounded-3xl overflow-hidden border border-border/60 bg-card shadow-xl select-none ${
           !result && !isVoting ? 'cursor-pointer' : ''
         }`}
         style={{
@@ -517,11 +523,73 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         onMouseUp={(e) => handleEnd(e.clientX)}
         onMouseLeave={() => { if (isDraggingRef.current) { isDraggingRef.current = false; setIsDragging(false); setDragX(0); setDragY(0); } }}
       >
-        {/* Two-image split */}
-        <div className={`flex h-[55vh] max-h-[420px] relative ${poll.is_hot_take ? 'ring-2 ring-[hsl(15,90%,55%)]' : ''}`}>
-          {poll.is_hot_take && <HotTakeBadge />}
-          <ControversialBadge percentA={poll.percentA} percentB={poll.percentB} totalVotes={poll.totalVotes} />
+        {/* Header strip — LIVE pill, recent vote count, avatars */}
+        <div className="flex items-center justify-between px-3 pt-3 pb-1.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold tracking-wide">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              LIVE NOW
+            </span>
+            {liveVotes5m >= 5 && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-medium truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                +{liveVotes5m.toLocaleString()} votes · last 5 min
+              </span>
+            )}
+          </div>
+          {(avatars.length > 0 || extraVoters > 0) && (
+            <div className="flex items-center -space-x-2 shrink-0">
+              {avatars.slice(0, 3).map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt=""
+                  className="w-6 h-6 rounded-full border-2 border-card object-cover bg-muted"
+                />
+              ))}
+              {extraVoters > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-secondary text-primary text-[10px] font-bold">
+                  +{extraVoters > 99 ? '99' : extraVoters}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
 
+        {/* Question header */}
+        <div className="px-5 pt-1 pb-3 text-center">
+          {poll.is_hot_take ? (
+            <p className="text-[11px] font-bold text-destructive mb-1 inline-flex items-center gap-1 justify-center">
+              🔥 Hot Take
+            </p>
+          ) : (
+            <p className="text-[11px] font-bold text-destructive mb-1 inline-flex items-center gap-1 justify-center">
+              🔥 The Pulse
+            </p>
+          )}
+          <h2 className="font-display font-bold leading-tight text-foreground text-2xl">
+            {qLead}
+            {qTail && (
+              <>
+                {' '}
+                <span className="text-success">{qTail}</span>
+              </>
+            )}
+            {!qTail && '?'}
+          </h2>
+          {poll.subtitle && (
+            <p className="text-sm text-muted-foreground mt-1.5">{poll.subtitle}</p>
+          )}
+          {!result && !isVoting && (
+            <div className="inline-flex items-center gap-2 mt-3 px-3.5 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
+              ← Swipe or tap to vote →
+            </div>
+          )}
+        </div>
+
+        {/* Two-image split */}
+        <div className={`flex h-[48vh] max-h-[420px] relative ${poll.is_hot_take ? 'ring-2 ring-[hsl(15,90%,55%)]' : ''}`}>
+          <ControversialBadge percentA={poll.percentA} percentB={poll.percentB} totalVotes={poll.totalVotes} />
 
           {/* Option A — left half */}
           <div
@@ -543,68 +611,52 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               maxLogoSize="65%"
               variant="hero"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            {/* Red brand-tinted bottom gradient */}
+            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-destructive/85 via-destructive/30 to-transparent pointer-events-none" />
 
-            {/* Highlight border while dragging */}
             {highlightA > 0 && (
               <div className="absolute inset-0 border-2 border-option-a/60 pointer-events-none" style={{ opacity: highlightA }} />
             )}
 
-            {/* Vote confirmation: highlight + checkmark */}
             {result?.choice === 'A' && (
-              <>
-                <div className="absolute inset-0 border-3 border-primary pointer-events-none" />
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
-                >
-                  <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg">
-                    <Check className="w-8 h-8 text-primary-foreground" strokeWidth={3} />
-                  </div>
-                </motion.div>
-              </>
+              <div className="absolute inset-0 border-[3px] border-primary pointer-events-none" />
             )}
 
-            <div className="absolute bottom-3 left-3">
-              <p className="text-white text-lg font-extrabold drop-shadow-lg">{poll.option_a}</p>
-              {result && (
-                <>
-                  <motion.span
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-2xl font-bold text-option-a drop-shadow-lg block"
-                  >
-                    {result.percentA}%
-                  </motion.span>
-                  {result.choice === 'A' && (
-                    <motion.span
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-[10px] text-primary-foreground font-semibold"
-                    >
-                      Your choice ✓
-                    </motion.span>
-                  )}
-                </>
+            {/* Action circle (↑) */}
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-[22%] z-10">
+              <div className="w-12 h-12 rounded-full bg-destructive flex items-center justify-center shadow-lg ring-2 ring-white/40">
+                {result?.choice === 'A'
+                  ? <Check className="w-6 h-6 text-destructive-foreground" strokeWidth={3} />
+                  : <ArrowUp className="w-6 h-6 text-destructive-foreground" strokeWidth={3} />}
+              </div>
+            </div>
+
+            {/* Label block */}
+            <div className="absolute inset-x-0 bottom-3 px-3 text-center">
+              <p className="text-white text-base font-extrabold drop-shadow-lg leading-tight">
+                {poll.option_a}
+              </p>
+              {result ? (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mt-1 inline-block text-xl font-bold text-white drop-shadow-lg"
+                >
+                  {result.percentA}%
+                </motion.span>
+              ) : (
+                <span className="mt-1.5 inline-block px-3 py-1 rounded-full bg-white/25 backdrop-blur-sm text-white text-[11px] font-medium">
+                  Tap to choose
+                </span>
               )}
             </div>
           </div>
 
-          {/* Center divider */}
-          <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
-
-          {/* Question overlay centered in middle */}
-          <div className="absolute inset-0 z-30 flex items-center justify-center px-5 pointer-events-none transform-gpu">
-            <div className="max-w-[82%] px-2 py-1">
-              <h2 className="text-white text-xl font-display font-bold drop-shadow-lg text-center leading-snug">
-                {poll.question}
-              </h2>
-              {poll.subtitle && (
-                <p className="text-white/80 text-sm font-medium text-center mt-0.5 drop-shadow">
-                  {poll.subtitle}
-                </p>
-              )}
+          {/* Center VS bubble */}
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[2px] bg-white/40 z-10" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
+            <div className="w-11 h-11 rounded-full bg-white shadow-xl flex items-center justify-center">
+              <span className="text-[13px] font-extrabold text-foreground tracking-tight">VS</span>
             </div>
           </div>
 
@@ -628,198 +680,114 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               maxLogoSize="65%"
               variant="hero"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            {/* Blue brand-tinted bottom gradient */}
+            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-primary/85 via-primary/30 to-transparent pointer-events-none" />
 
             {highlightB > 0 && (
               <div className="absolute inset-0 border-2 border-option-b/60 pointer-events-none" style={{ opacity: highlightB }} />
             )}
 
             {result?.choice === 'B' && (
-              <>
-                <div className="absolute inset-0 border-3 border-primary pointer-events-none" />
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
-                >
-                  <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg">
-                    <Check className="w-8 h-8 text-primary-foreground" strokeWidth={3} />
-                  </div>
-                </motion.div>
-              </>
+              <div className="absolute inset-0 border-[3px] border-primary pointer-events-none" />
             )}
 
-            <div className="absolute bottom-3 right-3 text-right">
-              <p className="text-white text-lg font-extrabold drop-shadow-lg">{poll.option_b}</p>
-              {result && (
-                <>
-                  <motion.span
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-2xl font-bold text-option-b drop-shadow-lg block"
-                  >
-                    {result.percentB}%
-                  </motion.span>
-                  {result.choice === 'B' && (
-                    <motion.span
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-[10px] text-primary-foreground font-semibold"
-                    >
-                      Your choice ✓
-                    </motion.span>
-                  )}
-                </>
+            {/* Action circle (=) */}
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-[22%] z-10">
+              <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg ring-2 ring-white/40">
+                {result?.choice === 'B'
+                  ? <Check className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
+                  : <Equal className="w-6 h-6 text-primary-foreground" strokeWidth={3} />}
+              </div>
+            </div>
+
+            <div className="absolute inset-x-0 bottom-3 px-3 text-center">
+              <p className="text-white text-base font-extrabold drop-shadow-lg leading-tight">
+                {poll.option_b}
+              </p>
+              {result ? (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mt-1 inline-block text-xl font-bold text-white drop-shadow-lg"
+                >
+                  {result.percentB}%
+                </motion.span>
+              ) : (
+                <span className="mt-1.5 inline-block px-3 py-1 rounded-full bg-white/25 backdrop-blur-sm text-white text-[11px] font-medium">
+                  Tap to choose
+                </span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Result bar overlay */}
+        {/* Result detail strip (after vote) */}
         <AnimatePresence>
           {result && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute bottom-0 inset-x-0 z-20 px-4 pb-3 pt-8 bg-gradient-to-t from-black/90 to-transparent"
+              className="px-4 py-3 border-t border-border/60 bg-card"
             >
-              {/* Minority moment badge */}
-              {isMinority && revealMode === 'full' && (
+              <div className="h-2 bg-secondary rounded-full overflow-hidden flex mb-2">
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="mb-2 px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-center"
-                >
-                  <p className="text-[11px] font-bold text-amber-300">
-                    You're in the bold minority 💡 Only {result.choice === 'A' ? result.percentA : result.percentB}% chose this
-                  </p>
-                </motion.div>
-              )}
-
-              {/* First vote of the day */}
-              {isFirstVoteOfDay && revealMode === 'full' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="mb-2 text-center"
-                >
-                  <p className="text-[11px] font-medium text-emerald-300">
-                    First vote of the day ✅ Keep the streak alive
-                  </p>
-                </motion.div>
-              )}
-
-              <div className="h-2 bg-white/15 rounded-full overflow-hidden flex mb-1.5">
-                <motion.div
-                  className="h-full bg-option-a rounded-l-full"
+                  className="h-full bg-destructive"
                   initial={{ width: '50%' }}
                   animate={{ width: `${result.percentA}%` }}
                   transition={{ duration: 0.7 }}
                 />
                 <motion.div
-                  className="h-full bg-option-b rounded-r-full"
+                  className="h-full bg-primary"
                   initial={{ width: '50%' }}
                   animate={{ width: `${result.percentB}%` }}
                   transition={{ duration: 0.7 }}
                 />
               </div>
-
-              {poll.category && (
-                <div className="mb-2 flex justify-center">
-                  <CategoryBadge
-                    category={mapToVersaCategory(poll.category)}
-                    size="xs"
-                  />
-                </div>
-              )}
-
-              {/* Gender teaser — shown on all voted polls */}
               {genderTeaser && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-[11px] text-white/80 text-center"
-                >
-                  {genderTeaser.text}
-                </motion.p>
+                <p className="text-[11px] text-muted-foreground text-center">{genderTeaser.text}</p>
               )}
-
-              {/* "People Like You" age comparison */}
-              {peopleLikeYou && result && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="text-[11px] text-white/80 text-center font-medium"
-                >
+              {peopleLikeYou && (
+                <p className="text-[11px] text-muted-foreground text-center font-medium mt-0.5">
                   👥 {peopleLikeYou.text}
-                </motion.p>
-              )}
-
-              {/* Flash mode: quick one-liner */}
-              {revealMode === 'flash' && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-[10px] text-white/60 text-center"
-                >
-                  {result.total.toLocaleString()} perspectives · Next loading...
-                </motion.p>
-              )}
-
-              {/* Full reveal mode hint */}
-              {revealMode === 'full' && (
-                <p className="text-[10px] text-white/60 text-center">
-                  {result.total.toLocaleString()} perspectives
                 </p>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Swipe hint animation */}
-        <AnimatePresence>
-          {!result && !isVoting && showHint && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
-            >
-              <motion.div
-                animate={{ x: [-20, 20, -20] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <span className="text-3xl drop-shadow-lg">👆</span>
-              </motion.div>
+              <p className="text-[10px] text-muted-foreground/80 text-center mt-1">
+                {result.total.toLocaleString()} perspectives{revealMode === 'flash' ? ' · Next loading…' : ''}
+              </p>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
 
-      {/* Bottom hints */}
-      {!result && !isVoting && (
-        <div className="flex flex-col items-center gap-1.5 mt-2">
-          {poll.category && (
-            <CategoryBadge
-              category={mapToVersaCategory(poll.category)}
-              size="xs"
-            />
+      {/* Below-card meta: battles left, countdown, skip */}
+      <div className="flex flex-col items-center gap-1.5 mt-3">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          {unseenCount > 0 && (
+            <motion.span
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-secondary text-foreground font-semibold"
+            >
+              🔥 <span className="text-destructive">{unseenCount}</span> battle{unseenCount !== 1 ? 's' : ''} left today
+            </motion.span>
           )}
-          <p className="text-center text-xs text-muted-foreground">← Tap or swipe to vote →</p>
-          <button
-            onClick={submitSkip}
-            className="text-sm font-medium text-muted-foreground/80 hover:text-muted-foreground active:scale-95 transition-all px-4 py-1.5 rounded-full border border-border/40"
-          >
-            Skip ↑
-          </button>
+          {poll.ends_at && <CountdownTimer endsAt={poll.ends_at} size="sm" />}
         </div>
-      )}
+        {!result && !isVoting && (
+          <>
+            {poll.category && (
+              <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
+            )}
+            <button
+              onClick={submitSkip}
+              className="text-xs font-medium text-muted-foreground/80 hover:text-muted-foreground active:scale-95 transition-all px-3 py-1 rounded-full border border-border/40"
+            >
+              Skip ↑
+            </button>
+          </>
+        )}
+      </div>
 
       {/* CinematicResults removed — inline results on the card are used instead */}
 
