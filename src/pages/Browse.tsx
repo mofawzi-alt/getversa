@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio, Send, Search } from 'lucide-react';
+import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio, Send, Search, Trophy, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
