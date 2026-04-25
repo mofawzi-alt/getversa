@@ -497,6 +497,22 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
   return (
     <section className="px-3 pt-3 pb-2">
+      {/* Above-card meta: battles left + live countdown */}
+      {(unseenCount > 0 || poll.ends_at) && (
+        <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
+          {unseenCount > 0 && (
+            <motion.span
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-secondary text-foreground font-semibold"
+            >
+              🔥 <span className="text-destructive">{unseenCount}</span> battle{unseenCount !== 1 ? 's' : ''} left today
+            </motion.span>
+          )}
+          {poll.ends_at && <CountdownTimer endsAt={poll.ends_at} size="sm" />}
+        </div>
+      )}
+
       {/* Main card */}
       <motion.div
         ref={cardRef}
@@ -579,11 +595,6 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           </h2>
           {poll.subtitle && (
             <p className="text-sm text-muted-foreground mt-1.5">{poll.subtitle}</p>
-          )}
-          {!result && !isVoting && (
-            <div className="inline-flex items-center gap-2 mt-3 px-3.5 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
-              ← Swipe or tap to vote →
-            </div>
           )}
         </div>
 
@@ -760,34 +771,23 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         </AnimatePresence>
       </motion.div>
 
-      {/* Below-card meta: battles left, countdown, skip */}
-      <div className="flex flex-col items-center gap-1.5 mt-3">
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          {unseenCount > 0 && (
-            <motion.span
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-secondary text-foreground font-semibold"
-            >
-              🔥 <span className="text-destructive">{unseenCount}</span> battle{unseenCount !== 1 ? 's' : ''} left today
-            </motion.span>
+      {/* Below-card meta: swipe hint, category, skip */}
+      {!result && !isVoting && (
+        <div className="flex flex-col items-center gap-1.5 mt-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
+            ← Swipe or tap to vote →
+          </div>
+          {poll.category && (
+            <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
           )}
-          {poll.ends_at && <CountdownTimer endsAt={poll.ends_at} size="sm" />}
+          <button
+            onClick={submitSkip}
+            className="text-xs font-medium text-muted-foreground/80 hover:text-muted-foreground active:scale-95 transition-all px-3 py-1 rounded-full border border-border/40"
+          >
+            Skip ↑
+          </button>
         </div>
-        {!result && !isVoting && (
-          <>
-            {poll.category && (
-              <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
-            )}
-            <button
-              onClick={submitSkip}
-              className="text-xs font-medium text-muted-foreground/80 hover:text-muted-foreground active:scale-95 transition-all px-3 py-1 rounded-full border border-border/40"
-            >
-              Skip ↑
-            </button>
-          </>
-        )}
-      </div>
+      )}
 
       {/* CinematicResults removed — inline results on the card are used instead */}
 
