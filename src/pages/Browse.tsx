@@ -249,17 +249,17 @@ function BrowseCard({
   return (
     <div className="h-full w-full flex flex-col relative bg-background">
       {/* Question overlay at top */}
-      <div className="shrink-0 px-4 py-2.5 bg-gradient-to-b from-background via-background/90 to-transparent z-20">
-        <p className="font-display font-bold text-sm leading-tight pr-10">{poll.question}</p>
-        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+      <div className="shrink-0 px-3 py-1.5 bg-gradient-to-b from-background via-background/90 to-transparent z-20">
+        <p className="font-display font-bold text-[13px] leading-tight pr-16 line-clamp-2">{poll.question}</p>
+        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
           {poll.category && (
-            <span className="inline-block px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium">
+            <span className="inline-block px-1.5 py-0 rounded-full bg-primary/10 text-primary text-[9px] font-medium">
               {poll.category}
             </span>
           )}
           {poll.isClosed && (
-            <span className="inline-block px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-medium border border-border">
-              🔒 Voting Closed
+            <span className="inline-block px-1.5 py-0 rounded-full bg-muted text-muted-foreground text-[9px] font-medium border border-border">
+              🔒 Closed
             </span>
           )}
         </div>
