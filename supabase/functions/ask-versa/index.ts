@@ -383,7 +383,7 @@ Rules:
           ],
         });
         if (factResp.ok) {
-          const fd = await factResp.json();
+          const fd = await readJsonSafely(factResp) || {};
           factualAnswer = fd.choices?.[0]?.message?.content?.trim() || factualAnswer;
         }
       } catch (e) {
@@ -772,7 +772,7 @@ Rules:
       });
       let reason = "";
       if (reasonResp.ok) {
-        const rd = await reasonResp.json();
+        const rd = await readJsonSafely(reasonResp) || {};
         reason = rd.choices?.[0]?.message?.content?.trim().replace(/^["']|["']$/g, "") || "";
       }
 
@@ -805,7 +805,7 @@ Rules:
         ],
       });
       if (sumResp.ok) {
-        const sd = await sumResp.json();
+        const sd = await readJsonSafely(sumResp) || {};
         summary = sd.choices?.[0]?.message?.content?.trim() || summary;
       }
     }
@@ -884,8 +884,11 @@ Rules:
     );
   } catch (e) {
     console.error("ask-versa error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({
+      error: "Ask Versa is taking too long. Please try again.",
+      fallback: true,
+    }), {
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
