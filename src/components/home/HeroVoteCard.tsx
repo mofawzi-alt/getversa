@@ -108,7 +108,46 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     poll?.option_b || ''
   );
 
-  const startX = useRef(0);
+  // Live count of votes in last 5 minutes — header strip
+  const { data: liveVotes5m = 0 } = useQuery({
+    queryKey: ['live-votes-5m'],
+    queryFn: async () => {
+      const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from('votes')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', since);
+      return count || 0;
+    },
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+  });
+
+  // Recent voter avatars on this poll for the avatar stack
+  const { data: recentVoters } = useQuery({
+    queryKey: ['hero-recent-voters', poll?.id],
+    enabled: !!poll?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('votes')
+        .select('user_id')
+        .eq('poll_id', poll!.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      const ids = Array.from(new Set((data || []).map((v: any) => v.user_id).filter(Boolean))).slice(0, 3);
+      if (ids.length === 0) return { avatars: [] as string[], extra: 0 };
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, avatar_url')
+        .in('id', ids);
+      const avatars = (profs || []).map((p: any) => p.avatar_url).filter(Boolean) as string[];
+      const extra = Math.max((poll?.totalVotes || 0) - 3, 0);
+      return { avatars, extra };
+    },
+    staleTime: 60_000,
+  });
+
+
   const startY = useRef(0);
   const currentDragX = useRef(0);
   const currentDragY = useRef(0);
