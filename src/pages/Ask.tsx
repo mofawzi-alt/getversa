@@ -317,17 +317,17 @@ export default function Ask() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); runPreview(); }}
-        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-full overflow-x-hidden"
+        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-[100vw] overflow-x-hidden"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
       >
-        <div className="relative max-w-lg mx-auto w-full min-w-0">
+        <div className="relative max-w-lg mx-auto w-full min-w-0 overflow-hidden rounded-full">
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={placeholder}
             disabled={loading}
-            className="w-full min-w-0 h-12 pl-4 pr-14 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+            className="block w-full min-w-0 max-w-full h-12 pl-4 pr-14 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
           />
           <button
             type="submit"
