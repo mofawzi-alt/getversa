@@ -14,6 +14,12 @@ import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import { usePollReactions } from '@/hooks/usePollReactions';
 
+interface DemoTag {
+  emoji: string;
+  label: string;
+  choice: 'A' | 'B';
+}
+
 interface BrowsePoll {
   id: string;
   question: string;
@@ -33,65 +39,65 @@ interface BrowsePoll {
   percentB: number;
   winner: 'A' | 'B';
   winnerPct: number;
-  demographicInsight: string | null;
+  demoTags: DemoTag[];
+  egyptPct: number;
 }
 
-function generateDemographicInsight(votes: any[]): string | null {
-  if (!votes || votes.length < 5) return null;
+// Compute up to 3 demographic deviation tags (>10% off national avg for the WINNING option)
+function computeDemoTags(votes: any[], nationalWinnerPct: number, winner: 'A' | 'B'): DemoTag[] {
+  if (!votes || votes.length < 8) return [];
+  const tags: DemoTag[] = [];
+  const threshold = 10; // percentage points
+
+  const groupPct = (filterFn: (v: any) => boolean): { pct: number; total: number } | null => {
+    const subset = votes.filter(filterFn);
+    if (subset.length < 4) return null;
+    const winCount = subset.filter(v => v.choice === winner).length;
+    return { pct: Math.round((winCount / subset.length) * 100), total: subset.length };
+  };
+
+  // Cities — pick city with biggest deviation
+  const cities = Array.from(new Set(votes.map(v => v.voter_city).filter(Boolean)));
+  let bestCity: { name: string; deviation: number; chose: 'A' | 'B' } | null = null;
+  for (const city of cities) {
+    const stats = groupPct(v => v.voter_city === city);
+    if (!stats) continue;
+    const deviation = stats.pct - nationalWinnerPct;
+    if (Math.abs(deviation) > threshold && (!bestCity || Math.abs(deviation) > Math.abs(bestCity.deviation))) {
+      bestCity = { name: city, deviation, chose: deviation > 0 ? winner : (winner === 'A' ? 'B' : 'A') };
+    }
+  }
+  if (bestCity) tags.push({ emoji: '🏙', label: `${bestCity.name} chose this`, choice: bestCity.chose });
+
+  // Generation (Gen Z = 18-24, older = 25+)
+  const genZ = groupPct(v => ['18-24', '13-17'].includes(v.voter_age_range));
+  const older = groupPct(v => ['25-34', '35-44', '45-54', '55+'].includes(v.voter_age_range));
+  if (genZ && older) {
+    const dev = genZ.pct - older.pct;
+    if (Math.abs(dev) > threshold) {
+      tags.push({
+        emoji: '⚡',
+        label: dev > 0 ? 'Gen Z chose this' : '25+ chose this',
+        choice: dev > 0 ? winner : (winner === 'A' ? 'B' : 'A'),
+      });
+    }
+  }
 
   // Gender split
-  const genderMap: Record<string, { a: number; b: number }> = {};
-  votes.forEach(v => {
-    const g = v.voter_gender || 'Unknown';
-    if (!genderMap[g]) genderMap[g] = { a: 0, b: 0 };
-    if (v.choice === 'A') genderMap[g].a++; else genderMap[g].b++;
-  });
-
-  const genders = Object.entries(genderMap).filter(([k]) => k !== 'Unknown' && k !== 'Prefer not to say');
-  if (genders.length >= 2) {
-    const [g1Name, g1] = genders[0];
-    const [g2Name, g2] = genders[1];
-    const g1PrefA = g1.a / (g1.a + g1.b);
-    const g2PrefA = g2.a / (g2.a + g2.b);
-    if (Math.abs(g1PrefA - g2PrefA) > 0.15) {
-      return `${g1Name} and ${g2Name} voted differently on this one`;
+  const female = groupPct(v => v.voter_gender === 'Female');
+  const male = groupPct(v => v.voter_gender === 'Male');
+  if (female && male) {
+    const dev = female.pct - male.pct;
+    if (Math.abs(dev) > threshold) {
+      tags.push({
+        emoji: dev > 0 ? '👩' : '👨',
+        label: dev > 0 ? 'Females chose this' : 'Males chose this',
+        choice: dev > 0 ? winner : (winner === 'A' ? 'B' : 'A'),
+      });
     }
   }
 
-  // Age split
-  const ageMap: Record<string, { a: number; b: number }> = {};
-  votes.forEach(v => {
-    const age = v.voter_age_range;
-    if (!age) return;
-    if (!ageMap[age]) ageMap[age] = { a: 0, b: 0 };
-    if (v.choice === 'A') ageMap[age].a++; else ageMap[age].b++;
-  });
-
-  const ages = Object.entries(ageMap).filter(([, v]) => (v.a + v.b) >= 3);
-  if (ages.length >= 2) {
-    const sorted = ages.sort((a, b) => {
-      const aRatio = a[1].a / (a[1].a + a[1].b);
-      const bRatio = b[1].a / (b[1].a + b[1].b);
-      return bRatio - aRatio;
-    });
-    const topAge = sorted[0][0];
-    const bottomAge = sorted[sorted.length - 1][0];
-    if (topAge !== bottomAge) {
-      return `${topAge} and ${bottomAge} had the biggest opinion gap`;
-    }
-  }
-
-  // City insight
-  const cityMap: Record<string, number> = {};
-  votes.forEach(v => {
-    if (v.voter_city) cityMap[v.voter_city] = (cityMap[v.voter_city] || 0) + 1;
-  });
-  const topCity = Object.entries(cityMap).sort((a, b) => b[1] - a[1])[0];
-  if (topCity && topCity[1] >= 3) {
-    return `Most popular in ${topCity[0]}`;
-  }
-
-  return null;
+  return tags.slice(0, 3);
 }
 
 // Share image generator
