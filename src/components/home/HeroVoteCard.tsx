@@ -633,14 +633,14 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               <div className="absolute inset-0 border-[3px] border-primary pointer-events-none" />
             )}
 
-            {/* Action circle (↑) */}
-            <div className="absolute left-1/2 -translate-x-1/2 bottom-[22%] z-10">
-              <div className="w-12 h-12 rounded-full bg-destructive flex items-center justify-center shadow-lg ring-2 ring-white/40">
-                {result?.choice === 'A'
-                  ? <Check className="w-6 h-6 text-destructive-foreground" strokeWidth={3} />
-                  : <ArrowUp className="w-6 h-6 text-destructive-foreground" strokeWidth={3} />}
+            {/* Vote confirmation badge (only after voting) */}
+            {result?.choice === 'A' && (
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-[22%] z-10">
+                <div className="w-12 h-12 rounded-full bg-destructive flex items-center justify-center shadow-lg ring-2 ring-white/40">
+                  <Check className="w-6 h-6 text-destructive-foreground" strokeWidth={3} />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Label block */}
             <div className="absolute inset-x-0 bottom-3 px-3 text-center">
