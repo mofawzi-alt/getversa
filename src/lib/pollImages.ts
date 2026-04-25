@@ -1057,7 +1057,8 @@ export function getPollImageFallbackSrc(params: PollImageParams) {
 export function getPollDisplayImageSrc(params: PollImageParams) {
   // Any valid absolute URL from the database takes priority — storage, Unsplash, CDN, etc.
   if (params.imageUrl && /^https?:\/\//i.test(params.imageUrl)) {
-    return params.imageUrl;
+    const separator = params.imageUrl.includes('?') ? '&' : '?';
+    return `${params.imageUrl}${separator}v=${POLL_IMAGE_CACHE_VERSION}`;
   }
 
   // NOTE: We intentionally skip the local /polls/* alias lookup here.
