@@ -71,7 +71,13 @@ export default function Ask() {
   const inputRef = useRef<HTMLInputElement>(null);
   const threadEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 200); }, []);
+  const focusInputIfDesktop = () => {
+    if (typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches) {
+      inputRef.current?.focus();
+    }
+  };
+
+  useEffect(() => { setTimeout(focusInputIfDesktop, 200); }, []);
   useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
 
   // Track visual viewport so layout shrinks correctly when mobile keyboard opens
@@ -111,7 +117,7 @@ export default function Ask() {
     setQuery('');
     setTurns([]);
     setPreview(null);
-    setTimeout(() => inputRef.current?.focus(), 100);
+    setTimeout(focusInputIfDesktop, 100);
   };
 
   const switchMode = (m: Mode) => {
@@ -197,7 +203,7 @@ export default function Ask() {
       toast.error(e?.message || 'Search failed');
     } finally {
       setLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(focusInputIfDesktop, 50);
     }
   };
 
@@ -248,14 +254,14 @@ export default function Ask() {
 
   return (
     <div
-      className="fixed inset-0 bg-background flex flex-col overflow-hidden w-full max-w-full"
+      className="fixed inset-0 bg-background flex flex-col overflow-hidden w-screen max-w-[100vw] touch-pan-y"
       style={{ height: viewportHeight ? `${viewportHeight}px` : '100dvh' }}
     >
       <div
-        className="flex-shrink-0 bg-background/95 backdrop-blur border-b border-border w-full max-w-full overflow-x-hidden"
+        className="flex-shrink-0 bg-background/95 backdrop-blur border-b border-border w-full max-w-[100vw] overflow-x-hidden"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="flex items-center justify-between gap-1.5 px-2 py-2 w-full min-w-0 max-w-lg mx-auto">
+        <div className="flex items-center justify-between gap-1.5 px-3 py-2 w-full min-w-0 max-w-lg mx-auto overflow-hidden">
           <div className="flex items-center gap-1 min-w-0 flex-1">
             <button onClick={handleBack} className="p-1.5 -ml-1 rounded-full hover:bg-muted active:scale-95 transition shrink-0" aria-label="Back">
               <ArrowLeft className="h-5 w-5" />
@@ -275,7 +281,7 @@ export default function Ask() {
           </div>
         </div>
 
-        <div className="px-2 pb-2 w-full min-w-0 max-w-lg mx-auto">
+        <div className="px-3 pb-2 w-full min-w-0 max-w-lg mx-auto overflow-hidden">
           <div className="grid grid-cols-2 gap-1 p-1 rounded-full bg-muted w-full min-w-0">
             <button onClick={() => switchMode('decide')} className={`h-7 rounded-full text-[11px] font-bold flex items-center justify-center gap-1 transition min-w-0 ${mode === 'decide' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}>
               <Scale className="h-3 w-3 shrink-0" /> <span className="truncate">Decide</span>
@@ -287,7 +293,7 @@ export default function Ask() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 pt-4 pb-4 space-y-4 w-full max-w-lg mx-auto min-w-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pt-4 pb-4 space-y-4 w-full max-w-lg mx-auto min-w-0 max-w-[100vw]">
         {empty && (
           <>
             <div className="text-center pt-4 pb-2 w-full min-w-0">
@@ -311,17 +317,17 @@ export default function Ask() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); runPreview(); }}
-        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-full overflow-x-hidden"
+        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-[100vw] overflow-x-hidden"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
       >
-        <div className="relative max-w-lg mx-auto w-full min-w-0">
+        <div className="relative max-w-lg mx-auto w-full min-w-0 overflow-hidden rounded-full">
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={placeholder}
             disabled={loading}
-            className="w-full min-w-0 h-12 pl-4 pr-14 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+            className="block w-full min-w-0 max-w-full h-12 pl-4 pr-14 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
           />
           <button
             type="submit"
