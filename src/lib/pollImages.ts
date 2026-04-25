@@ -1,7 +1,7 @@
 type PollImageSide = 'A' | 'B';
 
 const POLL_IMAGE_BASE_PATH = '/polls';
-const POLL_IMAGE_CACHE_VERSION = 'genz-regenerated-20260425-v2';
+const POLL_IMAGE_CACHE_VERSION = 'genz-regenerated-20260425-v3';
 
 export function getPublicPollImageUrl(fileName: string) {
   return `${POLL_IMAGE_BASE_PATH}/${encodeURIComponent(fileName.toLowerCase())}`;
