@@ -6,20 +6,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PROMPT_TPL = (subject: string) =>
-  `Cinematic lifestyle photograph that shows a Gen Z person performing the EXACT real-life behavior of: "${subject}". The behavior must be obvious in under 1 second; this is the user's "this is me" moment.
+const PROMPT_TPL = (subject: string, question: string, otherOption: string) =>
+  `Cinematic lifestyle photograph for a poll question: "${question}". This image represents the option "${subject}" (vs. the other option "${otherOption}"). Show ONE Gen Z person performing the EXACT real-life behavior associated with choosing "${subject}" in this context. The behavior must be obvious in under 1 second; this is the user's "this is me" moment.
+
+CRITICAL BRAND HANDLING: If "${subject}" is a brand name, product name, app, or proper noun, DO NOT show that brand's product, packaging, logo, wordmark, color scheme, or any identifying detail. Instead, depict the GENERIC real-life behavior or lifestyle of someone who would choose that brand in the context of "${question}". Examples: "Dyson" in a vacuum question → young person casually vacuuming a modern apartment with a generic unbranded cordless stick vacuum. "Netflix" → person on couch watching a generic screen, no UI visible. "Talabat" → person receiving a plain unbranded food bag at the door. "iPhone" → person using a generic black smartphone with no visible logo or UI. The brand must be UNRECOGNIZABLE in the final image.
 
 WHO (mandatory): ONE visible human subject aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing, natural and expressive. NO older subjects, NO formal/corporate styling, NO empty scenes without a person.
 
 WHERE: realistic 2026 environment — modern apartment, cafe, Cairo / MENA street, university, or co-working / social space. Use Egyptian / Middle-Eastern context when culturally relevant. NO outdated interiors, NO generic Western stock backgrounds.
 
-ACTION (critical): the subject must be visibly DOING the behavior of "${subject}" — e.g. paying with phone for "mobile wallet", handing cash for "cash", eating with friends for "orders often", solo home meal for "rarely orders", inside a car for "private car", in a crowded bus/train for "public transport", watching screen with screen-light on face for streaming. If the option is a brand name, translate it into a real-life usage scene — NEVER show the logo.
+ACTION (critical): the subject must be visibly DOING the behavior — e.g. paying with phone for "mobile wallet", handing cash for "cash", eating with friends for "orders often", solo home meal for "rarely orders", inside a car for "private car", in a crowded bus/train for "public transport", watching screen with screen-light on face for streaming.
 
 VIBE: candid, natural, slightly imperfect, social, expressive — NOT posed, NOT polished advertising, NOT stock-photo perfect.
 
 STYLE: real DSLR / mirrorless photography, cinematic high-contrast lighting, close-up immersive framing, shallow depth of field, ONE clear subject, no clutter, vertical 9:16, TikTok / Instagram aesthetic, magazine-grade.
 
-STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography, NO text of any kind, NO app interfaces, NO UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO abstract or symbolic visuals, NO watermarks, NO borders.`;
+STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography, NO text of any kind, NO app interfaces, NO UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO abstract or symbolic visuals, NO watermarks, NO borders, NO product packaging with visible labels, NO recognizable product silhouettes that identify a specific brand.`;
 
 function slugify(s: string) {
   return (s.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 30).replace(/^_|_$/g, '')) || 'img';
