@@ -249,7 +249,7 @@ export default function Ask() {
   return (
     <div
       className="fixed inset-0 bg-background flex flex-col overflow-hidden w-full max-w-full"
-      style={{ height: '100dvh' }}
+      style={{ height: viewportHeight ? `${viewportHeight}px` : '100dvh' }}
     >
       <div
         className="flex-shrink-0 bg-background/95 backdrop-blur border-b border-border w-full max-w-full overflow-x-hidden"
