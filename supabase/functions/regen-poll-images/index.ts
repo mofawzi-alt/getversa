@@ -51,8 +51,8 @@ async function genImage(apiKey: string, prompt: string): Promise<Uint8Array | nu
 
 async function processOne(supabase: any, apiKey: string, poll: any) {
   const [a, b] = await Promise.all([
-    genImage(apiKey, PROMPT_TPL(poll.option_a)),
-    genImage(apiKey, PROMPT_TPL(poll.option_b)),
+    genImage(apiKey, PROMPT_TPL(poll.option_a, poll.question, poll.option_b)),
+    genImage(apiKey, PROMPT_TPL(poll.option_b, poll.question, poll.option_a)),
   ]);
   if (!a || !b) return { id: poll.id, status: 'gen_failed' };
   const short = poll.id.slice(0, 8);
