@@ -7,16 +7,19 @@ const corsHeaders = {
 };
 
 const PROMPT_TPL = (subject: string) =>
-  `Cinematic lifestyle photograph that REPRESENTS the real-life experience of: "${subject}".
+  `Cinematic lifestyle photograph that shows a Gen Z person performing the EXACT real-life behavior of: "${subject}". The behavior must be obvious in under 1 second; this is the user's "this is me" moment.
 
-WHO (mandatory): a visible human subject aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing — no formal wear, no older models, no empty scenes.
-WHERE: realistic 2026 environment — modern apartment, cafe, Cairo / MENA street, university, or co-working space. Use Egyptian / Middle-Eastern context when culturally relevant.
-WHAT: the action must directly and obviously represent the option behavior, readable in 1 second.
-VIBE: candid, natural, social, expressive, slightly imperfect — NOT posed, NOT stock-photo perfect.
+WHO (mandatory): ONE visible human subject aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing, natural and expressive. NO older subjects, NO formal/corporate styling, NO empty scenes without a person.
 
-STYLE: editorial DSLR / mirrorless, cinematic high-contrast lighting, close-up immersive framing, shallow depth of field, ONE clear subject, vertical 9:16, magazine-grade, TikTok / Instagram aesthetic.
+WHERE: realistic 2026 environment — modern apartment, cafe, Cairo / MENA street, university, or co-working / social space. Use Egyptian / Middle-Eastern context when culturally relevant. NO outdated interiors, NO generic Western stock backgrounds.
 
-STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography, NO text of any kind, NO app interfaces, NO UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO watermarks.`;
+ACTION (critical): the subject must be visibly DOING the behavior of "${subject}" — e.g. paying with phone for "mobile wallet", handing cash for "cash", eating with friends for "orders often", solo home meal for "rarely orders", inside a car for "private car", in a crowded bus/train for "public transport", watching screen with screen-light on face for streaming. If the option is a brand name, translate it into a real-life usage scene — NEVER show the logo.
+
+VIBE: candid, natural, slightly imperfect, social, expressive — NOT posed, NOT polished advertising, NOT stock-photo perfect.
+
+STYLE: real DSLR / mirrorless photography, cinematic high-contrast lighting, close-up immersive framing, shallow depth of field, ONE clear subject, no clutter, vertical 9:16, TikTok / Instagram aesthetic, magazine-grade.
+
+STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography, NO text of any kind, NO app interfaces, NO UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO abstract or symbolic visuals, NO watermarks, NO borders.`;
 
 function slugify(s: string) {
   return (s.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 30).replace(/^_|_$/g, '')) || 'img';
