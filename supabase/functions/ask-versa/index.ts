@@ -110,12 +110,22 @@ function expandEntityVariants(entity: string): string[] {
 }
 
 async function callAI(apiKey: string, model: string, payload: any) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12_000);
   const resp = await fetch(AI_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({ model, ...payload }),
+    signal: controller.signal,
   });
+  clearTimeout(timeoutId);
   return resp;
+}
+
+async function readJsonSafely(resp: Response) {
+  const text = await resp.text().catch(() => "");
+  if (!text.trim()) return null;
+  try { return JSON.parse(text); } catch { return null; }
 }
 
 serve(async (req) => {
@@ -172,11 +182,13 @@ serve(async (req) => {
     }));
 
     // ---- 1. Extract filters + classify route (always uses fast model) ----
-    const extractResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
-      messages: [
-        {
-          role: "system",
-          content: `You classify questions for an Egyptian opinion-poll app called Versa, then extract filters.
+    let extractResp: Response | null = null;
+    try {
+      extractResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
+        messages: [
+          {
+            role: "system",
+            content: `You classify questions for an Egyptian opinion-poll app called Versa, then extract filters.
 
 Step 1 — INTENT (mandatory, exact value):
 - "preference": user is asking which option people PREFER, PICK, CHOOSE, LEAN toward, LOVE more, vote for, or "X or Y?". This is what Versa's polls answer.
@@ -195,10 +207,13 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
         },
         ...historyMessages,
         { role: "user", content: question },
-      ],
-      tools: [FILTER_TOOL],
-      tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
-    });
+        ],
+        tools: [FILTER_TOOL],
+        tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
+      });
+    } catch (e) {
+      console.error("AI extract failed before response", e);
+    }
 
     // Helper: extract JSON args from a Groq tool_use_failed body or message content
     const recoverFiltersFromText = (text: string): any | null => {
@@ -242,7 +257,8 @@ Rules:
           await retryResp.text().catch(() => "");
           return null;
         }
-        const rd = await retryResp.json();
+        const rd = await readJsonSafely(retryResp);
+        if (!rd) return null;
         const content = rd.choices?.[0]?.message?.content || "";
         try { return JSON.parse(content); } catch { return recoverFiltersFromText(content); }
       } catch (e) {
@@ -251,7 +267,14 @@ Rules:
       }
     };
 
-    if (!extractResp.ok) {
+    if (!extractResp || !extractResp.ok) {
+      if (!extractResp) {
+        filters = { keywords: question.toLowerCase().split(/\s+/).filter((w) => w.length >= 3).slice(0, 6), route: "simple", category: "any", intent: "preference" };
+        console.log("AI extract unavailable — using minimal filters fallback");
+      }
+      if (!extractResp) {
+        // Skip response-body recovery when fetch failed or timed out.
+      } else {
       const errBody = await extractResp.text().catch(() => "");
       console.error(`Groq extract failed ${extractResp.status}:`, errBody);
       if (extractResp.status === 429) return new Response(JSON.stringify({ error: "Too many requests, try again in a moment." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -265,6 +288,7 @@ Rules:
           if (filters) console.log("Recovered filters from 400 error body");
         } catch { /* ignore */ }
       }
+      }
 
       if (!filters) {
         filters = await jsonModeRetry();
@@ -276,7 +300,7 @@ Rules:
         console.log("Synthesized minimal filters fallback");
       }
     } else {
-      const extractData = await extractResp.json();
+      const extractData = await readJsonSafely(extractResp) || {};
       const toolCall = extractData.choices?.[0]?.message?.tool_calls?.[0];
       if (toolCall) {
         try { filters = JSON.parse(toolCall.function.arguments); } catch { /* fall through */ }
@@ -372,7 +396,7 @@ Rules:
           ],
         });
         if (factResp.ok) {
-          const fd = await factResp.json();
+          const fd = await readJsonSafely(factResp) || {};
           factualAnswer = fd.choices?.[0]?.message?.content?.trim() || factualAnswer;
         }
       } catch (e) {
@@ -761,7 +785,7 @@ Rules:
       });
       let reason = "";
       if (reasonResp.ok) {
-        const rd = await reasonResp.json();
+        const rd = await readJsonSafely(reasonResp) || {};
         reason = rd.choices?.[0]?.message?.content?.trim().replace(/^["']|["']$/g, "") || "";
       }
 
@@ -794,7 +818,7 @@ Rules:
         ],
       });
       if (sumResp.ok) {
-        const sd = await sumResp.json();
+        const sd = await readJsonSafely(sumResp) || {};
         summary = sd.choices?.[0]?.message?.content?.trim() || summary;
       }
     }
@@ -873,8 +897,11 @@ Rules:
     );
   } catch (e) {
     console.error("ask-versa error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({
+      error: "Ask Versa is taking too long. Please try again.",
+      fallback: true,
+    }), {
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
