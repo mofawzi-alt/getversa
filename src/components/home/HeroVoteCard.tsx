@@ -497,6 +497,22 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
   return (
     <section className="px-3 pt-3 pb-2">
+      {/* Above-card meta: battles left + live countdown */}
+      {(unseenCount > 0 || poll.ends_at) && (
+        <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
+          {unseenCount > 0 && (
+            <motion.span
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-secondary text-foreground font-semibold"
+            >
+              🔥 <span className="text-destructive">{unseenCount}</span> battle{unseenCount !== 1 ? 's' : ''} left today
+            </motion.span>
+          )}
+          {poll.ends_at && <CountdownTimer endsAt={poll.ends_at} size="sm" />}
+        </div>
+      )}
+
       {/* Main card */}
       <motion.div
         ref={cardRef}
