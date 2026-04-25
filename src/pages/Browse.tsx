@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio, Send, Search } from 'lucide-react';
+import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio, Send, Search, Trophy, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,6 +13,12 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import { usePollReactions } from '@/hooks/usePollReactions';
+
+interface DemoTag {
+  emoji: string;
+  label: string;
+  choice: 'A' | 'B';
+}
 
 interface BrowsePoll {
   id: string;
@@ -33,65 +39,65 @@ interface BrowsePoll {
   percentB: number;
   winner: 'A' | 'B';
   winnerPct: number;
-  demographicInsight: string | null;
+  demoTags: DemoTag[];
+  egyptPct: number;
 }
 
-function generateDemographicInsight(votes: any[]): string | null {
-  if (!votes || votes.length < 5) return null;
+// Compute up to 3 demographic deviation tags (>10% off national avg for the WINNING option)
+function computeDemoTags(votes: any[], nationalWinnerPct: number, winner: 'A' | 'B'): DemoTag[] {
+  if (!votes || votes.length < 8) return [];
+  const tags: DemoTag[] = [];
+  const threshold = 10; // percentage points
+
+  const groupPct = (filterFn: (v: any) => boolean): { pct: number; total: number } | null => {
+    const subset = votes.filter(filterFn);
+    if (subset.length < 4) return null;
+    const winCount = subset.filter(v => v.choice === winner).length;
+    return { pct: Math.round((winCount / subset.length) * 100), total: subset.length };
+  };
+
+  // Cities — pick city with biggest deviation
+  const cities = Array.from(new Set(votes.map(v => v.voter_city).filter(Boolean)));
+  let bestCity: { name: string; deviation: number; chose: 'A' | 'B' } | null = null;
+  for (const city of cities) {
+    const stats = groupPct(v => v.voter_city === city);
+    if (!stats) continue;
+    const deviation = stats.pct - nationalWinnerPct;
+    if (Math.abs(deviation) > threshold && (!bestCity || Math.abs(deviation) > Math.abs(bestCity.deviation))) {
+      bestCity = { name: city, deviation, chose: deviation > 0 ? winner : (winner === 'A' ? 'B' : 'A') };
+    }
+  }
+  if (bestCity) tags.push({ emoji: '🏙', label: `${bestCity.name} chose this`, choice: bestCity.chose });
+
+  // Generation (Gen Z = 18-24, older = 25+)
+  const genZ = groupPct(v => ['18-24', '13-17'].includes(v.voter_age_range));
+  const older = groupPct(v => ['25-34', '35-44', '45-54', '55+'].includes(v.voter_age_range));
+  if (genZ && older) {
+    const dev = genZ.pct - older.pct;
+    if (Math.abs(dev) > threshold) {
+      tags.push({
+        emoji: '⚡',
+        label: dev > 0 ? 'Gen Z chose this' : '25+ chose this',
+        choice: dev > 0 ? winner : (winner === 'A' ? 'B' : 'A'),
+      });
+    }
+  }
 
   // Gender split
-  const genderMap: Record<string, { a: number; b: number }> = {};
-  votes.forEach(v => {
-    const g = v.voter_gender || 'Unknown';
-    if (!genderMap[g]) genderMap[g] = { a: 0, b: 0 };
-    if (v.choice === 'A') genderMap[g].a++; else genderMap[g].b++;
-  });
-
-  const genders = Object.entries(genderMap).filter(([k]) => k !== 'Unknown' && k !== 'Prefer not to say');
-  if (genders.length >= 2) {
-    const [g1Name, g1] = genders[0];
-    const [g2Name, g2] = genders[1];
-    const g1PrefA = g1.a / (g1.a + g1.b);
-    const g2PrefA = g2.a / (g2.a + g2.b);
-    if (Math.abs(g1PrefA - g2PrefA) > 0.15) {
-      return `${g1Name} and ${g2Name} voted differently on this one`;
+  const female = groupPct(v => v.voter_gender === 'Female');
+  const male = groupPct(v => v.voter_gender === 'Male');
+  if (female && male) {
+    const dev = female.pct - male.pct;
+    if (Math.abs(dev) > threshold) {
+      tags.push({
+        emoji: dev > 0 ? '👩' : '👨',
+        label: dev > 0 ? 'Females chose this' : 'Males chose this',
+        choice: dev > 0 ? winner : (winner === 'A' ? 'B' : 'A'),
+      });
     }
   }
 
-  // Age split
-  const ageMap: Record<string, { a: number; b: number }> = {};
-  votes.forEach(v => {
-    const age = v.voter_age_range;
-    if (!age) return;
-    if (!ageMap[age]) ageMap[age] = { a: 0, b: 0 };
-    if (v.choice === 'A') ageMap[age].a++; else ageMap[age].b++;
-  });
-
-  const ages = Object.entries(ageMap).filter(([, v]) => (v.a + v.b) >= 3);
-  if (ages.length >= 2) {
-    const sorted = ages.sort((a, b) => {
-      const aRatio = a[1].a / (a[1].a + a[1].b);
-      const bRatio = b[1].a / (b[1].a + b[1].b);
-      return bRatio - aRatio;
-    });
-    const topAge = sorted[0][0];
-    const bottomAge = sorted[sorted.length - 1][0];
-    if (topAge !== bottomAge) {
-      return `${topAge} and ${bottomAge} had the biggest opinion gap`;
-    }
-  }
-
-  // City insight
-  const cityMap: Record<string, number> = {};
-  votes.forEach(v => {
-    if (v.voter_city) cityMap[v.voter_city] = (cityMap[v.voter_city] || 0) + 1;
-  });
-  const topCity = Object.entries(cityMap).sort((a, b) => b[1] - a[1])[0];
-  if (topCity && topCity[1] >= 3) {
-    return `Most popular in ${topCity[0]}`;
-  }
-
-  return null;
+  return tags.slice(0, 3);
 }
 
 // Share image generator
@@ -243,120 +249,176 @@ function BrowseCard({
   onShare: () => void;
   onSendToFriend: () => void;
 }) {
-  // Images handled by PollOptionImage component
-  const isCloseResult = !isSignedIn && poll.totalVotes >= 5 && poll.percentA >= 45 && poll.percentA <= 55;
+  const winnerLabel = poll.winner === 'A' ? poll.option_a : poll.option_b;
+  const winnerImg = poll.winner === 'A' ? poll.image_a_url : poll.image_b_url;
+  const loserLabel = poll.winner === 'A' ? poll.option_b : poll.option_a;
+  const loserPct = poll.winner === 'A' ? poll.percentB : poll.percentA;
+
+  const userPickedWinner = userChoice ? userChoice === poll.winner : null;
+  const userVoted = !!userChoice;
+  const userPct = userChoice ? (userChoice === 'A' ? poll.percentA : poll.percentB) : null;
+  const userLabel = userChoice ? (userChoice === 'A' ? poll.option_a : poll.option_b) : null;
+
+  // Independent thinker badge: if user voted for the loser, round their pct down to nearest 5
+  const independentPct = !userPickedWinner && userPct != null ? Math.max(5, Math.round(userPct / 5) * 5) : null;
 
   return (
-    <div className="h-full w-full flex flex-col relative bg-background">
-      {/* Question overlay at top */}
-      <div className="shrink-0 px-3 py-1.5 bg-gradient-to-b from-background via-background/90 to-transparent z-20">
-        <p className="font-display font-bold text-[13px] leading-tight pr-16 line-clamp-2">{poll.question}</p>
-        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+    <div className="h-full w-full flex flex-col relative bg-[#111111] overflow-hidden">
+      {/* TOP BAR: question on dark background */}
+      <div className="shrink-0 px-4 pt-3 pb-2 bg-[#111111] z-20 relative">
+        <p className="font-display font-bold text-[18px] leading-tight text-white line-clamp-2 pr-12">
+          {poll.question}
+        </p>
+        <div className="flex items-center gap-1.5 mt-1">
           {poll.category && (
-            <span className="inline-block px-1.5 py-0 rounded-full bg-primary/10 text-primary text-[9px] font-medium">
+            <span className="inline-block px-2 py-0.5 rounded-full bg-white/10 text-white/70 text-[10px] font-medium">
               {poll.category}
             </span>
           )}
           {poll.isClosed && (
-            <span className="inline-block px-1.5 py-0 rounded-full bg-muted text-muted-foreground text-[9px] font-medium border border-border">
+            <span className="inline-block px-2 py-0.5 rounded-full bg-white/10 text-white/70 text-[10px] font-medium">
               🔒 Closed
             </span>
           )}
         </div>
-      </div>
 
-      {/* Side action buttons */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-4 items-end">
-        {isSignedIn && (
+        {/* Action buttons top-right */}
+        <div className="absolute top-3 right-3 flex flex-col gap-2 items-end z-30">
           <button
-            onClick={onSendToFriend}
-            className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-lg"
-            aria-label="Send in chat"
+            onClick={onShare}
+            className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            aria-label="Share"
           >
-            <Send className="h-4 w-4" />
+            <Share2 className="h-4 w-4" />
           </button>
+        </div>
+      </div>
+
+      {/* MIDDLE: full-bleed winner image */}
+      <div className="flex-1 relative overflow-hidden min-h-0 bg-black">
+        <div
+          className="absolute inset-0"
+          style={{ filter: userVoted && !userPickedWinner ? 'brightness(0.7)' : 'none' }}
+        >
+          <PollOptionImage
+            imageUrl={winnerImg}
+            option={winnerLabel}
+            question={poll.question}
+            side={poll.winner}
+            maxLogoSize="80%"
+            loading="lazy"
+            variant="browse"
+          />
+        </div>
+
+        {/* Floating side-actions over image */}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-20">
+          {isSignedIn && (
+            <button
+              onClick={onSendToFriend}
+              className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg"
+              aria-label="Send in chat"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          )}
+          <FireReactionButton pollId={poll.id} />
+        </div>
+
+        {/* Independent thinker badge — top-left of image */}
+        {independentPct != null && (
+          <div className="absolute top-3 left-3 z-20">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500 text-white shadow-lg">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-bold">Top {independentPct}% independent thinker</span>
+            </div>
+          </div>
         )}
-        <button onClick={onShare} className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center text-foreground hover:bg-primary/10 transition-colors">
-          <Share2 className="h-4 w-4" />
-        </button>
-        <FireReactionButton pollId={poll.id} />
-      </div>
 
+        {/* Bottom 40% gradient overlay with result text */}
+        <div
+          className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-4 pb-3"
+          style={{
+            height: '40%',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%)',
+          }}
+        >
+          {userVoted ? (
+            <>
+              {/* User's choice line */}
+              <div className="flex items-center gap-2 mb-1">
+                {userPickedWinner ? (
+                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                    <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center shrink-0">
+                    <X className="h-3 w-3 text-white" strokeWidth={3} />
+                  </div>
+                )}
+                <span className="text-[18px] font-bold text-white leading-tight">
+                  {userLabel} · {userPct}%
+                </span>
+              </div>
 
-      {/* Images — filling available space */}
-      <div className="flex-1 flex relative min-h-0">
-        {/* Option A */}
-        <div className="w-1/2 h-full relative overflow-hidden">
-          <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="65%" loading="lazy" variant="browse" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-          {poll.winner === 'A' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
-          <div className="absolute bottom-0 left-0 right-0 p-2.5 text-white">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              {userChoice === 'A' && (
-                <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                  <Check className="h-2.5 w-2.5 text-white" />
+              {/* Winner label if user lost */}
+              {!userPickedWinner && (
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-yellow-400 shrink-0" />
+                  <span className="text-[16px] font-bold text-white/90 leading-tight">
+                    {winnerLabel} · {poll.winnerPct}%
+                  </span>
                 </div>
               )}
-              <span className="font-bold text-[13px] leading-tight line-clamp-2 break-words">{poll.option_a}</span>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-yellow-400 shrink-0" />
+              <span className="text-[18px] font-bold text-white leading-tight">
+                {winnerLabel} · {poll.winnerPct}%
+              </span>
             </div>
-            <span className={`text-xl font-display font-bold ${poll.winner === 'A' ? 'text-green-400' : 'text-white/70'}`}>
-              {poll.percentA}%
-            </span>
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="absolute inset-y-0 left-1/2 w-[2px] bg-white/20 z-10" />
-
-        {/* Option B */}
-        <div className="w-1/2 h-full relative overflow-hidden">
-          <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="65%" loading="lazy" variant="browse" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-          {poll.winner === 'B' && <div className="absolute inset-0 border-2 border-green-500/60 pointer-events-none" />}
-          <div className="absolute bottom-0 left-0 right-0 p-2.5 text-white">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              {userChoice === 'B' && (
-                <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                  <Check className="h-2.5 w-2.5 text-white" />
-                </div>
-              )}
-              <span className="font-bold text-[13px] leading-tight line-clamp-2 break-words">{poll.option_b}</span>
-            </div>
-            <span className={`text-xl font-display font-bold ${poll.winner === 'B' ? 'text-green-400' : 'text-white/70'}`}>
-              {poll.percentB}%
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom info bar — compact, no extra padding */}
-      <div className="shrink-0 bg-background border-t border-border/30 px-4 py-2 space-y-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground font-medium">{poll.totalVotes.toLocaleString()} votes</span>
-          {poll.demographicInsight && (
-            <span className="text-[11px] text-muted-foreground italic">{poll.demographicInsight}</span>
           )}
         </div>
+      </div>
 
-        {/* Result bar */}
-        <div className="h-1.5 rounded-full bg-muted overflow-hidden flex">
-          <div className="bg-primary h-full transition-all duration-500" style={{ width: `${poll.percentA}%` }} />
-          <div className="bg-accent h-full transition-all duration-500" style={{ width: `${poll.percentB}%` }} />
+      {/* DEMOGRAPHIC TAGS — dark bar */}
+      <div className="shrink-0 bg-[#111111] px-4 py-2.5 space-y-1.5">
+        {poll.demoTags.length > 0 ? (
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
+            {poll.demoTags.map((tag, i) => (
+              <span
+                key={i}
+                className="text-[14px] leading-snug"
+                style={{ color: 'rgba(255,255,255,0.8)' }}
+              >
+                {tag.emoji} {tag.label}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="text-[14px]" style={{ color: 'rgba(255,255,255,0.8)' }}>
+            🇪🇬 Egypt chose this — {poll.winnerPct}%
+          </span>
+        )}
+
+        {/* Loser pill — small subtle */}
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] text-white/40">
+            {loserLabel} · {loserPct}%
+          </span>
+          <span className="text-[11px] text-white/30 ml-auto">
+            {poll.totalVotes.toLocaleString()} votes
+          </span>
         </div>
 
-        {/* Nudge: Vote from Home for unvoted polls (hide when closed) */}
-        {!userChoice && !poll.isClosed && (
+        {!userVoted && !poll.isClosed && (
           <button
             onClick={onVote}
-            className="w-full text-center text-xs text-primary/80 hover:text-primary transition-colors py-0.5"
+            className="w-full text-center text-[12px] text-blue-400 hover:text-blue-300 transition-colors pt-1"
           >
             Vote on today's battles from Home →
           </button>
-        )}
-        {poll.isClosed && (
-          <p className="w-full text-center text-[11px] text-muted-foreground py-0.5">
-            Results only — voting has ended
-          </p>
         )}
       </div>
     </div>
@@ -439,6 +501,8 @@ export default function Browse() {
         const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
         const pctB = 100 - pctA;
         const isClosed = (p as any).expiry_type !== 'evergreen' && p.ends_at && new Date(p.ends_at) <= new Date();
+        const winner: 'A' | 'B' = pctA >= pctB ? 'A' : 'B';
+        const winnerPct = Math.max(pctA, pctB);
         return {
           ...p,
           isClosed,
@@ -447,9 +511,10 @@ export default function Browse() {
           votesB,
           percentA: pctA,
           percentB: pctB,
-          winner: (pctA >= pctB ? 'A' : 'B') as 'A' | 'B',
-          winnerPct: Math.max(pctA, pctB),
-          demographicInsight: generateDemographicInsight(demoMap.get(p.id) || []),
+          winner,
+          winnerPct,
+          egyptPct: winnerPct,
+          demoTags: computeDemoTags(demoMap.get(p.id) || [], winnerPct, winner),
         };
       });
 
