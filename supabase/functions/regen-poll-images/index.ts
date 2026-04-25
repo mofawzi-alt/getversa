@@ -25,19 +25,54 @@ const PROMPT_TPL = (subject: string, question: string, otherOption: string) => {
 
   const hybridBlock = `MODE: HYBRID (product-in-context). Show ONE Gen Z person actively USING, HOLDING, OPENING, EATING, DRINKING, OR INTERACTING WITH a generic version of the product "${subject}" inside a real-life moment that ALSO matches the question topic "${question}". The product must be CLEARLY VISIBLE and recognizable as the correct CATEGORY (e.g. soda can, chocolate bar, food delivery bag, smartphone, sneakers) but with NO logos, NO wordmarks, NO brand colors, NO packaging text. The human interaction is mandatory — never a static product-only shot.`;
 
-  const lifestyleBlock = `MODE: LIFESTYLE (behavior). The QUESTION is "${question}" and this option means "${subject}". You MUST visually depict the literal subject of the QUESTION as performed/embodied by the option "${subject}". Derive the EXACT action from the question itself, not from generic lifestyle tropes.
+  const lifestyleBlock = `MODE: LIFESTYLE (behavior). The QUESTION is "${question}" and this option means "${subject}".
 
-ACTION DERIVATION RULES (read the question literally):
-- "exercise/workout/gym" → person actively working out (running, lifting weights, yoga, jogging on street, gym session). "Yes/regularly" = mid-action sweaty energetic shot at gym/park. "No/rarely" = person on couch with phone, sedentary, snacking — NOT cooking, NOT food.
-- "cook/cooking" → person at stove/cutting board with ingredients
-- "smoke/smoking" → person holding/lighting a cigarette
-- "study/studying" → person with books/laptop focused
-- "sleep early/late" → bed scene with appropriate lighting (dark vs sunrise)
-- "travel" → airport, suitcase, passport, plane window
-- "social media/scrolling" → close-up of phone screen reflection on face
-- "morning routine" → bathroom mirror, coffee, getting ready
+⚠️ ZERO INTERPRETATION RULE — ABSOLUTE LAW ⚠️
+You MUST NOT generate a "related", "associated", or "lifestyle adjacent" scene.
+You MUST generate ONLY the literal physical action that the option "${subject}" describes in the context of "${question}".
+If the option says "exercise" → show EXERCISING. Not food. Not couch (unless option = sedentary). Not coffee. EXERCISING.
+If the option says "skincare" → show APPLYING SKINCARE TO FACE. Not a bathroom shelf. Not makeup.
+If the option says "mobile wallet" → show TAPPING PHONE TO PAY at a terminal/QR.
+If the option says "cash" → show HANDS EXCHANGING PAPER MONEY.
+If the option says "ingredients matter" → show person READING THE INGREDIENT LABEL on packaging.
+If the option says "brand matters" → show person HOLDING/CHOOSING a branded-looking package and inspecting the front.
 
-NEVER substitute the action with food/delivery/shopping unless the question is literally about food/delivery/shopping. The question topic is the law.`;
+ACTION MAPPING — MANDATORY 2-STEP:
+Step 1: Convert "${subject}" → ONE specific physical action a human performs.
+Step 2: Render ONLY that action, full-body or hands-visible, with the action filling at least 50% of the frame.
+
+EXACT ACTION LIBRARY (use the closest match, render literally):
+- exercise / workout / gym / active → person mid-rep lifting weights, running on a street, doing yoga, sweating at a gym
+- sedentary / no exercise / lazy → person slumped on couch with phone, snacks visible, NOT exercising
+- cook / cooking / home meals → hands chopping at a cutting board, stove visible, ingredients laid out
+- order in / delivery → person at door receiving a paper delivery bag from a courier, OR unpacking takeout containers on a table
+- smoke → person holding/lighting a cigarette
+- vape → person exhaling vapor cloud, vape pen visible
+- study → person hunched over books/laptop, focused, notes visible
+- sleep early → dark bedroom, person under covers, phone face-down
+- sleep late → person awake on phone in bed at night, blue light on face
+- travel → airport terminal with rolling suitcase, OR plane window seat with passport
+- scroll social media → extreme close-up of phone in hands, app feed visible (no logos), face reflected
+- morning routine → bathroom mirror, brushing teeth or applying product
+- skincare → fingertips applying cream/serum directly to cheek/forehead, mirror reflection
+- makeup → applying mascara/lipstick close-up, mirror or pouch visible
+- coffee at home → pouring from french press / moka pot in a kitchen
+- coffee at cafe → barista handing cup across counter, or person sipping at a cafe table
+- mobile payment / wallet → phone tapped on POS terminal or scanning QR code at register
+- cash payment → hands exchanging banknotes at a counter
+- card payment → hand inserting/tapping a plastic card at a POS terminal
+- read ingredient label → person holding a product close to face, eyes on the back-of-pack ingredient list
+- choose by brand → person picking a clearly-branded-looking package off a shelf, inspecting the front
+- gym workout → barbell/dumbbells, gym mirror, athletic wear
+- home workout → yoga mat in living room, bodyweight exercise
+- shop online → person on couch with phone, shopping cart on screen, packages nearby
+- shop in store → person walking through a retail aisle holding items
+- group hangout → 3-5 friends laughing together at a cafe/rooftop
+- solo time → one person alone reading/listening to music in a calm setting
+
+If the question/option is not in this list, derive the SINGLE most literal physical action and render it. NEVER substitute with food, delivery, or shopping unless those ARE the literal action.
+
+REJECTION TEST: If a stranger glanced at this image for 1 second, would they say the EXACT word "${subject}"? If no → you are generating wrong. The action must be unmistakable.`;
 
   return `Cinematic photograph for a Gen Z poll: "${question}". This image represents "${subject}" (vs "${otherOption}"). The "this is me" moment must be obvious in under 1 second.
 
