@@ -136,7 +136,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         .limit(20);
       const ids = Array.from(new Set((data || []).map((v: any) => v.user_id).filter(Boolean))).slice(0, 3);
       if (ids.length === 0) return { avatars: [] as string[], extra: 0 };
-      const { data: profs } = await supabase
+      const { data: profs } = await (supabase as any)
         .from('profiles')
         .select('id, avatar_url')
         .in('id', ids);
