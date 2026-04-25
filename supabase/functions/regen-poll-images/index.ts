@@ -23,15 +23,21 @@ const PROMPT_TPL = (subject: string, question: string, otherOption: string) => {
   const isProduct = isProductOrBrand(subject) && isProductOrBrand(otherOption);
   const mode = isProduct ? 'HYBRID' : 'LIFESTYLE';
 
-  const hybridBlock = `MODE: HYBRID (product-in-context). Show ONE Gen Z person actively USING, HOLDING, OPENING, EATING, DRINKING, OR INTERACTING WITH a generic version of the product "${subject}" inside a real-life moment. The product must be CLEARLY VISIBLE and recognizable as the correct CATEGORY (e.g. soda can, chocolate bar, food delivery bag, smartphone, sneakers) but with NO logos, NO wordmarks, NO brand colors, NO packaging text. The human interaction is mandatory — never a static product-only shot. Examples: soda → person cracking open a generic cola can with friends at a rooftop; chocolate → person biting a generic chocolate bar while walking a Cairo street; delivery app → person receiving a plain brown food bag at apartment door; sneakers → close-up of person lacing generic white sneakers on a cafe step.`;
+  const hybridBlock = `MODE: HYBRID (product-in-context). Show ONE Gen Z person actively USING, HOLDING, OPENING, EATING, DRINKING, OR INTERACTING WITH a generic version of the product "${subject}" inside a real-life moment that ALSO matches the question topic "${question}". The product must be CLEARLY VISIBLE and recognizable as the correct CATEGORY (e.g. soda can, chocolate bar, food delivery bag, smartphone, sneakers) but with NO logos, NO wordmarks, NO brand colors, NO packaging text. The human interaction is mandatory — never a static product-only shot.`;
 
-  const lifestyleBlock = `MODE: LIFESTYLE (behavior). Show ONE Gen Z person visibly DOING the exact behavior of "${subject}" in this context — the action must be unmistakable in under 1 second. e.g. mobile wallet → phone tap at terminal; cash → handing physical bills; orders often → multiple food boxes spread across table with friends; rarely orders → simple home-cooked plate alone; private car → driver inside a car interior; public transport → packed bus/train moment.`;
+  const lifestyleBlock = `MODE: LIFESTYLE (behavior). The QUESTION is "${question}" and this option means "${subject}". You MUST visually depict the literal subject of the QUESTION as performed/embodied by the option "${subject}". Derive the EXACT action from the question itself, not from generic lifestyle tropes.
 
-  return `Cinematic photograph for a Gen Z poll: "${question}". This image represents "${subject}" (vs "${otherOption}"). The "this is me" moment must be obvious in under 1 second.
+ACTION DERIVATION RULES (read the question literally):
+- "exercise/workout/gym" → person actively working out (running, lifting weights, yoga, jogging on street, gym session). "Yes/regularly" = mid-action sweaty energetic shot at gym/park. "No/rarely" = person on couch with phone, sedentary, snacking — NOT cooking, NOT food.
+- "cook/cooking" → person at stove/cutting board with ingredients
+- "smoke/smoking" → person holding/lighting a cigarette
+- "study/studying" → person with books/laptop focused
+- "sleep early/late" → bed scene with appropriate lighting (dark vs sunrise)
+- "travel" → airport, suitcase, passport, plane window
+- "social media/scrolling" → close-up of phone screen reflection on face
+- "morning routine" → bathroom mirror, coffee, getting ready
 
-${isProduct ? hybridBlock : lifestyleBlock}
-
-SAME-CATEGORY DIFFERENTIATION: If "${subject}" and "${otherOption}" belong to the same category (both sodas, both delivery apps, both shopping platforms, both phones), the core action is identical — DO NOT fake an offline alternative. Instead create CONTRAST through: lifestyle (premium vs everyday), environment (clean modern apartment vs busy street cafe), mood (confident vs uncertain), energy (group vs solo), lighting (warm golden vs cool blue), framing (tight close-up vs wider context shot), time of day, and outfit style. Pick the contrast angle for "${subject}" that visually opposes "${otherOption}" without misrepresenting either.
+NEVER substitute the action with food/delivery/shopping unless the question is literally about food/delivery/shopping. The question topic is the law.
 
 WHO: ONE visible human aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing (oversized tees, cargos, layered jewelry, modern hairstyles), natural expression — reacting, thinking, choosing, or enjoying. NO older subjects. NO corporate/formal styling. NO posed stock-photo neutrality.
 
