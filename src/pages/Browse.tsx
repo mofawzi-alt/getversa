@@ -501,6 +501,8 @@ export default function Browse() {
         const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
         const pctB = 100 - pctA;
         const isClosed = (p as any).expiry_type !== 'evergreen' && p.ends_at && new Date(p.ends_at) <= new Date();
+        const winner: 'A' | 'B' = pctA >= pctB ? 'A' : 'B';
+        const winnerPct = Math.max(pctA, pctB);
         return {
           ...p,
           isClosed,
@@ -509,9 +511,10 @@ export default function Browse() {
           votesB,
           percentA: pctA,
           percentB: pctB,
-          winner: (pctA >= pctB ? 'A' : 'B') as 'A' | 'B',
-          winnerPct: Math.max(pctA, pctB),
-          demographicInsight: generateDemographicInsight(demoMap.get(p.id) || []),
+          winner,
+          winnerPct,
+          egyptPct: winnerPct,
+          demoTags: computeDemoTags(demoMap.get(p.id) || [], winnerPct, winner),
         };
       });
 
