@@ -110,12 +110,22 @@ function expandEntityVariants(entity: string): string[] {
 }
 
 async function callAI(apiKey: string, model: string, payload: any) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12_000);
   const resp = await fetch(AI_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({ model, ...payload }),
+    signal: controller.signal,
   });
+  clearTimeout(timeoutId);
   return resp;
+}
+
+async function readJsonSafely(resp: Response) {
+  const text = await resp.text().catch(() => "");
+  if (!text.trim()) return null;
+  try { return JSON.parse(text); } catch { return null; }
 }
 
 serve(async (req) => {
@@ -242,7 +252,8 @@ Rules:
           await retryResp.text().catch(() => "");
           return null;
         }
-        const rd = await retryResp.json();
+        const rd = await readJsonSafely(retryResp);
+        if (!rd) return null;
         const content = rd.choices?.[0]?.message?.content || "";
         try { return JSON.parse(content); } catch { return recoverFiltersFromText(content); }
       } catch (e) {
@@ -276,7 +287,7 @@ Rules:
         console.log("Synthesized minimal filters fallback");
       }
     } else {
-      const extractData = await extractResp.json();
+      const extractData = await readJsonSafely(extractResp) || {};
       const toolCall = extractData.choices?.[0]?.message?.tool_calls?.[0];
       if (toolCall) {
         try { filters = JSON.parse(toolCall.function.arguments); } catch { /* fall through */ }
