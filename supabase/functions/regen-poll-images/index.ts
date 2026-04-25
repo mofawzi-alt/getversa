@@ -7,7 +7,16 @@ const corsHeaders = {
 };
 
 const PROMPT_TPL = (subject: string) =>
-  `Cinematic lifestyle photograph that REPRESENTS the real-life experience of: "${subject}". Editorial DSLR quality, natural cinematic lighting, candid authentic moment, magazine-grade composition, vertical 9:16. Strictly NO logos, NO brand names, NO text, NO typography, NO UI/app interfaces, NO posters, NO graphics or illustrations. Show the feeling — people, hands, environments, products in genuine use — not a label.`;
+  `Cinematic lifestyle photograph that REPRESENTS the real-life experience of: "${subject}".
+
+WHO (mandatory): a visible human subject aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing — no formal wear, no older models, no empty scenes.
+WHERE: realistic 2026 environment — modern apartment, cafe, Cairo / MENA street, university, or co-working space. Use Egyptian / Middle-Eastern context when culturally relevant.
+WHAT: the action must directly and obviously represent the option behavior, readable in 1 second.
+VIBE: candid, natural, social, expressive, slightly imperfect — NOT posed, NOT stock-photo perfect.
+
+STYLE: editorial DSLR / mirrorless, cinematic high-contrast lighting, close-up immersive framing, shallow depth of field, ONE clear subject, vertical 9:16, magazine-grade, TikTok / Instagram aesthetic.
+
+STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography, NO text of any kind, NO app interfaces, NO UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO watermarks.`;
 
 function slugify(s: string) {
   return (s.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 30).replace(/^_|_$/g, '')) || 'img';
