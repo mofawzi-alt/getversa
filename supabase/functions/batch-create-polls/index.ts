@@ -13,7 +13,7 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'google/gemini-3-pro-image-preview',
-        messages: [{ role: 'user', content: `Generate a premium photorealistic product photograph: "${prompt}". Ultra sharp, DSLR quality, 4:3 ratio, no text/watermarks/logos overlaid, magazine quality.` }],
+        messages: [{ role: 'user', content: `Cinematic lifestyle photograph capturing the real-life moment and feeling of: "${prompt}". Editorial DSLR quality, natural lighting, candid composition, magazine-grade. Strictly NO logos, NO brand names, NO text, NO typography, NO UI screenshots, NO app interfaces, NO posters, NO graphics or illustrations. Real scene only — people, hands, environments, or products in authentic use.` }],
         modalities: ['image', 'text']
       }),
     });

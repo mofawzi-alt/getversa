@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const PROMPT_TPL = (subject: string) =>
-  `${subject}, clean background, premium lighting, centered composition, vertical 9:16 aspect ratio, ultra sharp, photorealistic, magazine quality, no text, no watermark, no logos overlaid`;
+  `Cinematic lifestyle photograph that REPRESENTS the real-life experience of: "${subject}". Editorial DSLR quality, natural cinematic lighting, candid authentic moment, magazine-grade composition, vertical 9:16. Strictly NO logos, NO brand names, NO text, NO typography, NO UI/app interfaces, NO posters, NO graphics or illustrations. Show the feeling — people, hands, environments, products in genuine use — not a label.`;
 
 function slugify(s: string) {
   return (s.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 30).replace(/^_|_$/g, '')) || 'img';
