@@ -333,12 +333,12 @@ function HomeLiveDebateCard({
 
         {/* Option B */}
         <div
-          className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
+          className={`relative flex flex-col rounded-2xl overflow-hidden border-2 transition-all ${
             chosenB ? 'border-option-b shadow-md' : hasVoted ? 'border-border/40' : 'border-border/40 cursor-pointer active:opacity-90'
           }`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('B'); } : undefined}
         >
-          <div className="relative aspect-[3/4] overflow-hidden">
+          <div className="relative flex-1 min-h-0 overflow-hidden">
             <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="100%" loading={index < 2 ? 'eager' : 'lazy'} />
             <div className="absolute top-2 right-2 h-7 w-7 rounded-full bg-card shadow-md flex items-center justify-center">
               {chosenB ? (
