@@ -9,9 +9,10 @@ import { useDuelAutoOpen } from '@/hooks/useDuelAutoOpen';
 interface AppLayoutProps {
   children: ReactNode;
   hideNav?: boolean;
+  disablePullToRefresh?: boolean;
 }
 
-export default function AppLayout({ children, hideNav }: AppLayoutProps) {
+export default function AppLayout({ children, hideNav, disablePullToRefresh }: AppLayoutProps) {
   const queryClient = useQueryClient();
   useDuelAutoOpen();
   const safeTopInset = 'max(env(safe-area-inset-top), 1.75rem)';
@@ -29,9 +30,13 @@ export default function AppLayout({ children, hideNav }: AppLayoutProps) {
         className="relative z-10"
         style={{ paddingTop: `calc(3.5rem + ${safeTopInset} + 0.5rem)` }}
       >
-        <PullToRefresh onRefresh={handleRefresh}>
-          {children}
-        </PullToRefresh>
+        {disablePullToRefresh ? (
+          children
+        ) : (
+          <PullToRefresh onRefresh={handleRefresh}>
+            {children}
+          </PullToRefresh>
+        )}
         <LegalFooter />
       </main>
       {!hideNav && <BottomNav />}
