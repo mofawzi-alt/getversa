@@ -65,9 +65,7 @@ export default function Ask() {
   const [confirming, setConfirming] = useState(false);
   const [turns, setTurns] = useState<AskTurn[]>([]);
   const [preview, setPreview] = useState<PreviewState | null>(null);
-  const [viewportHeight, setViewportHeight] = useState<number>(
-    typeof window !== 'undefined' ? window.innerHeight : 0
-  );
+  
   const inputRef = useRef<HTMLInputElement>(null);
   const threadEndRef = useRef<HTMLDivElement>(null);
 
