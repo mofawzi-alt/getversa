@@ -256,7 +256,7 @@ export default function Ask() {
     <div
       className="fixed inset-0 bg-background flex flex-col overflow-hidden w-full max-w-full touch-pan-y"
       style={{
-        height: viewportHeight ? `${viewportHeight}px` : '100dvh',
+        height: '100dvh',
         width: '100%',
         maxWidth: '100%',
       }}
