@@ -1482,19 +1482,23 @@ export default function Home() {
             </div>
           </div>
 
-          {livePolls.length > 0 ? (
-            <LiveDebatesList
-              livePolls={livePolls}
-              votedPollIds={votedPollIds}
-              userVoteChoices={userVoteChoices}
-              trendingIdSet={trendingIdSet}
-              newPolls={newPolls}
-              setHeroPollIndex={setHeroPollIndex}
-              heroRef={heroRef}
-              setModalPoll={setModalPoll}
-              navigate={navigate}
-            />
-          ) : (
+          {(() => {
+            const filteredLivePolls = categoryFilter
+              ? livePolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter)
+              : livePolls;
+            return filteredLivePolls.length > 0 ? (
+              <LiveDebatesList
+                livePolls={filteredLivePolls}
+                votedPollIds={votedPollIds}
+                userVoteChoices={userVoteChoices}
+                trendingIdSet={trendingIdSet}
+                newPolls={newPolls}
+                setHeroPollIndex={setHeroPollIndex}
+                heroRef={heroRef}
+                setModalPoll={setModalPoll}
+                navigate={navigate}
+              />
+            ) : (
             <div className="mx-3 rounded-2xl border border-border/60 bg-card px-4 py-8 text-center">
               <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }}>
                 <Sparkles className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
@@ -1502,7 +1506,8 @@ export default function Home() {
               <p className="text-sm font-display font-bold text-foreground">New live debates launching soon</p>
               <p className="text-xs text-muted-foreground mt-1">Stay tuned for real-time polls</p>
             </div>
-          )}
+            );
+          })()}
         </section>
 
 
