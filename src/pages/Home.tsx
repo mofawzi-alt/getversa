@@ -310,7 +310,7 @@ function HomeLiveDebateCard({
           }`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('A'); } : undefined}
         >
-          <div className="relative aspect-[4/5] overflow-hidden">
+          <div className="relative aspect-[3/4] overflow-hidden">
             <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="92%" loading={index < 2 ? 'eager' : 'lazy'} />
             {/* Selection indicator top-right */}
             <div className="absolute top-2 right-2 h-7 w-7 rounded-full bg-card shadow-md flex items-center justify-center">
@@ -338,7 +338,7 @@ function HomeLiveDebateCard({
           }`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('B'); } : undefined}
         >
-          <div className="relative aspect-[4/5] overflow-hidden">
+          <div className="relative aspect-[3/4] overflow-hidden">
             <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="92%" loading={index < 2 ? 'eager' : 'lazy'} />
             <div className="absolute top-2 right-2 h-7 w-7 rounded-full bg-card shadow-md flex items-center justify-center">
               {chosenB ? (
@@ -617,7 +617,7 @@ function LiveDebatesList({
   }, [user, profile, queryClient]);
 
   return (
-        <div className="flex flex-col gap-3 px-2">
+        <div className="flex flex-col gap-1.5 px-1.5">
       {livePolls.map((poll, i) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
