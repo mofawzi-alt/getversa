@@ -616,11 +616,11 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient]);
 
+  // Card height = viewport - app header (3.5rem + safe top + 0.5rem padding) - bottom nav (4rem + safe bottom)
+  const cardHeight = 'calc(100dvh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 0.5rem - 4rem - env(safe-area-inset-bottom))';
+
   return (
-    <div
-      className="overflow-y-scroll snap-y snap-mandatory px-1.5"
-      style={{ scrollSnapType: 'y mandatory', height: 'calc(100dvh - 5rem)' }}
-    >
+    <div className="px-1.5">
       {livePolls.map((poll, i) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
@@ -632,7 +632,7 @@ function LiveDebatesList({
           <div
             key={poll.id}
             className="snap-start snap-always py-1.5"
-            style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 5rem)' }}
+            style={{ scrollSnapAlign: 'start', height: cardHeight }}
           >
             <HomeLiveDebateCard
               poll={poll}
@@ -686,6 +686,15 @@ export default function Home() {
       setShowTutorial(true);
     }
   }, [loading, user]);
+
+  // Enable scroll-snap on the page scroller so live debate cards snap as you scroll the whole page
+  useEffect(() => {
+    const html = document.documentElement;
+    const prev = html.style.scrollSnapType;
+    html.style.scrollSnapType = 'y proximity';
+    return () => { html.style.scrollSnapType = prev; };
+  }, []);
+
 
   // Only show welcome after auth loading finishes and we know the user's state
   useEffect(() => {
