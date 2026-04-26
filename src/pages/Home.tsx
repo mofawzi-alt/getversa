@@ -217,7 +217,7 @@ function HomeLiveDebateCard({
       transition={{ delay: Math.min(index * 0.025, 0.15), duration: 0.25 }}
       whileTap={{ scale: 0.99 }}
       onClick={hasVoted ? onCardClick : undefined}
-      className={`relative rounded-3xl overflow-hidden border bg-card shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
+      className={`relative h-full flex flex-col rounded-3xl overflow-hidden border bg-card shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
     >
       {!hasVoted && (
         <motion.div
