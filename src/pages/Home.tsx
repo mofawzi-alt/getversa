@@ -338,7 +338,7 @@ function HomeLiveDebateCard({
           }`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('B'); } : undefined}
         >
-          <div className="relative aspect-[4/5] overflow-hidden">
+          <div className="relative aspect-[3/4] overflow-hidden">
             <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="92%" loading={index < 2 ? 'eager' : 'lazy'} />
             <div className="absolute top-2 right-2 h-7 w-7 rounded-full bg-card shadow-md flex items-center justify-center">
               {chosenB ? (
