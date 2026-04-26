@@ -617,7 +617,10 @@ function LiveDebatesList({
   }, [user, profile, queryClient]);
 
   return (
-        <div className="flex flex-col gap-1.5 px-1.5">
+    <div
+      className="overflow-y-scroll snap-y snap-mandatory px-1.5"
+      style={{ scrollSnapType: 'y mandatory', height: 'calc(100dvh - 5rem)' }}
+    >
       {livePolls.map((poll, i) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
@@ -626,29 +629,34 @@ function LiveDebatesList({
         const friendsOnPoll = friendsByPoll?.[poll.id] || [];
 
         return (
-          <HomeLiveDebateCard
+          <div
             key={poll.id}
-            poll={poll}
-            index={i}
-            hasVoted={hasVoted}
-            chosenOptionLabel={chosenOptionLabel}
-            isTrending={trendingIdSet?.has(poll.id) || false}
-            friendsOnPoll={friendsOnPoll}
-            onVoteInline={(choice) => handleInlineVote(poll, choice)}
-            onCardClick={() => {
-              if (hasVoted) {
-                setModalPoll(poll);
-                return;
-              }
-              const idx = newPolls.findIndex(p => p.id === poll.id);
-              if (idx >= 0) {
-                setHeroPollIndex(idx);
-                heroRef.current?.scrollIntoView({ behavior: 'smooth' });
-              } else {
-                navigate(`/browse?filter=live&pollId=${poll.id}`);
-              }
-            }}
-          />
+            className="snap-start snap-always py-1.5"
+            style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 5rem)' }}
+          >
+            <HomeLiveDebateCard
+              poll={poll}
+              index={i}
+              hasVoted={hasVoted}
+              chosenOptionLabel={chosenOptionLabel}
+              isTrending={trendingIdSet?.has(poll.id) || false}
+              friendsOnPoll={friendsOnPoll}
+              onVoteInline={(choice) => handleInlineVote(poll, choice)}
+              onCardClick={() => {
+                if (hasVoted) {
+                  setModalPoll(poll);
+                  return;
+                }
+                const idx = newPolls.findIndex(p => p.id === poll.id);
+                if (idx >= 0) {
+                  setHeroPollIndex(idx);
+                  heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  navigate(`/browse?filter=live&pollId=${poll.id}`);
+                }
+              }}
+            />
+          </div>
         );
       })}
     </div>
