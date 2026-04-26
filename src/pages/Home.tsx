@@ -632,7 +632,7 @@ function LiveDebatesList({
           <div
             key={poll.id}
             className="snap-start snap-always py-1.5"
-            style={{ scrollSnapAlign: 'start', height: cardHeight }}
+            style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always', height: cardHeight }}
           >
             <HomeLiveDebateCard
               poll={poll}
@@ -695,11 +695,14 @@ export default function Home() {
     const prevType = html.style.scrollSnapType;
     const prevPadTop = html.style.scrollPaddingTop;
     const prevPadBottom = html.style.scrollPaddingBottom;
-    html.style.scrollSnapType = 'y proximity';
+    html.style.scrollSnapType = 'y mandatory';
     // Header = 3.5rem + safe-area top inset (matches AppLayout)
     html.style.scrollPaddingTop = 'calc(3.5rem + max(env(safe-area-inset-top), 1.75rem))';
     // Bottom nav = 4rem + safe-area bottom inset
     html.style.scrollPaddingBottom = 'calc(4rem + env(safe-area-inset-bottom))';
+    // Smoother momentum on iOS
+    (html.style as any).webkitOverflowScrolling = 'touch';
+    (document.body.style as any).webkitOverflowScrolling = 'touch';
     return () => {
       html.style.scrollSnapType = prevType;
       html.style.scrollPaddingTop = prevPadTop;
