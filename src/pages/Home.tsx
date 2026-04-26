@@ -687,12 +687,24 @@ export default function Home() {
     }
   }, [loading, user]);
 
-  // Enable scroll-snap on the page scroller so live debate cards snap as you scroll the whole page
+  // Enable scroll-snap on the page scroller so live debate cards snap as you scroll the whole page.
+  // scroll-padding-top offsets the fixed app header so snap-start aligns BELOW the header
+  // (not under it), making each card fill the area between header and bottom nav.
   useEffect(() => {
     const html = document.documentElement;
-    const prev = html.style.scrollSnapType;
+    const prevType = html.style.scrollSnapType;
+    const prevPadTop = html.style.scrollPaddingTop;
+    const prevPadBottom = html.style.scrollPaddingBottom;
     html.style.scrollSnapType = 'y proximity';
-    return () => { html.style.scrollSnapType = prev; };
+    // Header = 3.5rem + safe-area top inset (matches AppLayout)
+    html.style.scrollPaddingTop = 'calc(3.5rem + max(env(safe-area-inset-top), 1.75rem))';
+    // Bottom nav = 4rem + safe-area bottom inset
+    html.style.scrollPaddingBottom = 'calc(4rem + env(safe-area-inset-bottom))';
+    return () => {
+      html.style.scrollSnapType = prevType;
+      html.style.scrollPaddingTop = prevPadTop;
+      html.style.scrollPaddingBottom = prevPadBottom;
+    };
   }, []);
 
 
