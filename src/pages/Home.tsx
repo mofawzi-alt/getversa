@@ -301,16 +301,16 @@ function HomeLiveDebateCard({
         )}
       </div>
 
-      {/* ═══ 3) IMAGE CARDS — rounded with gap, label box below image, ring on selected ═══ */}
-      <div className="px-2 grid grid-cols-2 gap-1.5">
+      {/* ═══ 3) IMAGE CARDS — fill remaining vertical space, edge-to-edge ═══ */}
+      <div className="px-2 grid grid-cols-2 gap-1.5 flex-1 min-h-0">
         {/* Option A */}
         <div
-          className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
+          className={`relative flex flex-col rounded-2xl overflow-hidden border-2 transition-all ${
             chosenA ? 'border-option-a shadow-md' : hasVoted ? 'border-border/40' : 'border-border/40 cursor-pointer active:opacity-90'
           }`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('A'); } : undefined}
         >
-          <div className="relative aspect-[3/4] overflow-hidden">
+          <div className="relative flex-1 min-h-0 overflow-hidden">
             <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="100%" loading={index < 2 ? 'eager' : 'lazy'} />
             {/* Selection indicator top-right */}
             <div className="absolute top-2 right-2 h-7 w-7 rounded-full bg-card shadow-md flex items-center justify-center">
