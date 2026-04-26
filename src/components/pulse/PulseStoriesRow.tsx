@@ -15,7 +15,7 @@ import {
   useWeeklyVerdict, useNewThisWeek, useLastVisit,
 } from '@/hooks/usePulseCircles';
 import { useBreakdownFindings, type BreakdownFinding } from '@/hooks/useBreakdownFindings';
-import BreakdownShareCard from './BreakdownShareCard';
+const BreakdownShareCard = lazy(() => import('./BreakdownShareCard'));
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
