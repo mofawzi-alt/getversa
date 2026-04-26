@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useDailyPulse, usePulseSettings, type PulseCard } from '@/hooks/useDailyPulse';
 import { useAuth } from '@/contexts/AuthContext';
 import StoryViewer, { type StoryCardData } from './StoryViewer';
@@ -15,7 +15,7 @@ import {
   useWeeklyVerdict, useNewThisWeek, useLastVisit,
 } from '@/hooks/usePulseCircles';
 import { useBreakdownFindings, type BreakdownFinding } from '@/hooks/useBreakdownFindings';
-import BreakdownShareCard from './BreakdownShareCard';
+const BreakdownShareCard = lazy(() => import('./BreakdownShareCard'));
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
@@ -664,11 +664,15 @@ export default function PulseStoriesRow() {
             : undefined
         }
       />
-      <BreakdownShareCard
-        open={!!shareFinding}
-        finding={shareFinding}
-        onClose={() => setShareFinding(null)}
-      />
+      {shareFinding && (
+        <Suspense fallback={null}>
+          <BreakdownShareCard
+            open={!!shareFinding}
+            finding={shareFinding}
+            onClose={() => setShareFinding(null)}
+          />
+        </Suspense>
+      )}
     </>
   );
 }
