@@ -54,6 +54,7 @@ export default function StoryViewer({
   onClose,
   topic,
   cards,
+  category,
   startIndex = 0,
   autoAdvanceMs = DEFAULT_DURATION,
   onShareOverride,
