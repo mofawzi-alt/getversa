@@ -225,6 +225,7 @@ export default function StoryViewer({
   const safeIndex = Math.max(0, Math.min(index, cards.length - 1));
   const card = cards[safeIndex];
   if (!card) return null;
+  const theme = pickTheme(topic, category);
 
   const content = (
     <AnimatePresence>
