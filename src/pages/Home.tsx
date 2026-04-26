@@ -1506,7 +1506,8 @@ export default function Home() {
               <p className="text-sm font-display font-bold text-foreground">New live debates launching soon</p>
               <p className="text-xs text-muted-foreground mt-1">Stay tuned for real-time polls</p>
             </div>
-          )}
+            );
+          })()}
         </section>
 
 
