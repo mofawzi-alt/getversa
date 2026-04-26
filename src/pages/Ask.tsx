@@ -318,8 +318,11 @@ export default function Ask() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); runPreview(); }}
-        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-[100vw] overflow-x-hidden"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-[100vw] overflow-x-hidden transition-transform duration-150"
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
+          transform: 'translateY(calc(-1 * var(--ask-kb-offset, 0px)))',
+        }}
       >
         <div className="relative max-w-lg mx-auto w-full min-w-0 overflow-hidden rounded-full">
           <input
