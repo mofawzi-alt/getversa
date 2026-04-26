@@ -217,7 +217,7 @@ function HomeLiveDebateCard({
       transition={{ delay: Math.min(index * 0.025, 0.15), duration: 0.25 }}
       whileTap={{ scale: 0.99 }}
       onClick={hasVoted ? onCardClick : undefined}
-      className={`relative rounded-3xl overflow-hidden border bg-card shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
+      className={`relative h-full flex flex-col rounded-3xl overflow-hidden border bg-card shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
     >
       {!hasVoted && (
         <motion.div
@@ -301,16 +301,16 @@ function HomeLiveDebateCard({
         )}
       </div>
 
-      {/* ═══ 3) IMAGE CARDS — rounded with gap, label box below image, ring on selected ═══ */}
-      <div className="px-2 grid grid-cols-2 gap-1.5">
+      {/* ═══ 3) IMAGE CARDS — fill remaining vertical space, edge-to-edge ═══ */}
+      <div className="px-2 grid grid-cols-2 gap-1.5 flex-1 min-h-0">
         {/* Option A */}
         <div
-          className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
+          className={`relative flex flex-col rounded-2xl overflow-hidden border-2 transition-all ${
             chosenA ? 'border-option-a shadow-md' : hasVoted ? 'border-border/40' : 'border-border/40 cursor-pointer active:opacity-90'
           }`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('A'); } : undefined}
         >
-          <div className="relative aspect-[3/4] overflow-hidden">
+          <div className="relative flex-1 min-h-0 overflow-hidden">
             <PollOptionImage imageUrl={poll.image_a_url} option={poll.option_a} question={poll.question} side="A" maxLogoSize="100%" loading={index < 2 ? 'eager' : 'lazy'} />
             {/* Selection indicator top-right */}
             <div className="absolute top-2 right-2 h-7 w-7 rounded-full bg-card shadow-md flex items-center justify-center">
@@ -333,12 +333,12 @@ function HomeLiveDebateCard({
 
         {/* Option B */}
         <div
-          className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
+          className={`relative flex flex-col rounded-2xl overflow-hidden border-2 transition-all ${
             chosenB ? 'border-option-b shadow-md' : hasVoted ? 'border-border/40' : 'border-border/40 cursor-pointer active:opacity-90'
           }`}
           onClick={!hasVoted ? (e) => { e.stopPropagation(); handleInlineVote('B'); } : undefined}
         >
-          <div className="relative aspect-[3/4] overflow-hidden">
+          <div className="relative flex-1 min-h-0 overflow-hidden">
             <PollOptionImage imageUrl={poll.image_b_url} option={poll.option_b} question={poll.question} side="B" maxLogoSize="100%" loading={index < 2 ? 'eager' : 'lazy'} />
             <div className="absolute top-2 right-2 h-7 w-7 rounded-full bg-card shadow-md flex items-center justify-center">
               {chosenB ? (
@@ -617,7 +617,10 @@ function LiveDebatesList({
   }, [user, profile, queryClient]);
 
   return (
-        <div className="flex flex-col gap-1.5 px-1.5">
+    <div
+      className="overflow-y-scroll snap-y snap-mandatory px-1.5"
+      style={{ scrollSnapType: 'y mandatory', height: 'calc(100dvh - 5rem)' }}
+    >
       {livePolls.map((poll, i) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
@@ -626,29 +629,34 @@ function LiveDebatesList({
         const friendsOnPoll = friendsByPoll?.[poll.id] || [];
 
         return (
-          <HomeLiveDebateCard
+          <div
             key={poll.id}
-            poll={poll}
-            index={i}
-            hasVoted={hasVoted}
-            chosenOptionLabel={chosenOptionLabel}
-            isTrending={trendingIdSet?.has(poll.id) || false}
-            friendsOnPoll={friendsOnPoll}
-            onVoteInline={(choice) => handleInlineVote(poll, choice)}
-            onCardClick={() => {
-              if (hasVoted) {
-                setModalPoll(poll);
-                return;
-              }
-              const idx = newPolls.findIndex(p => p.id === poll.id);
-              if (idx >= 0) {
-                setHeroPollIndex(idx);
-                heroRef.current?.scrollIntoView({ behavior: 'smooth' });
-              } else {
-                navigate(`/browse?filter=live&pollId=${poll.id}`);
-              }
-            }}
-          />
+            className="snap-start snap-always py-1.5"
+            style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 5rem)' }}
+          >
+            <HomeLiveDebateCard
+              poll={poll}
+              index={i}
+              hasVoted={hasVoted}
+              chosenOptionLabel={chosenOptionLabel}
+              isTrending={trendingIdSet?.has(poll.id) || false}
+              friendsOnPoll={friendsOnPoll}
+              onVoteInline={(choice) => handleInlineVote(poll, choice)}
+              onCardClick={() => {
+                if (hasVoted) {
+                  setModalPoll(poll);
+                  return;
+                }
+                const idx = newPolls.findIndex(p => p.id === poll.id);
+                if (idx >= 0) {
+                  setHeroPollIndex(idx);
+                  heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  navigate(`/browse?filter=live&pollId=${poll.id}`);
+                }
+              }}
+            />
+          </div>
         );
       })}
     </div>
