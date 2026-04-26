@@ -616,11 +616,11 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient]);
 
+  // Card height = viewport - app header (3.5rem + safe top + 0.5rem padding) - bottom nav (4rem + safe bottom)
+  const cardHeight = 'calc(100dvh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 0.5rem - 4rem - env(safe-area-inset-bottom))';
+
   return (
-    <div
-      className="overflow-y-scroll snap-y snap-mandatory px-1.5"
-      style={{ scrollSnapType: 'y mandatory', height: 'calc(100dvh - 5rem)' }}
-    >
+    <div className="px-1.5">
       {livePolls.map((poll, i) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
