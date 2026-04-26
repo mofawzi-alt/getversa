@@ -226,13 +226,11 @@ export function getImageTreatment(
   option: string,
   imageUrl: string | null | undefined
 ): 'logo' | 'photo' {
-  // If the image is explicitly in the brands storage folder, it's a logo
+  // Only use logo treatment (contain on brand color) when the asset is an
+  // actual logo file from the brands/ storage folder. Photos that happen to
+  // match a brand name (e.g. an iPhone product shot) should use photo
+  // treatment so they fill the card edge-to-edge instead of being shrunk
+  // inside a colored panel.
   if (isStorageBrandLogo(imageUrl)) return 'logo';
-  
-  // If the option matches a known brand, treat as logo regardless of image source
-  // This ensures manually uploaded brand images are never stretched
-  const brandColor = getBrandColor(option);
-  if (brandColor) return 'logo';
-  
   return 'photo';
 }
