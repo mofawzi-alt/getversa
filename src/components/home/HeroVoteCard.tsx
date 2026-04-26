@@ -684,7 +684,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               option={poll.option_b}
               question={poll.question}
               side="B"
-              maxLogoSize="65%"
+              maxLogoSize="80%"
               variant="hero"
             />
             {/* Blue brand-tinted bottom gradient */}
