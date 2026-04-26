@@ -30,9 +30,13 @@ export default function AppLayout({ children, hideNav, disablePullToRefresh }: A
         className="relative z-10"
         style={{ paddingTop: `calc(3.5rem + ${safeTopInset} + 0.5rem)` }}
       >
-        <PullToRefresh onRefresh={handleRefresh}>
-          {children}
-        </PullToRefresh>
+        {disablePullToRefresh ? (
+          children
+        ) : (
+          <PullToRefresh onRefresh={handleRefresh}>
+            {children}
+          </PullToRefresh>
+        )}
         <LegalFooter />
       </main>
       {!hideNav && <BottomNav />}
