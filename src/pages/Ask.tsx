@@ -78,25 +78,24 @@ export default function Ask() {
   useEffect(() => { setTimeout(focusInputIfDesktop, 200); }, []);
   useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
 
-  // Track visual viewport so layout shrinks correctly when mobile keyboard opens
+  // Track visual viewport so the input form follows the keyboard on iOS/Capacitor
   useEffect(() => {
     const vv = (typeof window !== 'undefined' ? window.visualViewport : null);
+    if (!vv) return;
     const update = () => {
-      const h = vv?.height ?? window.innerHeight;
-      setViewportHeight(h);
+      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      document.documentElement.style.setProperty('--ask-kb-offset', `${offset}px`);
     };
     update();
-    if (vv) {
-      vv.addEventListener('resize', update);
-      vv.addEventListener('scroll', update);
-      return () => {
-        vv.removeEventListener('resize', update);
-        vv.removeEventListener('scroll', update);
-      };
-    }
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+      document.documentElement.style.removeProperty('--ask-kb-offset');
+    };
   }, []);
+
 
   const handleBack = () => {
     const state = location.state as AskLocationState | null;
