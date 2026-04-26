@@ -65,9 +65,7 @@ export default function Ask() {
   const [confirming, setConfirming] = useState(false);
   const [turns, setTurns] = useState<AskTurn[]>([]);
   const [preview, setPreview] = useState<PreviewState | null>(null);
-  const [viewportHeight, setViewportHeight] = useState<number>(
-    typeof window !== 'undefined' ? window.innerHeight : 0
-  );
+  
   const inputRef = useRef<HTMLInputElement>(null);
   const threadEndRef = useRef<HTMLDivElement>(null);
 
@@ -80,25 +78,24 @@ export default function Ask() {
   useEffect(() => { setTimeout(focusInputIfDesktop, 200); }, []);
   useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
 
-  // Track visual viewport so layout shrinks correctly when mobile keyboard opens
+  // Track visual viewport so the input form follows the keyboard on iOS/Capacitor
   useEffect(() => {
     const vv = (typeof window !== 'undefined' ? window.visualViewport : null);
+    if (!vv) return;
     const update = () => {
-      const h = vv?.height ?? window.innerHeight;
-      setViewportHeight(h);
+      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      document.documentElement.style.setProperty('--ask-kb-offset', `${offset}px`);
     };
     update();
-    if (vv) {
-      vv.addEventListener('resize', update);
-      vv.addEventListener('scroll', update);
-      return () => {
-        vv.removeEventListener('resize', update);
-        vv.removeEventListener('scroll', update);
-      };
-    }
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+      document.documentElement.style.removeProperty('--ask-kb-offset');
+    };
   }, []);
+
 
   const handleBack = () => {
     const state = location.state as AskLocationState | null;
@@ -256,7 +253,7 @@ export default function Ask() {
     <div
       className="fixed inset-0 bg-background flex flex-col overflow-hidden w-full max-w-full touch-pan-y"
       style={{
-        height: viewportHeight ? `${viewportHeight}px` : '100dvh',
+        height: '100dvh',
         width: '100%',
         maxWidth: '100%',
       }}
@@ -321,8 +318,11 @@ export default function Ask() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); runPreview(); }}
-        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-[100vw] overflow-x-hidden"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-[100vw] overflow-x-hidden transition-transform duration-150"
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
+          transform: 'translateY(calc(-1 * var(--ask-kb-offset, 0px)))',
+        }}
       >
         <div className="relative max-w-lg mx-auto w-full min-w-0 overflow-hidden rounded-full">
           <input
