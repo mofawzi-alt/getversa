@@ -108,21 +108,21 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                   <GuardrailCard summary={t.summary} polls={t.guardrailPolls || []} question={t.question} askQueryId={t.askQueryId} />
                 )}
 
-                {!t.loading && !t.lowData && t.mode === 'decide' && t.verdict && (
+                {!t.loading && !t.lowData && !t.variant && t.mode === 'decide' && t.verdict && (
                   <VerdictCard verdict={t.verdict} />
                 )}
 
-                {!t.loading && !t.lowData && t.mode === 'decide' && !t.verdict && t.summary && (
+                {!t.loading && !t.lowData && !t.variant && t.mode === 'decide' && !t.verdict && t.summary && (
                   <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5">
                     <p className="text-sm text-foreground break-words">{t.summary}</p>
                   </div>
                 )}
 
-                {!t.loading && !t.lowData && t.mode === 'research' && t.summary && t.polls && t.polls.length > 0 && (
+                {!t.loading && !t.lowData && !t.variant && t.mode === 'research' && t.summary && t.polls && t.polls.length > 0 && (
                   <ResearchBrief question={t.question} summary={t.summary} polls={t.polls} />
                 )}
 
-                {!t.loading && !t.lowData && t.mode === 'research' && t.summary && (!t.polls || t.polls.length === 0) && (
+                {!t.loading && !t.lowData && !t.variant && t.mode === 'research' && t.summary && (!t.polls || t.polls.length === 0) && (
                   <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5">
                     <p className="text-sm text-foreground break-words">{t.summary}</p>
                   </div>
