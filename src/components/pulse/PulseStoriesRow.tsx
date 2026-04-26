@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useDailyPulse, usePulseSettings, type PulseCard } from '@/hooks/useDailyPulse';
 import { useAuth } from '@/contexts/AuthContext';
 import StoryViewer, { type StoryCardData } from './StoryViewer';
