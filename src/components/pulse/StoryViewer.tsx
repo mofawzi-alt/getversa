@@ -295,18 +295,28 @@ export default function StoryViewer({
             transition={{ duration: 0.25 }}
             className="absolute inset-0 pointer-events-none"
           >
-            {/* Always render gradient — image overlays on top when available. */}
-            {/* Skipping non-absolute URLs (like local /polls/* paths missing on iOS native) */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-background to-black" />
+            {/* Themed gradient backdrop — varies per topic / category */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `linear-gradient(135deg, ${theme.from} 0%, ${theme.via} 55%, ${theme.to} 100%)`,
+              }}
+            />
+            {/* Soft accent glow at top to add depth */}
+            <div
+              className="absolute -top-20 left-1/2 -translate-x-1/2 w-[140%] h-[55%] rounded-full blur-3xl opacity-50 pointer-events-none"
+              style={{ background: theme.accent }}
+            />
             {card.backgroundImage && /^https?:\/\//i.test(card.backgroundImage) && (
               <img
                 src={card.backgroundImage}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover opacity-90 mix-blend-overlay"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/85" />
+            {/* Bottom darken for legibility */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/85" />
 
             {card.label && (
               <div className="absolute top-12 left-0 right-0 text-center px-5 pointer-events-none">
