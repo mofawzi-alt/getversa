@@ -1355,6 +1355,7 @@ export default function Home() {
           />
         )}
 
+        <section className="snap-start" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'normal' }}>
         {/* What's New release announcement */}
         {user && <WhatsNewBanner />}
 
@@ -1464,6 +1465,7 @@ export default function Home() {
               totalVotes: p.totalVotes,
             }))}
         />
+        </section>
 
 
 
