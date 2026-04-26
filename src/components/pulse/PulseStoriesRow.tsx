@@ -664,11 +664,15 @@ export default function PulseStoriesRow() {
             : undefined
         }
       />
-      <BreakdownShareCard
-        open={!!shareFinding}
-        finding={shareFinding}
-        onClose={() => setShareFinding(null)}
-      />
+      {shareFinding && (
+        <Suspense fallback={null}>
+          <BreakdownShareCard
+            open={!!shareFinding}
+            finding={shareFinding}
+            onClose={() => setShareFinding(null)}
+          />
+        </Suspense>
+      )}
     </>
   );
 }
