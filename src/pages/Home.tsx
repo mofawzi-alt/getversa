@@ -632,7 +632,7 @@ function LiveDebatesList({
           <div
             key={poll.id}
             className="snap-start snap-always py-1.5"
-            style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 5rem)' }}
+            style={{ scrollSnapAlign: 'start', height: cardHeight }}
           >
             <HomeLiveDebateCard
               poll={poll}
