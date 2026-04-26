@@ -9,9 +9,10 @@ import { useDuelAutoOpen } from '@/hooks/useDuelAutoOpen';
 interface AppLayoutProps {
   children: ReactNode;
   hideNav?: boolean;
+  disablePullToRefresh?: boolean;
 }
 
-export default function AppLayout({ children, hideNav }: AppLayoutProps) {
+export default function AppLayout({ children, hideNav, disablePullToRefresh }: AppLayoutProps) {
   const queryClient = useQueryClient();
   useDuelAutoOpen();
   const safeTopInset = 'max(env(safe-area-inset-top), 1.75rem)';
