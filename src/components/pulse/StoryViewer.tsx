@@ -36,6 +36,8 @@ type Props = {
   onClose: () => void;
   topic: string; // e.g. 'morning_pulse', 'egypt_today', 'category:brands'
   cards: StoryCardData[];
+  /** Optional category to theme the gradient backdrop. */
+  category?: string | null;
   startIndex?: number;
   /** Auto-advance duration per card in ms. Set 0 to disable. */
   autoAdvanceMs?: number;
