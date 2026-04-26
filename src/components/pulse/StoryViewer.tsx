@@ -49,6 +49,55 @@ type Props = {
 
 const DEFAULT_DURATION = 4000;
 
+// Per-topic / per-category gradient themes so each story feels visually distinct.
+// Uses raw HSL pairs (rich, saturated) to give each story its own mood.
+const TOPIC_THEMES: Record<string, { from: string; via: string; to: string; accent: string }> = {
+  morning_pulse:    { from: '#ff8a3d', via: '#ff4d6d', to: '#1a0b2e', accent: '#ffb86b' }, // sunrise
+  evening_verdict:  { from: '#4338ca', via: '#7e22ce', to: '#0b0420', accent: '#a78bfa' }, // dusk
+  egypt_today:      { from: '#dc2626', via: '#0f172a', to: '#000000', accent: '#fbbf24' }, // news
+  brands:           { from: '#f97316', via: '#7c2d12', to: '#0a0a0a', accent: '#fb923c' },
+  entertainment:    { from: '#ec4899', via: '#7c3aed', to: '#1e1b4b', accent: '#f0abfc' },
+  sports:           { from: '#16a34a', via: '#065f46', to: '#022c22', accent: '#4ade80' },
+  food:             { from: '#f59e0b', via: '#dc2626', to: '#451a03', accent: '#fcd34d' },
+  'food & drinks':  { from: '#f59e0b', via: '#dc2626', to: '#451a03', accent: '#fcd34d' },
+  beauty:           { from: '#f472b6', via: '#be185d', to: '#3b0764', accent: '#fbcfe8' },
+  style:            { from: '#a855f7', via: '#581c87', to: '#0c0a1f', accent: '#d8b4fe' },
+  'style & design': { from: '#a855f7', via: '#581c87', to: '#0c0a1f', accent: '#d8b4fe' },
+  fintech:          { from: '#facc15', via: '#854d0e', to: '#0a0a0a', accent: '#fde047' },
+  'fintech & money':{ from: '#facc15', via: '#854d0e', to: '#0a0a0a', accent: '#fde047' },
+  wellness:         { from: '#fb7185', via: '#9f1239', to: '#1e0a14', accent: '#fda4af' },
+  'wellness & habits':{ from: '#fb7185', via: '#9f1239', to: '#1e0a14', accent: '#fda4af' },
+  telecom:          { from: '#0ea5e9', via: '#1e3a8a', to: '#020617', accent: '#7dd3fc' },
+  relationships:    { from: '#f43f5e', via: '#9f1239', to: '#1c0410', accent: '#fda4af' },
+  personality:      { from: '#6366f1', via: '#3730a3', to: '#020617', accent: '#a5b4fc' },
+  lifestyle:        { from: '#a78bfa', via: '#6d28d9', to: '#1e1b4b', accent: '#c4b5fd' },
+  'business & startups': { from: '#3b82f6', via: '#1e40af', to: '#0a0a23', accent: '#93c5fd' },
+};
+
+const FALLBACK_THEMES = [
+  { from: '#0ea5e9', via: '#7c3aed', to: '#020617', accent: '#a78bfa' },
+  { from: '#f59e0b', via: '#b91c1c', to: '#0a0a0a', accent: '#fbbf24' },
+  { from: '#10b981', via: '#065f46', to: '#022c22', accent: '#6ee7b7' },
+  { from: '#ec4899', via: '#7c3aed', to: '#1e1b4b', accent: '#f0abfc' },
+  { from: '#22d3ee', via: '#0e7490', to: '#022c22', accent: '#67e8f9' },
+];
+
+function pickTheme(topic: string, category?: string | null) {
+  // Direct topic key
+  const topicKey = topic.toLowerCase();
+  if (TOPIC_THEMES[topicKey]) return TOPIC_THEMES[topicKey];
+
+  // category:<name> prefix on topic
+  const catFromTopic = topicKey.startsWith('category:') ? topicKey.slice(9) : null;
+  const lookup = (category || catFromTopic || '').toLowerCase().trim();
+  if (lookup && TOPIC_THEMES[lookup]) return TOPIC_THEMES[lookup];
+
+  // Stable hash → fallback palette
+  let h = 0;
+  for (let i = 0; i < topicKey.length; i++) h = (h * 31 + topicKey.charCodeAt(i)) >>> 0;
+  return FALLBACK_THEMES[h % FALLBACK_THEMES.length];
+}
+
 export default function StoryViewer({
   open,
   onClose,
