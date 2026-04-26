@@ -617,7 +617,7 @@ function LiveDebatesList({
   }, [user, profile, queryClient]);
 
   return (
-        <div className="flex flex-col gap-3 px-2">
+        <div className="flex flex-col gap-1.5 px-1.5">
       {livePolls.map((poll, i) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
