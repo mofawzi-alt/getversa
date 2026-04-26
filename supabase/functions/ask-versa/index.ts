@@ -349,9 +349,21 @@ Rules:
     const route = normalizeOptionalString(filters?.route).toLowerCase();
     const rawIntent = normalizeOptionalString(filters?.intent).toLowerCase();
 
-    const intent = (["preference", "factual", "offscope"].includes(rawIntent)
+    let intent = (["preference", "factual", "offscope"].includes(rawIntent)
       ? rawIntent
       : "preference") as "preference" | "factual" | "offscope";
+
+    // Research-mode override: in research mode, opinion/comparison/lifestyle/attitude questions
+    // are exactly what Versa polls answer ("Cairo vs Alexandria lifestyle", "How do students feel about X").
+    // Only treat as factual when the question is clearly a hard lookup (year/date/market size/who-founded).
+    if (mode === "research" && intent === "factual") {
+      const q = question.toLowerCase();
+      const hardLookup = /\b(when did|what year|how many|market size|market share|revenue|founded by|who founded|population of|gdp|currency|capital of|ceo of|headquarters)\b/.test(q);
+      const opinionShape = /\b(vs|versus|or |feel|think|prefer|love|like|hate|differences?|lifestyle|attitudes?|opinions?|divided|split|culture|trend|popular|wins?|better)\b/.test(q);
+      if (!hardLookup || opinionShape) {
+        intent = "preference";
+      }
+    }
     const safeRoute = (["simple", "medium", "complex"].includes(route) ? route : "simple") as "simple" | "medium" | "complex";
     const cost = ROUTE_COSTS[safeRoute];
     const model = ROUTE_MODEL[safeRoute];
