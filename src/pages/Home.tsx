@@ -687,6 +687,15 @@ export default function Home() {
     }
   }, [loading, user]);
 
+  // Enable scroll-snap on the page scroller so live debate cards snap as you scroll the whole page
+  useEffect(() => {
+    const html = document.documentElement;
+    const prev = html.style.scrollSnapType;
+    html.style.scrollSnapType = 'y proximity';
+    return () => { html.style.scrollSnapType = prev; };
+  }, []);
+
+
   // Only show welcome after auth loading finishes and we know the user's state
   useEffect(() => {
     if (loading) return;
