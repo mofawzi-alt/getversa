@@ -49,9 +49,9 @@ export default function CampaignPollsEditDialog({ campaignId, campaignName }: Pr
             <ListOrdered className="w-4 h-4" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-lg max-h-[85vh] overflow-y-auto p-4 sm:p-6">
-          <DialogHeader>
-            <DialogTitle>Edit polls in “{campaignName}”</DialogTitle>
+        <DialogContent className="left-4 right-4 top-4 max-h-[calc(100dvh-2rem)] w-auto max-w-none translate-x-0 translate-y-0 overflow-y-auto p-4 sm:left-[50%] sm:right-auto sm:top-[50%] sm:w-[calc(100vw-2rem)] sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:p-6">
+          <DialogHeader className="pr-6 text-left">
+            <DialogTitle className="break-words leading-snug">Edit polls in “{campaignName}”</DialogTitle>
             <DialogDescription>
               {polls?.length || 0} poll{(polls?.length || 0) === 1 ? '' : 's'} linked to this campaign.
             </DialogDescription>
@@ -64,11 +64,11 @@ export default function CampaignPollsEditDialog({ campaignId, campaignName }: Pr
           ) : !polls || polls.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">No polls linked yet.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 min-w-0">
               {polls.map((p: any) => (
                 <div
                   key={p.id}
-                  className="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30"
+                  className="flex min-w-0 items-center gap-2 rounded-lg border border-border bg-muted/30 p-2"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{p.question}</div>

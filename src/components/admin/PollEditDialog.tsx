@@ -195,8 +195,8 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="left-4 right-4 top-4 max-h-[calc(100dvh-2rem)] w-auto max-w-none translate-x-0 translate-y-0 overflow-y-auto p-4 sm:left-[50%] sm:right-auto sm:top-[50%] sm:w-[calc(100vw-2rem)] sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:p-6">
+        <DialogHeader className="pr-6 text-left">
           <DialogTitle>Edit Poll</DialogTitle>
           <DialogDescription>Update poll details, images, and schedule.</DialogDescription>
         </DialogHeader>
@@ -207,7 +207,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             <Input value={question} onChange={(e) => setQuestion(e.target.value)} className="bg-secondary" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <Label>Option A</Label>
               <Input value={optionA} onChange={(e) => setOptionA(e.target.value)} className="bg-secondary" />
@@ -219,7 +219,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           </div>
 
           {/* Images */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <Label>Image A</Label>
               <input type="file" accept="image/*,video/*,.mp4,.webm,.mov,.ogg" ref={imageAInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'A')} className="hidden" />
@@ -261,7 +261,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           </div>
 
           {/* Category & Intent */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <Label>Category</Label>
               <Input value={category} onChange={(e) => setCategory(e.target.value)} className="bg-secondary" />
@@ -273,7 +273,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           </div>
 
           {/* Schedule */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <Label className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Starts</Label>
               <Input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className="bg-secondary text-xs" />
@@ -285,7 +285,7 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           </div>
 
           {/* Expiry & Batch */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <Label>Expiry Type</Label>
               <select
