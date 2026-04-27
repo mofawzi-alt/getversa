@@ -583,27 +583,82 @@ Rules:
       return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _entityMatch: entityMatch };
     });
 
-    // VAGUE-QUESTION GUARD: if we have no entities, no topical terms, and no category,
-    // the question is too vague to map to a specific poll (e.g. "what's the best place to eat?").
-    // Don't pretend — ask the user to be more specific. This is the #1 cause of bad verdicts.
-    const hasAnySignal = requiredEntityVariants.length > 0 || topicalTerms.length > 0 || categoryBuckets.length > 0;
-    if (!hasAnySignal) {
+    // VAGUE-QUESTION GUARD (decide mode): no specific A vs B → ask a clarifier instead of guessing.
+    // Triggers when the user has 0 entities AND ≤1 generic topical term (e.g. "best place to eat",
+    // "what should I wear tonight", "where to go out"). Research mode is more permissive.
+    const looksVague = mode === "decide"
+      && requiredEntityVariants.length === 0
+      && topicalTerms.length <= 1;
+
+    if (looksVague) {
+      // Ask Lovable AI for 3 concrete A-vs-B reframings of the user's broad question.
+      let clarifications: Array<{ label: string; question: string }> = [];
+      try {
+        const clarResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
+          messages: [
+            {
+              role: "system",
+              content: `You turn a vague Egyptian-consumer question into 3 specific A-vs-B choices Versa can answer from polls.
+Rules:
+- Each clarifier MUST be a concrete pair of two named options Egyptians would actually choose between.
+- Use brands, places, or lifestyle behaviours common in Egypt (Cairo/Alexandria/Sahel/Sahel context welcome).
+- Keep each rewritten question under 9 words, ending with "?".
+- "label" = short 2-4 word chip text. "question" = full rephrased question to send back.
+Examples:
+  "best place to eat" → [
+    {"label":"Street food vs fine dining","question":"Street food or fine dining?"},
+    {"label":"Talabat vs Elmenus","question":"Talabat or Elmenus tonight?"},
+    {"label":"Eat out vs cook home","question":"Eat out or cook at home?"}
+  ]
+  "what should I wear" → [
+    {"label":"Denim vs leather","question":"Denim jacket or leather jacket?"},
+    {"label":"Modest vs trendy","question":"Modest aesthetic or trendy aesthetic?"},
+    {"label":"Sneakers vs loafers","question":"Sneakers or loafers for going out?"}
+  ]`,
+            },
+            { role: "user", content: question },
+          ],
+          response_format: { type: "json_object" },
+        });
+        if (clarResp.ok) {
+          const cd = await readJsonSafely(clarResp) || {};
+          const raw = cd.choices?.[0]?.message?.content || "";
+          try {
+            const parsed = JSON.parse(raw);
+            const arr = Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.clarifications) ? parsed.clarifications : (Array.isArray(parsed?.options) ? parsed.options : []));
+            clarifications = arr
+              .filter((c: any) => c && typeof c.label === "string" && typeof c.question === "string")
+              .slice(0, 3);
+          } catch { /* fall through */ }
+        }
+      } catch (e) {
+        console.error("clarifier generation failed", e);
+      }
+
+      // Fallback chips if the AI call failed.
+      if (clarifications.length === 0) {
+        clarifications = [
+          { label: "Coke vs Pepsi", question: "Coke or Pepsi?" },
+          { label: "Talabat vs Elmenus", question: "Talabat or Elmenus tonight?" },
+          { label: "Cairo vs Sahel", question: "Cairo or Sahel this weekend?" },
+        ];
+      }
+
       let queryId: string | null = null;
       if (userId) {
         const { data: inserted } = await supabase.from("ask_versa_queries").insert({
           user_id: userId, question, mode, route: safeRoute,
           credits_charged: 0, answered: false, low_data: true,
-          model_used: model, total_votes_considered: 0, matched_poll_count: 0,
-          category_hint: null,
+          model_used: MODEL_FAST, total_votes_considered: 0, matched_poll_count: 0,
+          category_hint: category && category !== "any" ? category : null,
         }).select("id").maybeSingle();
         queryId = inserted?.id ?? null;
       }
-      const examples = mode === "decide"
-        ? '"Costa or Cilantro for studying?", "Talabat or Elmenus tonight?", "iPhone or Samsung?"'
-        : '"How do students feel about online learning?", "Cairo vs Alexandria lifestyle"';
+
       return new Response(JSON.stringify({
-        stage: "vague",
-        summary: `That question is a bit broad for me to pull a clear verdict from votes. Try naming the specific options — e.g. ${examples}.`,
+        stage: "clarify",
+        summary: "That's a broad one — pick a specific match-up so I can pull a clear verdict from real votes:",
+        clarifications,
         credits_balance: userBalance,
         route: safeRoute,
         mode,
@@ -614,7 +669,6 @@ Rules:
     let matchedPolls = enrichedPollList.filter((p: any) => {
       if (!p._entityMatch) return false;
       // Without entities, require at least one topical hit OR a category match.
-      // (We never reach here with all three empty — the vague-guard above returned.)
       if (topicalTerms.length === 0) {
         if (categoryBuckets.length === 0) return false;
         return categoryBuckets.includes(p.category);

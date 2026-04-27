@@ -18,10 +18,12 @@ export interface AskTurn {
   verdict?: Verdict | null;
   polls?: ResearchPoll[];
   lowData?: boolean;
-  /** "offscope" = polite refusal, "factual" = general-knowledge answer not from votes */
-  variant?: 'offscope' | 'factual' | null;
+  /** "offscope" = polite refusal, "factual" = general-knowledge answer not from votes,
+   *  "clarify" = broad question, show clarifier chips */
+  variant?: 'offscope' | 'factual' | 'clarify' | null;
   notice?: string | null;
   suggestions?: string[];
+  clarifications?: Array<{ label: string; question: string }>;
   guardrailPolls?: Array<{ id: string; question: string; option_a: string; option_b: string; image_a_url?: string | null; image_b_url?: string | null; category?: string | null }>;
   askQueryId?: string | null;
   creditsCharged?: number;
@@ -92,6 +94,28 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     </div>
                     <SuggestPollButton question={t.question} askQueryId={t.askQueryId} />
                   </>
+                )}
+
+                {!t.loading && t.variant === 'clarify' && t.summary && (
+                  <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5 space-y-3">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-primary">Quick clarifier</p>
+                    <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
+                    {t.clarifications && t.clarifications.length > 0 && (
+                      <div className="flex flex-col gap-2 pt-1">
+                        {t.clarifications.map((c) => (
+                          <button
+                            key={c.question}
+                            onClick={() => onPickSuggestion(c.question)}
+                            className="w-full text-left px-3.5 py-2.5 rounded-xl bg-primary/5 hover:bg-primary/10 border border-primary/20 active:scale-[0.99] transition"
+                          >
+                            <p className="text-[11px] font-bold text-primary uppercase tracking-wide">{c.label}</p>
+                            <p className="text-sm font-semibold text-foreground mt-0.5 break-words">{c.question}</p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-[11px] text-muted-foreground">No credits charged.</p>
+                  </div>
                 )}
 
                 {!t.loading && t.variant === 'factual' && t.summary && (
