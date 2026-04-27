@@ -681,11 +681,17 @@ Examples:
 
       // Fallback chips if the AI call failed.
       if (clarifications.length === 0) {
-        clarifications = [
-          { label: "Coke vs Pepsi", question: "Coke or Pepsi?" },
-          { label: "Talabat vs Elmenus", question: "Talabat or Elmenus tonight?" },
-          { label: "Cairo vs Sahel", question: "Cairo or Sahel this weekend?" },
-        ];
+        clarifications = isArabic
+          ? [
+              { label: "كوكا ولا بيبسي", question: "كوكا ولا بيبسي؟" },
+              { label: "طلبات ولا المنيوز", question: "طلبات ولا المنيوز الليلة؟" },
+              { label: "القاهرة ولا الساحل", question: "القاهرة ولا الساحل الويك إند ده؟" },
+            ]
+          : [
+              { label: "Coke vs Pepsi", question: "Coke or Pepsi?" },
+              { label: "Talabat vs Elmenus", question: "Talabat or Elmenus tonight?" },
+              { label: "Cairo vs Sahel", question: "Cairo or Sahel this weekend?" },
+            ];
       }
 
       let queryId: string | null = null;
