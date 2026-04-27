@@ -436,9 +436,17 @@ export default function PulseStoriesRow() {
         label: 'Friends',
         cards: friendsData.map((f: any) => {
           const choseLabel = f.choice === 'A' ? f.poll.option_a : f.poll.option_b;
+          const chosenImg = f.choice === 'A' ? f.poll.image_a_url : f.poll.image_b_url;
+          const otherImg  = f.choice === 'A' ? f.poll.image_b_url : f.poll.image_a_url;
+          // Only use a real DB image. If neither side has one, seed the fallback
+          // from the QUESTION (not the option label) so the visual stays on-topic
+          // instead of hashing "Sahel" → an unrelated Nike shoe.
+          const realImg = (chosenImg && /^https?:\/\//i.test(chosenImg)) ? chosenImg
+                        : (otherImg && /^https?:\/\//i.test(otherImg)) ? otherImg
+                        : null;
           const bg = getPollDisplayImageSrc({
-            imageUrl: f.choice === 'A' ? f.poll.image_a_url : f.poll.image_b_url,
-            option: choseLabel,
+            imageUrl: realImg || undefined,
+            option: realImg ? choseLabel : f.poll.question,
             question: f.poll.question,
             side: f.choice,
           });
