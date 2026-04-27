@@ -18,6 +18,7 @@ type Props = {
   story: EditorialStory | null;
   onClose: () => void;
   onComplete?: () => boolean | void;
+  onPrevious?: () => boolean | void;
 };
 
 export default function EditorialStoryViewer({ open, story, onClose, onComplete }: Props) {
