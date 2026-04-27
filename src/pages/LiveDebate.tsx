@@ -326,6 +326,24 @@ export default function LiveDebate() {
   const campaignLabel = getCampaignLabel(currentPoll.category);
   const showResult = phase === 'result' && result;
 
+  // Compact verdict card mode — when launched from Ask Versa perspectives
+  // and the poll is already voted, render the share-style result card
+  // instead of the full-screen swipe overlay. Closing returns to /ask.
+  if (returnTo === 'ask' && phase === 'result' && result && currentPollIsVoted) {
+    return (
+      <VerdictResultCard
+        poll={currentPoll}
+        myChoice={result.choice}
+        percentA={result.percentA}
+        percentB={result.percentB}
+        totalVotes={result.totalVotes}
+        hasMore={hasMore}
+        onNext={() => { setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe'); }}
+        onClose={handleExit}
+      />
+    );
+  }
+
   return (
     <motion.div
       className="fixed inset-0 z-[100] bg-black flex flex-col overflow-hidden"
