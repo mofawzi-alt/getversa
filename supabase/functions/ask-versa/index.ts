@@ -230,7 +230,7 @@ Categories: ${KNOWN_CATEGORIES.join(", ")}.
 If conversation history is provided, the new question may be a FOLLOW-UP — infer underlying topic and merge entities from prior turns.`,
         },
         ...historyMessages,
-        { role: "user", content: question },
+        { role: "user", content: effectiveQuestion },
         ],
         tools: [FILTER_TOOL],
         tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
@@ -273,7 +273,7 @@ Rules:
 - "offscope" = harmful, code, math homework, gibberish.`,
             },
             ...historyMessages,
-            { role: "user", content: question },
+            { role: "user", content: effectiveQuestion },
           ],
           response_format: { type: "json_object" },
         });
