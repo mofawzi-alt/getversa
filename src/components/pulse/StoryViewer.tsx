@@ -7,6 +7,9 @@ import { trackStoryEvent } from '@/lib/storyAnalytics';
 import { markSeenLocally } from '@/lib/pulseTime';
 import { toast } from 'sonner';
 
+const isVideoUrl = (url?: string | null) =>
+  !!url && /\.(mp4|webm|mov|ogg)(\?|$)/i.test(url);
+
 export type StoryCardData = {
   /** Background image (winning option image, or fallback). */
   backgroundImage?: string | null;
@@ -297,13 +300,25 @@ export default function StoryViewer({
           >
             {/* Solid black base — image carries the visual identity */}
             <div className="absolute inset-0 bg-black" />
-            {card.backgroundImage && /^https?:\/\//i.test(card.backgroundImage) ? (
+            {card.backgroundImage && (card.backgroundImage.startsWith('/') || /^https?:\/\//i.test(card.backgroundImage)) ? (
+              isVideoUrl(card.backgroundImage) ? (
+                <video
+                  src={card.backgroundImage}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  onError={(e) => { (e.currentTarget as HTMLVideoElement).style.display = 'none'; }}
+                />
+              ) : (
               <img
                 src={card.backgroundImage}
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
               />
+              )
             ) : (
               /* Themed gradient fallback only when no image */
               <div

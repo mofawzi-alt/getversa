@@ -16,7 +16,6 @@ import {
 } from '@/hooks/usePulseCircles';
 import { useBreakdownFindings, type BreakdownFinding } from '@/hooks/useBreakdownFindings';
 const BreakdownShareCard = lazy(() => import('./BreakdownShareCard'));
-import { getPollDisplayImageSrc } from '@/lib/pollImages';
 import { useEditorialStories, type EditorialStory } from '@/hooks/useEditorialStories';
 import { EDITORIAL_STORY_META } from '@/lib/editorialStoryTypes';
 import EditorialStoryViewer from './EditorialStoryViewer';
@@ -121,6 +120,15 @@ const CATEGORY_EMOJI: Record<string, string> = {
   'personality': '🧬', 'the pulse': '🔥',
 };
 const emojiFor = (cat: string) => CATEGORY_EMOJI[cat.toLowerCase()] || '🔥';
+
+const isPollMediaUrl = (url?: string | null) =>
+  !!url && (/^https?:\/\//i.test(url) || url.startsWith('/'));
+
+const resolvePollStoryMedia = (chosen?: string | null, alternate?: string | null) => {
+  if (isPollMediaUrl(chosen)) return chosen;
+  if (isPollMediaUrl(alternate)) return alternate;
+  return null;
+};
 
 type CircleSpec = {
   topic: string;
@@ -438,18 +446,7 @@ export default function PulseStoriesRow() {
           const choseLabel = f.choice === 'A' ? f.poll.option_a : f.poll.option_b;
           const chosenImg = f.choice === 'A' ? f.poll.image_a_url : f.poll.image_b_url;
           const otherImg  = f.choice === 'A' ? f.poll.image_b_url : f.poll.image_a_url;
-          // Only use a real DB image. If neither side has one, seed the fallback
-          // from the QUESTION (not the option label) so the visual stays on-topic
-          // instead of hashing "Sahel" → an unrelated Nike shoe.
-          const realImg = (chosenImg && /^https?:\/\//i.test(chosenImg)) ? chosenImg
-                        : (otherImg && /^https?:\/\//i.test(otherImg)) ? otherImg
-                        : null;
-          const bg = getPollDisplayImageSrc({
-            imageUrl: realImg || undefined,
-            option: realImg ? choseLabel : f.poll.question,
-            question: f.poll.question,
-            side: f.choice,
-          });
+          const bg = resolvePollStoryMedia(chosenImg, otherImg);
           return {
             backgroundImage: bg,
             label: `${f.friendName} just voted`,
