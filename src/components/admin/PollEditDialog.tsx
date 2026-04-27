@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Loader2, Upload, X, Calendar } from 'lucide-react';
+import { Loader2, Upload, X, Calendar, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Poll {
