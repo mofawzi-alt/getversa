@@ -254,6 +254,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             <div>
               <Label>Option B</Label>
               <Input value={optionB} onChange={(e) => setOptionB(e.target.value)} className="bg-secondary" />
+            </div>
+          </div>
+
           {/* Images */}
           <div className="flex items-center justify-between gap-2">
             <Label className="text-sm">Images</Label>
