@@ -184,7 +184,7 @@ export default function Ask() {
       }
 
       // Factual: general-knowledge answer, clearly labeled, no charge.
-      if (data.stage === 'factual') {
+      if (data.stage === 'factual' || data.stage === 'about') {
         const turnId = crypto.randomUUID();
         setTurns((prev) => [...prev, {
           id: turnId, question, mode,
