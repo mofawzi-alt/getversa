@@ -48,6 +48,8 @@ type Props = {
   onShareOverride?: (cardIndex: number) => boolean | Promise<boolean>;
   /** Called when the last card finishes. Return true to suppress auto-close (e.g. flipping to next story). */
   onComplete?: () => boolean | void;
+  /** Called when user taps back on the first card. Return true to suppress no-op (e.g. flipping to previous story). */
+  onPrevious?: () => boolean | void;
 };
 
 const DEFAULT_DURATION = 4000;
