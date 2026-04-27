@@ -297,7 +297,7 @@ export default function StoryViewer({
           </div>
 
           {/* Tap-zone affordances (visual only — actual tap handled by backdrop) */}
-          {safeIndex > 0 && (
+          {(safeIndex > 0 || !!onPrevious) && (
             <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white/80 pointer-events-none">
               <ChevronLeft className="w-5 h-5" />
             </div>
