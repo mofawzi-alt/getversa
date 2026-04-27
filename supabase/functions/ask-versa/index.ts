@@ -447,7 +447,7 @@ Rules:
       try {
         const factResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
           messages: [
-            { role: "system", content: "You answer factual questions in 2-3 short sentences. Be direct, accurate, and cite a rough year if possible. If you don't know, say so. Never invent statistics." },
+            { role: "system", content: "You answer factual questions in 2-3 short sentences. Be direct, accurate, and cite a rough year if possible. If you don't know, say so. Never invent statistics." + arabicInstruction },
             { role: "user", content: question },
           ],
         });
