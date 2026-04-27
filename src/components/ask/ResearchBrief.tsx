@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { Sparkles, Users, MapPin, UserCircle2 } from 'lucide-react';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 import CategoryBadge from '@/components/category/CategoryBadge';
@@ -12,7 +11,6 @@ interface Props {
 }
 
 export default function ResearchBrief({ question, summary, polls }: Props) {
-  const navigate = useNavigate();
   const totalVotes = polls.reduce((acc, p) => acc + p.total_votes, 0);
 
   return (
@@ -38,10 +36,9 @@ export default function ResearchBrief({ question, summary, polls }: Props) {
       </p>
       <div className="space-y-2.5">
         {polls.map((p, idx) => (
-          <button
+          <div
             key={p.id}
-            onClick={() => navigate(`/live-debate?pollId=${p.id}&returnTo=ask`)}
-            className="w-full text-left rounded-2xl bg-card border border-border p-3.5 active:scale-[0.99] transition space-y-2.5"
+            className="w-full text-left rounded-2xl bg-card border border-border p-3.5 space-y-2.5"
           >
             <div className="flex items-start gap-2">
               <span className="text-[11px] font-bold text-muted-foreground mt-0.5">#{idx + 1}</span>
@@ -94,7 +91,7 @@ export default function ResearchBrief({ question, summary, polls }: Props) {
                 )}
               </div>
             )}
-          </button>
+          </div>
         ))}
       </div>
     </div>
