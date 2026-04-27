@@ -386,10 +386,10 @@ Rules:
       const bareSelf = /^(versa\??|what(?:'s| is)? (?:this|the) app\??|what does this app do\??|how does this app work\??|about (?:this )?app\??)$/i.test(q);
       if (bareSelf || (mentionsVersa && aboutShape)) {
         const summary =
-          "Versa is a binary-poll app where Egyptians vote between two choices — brands, food, lifestyle, relationships, anything. " +
-          "Your votes feed a real-time pulse of what people in Egypt actually pick. " +
-          "Ask Versa lets you ask any consumer question and get a verdict backed by those votes — like 'Coke or Pepsi?', 'best place to grab coffee in Cairo?', or 'what do students think about online learning?'. " +
-          "Each answer is grounded in real poll data, not opinion.";
+          "Versa is Egypt's opinion engine.\n\n" +
+          "Every day, Egyptians swipe to choose between two things — brands, food, lifestyle, money, culture. Every choice is real behavioral data tagged by age, gender, and city.\n\n" +
+          "The more you vote, the more Versa learns what Egypt actually prefers — not what people say they prefer, but what they actually choose.\n\n" +
+          "Ask me anything about what Egypt thinks. I'll tell you what the data says.";
         let queryId: string | null = null;
         if (userId) {
           const { data: inserted } = await supabase.from("ask_versa_queries").insert({
