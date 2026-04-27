@@ -658,7 +658,7 @@ Examples:
     {"label":"Denim vs leather","question":"Denim jacket or leather jacket?"},
     {"label":"Modest vs trendy","question":"Modest aesthetic or trendy aesthetic?"},
     {"label":"Sneakers vs loafers","question":"Sneakers or loafers for going out?"}
-  ]`,
+  ]` + arabicInstruction + (isArabic ? "\nWrite both label and question in Egyptian Arabic (عامية). Brand names stay in their original form." : ""),
             },
             { role: "user", content: question },
           ],
