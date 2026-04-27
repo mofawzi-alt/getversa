@@ -188,6 +188,23 @@ serve(async (req) => {
       content: String(h.content || "").slice(0, 500),
     }));
 
+    // Generic follow-up detection: short imperative-style asks like
+    // "show me the polls", "more polls", "show polls to vote on", "any polls?"
+    // These have no standalone topical content — they refer to the previous user question.
+    // We rewrite them to include the prior topic so extraction + matching stay on-topic.
+    const lastUserTurn = [...trimmedHistory].reverse().find((h) => h.role === "user");
+    const looksLikeGenericFollowup = (() => {
+      const q = question.toLowerCase().trim();
+      if (q.length > 60) return false;
+      return /^(show|give|bring|list|find|any|more|other|related|what about|polls?|votes?)/.test(q)
+        && /(poll|vote|data|result)/.test(q);
+    })();
+    let effectiveQuestion = question;
+    if (looksLikeGenericFollowup && lastUserTurn) {
+      effectiveQuestion = `${question} (about: ${lastUserTurn.content})`;
+      console.log("Generic follow-up detected — rewrote with prior context:", effectiveQuestion);
+    }
+
     // ---- 1. Extract filters + classify route (always uses fast model) ----
     let extractResp: Response | null = null;
     try {
