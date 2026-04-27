@@ -119,7 +119,11 @@ export default function EditorialStoryViewer({ open, story, onClose, onComplete,
   }
 
   function prev() {
-    if (index === 0) return;
+    if (index === 0) {
+      const handled = onPrevious?.();
+      if (handled === true) return;
+      return;
+    }
     setIndex((i) => Math.max(i - 1, 0));
     setProgress(0);
     startedAt.current = Date.now();
