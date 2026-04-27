@@ -14,6 +14,7 @@ import AIDraftForm from './campaigns/AIDraftForm';
 import FocusGroupForm from './campaigns/FocusGroupForm';
 import ManagePanelDialog from './campaigns/ManagePanelDialog';
 import CampaignEditDialog from './campaigns/CampaignEditDialog';
+import CampaignPollsEditDialog from './campaigns/CampaignPollsEditDialog';
 
 export default function BrandCampaignBuilder() {
   const queryClient = useQueryClient();
@@ -147,6 +148,7 @@ export default function BrandCampaignBuilder() {
                 <div className="flex items-center justify-center gap-1 flex-wrap">
                   <CampaignAnalyticsDialog campaignId={c.id} campaignName={c.name} brandName={c.brand_name} />
                   <CampaignEditDialog campaignId={c.id} />
+                  <CampaignPollsEditDialog campaignId={c.id} campaignName={c.name} />
                   <CampaignFeedbackConfigDialog campaignId={c.id} campaignName={c.name} />
                   {c.campaign_type === 'focus_group' && (
                     <ManagePanelDialog campaignId={c.id} campaignName={c.name} />
