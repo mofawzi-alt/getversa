@@ -56,6 +56,8 @@ function PollOptionImageComponent({
 }: PollOptionImageProps) {
   const [loaded, setLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const instanceId = useId();
+  const [unmuted, setUnmuted] = useState(false);
 
   const imgSrc = getPollDisplayImageSrc({
     imageUrl,
@@ -89,6 +91,33 @@ function PollOptionImageComponent({
   }, []);
 
   useEffect(() => () => observerRef.current?.disconnect(), []);
+
+  // Subscribe to global sound controller — only one video unmuted at a time
+  useEffect(() => {
+    return videoSound.subscribe((activeId) => {
+      if (activeId !== instanceId && unmuted) {
+        setUnmuted(false);
+      }
+    }) as any;
+  }, [instanceId, unmuted]);
+
+  // When user scrolls away, mute this video
+  useEffect(() => {
+    if (!videoVisible && unmuted) {
+      setUnmuted(false);
+      if (videoSound.getActive() === instanceId) videoSound.setActive(null);
+    }
+  }, [videoVisible, unmuted, instanceId]);
+
+  const toggleSound = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setUnmuted((prev) => {
+      const next = !prev;
+      videoSound.setActive(next ? instanceId : null);
+      return next;
+    });
+  }, [instanceId]);
 
   // Video treatment
   if (isVideoUrl(imageUrl)) {
