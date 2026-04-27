@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ArrowRight } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -187,6 +187,18 @@ export default function EditorialStoryViewer({ open, story, onClose, onComplete 
           >
             <X className="w-5 h-5" />
           </button>
+
+          {/* Tap-zone affordances (visual only — tap handled by backdrop) */}
+          {safeIndex > 0 && (
+            <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white/80 pointer-events-none">
+              <ChevronLeft className="w-5 h-5" />
+            </div>
+          )}
+          {safeIndex < 4 && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white/80 pointer-events-none">
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          )}
 
           {/* Card content */}
           <motion.div

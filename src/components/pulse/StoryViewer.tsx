@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Share2, ChevronRight } from 'lucide-react';
+import { X, Share2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { trackStoryEvent } from '@/lib/storyAnalytics';
 import { markSeenLocally } from '@/lib/pulseTime';
@@ -289,7 +289,17 @@ export default function StoryViewer({
             </button>
           </div>
 
-          
+          {/* Tap-zone affordances (visual only — actual tap handled by backdrop) */}
+          {safeIndex > 0 && (
+            <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white/80 pointer-events-none">
+              <ChevronLeft className="w-5 h-5" />
+            </div>
+          )}
+          {safeIndex < cards.length - 1 && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white/80 pointer-events-none">
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          )}
 
           <motion.div
             key={index}
