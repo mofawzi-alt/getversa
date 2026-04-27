@@ -34,6 +34,7 @@ import { NotificationAnalytics } from '@/components/admin/NotificationAnalytics'
 import { useAdminFeaturePoll } from '@/hooks/usePinnedPoll';
 import PulseAdminPanel from '@/components/admin/PulseAdminPanel';
 import BreakdownAdminPanel from '@/components/admin/BreakdownAdminPanel';
+import EditorialStoriesAdmin from '@/components/admin/EditorialStoriesAdmin';
 import { useBreakdownPendingCount } from '@/hooks/useBreakdownPendingCount';
 import AskVersaAnalytics from '@/components/admin/AskVersaAnalytics';
 import BaselineSeeding from '@/components/admin/BaselineSeeding';
@@ -201,7 +202,10 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="pulse" className="space-y-6">
-          <PulseAdminPanel />
+          <EditorialStoriesAdmin />
+          <div className="border-t pt-6">
+            <PulseAdminPanel />
+          </div>
           <div className="border-t pt-6">
             <BreakdownAdminPanel />
           </div>

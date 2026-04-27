@@ -17,6 +17,10 @@ import {
 import { useBreakdownFindings, type BreakdownFinding } from '@/hooks/useBreakdownFindings';
 const BreakdownShareCard = lazy(() => import('./BreakdownShareCard'));
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
+import { useEditorialStories, type EditorialStory } from '@/hooks/useEditorialStories';
+import { EDITORIAL_STORY_META } from '@/lib/editorialStoryTypes';
+import EditorialStoryViewer from './EditorialStoryViewer';
+import { hasSeenLocally as hasSeenLocallyKey } from '@/lib/pulseTime';
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
 
@@ -212,8 +216,10 @@ export default function PulseStoriesRow() {
   const { data: settings } = usePulseSettings();
   const lastVisit = useLastVisit();
   const [openTopic, setOpenTopic] = useState<string | null>(null);
+  const [openEditorial, setOpenEditorial] = useState<EditorialStory | null>(null);
   const [bump, setBump] = useState(0);
   const [shareFinding, setShareFinding] = useState<BreakdownFinding | null>(null);
+  const { data: editorialStories } = useEditorialStories();
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
@@ -581,7 +587,8 @@ export default function PulseStoriesRow() {
   }, [circles]);
 
   if (settings?.stories_row_enabled === false) return null;
-  if (!pulse || sorted.length === 0) return null;
+  const hasEditorial = (editorialStories?.length || 0) > 0;
+  if (!hasEditorial && (!pulse || sorted.length === 0)) return null;
 
   const activeCircle = sorted.find((c) => c.topic === openTopic);
 
@@ -589,6 +596,43 @@ export default function PulseStoriesRow() {
     <>
       <div className="w-full overflow-x-auto no-scrollbar -mx-4 px-4 py-3 border-b border-border/40 bg-background">
         <div className="flex gap-3 min-w-max">
+          {/* ── NEW: Editorial 5-card stories first ── */}
+          {(editorialStories || []).map((story) => {
+            const meta = EDITORIAL_STORY_META[story.story_type];
+            if (!meta) return null;
+            const seen = hasSeenLocallyKey(`editorial:${story.story_type}`);
+            return (
+              <button
+                key={story.id}
+                type="button"
+                onClick={() => setOpenEditorial(story)}
+                className="flex flex-col items-center gap-1.5 w-16 active:scale-95 transition-transform"
+              >
+                <div
+                  className="w-16 h-16 rounded-full p-[2.5px] shadow-lg"
+                  style={{
+                    background: seen
+                      ? 'hsl(var(--muted))'
+                      : `linear-gradient(135deg, ${meta.color}, ${meta.color}aa, ${meta.color})`,
+                  }}
+                >
+                  <div className="w-full h-full rounded-full bg-background flex items-center justify-center p-[3px]">
+                    <div
+                      className="w-full h-full rounded-full flex items-center justify-center text-2xl shadow-inner"
+                      style={{ backgroundColor: meta.bgTint, color: meta.color }}
+                    >
+                      {meta.emoji}
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-medium text-foreground/80 truncate w-full text-center">
+                  {meta.label}
+                </span>
+              </button>
+            );
+          })}
+
+          {/* ── Existing pulse circles (unchanged) ── */}
           {sorted.map((circle) => {
             const visual = TOPIC_VISUALS[circle.topic] || FALLBACK_VISUAL;
             const Icon = visual.Icon;
@@ -619,7 +663,7 @@ export default function PulseStoriesRow() {
                 >
                   <div className="w-full h-full rounded-full bg-background flex items-center justify-center p-[3px]">
                     <div className={`w-full h-full rounded-full ${visual.tileGradient} flex items-center justify-center shadow-inner relative ${!showRing ? 'opacity-70' : ''}`}>
-                      {circle.topic === 'egypt_today' && pulse.pinned_poll_id && (
+                      {circle.topic === 'egypt_today' && pulse?.pinned_poll_id && (
                         <Pin className="absolute top-0.5 right-0.5 w-3 h-3 text-white fill-white" />
                       )}
                       <Icon className={`w-6 h-6 ${visual.iconColor} drop-shadow`} strokeWidth={2.25} />
@@ -637,6 +681,12 @@ export default function PulseStoriesRow() {
           })}
         </div>
       </div>
+
+      <EditorialStoryViewer
+        open={!!openEditorial}
+        story={openEditorial}
+        onClose={() => { setOpenEditorial(null); setBump((b) => b + 1); }}
+      />
 
       <StoryViewer
         open={!!openTopic && !!activeCircle}
