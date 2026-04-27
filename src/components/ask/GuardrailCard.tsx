@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import SuggestPollButton from './SuggestPollButton';
 
@@ -20,7 +19,6 @@ interface Props {
 }
 
 export default function GuardrailCard({ summary, polls, question, askQueryId }: Props) {
-  const navigate = useNavigate();
 
   return (
     <div className="space-y-3">
@@ -42,10 +40,9 @@ export default function GuardrailCard({ summary, polls, question, askQueryId }: 
             Vote on these to build the data
           </p>
           {polls.map((p) => (
-            <button
+            <div
               key={p.id}
-              onClick={() => navigate(`/live-debate?pollId=${p.id}&returnTo=ask`)}
-              className="w-full flex items-center gap-3 rounded-2xl bg-card border border-border p-2.5 active:scale-[0.99] transition text-left"
+              className="w-full flex items-center gap-3 rounded-2xl bg-card border border-border p-2.5 text-left"
             >
               <div className="flex gap-1 shrink-0">
                 {p.image_a_url && (
@@ -61,9 +58,9 @@ export default function GuardrailCard({ summary, polls, question, askQueryId }: 
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-foreground line-clamp-2">{p.question}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">+1 credit per vote</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Vote in the feed to build this answer</p>
               </div>
-            </button>
+            </div>
           ))}
         </div>
       )}
