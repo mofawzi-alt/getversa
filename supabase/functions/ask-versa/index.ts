@@ -392,11 +392,9 @@ Rules:
       // Short bare queries like "versa", "versa?", "what is this app"
       const bareSelf = /^(versa\??|what(?:'s| is)? (?:this|the) app\??|what does this app do\??|how does this app work\??|about (?:this )?app\??)$/i.test(q);
       if (bareSelf || (mentionsVersa && aboutShape)) {
-        const summary =
-          "Versa is Egypt's opinion engine.\n\n" +
-          "Every day, Egyptians swipe to choose between two things — brands, food, lifestyle, money, culture. Every choice is real behavioral data tagged by age, gender, and city.\n\n" +
-          "The more you vote, the more Versa learns what Egypt actually prefers — not what people say they prefer, but what they actually choose.\n\n" +
-          "Ask me anything about what Egypt thinks. I'll tell you what the data says.";
+        const summary = isArabic
+          ? "ڤيرسا هي محرك آراء مصر.\n\nكل يوم، المصريين بيختاروا بين حاجتين — براندات، أكل، لايف ستايل، فلوس، ثقافة. كل اختيار ده داتا سلوكية حقيقية متسجلة بالسن والجنس والمدينة.\n\nكل ما تصوّت أكتر، ڤيرسا بتعرف أكتر إيه اللي مصر بتفضّله فعلاً — مش اللي الناس بتقول إنها بتفضّله، لأ، اللي بيختاروه بجد.\n\nاسألني أي حاجة عن رأي مصر. هقولك الداتا بتقول إيه."
+          : "Versa is Egypt's opinion engine.\n\nEvery day, Egyptians swipe to choose between two things — brands, food, lifestyle, money, culture. Every choice is real behavioral data tagged by age, gender, and city.\n\nThe more you vote, the more Versa learns what Egypt actually prefers — not what people say they prefer, but what they actually choose.\n\nAsk me anything about what Egypt thinks. I'll tell you what the data says.";
         let queryId: string | null = null;
         if (userId) {
           const { data: inserted } = await supabase.from("ask_versa_queries").insert({
