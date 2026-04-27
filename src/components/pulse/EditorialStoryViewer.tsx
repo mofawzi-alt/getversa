@@ -21,7 +21,7 @@ type Props = {
   onPrevious?: () => boolean | void;
 };
 
-export default function EditorialStoryViewer({ open, story, onClose, onComplete }: Props) {
+export default function EditorialStoryViewer({ open, story, onClose, onComplete, onPrevious }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [index, setIndex] = useState(0);
