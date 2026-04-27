@@ -922,7 +922,7 @@ Examples:
 
       const reasonResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: "You write ONE punchy sentence (max 18 words) explaining why Egyptians lean a certain way on a poll. No preamble, no quotes. Direct and confident." },
+          { role: "system", content: "You write ONE punchy sentence (max 18 words) explaining why Egyptians lean a certain way on a poll. No preamble, no quotes. Direct and confident." + arabicInstruction },
           { role: "user", content: `Question: "${top.question}"\nWinner: ${winnerLabel} (${winnerPct}%)\nLoser: ${winnerSide === "A" ? top.option_b : top.option_a} (${100 - winnerPct}%)\nSample size: ${s.total}\n\nWhy did people pick ${winnerLabel}? One sentence.` },
         ],
       });
