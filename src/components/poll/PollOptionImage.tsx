@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback, useId, memo } from 'react';
+import { Loader2, Volume2, VolumeX } from 'lucide-react';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { getBrandColor, getImageTreatment } from '@/lib/brandDetection';
+import { videoSound } from '@/lib/videoSound';
 
 /**
  * Card variant determines image sizing behavior:
@@ -55,6 +56,8 @@ function PollOptionImageComponent({
 }: PollOptionImageProps) {
   const [loaded, setLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const instanceId = useId();
+  const [unmuted, setUnmuted] = useState(false);
 
   const imgSrc = getPollDisplayImageSrc({
     imageUrl,
@@ -89,6 +92,33 @@ function PollOptionImageComponent({
 
   useEffect(() => () => observerRef.current?.disconnect(), []);
 
+  // Subscribe to global sound controller — only one video unmuted at a time
+  useEffect(() => {
+    return videoSound.subscribe((activeId) => {
+      if (activeId !== instanceId && unmuted) {
+        setUnmuted(false);
+      }
+    }) as any;
+  }, [instanceId, unmuted]);
+
+  // When user scrolls away, mute this video
+  useEffect(() => {
+    if (!videoVisible && unmuted) {
+      setUnmuted(false);
+      if (videoSound.getActive() === instanceId) videoSound.setActive(null);
+    }
+  }, [videoVisible, unmuted, instanceId]);
+
+  const toggleSound = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setUnmuted((prev) => {
+      const next = !prev;
+      videoSound.setActive(next ? instanceId : null);
+      return next;
+    });
+  }, [instanceId]);
+
   // Video treatment
   if (isVideoUrl(imageUrl)) {
     const videoStyles: Record<CardVariant, { objectFit: string; objectPosition: string }> = {
@@ -121,12 +151,23 @@ function PollOptionImageComponent({
           }}
           autoPlay
           loop
-          muted
+          muted={!unmuted}
           playsInline
           preload="metadata"
           onLoadedData={() => setLoaded(true)}
           draggable={draggable}
         />
+        {variant !== 'history' && (
+          <button
+            type="button"
+            onClick={toggleSound as any}
+            onTouchEnd={toggleSound as any}
+            aria-label={unmuted ? 'Mute video' : 'Unmute video'}
+            className="absolute bottom-2 right-2 z-10 h-9 w-9 rounded-full bg-black/55 backdrop-blur-sm text-white flex items-center justify-center active:scale-90 transition-transform"
+          >
+            {unmuted ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </button>
+        )}
       </div>
     );
   }
