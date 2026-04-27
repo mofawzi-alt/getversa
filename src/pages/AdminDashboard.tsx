@@ -186,6 +186,10 @@ export default function AdminDashboard() {
           </Tabs>
         </TabsContent>
 
+        <TabsContent value="audit" className="space-y-4">
+          <ActivePollsMonitor />
+        </TabsContent>
+
 
         <TabsContent value="rewards" className="space-y-4">
           <RewardsTab 
