@@ -160,6 +160,13 @@ serve(async (req) => {
       });
     }
 
+    // ---- Language detection: Arabic vs English ----
+    // Any Arabic Unicode char in the question → respond in Egyptian Arabic (عامية).
+    const isArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(question);
+    const arabicInstruction = isArabic
+      ? "\n\nIMPORTANT: The user wrote in Arabic. Reply in Egyptian Arabic (عامية مصرية) — conversational, natural Cairo street tone. NOT Modern Standard Arabic. Keep brand names in their original form (iPhone, Talabat, Vodafone, etc.). Numbers and percentages in Arabic numerals are fine."
+      : "";
+
     // Identify caller
     const authHeader = req.headers.get("Authorization") || "";
     let userId: string | null = null;
