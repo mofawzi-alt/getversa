@@ -18,10 +18,12 @@ export interface AskTurn {
   verdict?: Verdict | null;
   polls?: ResearchPoll[];
   lowData?: boolean;
-  /** "offscope" = polite refusal, "factual" = general-knowledge answer not from votes */
-  variant?: 'offscope' | 'factual' | null;
+  /** "offscope" = polite refusal, "factual" = general-knowledge answer not from votes,
+   *  "clarify" = broad question, show clarifier chips */
+  variant?: 'offscope' | 'factual' | 'clarify' | null;
   notice?: string | null;
   suggestions?: string[];
+  clarifications?: Array<{ label: string; question: string }>;
   guardrailPolls?: Array<{ id: string; question: string; option_a: string; option_b: string; image_a_url?: string | null; image_b_url?: string | null; category?: string | null }>;
   askQueryId?: string | null;
   creditsCharged?: number;
