@@ -627,6 +627,98 @@ export type Database = {
         }
         Relationships: []
       }
+      editorial_stories: {
+        Row: {
+          card_dropoff: Json
+          cards: Json
+          completions: number
+          created_at: string
+          created_by: string | null
+          cta_poll_id: string | null
+          expires_at: string | null
+          headline: string
+          id: string
+          poll_id: string | null
+          publish_at: string | null
+          source: string
+          status: string
+          story_type: string
+          total_real_votes: number | null
+          updated_at: string
+          views: number
+          vote_taps: number
+        }
+        Insert: {
+          card_dropoff?: Json
+          cards?: Json
+          completions?: number
+          created_at?: string
+          created_by?: string | null
+          cta_poll_id?: string | null
+          expires_at?: string | null
+          headline: string
+          id?: string
+          poll_id?: string | null
+          publish_at?: string | null
+          source?: string
+          status?: string
+          story_type: string
+          total_real_votes?: number | null
+          updated_at?: string
+          views?: number
+          vote_taps?: number
+        }
+        Update: {
+          card_dropoff?: Json
+          cards?: Json
+          completions?: number
+          created_at?: string
+          created_by?: string | null
+          cta_poll_id?: string | null
+          expires_at?: string | null
+          headline?: string
+          id?: string
+          poll_id?: string | null
+          publish_at?: string | null
+          source?: string
+          status?: string
+          story_type?: string
+          total_real_votes?: number | null
+          updated_at?: string
+          views?: number
+          vote_taps?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_stories_cta_poll_id_fkey"
+            columns: ["cta_poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "editorial_stories_cta_poll_id_fkey"
+            columns: ["cta_poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "editorial_stories_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "editorial_stories_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorite_polls: {
         Row: {
           created_at: string | null
@@ -3132,6 +3224,22 @@ export type Database = {
       spend_ask_credits: {
         Args: { p_amount: number; p_user_id: string }
         Returns: Json
+      }
+      track_editorial_story_event: {
+        Args: { p_card_index?: number; p_event: string; p_story_id: string }
+        Returns: undefined
+      }
+      upsert_auto_editorial_story: {
+        Args: {
+          p_cards: Json
+          p_cta_poll_id: string
+          p_expires_at: string
+          p_headline: string
+          p_poll_id: string
+          p_story_type: string
+          p_total_real_votes: number
+        }
+        Returns: string
       }
     }
     Enums: {
