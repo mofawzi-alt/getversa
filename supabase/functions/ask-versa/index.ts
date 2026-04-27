@@ -583,9 +583,42 @@ Rules:
       return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _entityMatch: entityMatch };
     });
 
+    // VAGUE-QUESTION GUARD: if we have no entities, no topical terms, and no category,
+    // the question is too vague to map to a specific poll (e.g. "what's the best place to eat?").
+    // Don't pretend — ask the user to be more specific. This is the #1 cause of bad verdicts.
+    const hasAnySignal = requiredEntityVariants.length > 0 || topicalTerms.length > 0 || categoryBuckets.length > 0;
+    if (!hasAnySignal) {
+      let queryId: string | null = null;
+      if (userId) {
+        const { data: inserted } = await supabase.from("ask_versa_queries").insert({
+          user_id: userId, question, mode, route: safeRoute,
+          credits_charged: 0, answered: false, low_data: true,
+          model_used: model, total_votes_considered: 0, matched_poll_count: 0,
+          category_hint: null,
+        }).select("id").maybeSingle();
+        queryId = inserted?.id ?? null;
+      }
+      const examples = mode === "decide"
+        ? '"Costa or Cilantro for studying?", "Talabat or Elmenus tonight?", "iPhone or Samsung?"'
+        : '"How do students feel about online learning?", "Cairo vs Alexandria lifestyle"';
+      return new Response(JSON.stringify({
+        stage: "vague",
+        summary: `That question is a bit broad for me to pull a clear verdict from votes. Try naming the specific options — e.g. ${examples}.`,
+        credits_balance: userBalance,
+        route: safeRoute,
+        mode,
+        query_id: queryId,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     let matchedPolls = enrichedPollList.filter((p: any) => {
       if (!p._entityMatch) return false;
-      if (topicalTerms.length === 0) return categoryBuckets.length === 0 || categoryBuckets.includes(p.category);
+      // Without entities, require at least one topical hit OR a category match.
+      // (We never reach here with all three empty — the vague-guard above returned.)
+      if (topicalTerms.length === 0) {
+        if (categoryBuckets.length === 0) return false;
+        return categoryBuckets.includes(p.category);
+      }
       return p._topicalHits >= 1;
     });
 

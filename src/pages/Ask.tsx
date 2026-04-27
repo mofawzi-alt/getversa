@@ -157,6 +157,18 @@ export default function Ask() {
         return;
       }
 
+      // Vague: question too broad to map to a specific poll. Ask for specifics, no charge.
+      if (data.stage === 'vague') {
+        const turnId = crypto.randomUUID();
+        setTurns((prev) => [...prev, {
+          id: turnId, question, mode,
+          loading: false,
+          summary: data.summary,
+          variant: 'offscope',
+        } as AskTurn]);
+        return;
+      }
+
       // Factual: general-knowledge answer, clearly labeled, no charge.
       if (data.stage === 'factual') {
         const turnId = crypto.randomUUID();
