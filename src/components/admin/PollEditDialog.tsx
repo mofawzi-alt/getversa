@@ -254,7 +254,63 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
             <div>
               <Label>Option B</Label>
               <Input value={optionB} onChange={(e) => setOptionB(e.target.value)} className="bg-secondary" />
+          {/* Images */}
+          <div className="flex items-center justify-between gap-2">
+            <Label className="text-sm">Images</Label>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={generateAIImages}
+              disabled={isGenerating || isUploading}
+              className="h-8 text-xs"
+            >
+              {isGenerating ? (
+                <><Loader2 className="h-3 w-3 animate-spin mr-1.5" /> Generating...</>
+              ) : (
+                <><Sparkles className="h-3 w-3 mr-1.5" /> Generate with AI</>
+              )}
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <Label>Image A</Label>
+              <input type="file" accept="image/*,video/*,.mp4,.webm,.mov,.ogg" ref={imageAInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'A')} className="hidden" />
+              {currentImageA ? (
+                <div className="relative mt-2">
+                  <img src={currentImageA} alt="A" className="w-full h-24 object-cover rounded-lg" />
+                  <button onClick={() => { setImageAFile(null); setImageAPreview(''); setImageAUrl(''); }} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <Button type="button" variant="outline" className="w-full mt-2" onClick={() => imageAInputRef.current?.click()}>
+                  <Upload className="h-4 w-4 mr-2" /> Upload
+                </Button>
+              )}
+              {!currentImageA && (
+                <Input value={imageAUrl} onChange={(e) => setImageAUrl(e.target.value)} placeholder="Or paste URL..." className="bg-secondary mt-2 text-xs" />
+              )}
             </div>
+            <div>
+              <Label>Image B</Label>
+              <input type="file" accept="image/*,video/*,.mp4,.webm,.mov,.ogg" ref={imageBInputRef} onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0], 'B')} className="hidden" />
+              {currentImageB ? (
+                <div className="relative mt-2">
+                  <img src={currentImageB} alt="B" className="w-full h-24 object-cover rounded-lg" />
+                  <button onClick={() => { setImageBFile(null); setImageBPreview(''); setImageBUrl(''); }} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <Button type="button" variant="outline" className="w-full mt-2" onClick={() => imageBInputRef.current?.click()}>
+                  <Upload className="h-4 w-4 mr-2" /> Upload
+                </Button>
+              )}
+              {!currentImageB && (
+                <Input value={imageBUrl} onChange={(e) => setImageBUrl(e.target.value)} placeholder="Or paste URL..." className="bg-secondary mt-2 text-xs" />
+              )}
+          </div>
           </div>
 
           {/* Images */}
