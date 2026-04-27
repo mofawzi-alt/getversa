@@ -78,7 +78,6 @@ export default function AdminDashboard() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1">
           <TabsTrigger value="polls" className="text-xs px-4 py-2">Polls</TabsTrigger>
-          <TabsTrigger value="audit" className="text-xs px-4 py-2">Audit</TabsTrigger>
           <TabsTrigger value="calendar" className="text-xs px-4 py-2">Calendar</TabsTrigger>
           <TabsTrigger value="campaigns" className="text-xs px-4 py-2">Campaigns</TabsTrigger>
           <TabsTrigger value="analytics" className="text-xs px-4 py-2">Analytics</TabsTrigger>
@@ -184,10 +183,6 @@ export default function AdminDashboard() {
               <AdminAnalyticsExport />
             </TabsContent>
           </Tabs>
-        </TabsContent>
-
-        <TabsContent value="audit" className="space-y-4">
-          <ActivePollsMonitor />
         </TabsContent>
 
 

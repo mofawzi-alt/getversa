@@ -1636,8 +1636,6 @@ export type Database = {
           is_archived: boolean | null
           is_daily_poll: boolean | null
           is_hot_take: boolean
-          is_reviewed: boolean
-          needs_image_fix: boolean
           option_a: string
           option_a_tag: string | null
           option_b: string
@@ -1677,8 +1675,6 @@ export type Database = {
           is_archived?: boolean | null
           is_daily_poll?: boolean | null
           is_hot_take?: boolean
-          is_reviewed?: boolean
-          needs_image_fix?: boolean
           option_a: string
           option_a_tag?: string | null
           option_b: string
@@ -1718,8 +1714,6 @@ export type Database = {
           is_archived?: boolean | null
           is_daily_poll?: boolean | null
           is_hot_take?: boolean
-          is_reviewed?: boolean
-          needs_image_fix?: boolean
           option_a?: string
           option_a_tag?: string | null
           option_b?: string
