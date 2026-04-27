@@ -12,6 +12,7 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useCelebrityPresence, useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import VerdictResultCard from '@/components/poll/VerdictResultCard';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
@@ -324,6 +325,24 @@ export default function LiveDebate() {
   const imgB = getPollDisplayImageSrc({ imageUrl: currentPoll.image_b_url, option: currentPoll.option_b, question: currentPoll.question, side: 'B' });
   const campaignLabel = getCampaignLabel(currentPoll.category);
   const showResult = phase === 'result' && result;
+
+  // Compact verdict card mode — when launched from Ask Versa perspectives
+  // and the poll is already voted, render the share-style result card
+  // instead of the full-screen swipe overlay. Closing returns to /ask.
+  if (returnTo === 'ask' && phase === 'result' && result && currentPollIsVoted) {
+    return (
+      <VerdictResultCard
+        poll={currentPoll}
+        myChoice={result.choice}
+        percentA={result.percentA}
+        percentB={result.percentB}
+        totalVotes={result.totalVotes}
+        hasMore={hasMore}
+        onNext={() => { setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe'); }}
+        onClose={handleExit}
+      />
+    );
+  }
 
   return (
     <motion.div
