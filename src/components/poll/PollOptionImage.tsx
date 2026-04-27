@@ -115,6 +115,16 @@ function PollOptionImageComponent({
     setUnmuted((prev) => {
       const next = !prev;
       videoSound.setActive(next ? instanceId : null);
+      // Must call play() inside the user gesture for iOS/Safari to allow audio
+      const v = videoRef.current;
+      if (v) {
+        v.muted = !next;
+        if (next) {
+          v.volume = 1;
+          const p = v.play();
+          if (p && typeof p.catch === 'function') p.catch(() => {});
+        }
+      }
       return next;
     });
   }, [instanceId]);
