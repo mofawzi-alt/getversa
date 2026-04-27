@@ -216,8 +216,10 @@ export default function PulseStoriesRow() {
   const { data: settings } = usePulseSettings();
   const lastVisit = useLastVisit();
   const [openTopic, setOpenTopic] = useState<string | null>(null);
+  const [openEditorial, setOpenEditorial] = useState<EditorialStory | null>(null);
   const [bump, setBump] = useState(0);
   const [shareFinding, setShareFinding] = useState<BreakdownFinding | null>(null);
+  const { data: editorialStories } = useEditorialStories();
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
