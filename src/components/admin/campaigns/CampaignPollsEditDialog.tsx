@@ -49,7 +49,7 @@ export default function CampaignPollsEditDialog({ campaignId, campaignName }: Pr
             <ListOrdered className="w-4 h-4" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-lg max-h-[85vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Edit polls in “{campaignName}”</DialogTitle>
             <DialogDescription>
