@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback, useId, memo } from 'react';
+import { Loader2, Volume2, VolumeX } from 'lucide-react';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import { getBrandColor, getImageTreatment } from '@/lib/brandDetection';
+import { videoSound } from '@/lib/videoSound';
 
 /**
  * Card variant determines image sizing behavior:
