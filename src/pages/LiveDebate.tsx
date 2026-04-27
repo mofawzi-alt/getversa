@@ -12,6 +12,7 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useCelebrityPresence, useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import VerdictResultCard from '@/components/poll/VerdictResultCard';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
