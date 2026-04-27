@@ -65,6 +65,45 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
   const [expiryType, setExpiryType] = useState<'evergreen' | 'trending' | 'campaign'>('trending');
   const [batchSlot, setBatchSlot] = useState<'morning' | 'afternoon' | 'evening' | 'none'>('none');
   const [isHotTake, setIsHotTake] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const generateAIImages = async () => {
+    if (!poll) return;
+    if (!question.trim() || !optionA.trim() || !optionB.trim()) {
+      toast.error('Fill question and both options first');
+      return;
+    }
+    setIsGenerating(true);
+    const t = toast.loading('Generating AI images...');
+    try {
+      const { data, error } = await supabase.functions.invoke('regen-poll-images', {
+        body: { polls: [{ id: poll.id, question, option_a: optionA, option_b: optionB }] },
+      });
+      if (error) throw error;
+      const result = data?.results?.[0];
+      if (result?.status !== 'ok') throw new Error(result?.err || result?.status || 'Generation failed');
+      // Re-fetch updated poll URLs
+      const { data: fresh } = await supabase
+        .from('polls')
+        .select('image_a_url, image_b_url')
+        .eq('id', poll.id)
+        .single();
+      if (fresh) {
+        setImageAUrl(fresh.image_a_url || '');
+        setImageBUrl(fresh.image_b_url || '');
+        setImageAFile(null); setImageAPreview('');
+        setImageBFile(null); setImageBPreview('');
+      }
+      queryClient.invalidateQueries({ queryKey: ['admin-polls'] });
+      queryClient.invalidateQueries({ queryKey: ['campaign-polls', poll.id] });
+      toast.success('AI images generated!', { id: t });
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || 'Failed to generate images', { id: t });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // Sync state when poll changes
   const [lastPollId, setLastPollId] = useState<string | null>(null);
