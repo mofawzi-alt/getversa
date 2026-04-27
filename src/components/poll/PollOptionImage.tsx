@@ -151,12 +151,23 @@ function PollOptionImageComponent({
           }}
           autoPlay
           loop
-          muted
+          muted={!unmuted}
           playsInline
           preload="metadata"
           onLoadedData={() => setLoaded(true)}
           draggable={draggable}
         />
+        {variant !== 'history' && (
+          <button
+            type="button"
+            onClick={toggleSound as any}
+            onTouchEnd={toggleSound as any}
+            aria-label={unmuted ? 'Mute video' : 'Unmute video'}
+            className="absolute bottom-2 right-2 z-10 h-9 w-9 rounded-full bg-black/55 backdrop-blur-sm text-white flex items-center justify-center active:scale-90 transition-transform"
+          >
+            {unmuted ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </button>
+        )}
       </div>
     );
   }
