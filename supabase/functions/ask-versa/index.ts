@@ -431,7 +431,9 @@ Rules:
       }
       return new Response(JSON.stringify({
         stage: "offscope",
-        summary: "Versa is built for consumer preference questions — things people in Egypt vote on, like brands, food, lifestyle, or relationships. Try a question like \"Coke or Pepsi?\" or \"What do students think about online learning?\".",
+        summary: isArabic
+          ? "ڤيرسا متخصصة في أسئلة تفضيلات المستهلك — حاجات المصريين بيصوّتوا عليها زي البراندات، الأكل، اللايف ستايل، أو العلاقات. جرّب سؤال زي \"كوكا ولا بيبسي؟\" أو \"الطلبة رأيهم إيه في التعليم أونلاين؟\"."
+          : "Versa is built for consumer preference questions — things people in Egypt vote on, like brands, food, lifestyle, or relationships. Try a question like \"Coke or Pepsi?\" or \"What do students think about online learning?\".",
         credits_balance: userBalance,
         route: safeRoute,
         mode,
