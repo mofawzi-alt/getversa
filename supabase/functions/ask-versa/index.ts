@@ -387,10 +387,13 @@ Rules:
     // Returns a clear product explanation, no charge, no DB hit.
     {
       const q = question.toLowerCase().trim();
-      const mentionsVersa = /\bversa\b/.test(q);
-      const aboutShape = /\b(what(?:'s| is)?|who(?:'s| is| made| owns| built| created)|how(?: do(?:es)?| can)|why|is|are|does|tell me about|explain|describe|about)\b/.test(q);
+      // Match English "versa" or Arabic spellings (ڤيرسا / فيرسا / ڤرسا)
+      const mentionsVersa = /\bversa\b/.test(q) || /(ڤيرسا|فيرسا|ڤرسا|ڤيرزا|فيرزا)/.test(question);
+      const aboutShape = /\b(what(?:'s| is)?|who(?:'s| is| made| owns| built| created)|how(?: do(?:es)?| can)|why|is|are|does|tell me about|explain|describe|about)\b/.test(q)
+        || /(إيه|ايه|ما هي|ما هو|مين|إزاي|ازاي|عن|يعني|بتعمل|بيعمل|بتشتغل|بيشتغل|التطبيق|الأبلكيشن|الابلكيشن)/.test(question);
       // Short bare queries like "versa", "versa?", "what is this app"
-      const bareSelf = /^(versa\??|what(?:'s| is)? (?:this|the) app\??|what does this app do\??|how does this app work\??|about (?:this )?app\??)$/i.test(q);
+      const bareSelf = /^(versa\??|what(?:'s| is)? (?:this|the) app\??|what does this app do\??|how does this app work\??|about (?:this )?app\??)$/i.test(q)
+        || /^(ڤيرسا|فيرسا|ڤرسا)\??$/.test(question.trim());
       if (bareSelf || (mentionsVersa && aboutShape)) {
         const summary = isArabic
           ? "ڤيرسا هي محرك آراء مصر.\n\nكل يوم، المصريين بيختاروا بين حاجتين — براندات، أكل، لايف ستايل، فلوس، ثقافة. كل اختيار ده داتا سلوكية حقيقية متسجلة بالسن والجنس والمدينة.\n\nكل ما تصوّت أكتر، ڤيرسا بتعرف أكتر إيه اللي مصر بتفضّله فعلاً — مش اللي الناس بتقول إنها بتفضّله، لأ، اللي بيختاروه بجد.\n\nاسألني أي حاجة عن رأي مصر. هقولك الداتا بتقول إيه."
