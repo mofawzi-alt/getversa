@@ -160,6 +160,13 @@ serve(async (req) => {
       });
     }
 
+    // ---- Language detection: Arabic vs English ----
+    // Any Arabic Unicode char in the question → respond in Egyptian Arabic (عامية).
+    const isArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(question);
+    const arabicInstruction = isArabic
+      ? "\n\nIMPORTANT: The user wrote in Arabic. Reply in Egyptian Arabic (عامية مصرية) — conversational, natural Cairo street tone. NOT Modern Standard Arabic. Keep brand names in their original form (iPhone, Talabat, Vodafone, etc.). Numbers and percentages in Arabic numerals are fine."
+      : "";
+
     // Identify caller
     const authHeader = req.headers.get("Authorization") || "";
     let userId: string | null = null;
@@ -380,16 +387,17 @@ Rules:
     // Returns a clear product explanation, no charge, no DB hit.
     {
       const q = question.toLowerCase().trim();
-      const mentionsVersa = /\bversa\b/.test(q);
-      const aboutShape = /\b(what(?:'s| is)?|who(?:'s| is| made| owns| built| created)|how(?: do(?:es)?| can)|why|is|are|does|tell me about|explain|describe|about)\b/.test(q);
+      // Match English "versa" or Arabic spellings (ڤيرسا / فيرسا / ڤرسا)
+      const mentionsVersa = /\bversa\b/.test(q) || /(ڤيرسا|فيرسا|ڤرسا|ڤيرزا|فيرزا)/.test(question);
+      const aboutShape = /\b(what(?:'s| is)?|who(?:'s| is| made| owns| built| created)|how(?: do(?:es)?| can)|why|is|are|does|tell me about|explain|describe|about)\b/.test(q)
+        || /(إيه|ايه|ما هي|ما هو|مين|إزاي|ازاي|عن|يعني|بتعمل|بيعمل|بتشتغل|بيشتغل|التطبيق|الأبلكيشن|الابلكيشن)/.test(question);
       // Short bare queries like "versa", "versa?", "what is this app"
-      const bareSelf = /^(versa\??|what(?:'s| is)? (?:this|the) app\??|what does this app do\??|how does this app work\??|about (?:this )?app\??)$/i.test(q);
+      const bareSelf = /^(versa\??|what(?:'s| is)? (?:this|the) app\??|what does this app do\??|how does this app work\??|about (?:this )?app\??)$/i.test(q)
+        || /^(ڤيرسا|فيرسا|ڤرسا)\??$/.test(question.trim());
       if (bareSelf || (mentionsVersa && aboutShape)) {
-        const summary =
-          "Versa is Egypt's opinion engine.\n\n" +
-          "Every day, Egyptians swipe to choose between two things — brands, food, lifestyle, money, culture. Every choice is real behavioral data tagged by age, gender, and city.\n\n" +
-          "The more you vote, the more Versa learns what Egypt actually prefers — not what people say they prefer, but what they actually choose.\n\n" +
-          "Ask me anything about what Egypt thinks. I'll tell you what the data says.";
+        const summary = isArabic
+          ? "ڤيرسا هي محرك آراء مصر.\n\nكل يوم، المصريين بيختاروا بين حاجتين — براندات، أكل، لايف ستايل، فلوس، ثقافة. كل اختيار ده داتا سلوكية حقيقية متسجلة بالسن والجنس والمدينة.\n\nكل ما تصوّت أكتر، ڤيرسا بتعرف أكتر إيه اللي مصر بتفضّله فعلاً — مش اللي الناس بتقول إنها بتفضّله، لأ، اللي بيختاروه بجد.\n\nاسألني أي حاجة عن رأي مصر. هقولك الداتا بتقول إيه."
+          : "Versa is Egypt's opinion engine.\n\nEvery day, Egyptians swipe to choose between two things — brands, food, lifestyle, money, culture. Every choice is real behavioral data tagged by age, gender, and city.\n\nThe more you vote, the more Versa learns what Egypt actually prefers — not what people say they prefer, but what they actually choose.\n\nAsk me anything about what Egypt thinks. I'll tell you what the data says.";
         let queryId: string | null = null;
         if (userId) {
           const { data: inserted } = await supabase.from("ask_versa_queries").insert({
@@ -426,7 +434,9 @@ Rules:
       }
       return new Response(JSON.stringify({
         stage: "offscope",
-        summary: "Versa is built for consumer preference questions — things people in Egypt vote on, like brands, food, lifestyle, or relationships. Try a question like \"Coke or Pepsi?\" or \"What do students think about online learning?\".",
+        summary: isArabic
+          ? "ڤيرسا متخصصة في أسئلة تفضيلات المستهلك — حاجات المصريين بيصوّتوا عليها زي البراندات، الأكل، اللايف ستايل، أو العلاقات. جرّب سؤال زي \"كوكا ولا بيبسي؟\" أو \"الطلبة رأيهم إيه في التعليم أونلاين؟\"."
+          : "Versa is built for consumer preference questions — things people in Egypt vote on, like brands, food, lifestyle, or relationships. Try a question like \"Coke or Pepsi?\" or \"What do students think about online learning?\".",
         credits_balance: userBalance,
         route: safeRoute,
         mode,
@@ -440,7 +450,7 @@ Rules:
       try {
         const factResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
           messages: [
-            { role: "system", content: "You answer factual questions in 2-3 short sentences. Be direct, accurate, and cite a rough year if possible. If you don't know, say so. Never invent statistics." },
+            { role: "system", content: "You answer factual questions in 2-3 short sentences. Be direct, accurate, and cite a rough year if possible. If you don't know, say so. Never invent statistics." + arabicInstruction },
             { role: "user", content: question },
           ],
         });
@@ -651,7 +661,7 @@ Examples:
     {"label":"Denim vs leather","question":"Denim jacket or leather jacket?"},
     {"label":"Modest vs trendy","question":"Modest aesthetic or trendy aesthetic?"},
     {"label":"Sneakers vs loafers","question":"Sneakers or loafers for going out?"}
-  ]`,
+  ]` + arabicInstruction + (isArabic ? "\nWrite both label and question in Egyptian Arabic (عامية). Brand names stay in their original form." : ""),
             },
             { role: "user", content: question },
           ],
@@ -674,11 +684,17 @@ Examples:
 
       // Fallback chips if the AI call failed.
       if (clarifications.length === 0) {
-        clarifications = [
-          { label: "Coke vs Pepsi", question: "Coke or Pepsi?" },
-          { label: "Talabat vs Elmenus", question: "Talabat or Elmenus tonight?" },
-          { label: "Cairo vs Sahel", question: "Cairo or Sahel this weekend?" },
-        ];
+        clarifications = isArabic
+          ? [
+              { label: "كوكا ولا بيبسي", question: "كوكا ولا بيبسي؟" },
+              { label: "طلبات ولا المنيوز", question: "طلبات ولا المنيوز الليلة؟" },
+              { label: "القاهرة ولا الساحل", question: "القاهرة ولا الساحل الويك إند ده؟" },
+            ]
+          : [
+              { label: "Coke vs Pepsi", question: "Coke or Pepsi?" },
+              { label: "Talabat vs Elmenus", question: "Talabat or Elmenus tonight?" },
+              { label: "Cairo vs Sahel", question: "Cairo or Sahel this weekend?" },
+            ];
       }
 
       let queryId: string | null = null;
@@ -915,7 +931,7 @@ Examples:
 
       const reasonResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: "You write ONE punchy sentence (max 18 words) explaining why Egyptians lean a certain way on a poll. No preamble, no quotes. Direct and confident." },
+          { role: "system", content: "You write ONE punchy sentence (max 18 words) explaining why Egyptians lean a certain way on a poll. No preamble, no quotes. Direct and confident." + arabicInstruction },
           { role: "user", content: `Question: "${top.question}"\nWinner: ${winnerLabel} (${winnerPct}%)\nLoser: ${winnerSide === "A" ? top.option_b : top.option_a} (${100 - winnerPct}%)\nSample size: ${s.total}\n\nWhy did people pick ${winnerLabel}? One sentence.` },
         ],
       });
@@ -940,7 +956,9 @@ Examples:
         reason,
         viewer_line: viewerLine,
       };
-      summary = `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
+      summary = isArabic
+        ? `${winnerPct}% من المصريين بيختاروا ${winnerLabel}.`
+        : `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
     } else {
       const sampleText = matchedPolls.slice(0, 8).map((p: any) => {
         const s = p._stats;
@@ -949,7 +967,7 @@ Examples:
       }).join("\n");
       const sumResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: "You write a 2-3 sentence research-style insight summary. Lead with the strongest concrete number. No bullet points. No mention of 'Gen Z' or generations. Direct and citation-worthy." },
+          { role: "system", content: "You write a 2-3 sentence research-style insight summary. Lead with the strongest concrete number. No bullet points. No mention of 'Gen Z' or generations. Direct and citation-worthy." + arabicInstruction },
           { role: "user", content: `User's research question: "${question}"\n\nMatched polls with results:\n${sampleText}\n\nWrite 2-3 sentences leading with the most striking stat.` },
         ],
       });
