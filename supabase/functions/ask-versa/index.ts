@@ -953,7 +953,9 @@ Examples:
         reason,
         viewer_line: viewerLine,
       };
-      summary = `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
+      summary = isArabic
+        ? `${winnerPct}% من المصريين بيختاروا ${winnerLabel}.`
+        : `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
     } else {
       const sampleText = matchedPolls.slice(0, 8).map((p: any) => {
         const s = p._stats;
