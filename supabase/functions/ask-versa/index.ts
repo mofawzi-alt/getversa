@@ -375,6 +375,43 @@ Rules:
       .filter((term: string) => term.length >= 3 && !STOP_TERMS.has(term))));
     const categoryBuckets = category && category !== "any" ? (CATEGORY_MAP[category] || []) : [];
 
+    // ---- 1a. Self-referential guard: questions about Versa the app itself ----
+    // Detect "what is versa", "how does versa work", "who made versa", "is versa free", etc.
+    // Returns a clear product explanation, no charge, no DB hit.
+    {
+      const q = question.toLowerCase().trim();
+      const mentionsVersa = /\bversa\b/.test(q);
+      const aboutShape = /\b(what(?:'s| is)?|who(?:'s| is| made| owns| built| created)|how(?: do(?:es)?| can)|why|is|are|does|tell me about|explain|describe|about)\b/.test(q);
+      // Short bare queries like "versa", "versa?", "what is this app"
+      const bareSelf = /^(versa\??|what(?:'s| is)? (?:this|the) app\??|what does this app do\??|how does this app work\??|about (?:this )?app\??)$/i.test(q);
+      if (bareSelf || (mentionsVersa && aboutShape)) {
+        const summary =
+          "Versa is a binary-poll app where Egyptians vote between two choices — brands, food, lifestyle, relationships, anything. " +
+          "Your votes feed a real-time pulse of what people in Egypt actually pick. " +
+          "Ask Versa lets you ask any consumer question and get a verdict backed by those votes — like 'Coke or Pepsi?', 'best place to grab coffee in Cairo?', or 'what do students think about online learning?'. " +
+          "Each answer is grounded in real poll data, not opinion.";
+        let queryId: string | null = null;
+        if (userId) {
+          const { data: inserted } = await supabase.from("ask_versa_queries").insert({
+            user_id: userId, question, mode, route: safeRoute,
+            credits_charged: 0, answered: true, low_data: true,
+            model_used: null, total_votes_considered: 0, matched_poll_count: 0,
+            category_hint: null,
+          }).select("id").maybeSingle();
+          queryId = inserted?.id ?? null;
+        }
+        return new Response(JSON.stringify({
+          stage: "about",
+          summary,
+          notice: "About Versa",
+          credits_balance: userBalance,
+          route: safeRoute,
+          mode,
+          query_id: queryId,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
     // ---- 1b. Off-scope or factual short-circuit (no charge, no DB hit) ----
     if (intent === "offscope") {
       let queryId: string | null = null;
