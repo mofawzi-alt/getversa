@@ -169,6 +169,20 @@ export default function Ask() {
         return;
       }
 
+      // Clarify: broad decide question — render 3 specific A-vs-B chips, no charge.
+      if (data.stage === 'clarify') {
+        const turnId = crypto.randomUUID();
+        setTurns((prev) => [...prev, {
+          id: turnId, question, mode,
+          loading: false,
+          summary: data.summary,
+          variant: 'clarify',
+          clarifications: data.clarifications || [],
+          askQueryId: data.query_id || null,
+        } as AskTurn]);
+        return;
+      }
+
       // Factual: general-knowledge answer, clearly labeled, no charge.
       if (data.stage === 'factual') {
         const turnId = crypto.randomUUID();
