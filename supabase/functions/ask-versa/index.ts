@@ -188,6 +188,23 @@ serve(async (req) => {
       content: String(h.content || "").slice(0, 500),
     }));
 
+    // Generic follow-up detection: short imperative-style asks like
+    // "show me the polls", "more polls", "show polls to vote on", "any polls?"
+    // These have no standalone topical content — they refer to the previous user question.
+    // We rewrite them to include the prior topic so extraction + matching stay on-topic.
+    const lastUserTurn = [...trimmedHistory].reverse().find((h) => h.role === "user");
+    const looksLikeGenericFollowup = (() => {
+      const q = question.toLowerCase().trim();
+      if (q.length > 60) return false;
+      return /^(show|give|bring|list|find|any|more|other|related|what about|polls?|votes?)/.test(q)
+        && /(poll|vote|data|result)/.test(q);
+    })();
+    let effectiveQuestion = question;
+    if (looksLikeGenericFollowup && lastUserTurn) {
+      effectiveQuestion = `${question} (about: ${lastUserTurn.content})`;
+      console.log("Generic follow-up detected — rewrote with prior context:", effectiveQuestion);
+    }
+
     // ---- 1. Extract filters + classify route (always uses fast model) ----
     let extractResp: Response | null = null;
     try {
@@ -213,7 +230,7 @@ Categories: ${KNOWN_CATEGORIES.join(", ")}.
 If conversation history is provided, the new question may be a FOLLOW-UP — infer underlying topic and merge entities from prior turns.`,
         },
         ...historyMessages,
-        { role: "user", content: question },
+        { role: "user", content: effectiveQuestion },
         ],
         tools: [FILTER_TOOL],
         tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
@@ -256,7 +273,7 @@ Rules:
 - "offscope" = harmful, code, math homework, gibberish.`,
             },
             ...historyMessages,
-            { role: "user", content: question },
+            { role: "user", content: effectiveQuestion },
           ],
           response_format: { type: "json_object" },
         });
@@ -797,9 +814,10 @@ Examples:
         }
       }
 
-      // Tier 2: same-category fallback only for broader research asks.
-      // For decide-mode brand/product questions, category-only suggestions feel irrelevant.
-      if (mode === "research" && suggestedPolls.length < 3 && categoryBuckets.length > 0) {
+      // Tier 2: same-category fallback (both decide and research). When no matched polls
+      // exist (e.g. "safest ride app" finds nothing under transport entities), still surface
+      // a few related polls so users have something to vote on.
+      if (suggestedPolls.length < 3 && categoryBuckets.length > 0) {
         const { data: catPolls } = await supabase
           .from("polls")
           .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
@@ -810,10 +828,40 @@ Examples:
         const seen = new Set(suggestedPolls.map((p) => p.id));
         for (const p of catPolls || []) {
           if (suggestedPolls.length >= 3) break;
-          const topicalHits = getPollTopicalHitCount(p);
-          if (seen.has(p.id) || votedIds.has(p.id) || topicalTerms.length > 0 && topicalHits === 0) continue;
+          if (seen.has(p.id) || votedIds.has(p.id)) continue;
+          // In decide mode require a topical hit so suggestions stay on-topic
+          // (avoids showing random category polls when the user asked about a specific brand).
+          if (mode === "decide" && topicalTerms.length > 0 && getPollTopicalHitCount(p) === 0) continue;
           suggestedPolls.push(mapPoll(p));
           seen.add(p.id);
+        }
+      }
+
+      // Tier 3: keyword-only recent polls — last resort so guardrail is never empty
+      // when the user has clear topical terms (e.g. "ride app" → search recent polls
+      // mentioning ride/uber/careem even without a category match).
+      if (suggestedPolls.length === 0 && topicalTerms.length > 0) {
+        const orFilters: string[] = [];
+        for (const term of topicalTerms.slice(0, 5)) {
+          orFilters.push(`question.ilike.%${term}%`);
+          orFilters.push(`option_a.ilike.%${term}%`);
+          orFilters.push(`option_b.ilike.%${term}%`);
+        }
+        if (orFilters.length > 0) {
+          const { data: kwPolls } = await supabase
+            .from("polls")
+            .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
+            .eq("is_active", true)
+            .or(orFilters.join(","))
+            .order("created_at", { ascending: false })
+            .limit(10);
+          const seen = new Set(suggestedPolls.map((p) => p.id));
+          for (const p of kwPolls || []) {
+            if (suggestedPolls.length >= 3) break;
+            if (seen.has(p.id) || votedIds.has(p.id)) continue;
+            suggestedPolls.push(mapPoll(p));
+            seen.add(p.id);
+          }
         }
       }
 
