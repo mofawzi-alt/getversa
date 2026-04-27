@@ -691,6 +691,34 @@ export default function PulseStoriesRow() {
         open={!!openEditorial}
         story={openEditorial}
         onClose={() => { setOpenEditorial(null); setBump((b) => b + 1); }}
+        onComplete={() => {
+          const list = editorialStories || [];
+          const idx = list.findIndex((s) => s.id === openEditorial?.id);
+          const nextEditorial = idx >= 0 ? list[idx + 1] : undefined;
+          if (nextEditorial) {
+            setOpenEditorial(nextEditorial);
+            return true;
+          }
+          // Hand off to first topic circle
+          const firstTopic = sorted[0];
+          if (firstTopic) {
+            setOpenEditorial(null);
+            setOpenTopic(firstTopic.topic);
+            trackStoryEvent(firstTopic.topic);
+            return true;
+          }
+          return false;
+        }}
+        onPrevious={() => {
+          const list = editorialStories || [];
+          const idx = list.findIndex((s) => s.id === openEditorial?.id);
+          const prevEditorial = idx > 0 ? list[idx - 1] : undefined;
+          if (prevEditorial) {
+            setOpenEditorial(prevEditorial);
+            return true;
+          }
+          return false;
+        }}
       />
 
       <StoryViewer
@@ -704,6 +732,24 @@ export default function PulseStoriesRow() {
           if (nextCircle) {
             setOpenTopic(nextCircle.topic);
             trackStoryEvent(nextCircle.topic);
+            return true;
+          }
+          return false;
+        }}
+        onPrevious={() => {
+          const idx = sorted.findIndex((c) => c.topic === openTopic);
+          const prevCircle = idx > 0 ? sorted[idx - 1] : undefined;
+          if (prevCircle) {
+            setOpenTopic(prevCircle.topic);
+            trackStoryEvent(prevCircle.topic);
+            return true;
+          }
+          // Hand off to last editorial story
+          const list = editorialStories || [];
+          const lastEditorial = list[list.length - 1];
+          if (lastEditorial) {
+            setOpenTopic(null);
+            setOpenEditorial(lastEditorial);
             return true;
           }
           return false;

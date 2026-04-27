@@ -48,6 +48,8 @@ type Props = {
   onShareOverride?: (cardIndex: number) => boolean | Promise<boolean>;
   /** Called when the last card finishes. Return true to suppress auto-close (e.g. flipping to next story). */
   onComplete?: () => boolean | void;
+  /** Called when user taps back on the first card. Return true to suppress no-op (e.g. flipping to previous story). */
+  onPrevious?: () => boolean | void;
 };
 
 const DEFAULT_DURATION = 4000;
@@ -111,6 +113,7 @@ export default function StoryViewer({
   autoAdvanceMs = DEFAULT_DURATION,
   onShareOverride,
   onComplete,
+  onPrevious,
 }: Props) {
   const navigate = useNavigate();
   const [index, setIndex] = useState(startIndex);
@@ -177,7 +180,11 @@ export default function StoryViewer({
   }
 
   function prev() {
-    if (index === 0) return;
+    if (index === 0) {
+      const handled = onPrevious?.();
+      if (handled === true) return;
+      return;
+    }
     setIndex((i) => Math.max(i - 1, 0));
     setProgress(0);
     startedAt.current = Date.now();
@@ -290,12 +297,12 @@ export default function StoryViewer({
           </div>
 
           {/* Tap-zone affordances (visual only — actual tap handled by backdrop) */}
-          {safeIndex > 0 && (
+          {(safeIndex > 0 || !!onPrevious) && (
             <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white/80 pointer-events-none">
               <ChevronLeft className="w-5 h-5" />
             </div>
           )}
-          {safeIndex < cards.length - 1 && (
+          {(safeIndex < cards.length - 1 || !!onComplete) && (
             <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white/80 pointer-events-none">
               <ChevronRight className="w-5 h-5" />
             </div>

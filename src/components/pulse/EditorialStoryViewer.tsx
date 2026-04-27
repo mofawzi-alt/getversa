@@ -18,9 +18,10 @@ type Props = {
   story: EditorialStory | null;
   onClose: () => void;
   onComplete?: () => boolean | void;
+  onPrevious?: () => boolean | void;
 };
 
-export default function EditorialStoryViewer({ open, story, onClose, onComplete }: Props) {
+export default function EditorialStoryViewer({ open, story, onClose, onComplete, onPrevious }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [index, setIndex] = useState(0);
@@ -118,7 +119,11 @@ export default function EditorialStoryViewer({ open, story, onClose, onComplete 
   }
 
   function prev() {
-    if (index === 0) return;
+    if (index === 0) {
+      const handled = onPrevious?.();
+      if (handled === true) return;
+      return;
+    }
     setIndex((i) => Math.max(i - 1, 0));
     setProgress(0);
     startedAt.current = Date.now();
@@ -189,12 +194,12 @@ export default function EditorialStoryViewer({ open, story, onClose, onComplete 
           </button>
 
           {/* Tap-zone affordances (visual only — tap handled by backdrop) */}
-          {safeIndex > 0 && (
+          {(safeIndex > 0 || !!onPrevious) && (
             <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white/80 pointer-events-none">
               <ChevronLeft className="w-5 h-5" />
             </div>
           )}
-          {safeIndex < 4 && (
+          {(safeIndex < 4 || !!onComplete) && (
             <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white/80 pointer-events-none">
               <ChevronRight className="w-5 h-5" />
             </div>
