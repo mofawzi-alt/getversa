@@ -30,7 +30,7 @@ export default function CompatibilityRing({ score, size = 44 }: CompatibilityRin
     <div
       className="relative shrink-0"
       style={{ width: size, height: size }}
-      aria-label={score !== null ? `${score}% match` : 'No match data'}
+      aria-label={score !== null ? `${score}% vote match (agreement on shared polls)` : 'No shared votes yet'}
     >
       <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full -rotate-90">
         <circle
