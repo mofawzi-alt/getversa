@@ -65,11 +65,16 @@ export default function PersonalityCompatibility({ targetUserId, targetUsername 
     >
       <div className="p-5 space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            Type Compatibility
-          </span>
+        <div className="flex flex-col items-center gap-1">
+          <div className="flex items-center justify-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              Type Compatibility
+            </span>
+          </div>
+          <p className="text-[10px] text-muted-foreground/80 text-center max-w-[260px] leading-tight">
+            Based on personality archetypes — not the same as your Vote Match %.
+          </p>
         </div>
 
         {/* Type pairing */}

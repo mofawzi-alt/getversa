@@ -281,8 +281,13 @@ export default function Friends() {
                         </div>
                       </div>
 
-                      {/* Compatibility Ring */}
-                      <CompatibilityRing score={friend.compatibility_score} />
+                      {/* Compatibility Ring — Vote Match (agreement on shared polls) */}
+                      <div className="flex flex-col items-center gap-0.5">
+                        <CompatibilityRing score={friend.compatibility_score} />
+                        <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider leading-none">
+                          Vote match
+                        </span>
+                      </div>
 
                       {/* Message Button */}
                       <Button
