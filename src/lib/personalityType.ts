@@ -16,25 +16,29 @@ interface TraitEntry {
   vote_count: number;
 }
 
-// Which traits push toward each pole.
-// Calibrated against actual poll tag distribution so no single pole dominates.
-// Each tag appears on at most ONE axis to avoid double-counting bias.
+// Each tag appears on EXACTLY ONE axis. Calibrated against actual tag volumes
+// (social/price_sensitive/growth/health/indulgent/experience dominate the dataset)
+// so no axis is starved and no single high-volume tag forces everyone to one pole.
 const AXIS_TAGS = {
   // E/I — outward social energy vs inward independent energy
-  E: ['social', 'experience', 'extrovert', 'public', 'expressive', 'glam', 'global', 'global_platform', 'global_streaming', 'global_sale', 'global_luxury'],
+  E: ['social', 'extrovert', 'public', 'expressive', 'glam', 'global', 'global_platform', 'global_streaming', 'global_sale', 'global_luxury'],
   I: ['independent', 'introvert', 'private', 'homebody', 'calm', 'self_reliant', 'minimal', 'minimalist', 'local', 'local_platform', 'local_streaming', 'local_sale'],
 
-  // S/N — concrete, proven, practical vs novel, abstract, future-leaning
-  S: ['practical', 'traditional', 'tradition', 'traditional_formal', 'traditional_transport', 'modest', 'modest_fashion', 'authentic', 'safe_asset', 'structured', 'convenience'],
-  N: ['growth', 'growth_asset', 'innovation', 'innovative', 'trendy', 'tech_transport', 'curated', 'ecommerce', 'fintech', 'adventurous'],
+  // S/N — concrete/proven/practical vs novel/abstract/future-leaning
+  // 'practical' & 'convenience' moved to T (utility/logic). 'experience' moved to P only.
+  S: ['traditional', 'tradition', 'traditional_formal', 'traditional_transport', 'modest', 'modest_fashion', 'authentic', 'safe_asset', 'structured', 'health'],
+  N: ['growth', 'growth_asset', 'innovation', 'innovative', 'trendy', 'tech_transport', 'curated', 'ecommerce', 'fintech'],
 
   // T/F — utility/logic vs values/feeling
-  T: ['price_sensitive', 'quality', 'speed', 'outsource', 'boss', 'western_formal'],
-  F: ['indulgent', 'health', 'luxury', 'romantic', 'soft', 'natural', 'mena_luxury', 'arab_dessert', 'western_dessert', 'fast_food'],
+  // Boosted T with practical/convenience so high-volume 'health'+'indulgent' don't auto-win F.
+  T: ['price_sensitive', 'quality', 'speed', 'outsource', 'boss', 'western_formal', 'practical', 'convenience'],
+  F: ['indulgent', 'luxury', 'romantic', 'soft', 'natural', 'mena_luxury', 'arab_dessert', 'western_dessert', 'fast_food'],
 
   // J/P — loyal/decisive vs open/exploratory
-  J: ['brand_oriented', 'telecom_loyalty', 'coffee_brand', 'sneaker_brand', 'shawerma_brand'],
-  P: ['innovation', 'innovative', 'trendy', 'growth', 'curated', 'adventurous', 'experience'],
+  // Removed N-pole tags (growth/innovation/trendy/curated) which were double-counted and starved J.
+  // Added 'brand_oriented'-adjacent loyalty signals + balanced P with experience/adventurous/spontaneous-style tags.
+  J: ['brand_oriented', 'telecom_loyalty', 'coffee_brand', 'sneaker_brand', 'shawerma_brand', 'traditional', 'tradition', 'safe_asset', 'authentic', 'structured'],
+  P: ['experience', 'adventurous', 'spontaneous', 'variety', 'flexible', 'risktaker', 'experiential'],
 };
 
 // 16 personality types with Versa names + MBTI codes
