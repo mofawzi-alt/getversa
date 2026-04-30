@@ -6,14 +6,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const EGYPT_KEYWORDS = [
+  // Food (Arabic)
+  'كشري', 'شاورما', 'فول', 'طعمية', 'كباب', 'مشويات',
+  // Places
+  'sahel', 'gouna', 'cairo', 'alexandria', 'zamalek', 'maadi', 'new cairo', 'ain sokhna', 'hurghada',
+  // Brands
+  'vodafone', 'orange', 'etisalat', 'talabat', 'elmenus', 'noon', 'carrefour', 'juhayna', 'edita',
+  // Events
+  'ramadan', 'رمضان', 'eid', 'عيد',
+];
+
+function detectEgyptContext(text: string): boolean {
+  if (!text) return false;
+  // Right-to-left / Arabic Unicode block
+  if (/[\u0600-\u06FF\u0750-\u077F]/.test(text)) return true;
+  const lower = text.toLowerCase();
+  return EGYPT_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
 async function generateAndUploadImage(apiKey: string, prompt: string, supabase: any): Promise<string | null> {
   try {
+    const localBoost = detectEgyptContext(prompt)
+      ? ' Scene is specifically set in Egypt — Cairo streets, Egyptian faces, Arabic signage, local atmosphere.'
+      : '';
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'google/gemini-3-pro-image-preview',
-        messages: [{ role: 'user', content: `Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: "${prompt}". Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it. Real scene only — people, hands, environments, or products in authentic use.` }],
+        messages: [{ role: 'user', content: `Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: "${prompt}". Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.${localBoost} Real scene only — people, hands, environments, or products in authentic use.` }],
         modalities: ['image', 'text']
       }),
     });
