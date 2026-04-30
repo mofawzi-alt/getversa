@@ -62,7 +62,11 @@ Deno.serve(async (req) => {
 
     for (const opt of targets) {
       const optionText = opt === "A" ? row.option_a : row.option_b;
-      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.`;
+      const combined = `${row.question || ""} ${optionText} ${row.category || ""}`;
+      const localBoost = detectEgyptContext(combined)
+        ? " Scene is specifically set in Egypt — Cairo streets, Egyptian faces, Arabic signage, local atmosphere."
+        : "";
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.${localBoost}`;
 
       // Try pro image model first, fallback to flash image on failure
       const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
