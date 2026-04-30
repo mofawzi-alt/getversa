@@ -70,15 +70,33 @@ serve(async (req) => {
   try {
     const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')!;
-    const { userId, pollId, imageABrief, imageBBrief } = await req.json();
+    const { userId, pollId, imageABrief, imageBBrief, culturalContext: bodyContext, targetCountry: bodyCountry } = await req.json();
     
     // Verify admin
     const { data: role } = await supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').single();
     if (!role) return new Response(JSON.stringify({ error: 'Admin required' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
+    // Resolve cultural context: explicit body value > poll row value > Cairo street if Egypt-targeted.
+    let resolvedContext: string | null = (bodyContext && String(bodyContext).trim()) || null;
+    let resolvedCountry: string | null = (bodyCountry && String(bodyCountry).trim()) || null;
+    if (!resolvedContext || !resolvedCountry) {
+      const { data: pollRow } = await supabase
+        .from('polls')
+        .select('cultural_context, target_countries')
+        .eq('id', pollId)
+        .maybeSingle();
+      if (!resolvedContext && pollRow?.cultural_context) resolvedContext = pollRow.cultural_context;
+      if (!resolvedCountry && Array.isArray(pollRow?.target_countries) && pollRow.target_countries.length) {
+        resolvedCountry = pollRow.target_countries[0];
+      }
+    }
+    if (!resolvedContext && (resolvedCountry || '').toLowerCase() === 'egypt') {
+      resolvedContext = 'Cairo street';
+    }
+
     const [imageA, imageB] = await Promise.all([
-      generateAndUploadImage(LOVABLE_API_KEY, imageABrief, supabase),
-      generateAndUploadImage(LOVABLE_API_KEY, imageBBrief, supabase),
+      generateAndUploadImage(LOVABLE_API_KEY, imageABrief, supabase, resolvedContext),
+      generateAndUploadImage(LOVABLE_API_KEY, imageBBrief, supabase, resolvedContext),
     ]);
 
     const { error } = await supabase.from('polls').update({ image_a_url: imageA, image_b_url: imageB }).eq('id', pollId);
