@@ -12,6 +12,20 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 
+const EGYPT_KEYWORDS = [
+  "كشري", "شاورما", "فول", "طعمية", "كباب", "مشويات",
+  "sahel", "gouna", "cairo", "alexandria", "zamalek", "maadi", "new cairo", "ain sokhna", "hurghada",
+  "vodafone", "orange", "etisalat", "talabat", "elmenus", "noon", "carrefour", "juhayna", "edita",
+  "ramadan", "رمضان", "eid", "عيد",
+];
+
+function detectEgyptContext(text: string): boolean {
+  if (!text) return false;
+  if (/[\u0600-\u06FF\u0750-\u077F]/.test(text)) return true;
+  const lower = text.toLowerCase();
+  return EGYPT_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -48,7 +62,11 @@ Deno.serve(async (req) => {
 
     for (const opt of targets) {
       const optionText = opt === "A" ? row.option_a : row.option_b;
-      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.`;
+      const combined = `${row.question || ""} ${optionText} ${row.category || ""}`;
+      const localBoost = detectEgyptContext(combined)
+        ? " Scene is specifically set in Egypt — Cairo streets, Egyptian faces, Arabic signage, local atmosphere."
+        : "";
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.${localBoost}`;
 
       // Try pro image model first, fallback to flash image on failure
       const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
