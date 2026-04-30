@@ -13,7 +13,7 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'google/gemini-3-pro-image-preview',
-        messages: [{ role: 'user', content: `Cinematic lifestyle photograph capturing the real-life moment and feeling of: "${prompt}". Editorial DSLR quality, natural lighting, candid composition, magazine-grade. Strictly NO logos, NO brand names, NO text, NO typography, NO UI screenshots, NO app interfaces, NO posters, NO graphics or illustrations. Real scene only — people, hands, environments, or products in authentic use.` }],
+        messages: [{ role: 'user', content: `Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: "${prompt}". Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it. Real scene only — people, hands, environments, or products in authentic use.` }],
         modalities: ['image', 'text']
       }),
     });
