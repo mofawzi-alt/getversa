@@ -52,21 +52,36 @@ Deno.serve(async (req) => {
 
     const { data: row, error: fetchErr } = await supabase
       .from("poll_calendar")
-      .select("id,question,option_a,option_b,category")
+      .select("id,question,option_a,option_b,category,cultural_context,target_country")
       .eq("id", calendar_id)
       .single();
     if (fetchErr || !row) throw fetchErr || new Error("not found");
 
+    // Resolve cultural context: explicit value wins; otherwise default to Cairo street if target_country is Egypt.
+    const isEgypt = (row.target_country || "").trim().toLowerCase() === "egypt";
+    const resolvedContext: string = (row.cultural_context && row.cultural_context.trim())
+      || (isEgypt ? "Cairo street" : "");
+
     const targets: ("A" | "B")[] = option === "both" ? ["A", "B"] : [option as "A" | "B"];
     const updates: Record<string, string> = {};
+
+    const CONTEXT_DIRECTIVES: Record<string, string> = {
+      "Cairo street": " Scene: a contemporary Cairo street — local architecture, Egyptian pedestrians, Arabic signage, authentic urban atmosphere.",
+      "Sahel beach": " Scene: North Coast (Sahel) Egypt — Mediterranean beach, white compound aesthetic, Egyptian Gen Z in summer mode.",
+      "Egyptian home": " Scene: a modern Egyptian home interior — local decor cues, family or friends, warm natural light.",
+      "Egyptian office": " Scene: a contemporary Cairo office or co-working space — Egyptian professionals, modern but locally rooted.",
+      "Egyptian café": " Scene: a Cairo specialty café or ahwa — Egyptian Gen Z, local atmosphere, occasional Arabic signage in background.",
+      "Generic global": "",
+    };
 
     for (const opt of targets) {
       const optionText = opt === "A" ? row.option_a : row.option_b;
       const combined = `${row.question || ""} ${optionText} ${row.category || ""}`;
-      const localBoost = detectEgyptContext(combined)
+      const contextDirective = resolvedContext ? (CONTEXT_DIRECTIVES[resolvedContext] || "") : "";
+      const keywordBoost = (!contextDirective && detectEgyptContext(combined))
         ? " Scene is specifically set in Egypt — Cairo streets, Egyptian faces, Arabic signage, local atmosphere."
         : "";
-      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.${localBoost}`;
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.${contextDirective}${keywordBoost}`;
 
       // Try pro image model first, fallback to flash image on failure
       const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
