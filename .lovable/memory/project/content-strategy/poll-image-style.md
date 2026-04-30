@@ -1,19 +1,16 @@
 ---
 name: Poll Image Style
-description: Unified cinematic lifestyle prompt with MENA cultural context, keyword detection, and per-poll cultural_context override
+description: Unified cinematic prompt with dynamic country→geo/cast directive, optional cultural_context scene override, and Egyptian keyword boost
 type: design
 ---
 Both AI image pipelines (`batch-create-polls` and `generate-calendar-image`) share the strict cinematic prompt:
 "Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations."
 
-Default MENA suffix on every prompt:
-"Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it."
+Layered context (in this order, all stack):
+1. **Country directive** (from `polls.target_countries[0]` / `poll_calendar.target_country`) — sets geography + cast. Mapping covers Egypt, UAE, Saudi Arabia, Kuwait, Jordan, Lebanon, Morocco, MENA, GCC, Global. Empty/unknown → MENA generic. Never falls back to Western/American/European.
+2. **Cultural context** (from `cultural_context` column: Cairo street / Sahel beach / Egyptian home / Egyptian office / Egyptian café / Generic global) — appends a more specific scene directive on top of the country setting.
+3. **Keyword boost** — if Arabic Unicode (U+0600–06FF) or Egyptian keywords (كشري شاورما فول طعمية كباب مشويات / Sahel Gouna Cairo Alexandria Zamalek Maadi New Cairo Ain Sokhna Hurghada / Vodafone Orange Etisalat Talabat Elmenus Noon Carrefour Juhayna Edita / Ramadan رمضان Eid عيد) are detected in the brief, an extra Egyptian-atmosphere reinforcement is appended (stacks with country + context).
 
-Cultural context layering (priority order):
-1. Explicit `cultural_context` column on `polls` / `poll_calendar` (allowed: Cairo street, Sahel beach, Egyptian home, Egyptian office, Egyptian café, Generic global). Each maps to a scene directive injected into the prompt.
-2. If `cultural_context` is null and target country is Egypt → defaults to "Cairo street".
-3. If still no explicit context, keyword detector scans question/option/category for Arabic Unicode (U+0600–06FF) or Egyptian keywords (كشري شاورما فول طعمية كباب مشويات / Sahel Gouna Cairo Alexandria Zamalek Maadi New Cairo Ain Sokhna Hurghada / Vodafone Orange Etisalat Talabat Elmenus Noon Carrefour Juhayna Edita / Ramadan رمضان Eid عيد) → injects "Scene is specifically set in Egypt — Cairo streets, Egyptian faces, Arabic signage, local atmosphere."
-
-`Generic global` explicitly disables all Egypt directives.
+Closing rule on every prompt: "Never default to Western, American, or European settings."
 
 Calendar pipeline keeps its admin approval gate and 3× retry/fallback (pro → flash 3.1 → flash 2.5). Normal pipeline single-attempt with pro model only.
