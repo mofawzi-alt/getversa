@@ -57,10 +57,8 @@ Deno.serve(async (req) => {
       .single();
     if (fetchErr || !row) throw fetchErr || new Error("not found");
 
-    // Resolve cultural context: explicit value wins; otherwise default to Cairo street if target_country is Egypt.
-    const isEgypt = (row.target_country || "").trim().toLowerCase() === "egypt";
-    const resolvedContext: string = (row.cultural_context && row.cultural_context.trim())
-      || (isEgypt ? "Cairo street" : "");
+    const resolvedContext: string = (row.cultural_context && row.cultural_context.trim()) || "";
+    const resolvedCountry: string = (row.target_country || "").trim();
 
     const targets: ("A" | "B")[] = option === "both" ? ["A", "B"] : [option as "A" | "B"];
     const updates: Record<string, string> = {};
@@ -74,14 +72,30 @@ Deno.serve(async (req) => {
       "Generic global": "",
     };
 
+    const COUNTRY_DIRECTIVES: Record<string, string> = {
+      egypt: "Setting: contemporary Cairo or Egyptian city. Cast: Egyptian / North African faces, Gen Z. Arabic signage, local streets, Egyptian lifestyle atmosphere.",
+      uae: "Setting: contemporary Dubai or Abu Dhabi. Cast: mixed Arab and South Asian faces, cosmopolitan MENA. Modern Gulf architecture, clean urban environment.",
+      "united arab emirates": "Setting: contemporary Dubai or Abu Dhabi. Cast: mixed Arab and South Asian faces, cosmopolitan MENA. Modern Gulf architecture, clean urban environment.",
+      "saudi arabia": "Setting: contemporary Riyadh or Jeddah. Cast: Saudi Arab faces, modest fashion, Gen Z. Modern Saudi urban environment, Vision 2030 aesthetic.",
+      ksa: "Setting: contemporary Riyadh or Jeddah. Cast: Saudi Arab faces, modest fashion, Gen Z. Modern Saudi urban environment, Vision 2030 aesthetic.",
+      kuwait: "Setting: contemporary Kuwait City. Cast: Kuwaiti Arab faces, Gulf aesthetic, Gen Z. Modern Gulf urban environment.",
+      jordan: "Setting: contemporary Amman. Cast: Jordanian / Levantine Arab faces, Gen Z. Modern Amman urban atmosphere.",
+      lebanon: "Setting: contemporary Beirut. Cast: Lebanese / Levantine faces, cosmopolitan, Gen Z. Beirut urban lifestyle atmosphere.",
+      morocco: "Setting: contemporary Casablanca or Rabat. Cast: Moroccan / North African faces, Gen Z. Modern Moroccan urban environment.",
+      mena: "Setting: contemporary Middle East and North Africa. Cast: Arab faces, diverse MENA nationalities, Gen Z. Modern urban MENA environment. No Western-coded settings.",
+      gcc: "Setting: contemporary Gulf region. Cast: Arab Gulf faces, cosmopolitan mix, Gen Z. Modern Gulf urban environment, clean and premium aesthetic.",
+      global: "Setting: neutral cosmopolitan urban environment. Cast: diverse international Gen Z. No specific national markers.",
+    };
+    const countryDirective = COUNTRY_DIRECTIVES[resolvedCountry.toLowerCase()] || COUNTRY_DIRECTIVES.mena;
+
     for (const opt of targets) {
       const optionText = opt === "A" ? row.option_a : row.option_b;
       const combined = `${row.question || ""} ${optionText} ${row.category || ""}`;
       const contextDirective = resolvedContext ? (CONTEXT_DIRECTIVES[resolvedContext] || "") : "";
-      const keywordBoost = (!contextDirective && detectEgyptContext(combined))
-        ? " Scene is specifically set in Egypt — Cairo streets, Egyptian faces, Arabic signage, local atmosphere."
+      const keywordBoost = detectEgyptContext(combined)
+        ? " Local cue detected: ensure Egyptian / Arabic signage and local Egyptian atmosphere are clearly present."
         : "";
-      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.${contextDirective}${keywordBoost}`;
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. ${countryDirective}${contextDirective}${keywordBoost} Never default to Western, American, or European settings.`;
 
       // Try pro image model first, fallback to flash image on failure
       const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
