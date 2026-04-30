@@ -98,7 +98,8 @@ serve(async (req) => {
     const { data: role } = await supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').single();
     if (!role) return new Response(JSON.stringify({ error: 'Admin required' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
-    // Resolve cultural context: explicit body value > poll row value > Cairo street if Egypt-targeted.
+    // Resolve cultural_context (specific scene) and target_country (geo/cast).
+    // Body values win; otherwise read from poll row. Country falls back to MENA via resolveCountryDirective.
     let resolvedContext: string | null = (bodyContext && String(bodyContext).trim()) || null;
     let resolvedCountry: string | null = (bodyCountry && String(bodyCountry).trim()) || null;
     if (!resolvedContext || !resolvedCountry) {
@@ -112,13 +113,10 @@ serve(async (req) => {
         resolvedCountry = pollRow.target_countries[0];
       }
     }
-    if (!resolvedContext && (resolvedCountry || '').toLowerCase() === 'egypt') {
-      resolvedContext = 'Cairo street';
-    }
 
     const [imageA, imageB] = await Promise.all([
-      generateAndUploadImage(LOVABLE_API_KEY, imageABrief, supabase, resolvedContext),
-      generateAndUploadImage(LOVABLE_API_KEY, imageBBrief, supabase, resolvedContext),
+      generateAndUploadImage(LOVABLE_API_KEY, imageABrief, supabase, resolvedContext, resolvedCountry),
+      generateAndUploadImage(LOVABLE_API_KEY, imageBBrief, supabase, resolvedContext, resolvedCountry),
     ]);
 
     const { error } = await supabase.from('polls').update({ image_a_url: imageA, image_b_url: imageB }).eq('id', pollId);
