@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
 
     for (const opt of targets) {
       const optionText = opt === "A" ? row.option_a : row.option_b;
-      const prompt = `Generate an image (do not reply with text). Editorial magazine-style photograph, vibrant, clean, mobile-optimized, centered composition, high quality. No text, no logos, no watermarks, no brand names. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}.`;
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.`;
 
       // Try pro image model first, fallback to flash image on failure
       const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
