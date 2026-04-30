@@ -25,9 +25,19 @@ function detectEgyptContext(text: string): boolean {
   return EGYPT_KEYWORDS.some((kw) => lower.includes(kw));
 }
 
-async function generateAndUploadImage(apiKey: string, prompt: string, supabase: any): Promise<string | null> {
+const CONTEXT_DIRECTIVES: Record<string, string> = {
+  'Cairo street': ' Scene: a contemporary Cairo street — local architecture, Egyptian pedestrians, Arabic signage, authentic urban atmosphere.',
+  'Sahel beach': ' Scene: North Coast (Sahel) Egypt — Mediterranean beach, white compound aesthetic, Egyptian Gen Z in summer mode.',
+  'Egyptian home': ' Scene: a modern Egyptian home interior — local decor cues, family or friends, warm natural light.',
+  'Egyptian office': ' Scene: a contemporary Cairo office or co-working space — Egyptian professionals, modern but locally rooted.',
+  'Egyptian café': ' Scene: a Cairo specialty café or ahwa — Egyptian Gen Z, local atmosphere, occasional Arabic signage in background.',
+  'Generic global': '',
+};
+
+async function generateAndUploadImage(apiKey: string, prompt: string, supabase: any, culturalContext?: string | null): Promise<string | null> {
   try {
-    const localBoost = detectEgyptContext(prompt)
+    const contextDirective = culturalContext ? (CONTEXT_DIRECTIVES[culturalContext] || '') : '';
+    const keywordBoost = (!contextDirective && detectEgyptContext(prompt))
       ? ' Scene is specifically set in Egypt — Cairo streets, Egyptian faces, Arabic signage, local atmosphere.'
       : '';
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -35,7 +45,7 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'google/gemini-3-pro-image-preview',
-        messages: [{ role: 'user', content: `Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: "${prompt}". Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.${localBoost} Real scene only — people, hands, environments, or products in authentic use.` }],
+        messages: [{ role: 'user', content: `Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: "${prompt}". Setting: contemporary Egypt / MENA region. Cast: Middle Eastern / North African Gen Z. No Western-coded environments unless the subject explicitly requires it.${contextDirective}${keywordBoost} Real scene only — people, hands, environments, or products in authentic use.` }],
         modalities: ['image', 'text']
       }),
     });
