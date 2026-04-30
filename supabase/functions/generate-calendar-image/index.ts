@@ -52,10 +52,15 @@ Deno.serve(async (req) => {
 
     const { data: row, error: fetchErr } = await supabase
       .from("poll_calendar")
-      .select("id,question,option_a,option_b,category")
+      .select("id,question,option_a,option_b,category,cultural_context,target_country")
       .eq("id", calendar_id)
       .single();
     if (fetchErr || !row) throw fetchErr || new Error("not found");
+
+    // Resolve cultural context: explicit value wins; otherwise default to Cairo street if target_country is Egypt.
+    const isEgypt = (row.target_country || "").trim().toLowerCase() === "egypt";
+    const resolvedContext: string = (row.cultural_context && row.cultural_context.trim())
+      || (isEgypt ? "Cairo street" : "");
 
     const targets: ("A" | "B")[] = option === "both" ? ["A", "B"] : [option as "A" | "B"];
     const updates: Record<string, string> = {};
