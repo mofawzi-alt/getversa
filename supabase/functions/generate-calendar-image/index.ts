@@ -12,6 +12,20 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 
+const EGYPT_KEYWORDS = [
+  "كشري", "شاورما", "فول", "طعمية", "كباب", "مشويات",
+  "sahel", "gouna", "cairo", "alexandria", "zamalek", "maadi", "new cairo", "ain sokhna", "hurghada",
+  "vodafone", "orange", "etisalat", "talabat", "elmenus", "noon", "carrefour", "juhayna", "edita",
+  "ramadan", "رمضان", "eid", "عيد",
+];
+
+function detectEgyptContext(text: string): boolean {
+  if (!text) return false;
+  if (/[\u0600-\u06FF\u0750-\u077F]/.test(text)) return true;
+  const lower = text.toLowerCase();
+  return EGYPT_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
