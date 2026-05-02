@@ -1,16 +1,21 @@
 ---
 name: Poll Image Style
-description: Unified cinematic prompt with dynamic country→geo/cast directive, optional cultural_context scene override, and Egyptian keyword boost
+description: Unified cinematic prompt with dynamic country→geo/cast directive, optional cultural_context scene override, Egyptian keyword boost, pair balance rule, and 1-second clarity rule across all 4 pipelines
 type: design
 ---
-Both AI image pipelines (`batch-create-polls` and `generate-calendar-image`) share the strict cinematic prompt:
-"Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations."
+All 4 AI image pipelines (`generate-poll`, `batch-create-polls`, `generate-calendar-image`, `regen-poll-images`) now share the **Versa Image Pipeline v3** standard:
 
-Layered context (in this order, all stack):
-1. **Country directive** (from `polls.target_countries[0]` / `poll_calendar.target_country`) — sets geography + cast. Mapping covers Egypt, UAE, Saudi Arabia, Kuwait, Jordan, Lebanon, Morocco, MENA, GCC, Global. Empty/unknown → MENA generic. Never falls back to Western/American/European.
-2. **Cultural context** (from `cultural_context` column: Cairo street / Sahel beach / Egyptian home / Egyptian office / Egyptian café / Generic global) — appends a more specific scene directive on top of the country setting.
-3. **Keyword boost** — if Arabic Unicode (U+0600–06FF) or Egyptian keywords (كشري شاورما فول طعمية كباب مشويات / Sahel Gouna Cairo Alexandria Zamalek Maadi New Cairo Ain Sokhna Hurghada / Vodafone Orange Etisalat Talabat Elmenus Noon Carrefour Juhayna Edita / Ramadan رمضان Eid عيد) are detected in the brief, an extra Egyptian-atmosphere reinforcement is appended (stacks with country + context).
+**Base prompt**: "Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations."
 
-Closing rule on every prompt: "Never default to Western, American, or European settings."
+**Layered context** (all stack in order):
+1. **Country directive** — sets geography + cast. Covers Egypt, UAE, Saudi Arabia, Kuwait, Jordan, Lebanon, Morocco, MENA, GCC, Global.
+2. **Cultural context** — 12 options: Cairo street, Sahel beach, Egyptian home, Egyptian office, Egyptian café, Egyptian university campus, Egyptian mall or shopping center, Egyptian gym or outdoor public space, Nile view or Cairo waterfront, Egyptian wedding venue or celebration, New Cairo compound or premium residential, Generic global.
+3. **Keyword boost** — Arabic Unicode or Egyptian keywords trigger extra Egyptian atmosphere reinforcement.
+4. **Pair balance rule** — images must match brightness, complementary color temps, balanced compositional weight.
+5. **1-second clarity rule** — option meaning must be obvious in under 1 second; no symbolic or loosely related scenes.
 
-Calendar pipeline keeps its admin approval gate and 3× retry/fallback (pro → flash 3.1 → flash 2.5). Normal pipeline single-attempt with pro model only.
+**visual_direction** (generate-poll only): Step 1 text generation outputs `visual_direction` JSON with `option_a_scene`, `option_b_scene`, `contrast_type`, `emotion_a`, `emotion_b`, `pair_relationship`. Step 2 uses these as primary image briefs.
+
+**Retry**: All pipelines use 3-attempt retry with model fallback (pro → flash 3.1 → flash 2.5). Failed polls flagged `needs_manual_image`.
+
+**Admin approval checklist** (calendar): 7-point checklist required before approval. 3 rejections → needs_manual_image flag.
