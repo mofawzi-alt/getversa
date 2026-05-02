@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from "react";
+import { Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -188,7 +189,7 @@ function AppInner() {
             <Route path="/profile/notifications" element={<ProtectedRoute><ProfileNotifications /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/insights" element={<ProtectedRoute><InsightProfile /></ProtectedRoute>} />
+            <Route path="/insights" element={<Navigate to="/taste-profile" replace />} />
             <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
             <Route path="/personality" element={<ProtectedRoute><PersonalityResults /></ProtectedRoute>} />
             <Route path="/weekly-results" element={<WeeklyTopResults />} />
