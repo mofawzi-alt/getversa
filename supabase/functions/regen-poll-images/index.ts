@@ -33,6 +33,30 @@ function isCelebrityName(s: string): boolean {
 }
 
 const PROMPT_TPL = (subject: string, question: string, otherOption: string) => {
+  const bothCelebrities = isCelebrityName(subject) && isCelebrityName(otherOption);
+  
+  if (bothCelebrities) {
+    return `CELEBRITY POLL IMAGE — CINEMATIC MOVIE POSTER / STREAMING SCREEN STYLE
+
+Create a dramatic, cinematic movie-poster-style image for "${subject}" in the context of "${question}".
+
+CONCEPT: Design a stylish, moody movie poster or streaming platform (like Netflix/Shahid) title card that prominently features the name "${subject}" as the HERO TITLE TEXT.
+
+MANDATORY ELEMENTS:
+- The name "${subject}" MUST appear as large, bold, elegant TITLE TEXT — like a movie title on a poster or a show title on a streaming app screen
+- Cinematic dramatic lighting — dark background with spotlight effects, lens flares, or neon glow
+- Film-grade color grading — deep blues, warm ambers, dramatic contrast
+- A silhouette or abstract human figure in the background (NOT a real face — just a dramatic shadowy outline or artistic blur)
+- Visual elements suggesting the entertainment industry: film grain, bokeh lights, stage lights, red carpet glow, or a theater/screen frame
+- The overall feel should be PREMIUM and CINEMATIC — like an award-winning movie poster or a Shahid/Netflix original series card
+
+STYLE: Dark cinematic photography, dramatic lighting, movie poster composition, 4:5 portrait, premium streaming platform aesthetic.
+
+TEXT RULES: The name "${subject}" MUST be rendered as stylish typography — think movie credits font, bold serif or elegant sans-serif, with cinematic effects (glow, shadow, metallic sheen).
+
+STRICTLY FORBIDDEN: NO real human faces, NO photographs of actual people, NO logos of streaming platforms, NO brand names other than the person's name. The person's name IS the visual centerpiece.`;
+  }
+
   const isProduct = isProductOrBrand(subject) && isProductOrBrand(otherOption);
   const mode = isProduct ? 'HYBRID' : 'LIFESTYLE';
 
