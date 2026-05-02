@@ -6,6 +6,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Detect celebrity / public figure names
+function isCelebrityName(s: string): boolean {
+  const t = s.trim();
+  if (!t) return false;
+  const words = t.split(/\s+/);
+  if (words.length < 2 || words.length > 4) return false;
+  const allCapitalized = words.every(w => /^[A-Z\u0600-\u06FF]/.test(w));
+  if (!allCapitalized) return false;
+  const productWords = /^(iphone|samsung|galaxy|coca|pepsi|nike|adidas|vodafone|orange|etisalat|noon|amazon|uber|careem|netflix|shahid|youtube|instagram|tiktok|facebook|twitter|whatsapp|spotify|apple|google|microsoft|toyota|bmw|mercedes|hyundai|kia)$/i;
+  if (words.some(w => productWords.test(w))) return false;
+  return true;
+}
+
+function getCelebrityImagePrompt(name: string, question: string): string {
+  return `CELEBRITY POLL IMAGE — CINEMATIC MOVIE POSTER / STREAMING SCREEN STYLE
+
+Create a dramatic, cinematic movie-poster-style image for "${name}" in the context of "${question}".
+
+CONCEPT: Design a stylish, moody movie poster or streaming platform (like Netflix/Shahid) title card that prominently features the name "${name}" as the HERO TITLE TEXT.
+
+MANDATORY ELEMENTS:
+- The name "${name}" MUST appear as large, bold, elegant TITLE TEXT — like a movie title on a poster or a show title on a streaming app screen
+- Cinematic dramatic lighting — dark background with spotlight effects, lens flares, or neon glow
+- Film-grade color grading — deep blues, warm ambers, dramatic contrast
+- A silhouette or abstract human figure in the background (NOT a real face — just a dramatic shadowy outline or artistic blur)
+- Visual elements suggesting the entertainment industry: film grain, bokeh lights, stage lights, red carpet glow, or a theater/screen frame
+- The overall feel should be PREMIUM and CINEMATIC — like an award-winning movie poster or a Shahid/Netflix original series card
+
+STYLE: Dark cinematic photography, dramatic lighting, movie poster composition, 4:5 portrait, premium streaming platform aesthetic.
+
+TEXT RULES: The name "${name}" MUST be rendered as stylish typography — think movie credits font, bold serif or elegant sans-serif, with cinematic effects (glow, shadow, metallic sheen).
+
+STRICTLY FORBIDDEN: NO real human faces, NO photographs of actual people, NO logos of streaming platforms, NO brand names other than the person's name. The person's name IS the visual centerpiece.`;
+}
+
 async function generateAndUploadImage(apiKey: string, prompt: string, supabase: any): Promise<string | null> {
   console.log('Generating image for:', prompt);
   
