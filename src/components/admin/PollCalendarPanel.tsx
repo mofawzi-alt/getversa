@@ -320,10 +320,22 @@ export default function PollCalendarPanel() {
               e.target.value = '';
             }}
           />
+          {!bulkProgress?.running ? (
+            <Button variant="secondary" size="sm" onClick={bulkGenerateImages} disabled={!!generatingId}>
+              <Sparkles className="h-4 w-4 mr-1" /> Bulk Generate Images
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <span className="text-xs text-muted-foreground">{bulkProgress.current}/{bulkProgress.total}</span>
+              <Button variant="destructive" size="sm" className="h-7 text-xs" onClick={() => { bulkAbortRef.current = true; }}>
+                Stop
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Release hour */}
       <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/30">
         <CalIcon className="h-4 w-4 text-muted-foreground" />
         <Label htmlFor="release-hour" className="text-sm">Daily release hour (Cairo):</Label>
