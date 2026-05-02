@@ -284,7 +284,16 @@ export default function Friends() {
 
                       {/* Compatibility Ring — Vote Match (agreement on shared polls) */}
                       <div className="flex flex-col items-center gap-0.5">
-                        <CompatibilityRing score={friend.compatibility_score} />
+                        <div className="flex items-center gap-1">
+                          <CompatibilityRing score={friend.compatibility_score} />
+                          {friend.compatibility_score !== null && friend.compatibility_score !== undefined && (
+                            <ShareCompatibilityButton
+                              friendUsername={friend.friend_username || 'friend'}
+                              compatibilityScore={friend.compatibility_score}
+                              matchLabel={getCompatibilityLabel(friend.compatibility_score)}
+                            />
+                          )}
+                        </div>
                         <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider leading-none">
                           Vote match
                         </span>
