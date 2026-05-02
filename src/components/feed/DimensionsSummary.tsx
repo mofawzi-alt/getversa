@@ -46,7 +46,7 @@ export default function DimensionsSummary() {
 
   return (
     <button
-      onClick={() => navigate('/insights')}
+      onClick={() => navigate('/taste-profile')}
       className="w-full glass rounded-2xl p-4 text-left group"
     >
       <div className="flex items-center justify-between mb-2">
