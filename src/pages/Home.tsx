@@ -972,8 +972,25 @@ export default function Home() {
         if (!rawPolls || rawPolls.length === 0) return [];
 
         const fetchedIds = new Set(rawPolls.map(p => p.id));
-        const missingQueuePollIds = queuePollIds.filter(id => !fetchedIds.has(id));
+        const freshSince = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+        const [{ data: freshPolls, error: freshPollsError }, missingQueuePollIds] = await Promise.all([
+          supabase
+            .from('polls')
+            .select(pollSelect)
+            .eq('is_active', true)
+            .gte('created_at', freshSince)
+            .or(`starts_at.is.null,starts_at.lte.${now}`)
+            .order('created_at', { ascending: false })
+            .limit(50),
+          Promise.resolve(queuePollIds.filter(id => !fetchedIds.has(id))),
+        ]);
+        if (freshPollsError) throw freshPollsError;
         let mergedPolls = rawPolls;
+
+        if (freshPolls?.length) {
+          freshPolls.forEach(p => fetchedIds.add(p.id));
+          mergedPolls = [...freshPolls, ...rawPolls.filter(p => !freshPolls.some(fp => fp.id === p.id))];
+        }
 
         if (missingQueuePollIds.length > 0) {
           const { data: queuedPolls, error: queuedPollsError } = await supabase
