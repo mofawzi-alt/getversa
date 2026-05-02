@@ -250,9 +250,15 @@ export default function PulseStoriesRow() {
   const [openEditorial, setOpenEditorial] = useState<EditorialStory | null>(null);
   const [bump, setBump] = useState(0);
   const [shareFinding, setShareFinding] = useState<BreakdownFinding | null>(null);
-  const [filterOpen, setFilterOpen] = useState(false);
   const [hiddenCats, setHiddenCats] = useState(() => getHiddenCategories());
   const { data: editorialStories } = useEditorialStories();
+
+  // Listen for changes from settings page
+  useEffect(() => {
+    const handler = () => setHiddenCats(getHiddenCategories());
+    window.addEventListener('versa-category-filter-changed', handler);
+    return () => window.removeEventListener('versa-category-filter-changed', handler);
+  }, []);
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
@@ -264,11 +270,6 @@ export default function PulseStoriesRow() {
   const { data: weeklyData } = useWeeklyVerdict();
   const { data: newPollsData } = useNewThisWeek(lastVisit);
   const { data: breakdownData } = useBreakdownFindings();
-
-  const onFilterUpdate = useCallback(() => {
-    setHiddenCats(getHiddenCategories());
-    setBump((b) => b + 1);
-  }, []);
 
   const circles: CircleSpec[] = useMemo(() => {
     if (!pulse) return [];
