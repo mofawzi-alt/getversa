@@ -7,7 +7,6 @@ import { trackStoryEvent } from '@/lib/storyAnalytics';
 import {
   Pin, Flame, MapPin, Building2, Bell, Users, Sparkles,
   Swords, Layers, Brain, Clock, Trophy, PartyPopper, BarChart3, Sunrise,
-  SlidersHorizontal,
   type LucideIcon,
 } from 'lucide-react';
 import {
