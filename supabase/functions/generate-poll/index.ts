@@ -6,354 +6,307 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// ─── Shared Versa Image Pipeline v3 ───
+
+const EGYPT_KEYWORDS = [
+  'كشري','شاورما','فول','طعمية','كباب','مشويات',
+  'sahel','gouna','cairo','alexandria','zamalek','maadi','new cairo','ain sokhna','hurghada',
+  'vodafone','orange','etisalat','talabat','elmenus','noon','carrefour','juhayna','edita',
+  'ramadan','رمضان','eid','عيد',
+];
+
+function detectEgyptContext(text: string): boolean {
+  if (!text) return false;
+  if (/[\u0600-\u06FF\u0750-\u077F]/.test(text)) return true;
+  const lower = text.toLowerCase();
+  return EGYPT_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
+const COUNTRY_DIRECTIVES: Record<string, string> = {
+  egypt: 'Setting: contemporary Cairo or Egyptian city. Cast: Egyptian / North African faces, Gen Z. Arabic signage, local streets, Egyptian lifestyle atmosphere.',
+  uae: 'Setting: contemporary Dubai or Abu Dhabi. Cast: mixed Arab and South Asian faces, cosmopolitan MENA. Modern Gulf architecture, clean urban environment.',
+  'united arab emirates': 'Setting: contemporary Dubai or Abu Dhabi. Cast: mixed Arab and South Asian faces, cosmopolitan MENA. Modern Gulf architecture, clean urban environment.',
+  'saudi arabia': 'Setting: contemporary Riyadh or Jeddah. Cast: Saudi Arab faces, modest fashion, Gen Z. Modern Saudi urban environment, Vision 2030 aesthetic.',
+  ksa: 'Setting: contemporary Riyadh or Jeddah. Cast: Saudi Arab faces, modest fashion, Gen Z. Modern Saudi urban environment, Vision 2030 aesthetic.',
+  kuwait: 'Setting: contemporary Kuwait City. Cast: Kuwaiti Arab faces, Gulf aesthetic, Gen Z. Modern Gulf urban environment.',
+  jordan: 'Setting: contemporary Amman. Cast: Jordanian / Levantine Arab faces, Gen Z. Modern Amman urban atmosphere.',
+  lebanon: 'Setting: contemporary Beirut. Cast: Lebanese / Levantine faces, cosmopolitan, Gen Z. Beirut urban lifestyle atmosphere.',
+  morocco: 'Setting: contemporary Casablanca or Rabat. Cast: Moroccan / North African faces, Gen Z. Modern Moroccan urban environment.',
+  mena: 'Setting: contemporary Middle East and North Africa. Cast: Arab faces, diverse MENA nationalities, Gen Z. Modern urban MENA environment. No Western-coded settings.',
+  gcc: 'Setting: contemporary Gulf region. Cast: Arab Gulf faces, cosmopolitan mix, Gen Z. Modern Gulf urban environment, clean and premium aesthetic.',
+  global: 'Setting: neutral cosmopolitan urban environment. Cast: diverse international Gen Z. No specific national markers.',
+};
+const DEFAULT_COUNTRY_DIRECTIVE = COUNTRY_DIRECTIVES.mena;
+
+const CONTEXT_DIRECTIVES: Record<string, string> = {
+  'Cairo street': ' Scene: a contemporary Cairo street — local architecture, Egyptian pedestrians, Arabic signage, authentic urban atmosphere.',
+  'Sahel beach': ' Scene: North Coast (Sahel) Egypt — Mediterranean beach, white compound aesthetic, Egyptian Gen Z in summer mode.',
+  'Egyptian home': ' Scene: a modern Egyptian home interior — local decor cues, family or friends, warm natural light.',
+  'Egyptian office': ' Scene: a contemporary Cairo office or co-working space — Egyptian professionals, modern but locally rooted.',
+  'Egyptian café': ' Scene: a Cairo specialty café or ahwa — Egyptian Gen Z, local atmosphere, occasional Arabic signage in background.',
+  'Egyptian university campus': ' Scene: a modern Egyptian university campus — lecture halls, outdoor quads, Gen Z students in casual 2026 fashion, backpacks, study groups.',
+  'Egyptian mall or shopping center': ' Scene: inside a modern Egyptian mall — escalators, bright storefronts, Arabic signage, Gen Z shoppers browsing.',
+  'Egyptian gym or outdoor public space': ' Scene: a modern Egyptian gym or outdoor park — fitness equipment, athletic wear, Gen Z working out or jogging in an Egyptian neighbourhood.',
+  'Nile view or Cairo waterfront': ' Scene: Cairo Nile corniche or waterfront — river view, feluccas in background, golden hour, aspirational Egyptian lifestyle.',
+  'Egyptian wedding venue or celebration': ' Scene: an Egyptian wedding or celebration hall — festive lights, colourful decorations, joyful Gen Z guests in semi-formal Egyptian style.',
+  'New Cairo compound or premium residential': ' Scene: a modern New Cairo gated compound — clean streets, manicured gardens, premium villas, aspirational Egyptian residential lifestyle.',
+  'Generic global': '',
+};
+
+function resolveCountryDirective(country?: string | null): string {
+  if (!country) return DEFAULT_COUNTRY_DIRECTIVE;
+  return COUNTRY_DIRECTIVES[country.trim().toLowerCase()] || DEFAULT_COUNTRY_DIRECTIVE;
+}
+
+const PAIR_BALANCE_RULE = 'This image will appear side by side with a paired image on a split poll card. Generate with awareness of visual pairing — match brightness level approximately, use complementary not clashing color temperatures, ensure compositional weight is balanced so both images feel like they belong in the same visual world. The two images must not visually clash when placed next to each other.';
+
+const ONE_SECOND_CLARITY_RULE = 'The image must communicate the option meaning in under 1 second to a viewer who has never seen the prompt. Generate only the exact physical action or scene described — never an approximate, symbolic, or loosely related scene. If the intended action is not immediately and obviously visible — the image fails. Regenerate until the action is unmistakable.';
+
+function buildVisualDirectionPrompt(scene: string, emotion: string, contrastType: string, pairRelationship: string, countryDirective: string, contextDirective: string, keywordBoost: string): string {
+  return `Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Scene: ${scene}. Emotion to convey: ${emotion}. Contrast role: ${contrastType}. Pair dynamic: ${pairRelationship}. WHO: ONE visible human aged 18–30, Gen Z, modern casual 2026 clothing, natural expression. ${countryDirective}${contextDirective}${keywordBoost} ${PAIR_BALANCE_RULE} ${ONE_SECOND_CLARITY_RULE} Never default to Western, American, or European settings. Real scene only — people, hands, environments, or products in authentic use.`;
+}
+
+// Fallback if visual_direction not available
+function buildSimpleImagePrompt(subject: string, question: string, countryDirective: string, contextDirective: string, keywordBoost: string): string {
+  return `Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: "${subject}". Visual context: "${question}". WHO: ONE visible human aged 18–30, Gen Z, modern casual 2026 clothing, natural expression. ${countryDirective}${contextDirective}${keywordBoost} ${PAIR_BALANCE_RULE} ${ONE_SECOND_CLARITY_RULE} Never default to Western, American, or European settings. Real scene only — people, hands, environments, or products in authentic use.`;
+}
+
+// ─── Image generation with 3-attempt retry ───
+
 async function generateAndUploadImage(apiKey: string, prompt: string, supabase: any): Promise<string | null> {
-  console.log('Generating image for:', prompt);
-  
-  try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-3-pro-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: `Cinematic lifestyle photograph that shows a Gen Z person performing the EXACT real-life behavior of: "${prompt}". The behavior must be obvious in under 1 second; this is the user's "this is me" moment.
-
-WHO (mandatory): ONE visible human subject aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing, natural and expressive. NO older subjects (30+ only if the option requires it), NO formal/corporate styling, NO empty scenes without a person.
-
-WHERE: realistic 2026 environment — modern apartment, cafe, Cairo / MENA street, university, or co-working / social space. Use Egyptian / Middle-Eastern context when culturally relevant. NO outdated interiors, NO generic Western stock backgrounds.
-
-ACTION (critical): the subject must be visibly DOING the behavior of "${prompt}" — e.g. paying with phone for "mobile wallet", handing cash for "cash", eating with friends for "orders often", solo home meal for "rarely orders", inside a car for "private car", in a crowded bus/train for "public transport", watching screen with screen-light on face for streaming. If the option is a brand name, translate it into a real-life usage scene — NEVER show the logo.
-
-VIBE: candid, natural, slightly imperfect, social, expressive — NOT posed, NOT polished advertising, NOT stock-photo perfect.
-
-STYLE: real DSLR / mirrorless photography, cinematic high-contrast lighting, close-up immersive framing, shallow depth of field, ONE clear subject, no clutter, 4:5 portrait, magazine-grade, TikTok / Instagram aesthetic.
-
-STRICTLY FORBIDDEN: NO logos, NO brand names, NO wordmarks, NO typography, NO text of any kind inside the image, NO app interfaces, NO UI screenshots, NO phone-app mockups, NO collages, NO split visuals, NO posters, NO graphics, NO illustrations, NO 3D renders, NO abstract or symbolic visuals, NO watermarks, NO borders.`
-          }
-        ],
-        modalities: ['image', 'text']
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Image generation failed:', response.status, errorText);
-      return null;
-    }
-
-    const data = await response.json();
-    const imageDataUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    
-    if (!imageDataUrl) {
-      console.log('No image in response:', JSON.stringify(data));
-      return null;
-    }
-
-    // Extract base64 data from data URL
-    const base64Match = imageDataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
-    if (!base64Match) {
-      console.error('Invalid image data format');
-      return null;
-    }
-
-    const imageType = base64Match[1];
-    const base64Data = base64Match[2];
-
-    // Decode base64 to binary
-    const binaryString = atob(base64Data);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-
-    // Upload to storage
-    const fileName = `ai-generated/${crypto.randomUUID()}.${imageType}`;
-    const { error: uploadError } = await supabase.storage
-      .from('poll-images')
-      .upload(fileName, bytes, {
-        contentType: `image/${imageType}`,
-        upsert: false
+  const models = ['google/gemini-3-pro-image-preview', 'google/gemini-3.1-flash-image-preview', 'google/gemini-2.5-flash-image'];
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const model = models[Math.min(attempt, models.length - 1)];
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], modalities: ['image', 'text'] }),
       });
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
-      return null;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`Image gen attempt ${attempt + 1} failed: ${response.status}`, errorText.slice(0, 200));
+        if (response.status === 402 || response.status === 429) return null;
+        await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+        continue;
+      }
+      const data = await response.json();
+      const imageDataUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (!imageDataUrl) { console.warn(`Attempt ${attempt + 1}: no image`); await new Promise(r => setTimeout(r, 1000)); continue; }
+      const base64Match = imageDataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
+      if (!base64Match) continue;
+      const binaryString = atob(base64Match[2]);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+      const fileName = `ai-generated/${crypto.randomUUID()}.${base64Match[1]}`;
+      const { error: uploadError } = await supabase.storage.from('poll-images').upload(fileName, bytes, { contentType: `image/${base64Match[1]}`, upsert: false });
+      if (uploadError) { console.warn('Upload error:', uploadError); continue; }
+      return supabase.storage.from('poll-images').getPublicUrl(fileName).data.publicUrl;
+    } catch (error) {
+      console.warn(`Attempt ${attempt + 1} error:`, error);
+      await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
     }
-
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('poll-images')
-      .getPublicUrl(fileName);
-
-    console.log('Image uploaded successfully:', urlData.publicUrl);
-    return urlData.publicUrl;
-  } catch (error) {
-    console.error('Error generating/uploading image:', error);
-    return null;
   }
+  return null;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    // Parse request body first to get userId
     const { category, userId, targetAgeRange, targetGender, targetCountry } = await req.json();
-    
-    if (!userId) {
-      console.error('Missing userId in request');
-      return new Response(
-        JSON.stringify({ error: 'User ID required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    console.log('Generating poll for category:', category, 'userId:', userId, 'targeting:', { targetAgeRange, targetGender, targetCountry });
 
-    // Create service role client for admin verification
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'User ID required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if user has admin role using service role (bypasses RLS)
     const { data: adminRole, error: roleError } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .eq('role', 'admin')
-      .single();
-
+      .from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').single();
     if (roleError || !adminRole) {
-      console.error('Admin role check failed:', roleError);
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Admin access required' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY is not configured');
-      throw new Error('LOVABLE_API_KEY is not configured');
-    }
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
-    // Generate a random seed for variety
     const randomSeed = Math.floor(Math.random() * 1000000);
     const timestamp = Date.now();
 
     const ALLOWED_CATEGORIES = [
-      'FMCG & Food',
-      'Beauty & Personal Care',
-      'Financial Services',
-      'Media & Entertainment',
-      'Retail & E-commerce',
-      'Telco & Tech',
-      'Food Delivery & Dining',
-      'Automotive & Mobility',
-      'Lifestyle & Society',
-      'The Pulse',
+      'FMCG & Food', 'Beauty & Personal Care', 'Financial Services',
+      'Media & Entertainment', 'Retail & E-commerce', 'Telco & Tech',
+      'Food Delivery & Dining', 'Automotive & Mobility', 'Lifestyle & Society', 'The Pulse',
     ];
 
-    const systemPrompt = `You are an expert poll creator for a social voting app called VERSA, targeting audiences in EGYPT. 
-Your job is to create simple "X vs Y" or "This or That" style comparison polls that resonate with Egyptian culture.
+    // Resolve country directive for text generation context
+    const resolvedCountry = targetCountry || 'Egypt';
+    const countryContext = resolveCountryDirective(resolvedCountry);
+
+    const systemPrompt = `You are an expert poll creator for a social voting app called VERSA, targeting audiences in ${resolvedCountry.toUpperCase()}.
+Your job is to create simple "X vs Y" or "This or That" style comparison polls that resonate with the target audience.
 
 CRITICAL: VARIETY IS ESSENTIAL!
 - NEVER repeat the same poll twice
 - Each poll must be UNIQUE and DIFFERENT from common obvious choices
 - Think creatively and explore diverse options within each category
 - Random seed for this request: ${randomSeed} - use this to inspire variety
-- FOCUS ON EGYPTIAN culture, brands, food, celebrities, and trends
+- FOCUS ON ${resolvedCountry.toUpperCase()} culture, brands, food, celebrities, and trends
 
 CRITICAL FORMAT RULES:
-- The question MUST be exactly in this format: "Option A vs Option B" (e.g., "Al Ahly vs Zamalek", "Koshari vs Foul")
+- The question MUST be exactly in this format: "Option A vs Option B"
 - Each option MUST be 1-2 words MAXIMUM
-- NO sentence-style questions like "Would you rather..." or "Which do you prefer..."
-- NO long descriptions - just simple, punchy comparisons
-- Options should be well-known items, brands, or concepts that Egyptians can easily compare
-
-Examples of CORRECT format:
-- "Al Ahly vs Zamalek"
-- "Koshari vs Shawarma"
-- "Cairo vs Alex"
-- "Amr Diab vs Tamer Hosny"
-- "Sobhy vs Gad"
-- "Summer vs Winter"
-- "iPhone vs Android"
-- "Netflix vs Shahid"
+- NO sentence-style questions
+- Options should be well-known items, brands, or concepts
 
 Guidelines:
 - Create polls that spark debate between two comparable things
-- Prioritize Egyptian and Middle Eastern cultural references
-- Include Egyptian brands, restaurants, celebrities, food, sports
+- Prioritize ${resolvedCountry} and regional cultural references
 - Avoid controversial political, religious, or offensive topics
-- Make polls that appeal to Egyptian Gen Z / Millennial audience
-- Consider trending topics in Egypt, Egyptian pop culture, and local debates
-- BE CREATIVE - don't always pick the most obvious comparison!
-${targetAgeRange || targetGender || targetCountry ? `
-AUDIENCE TARGETING - Create a poll specifically tailored for:
+- Make polls that appeal to Gen Z / Millennial audience
+${targetAgeRange || targetGender ? `
+AUDIENCE TARGETING:
 ${targetAgeRange ? `- Age group: ${targetAgeRange} years old` : ''}
 ${targetGender ? `- Gender: ${targetGender}` : ''}
-${targetCountry ? `- Country/Region: ${targetCountry}` : ''}
-Make sure the poll topic, references, and language resonate with this specific demographic!` : ''}
+Make sure the poll resonates with this demographic!` : ''}
 
-CRITICAL CATEGORY RULE:
-The "category" field MUST be EXACTLY one of these 10 values (copy verbatim, no variations):
+CATEGORY RULE — use EXACTLY one of:
 ${ALLOWED_CATEGORIES.map((c) => `- ${c}`).join('\n')}
-
-Category guide:
-- FMCG & Food: packaged food, snacks, beverages (Coca-Cola, Chipsy, Cadbury, Galaxy)
-- Beauty & Personal Care: makeup, skincare, shampoo, perfume
-- Financial Services: banks, fintech, payments, wallets, business/startups
-- Media & Entertainment: movies, series, music, sports, celebrities, gaming
-- Retail & E-commerce: shopping, stores, marketplaces (Noon, Amazon, Jumia)
-- Telco & Tech: telecom (Vodafone, Orange, Etisalat, WE), apps, gadgets, software
-- Food Delivery & Dining: restaurants, cafes, delivery apps (Talabat, elmenus)
-- Automotive & Mobility: cars, ride-hailing (Uber, Careem, Swvl), scooters
-- Lifestyle & Society: relationships, wellness, style, fashion, personality, habits, travel
-- The Pulse: trending cultural/political/news debates (Al Ahly vs Zamalek, Cairo vs Alex)
 
 You MUST respond with a valid JSON object with these exact fields:
 {
   "question": "Option A vs Option B",
   "option_a": "Option A",
   "option_b": "Option B",
-  "category": "<one of the 10 categories above, exactly>"
-}`;
+  "category": "<one of the categories above>",
+  "visual_direction": {
+    "option_a_scene": "detailed scene description — WHO + WHERE + EXACT ACTION + lighting",
+    "option_b_scene": "detailed scene description — WHO + WHERE + EXACT ACTION + lighting",
+    "contrast_type": "e.g. local vs corporate, warm vs cool, street vs modern",
+    "emotion_a": "the feeling the option_a image must convey",
+    "emotion_b": "the feeling the option_b image must convey",
+    "pair_relationship": "the core tension between the two options"
+  }
+}
 
-    // Food category examples for variety
-    const foodVariety = [
-      "koshari, foul, taameya, shawarma, hawawshi, molokhia, fateer, konafa, basbousa, mahshi, kebab, kofta, feteer meshaltet, ful medames, roz bel laban",
-      "sushi, ramen, pizza, pasta, burgers, tacos, dim sum, pad thai, biryani, steak, fried chicken, BBQ",
-      "sahlab, karkade, sugarcane juice, qamar el din, boba tea, Turkish coffee, Nescafe, fresh mango juice, lemon mint"
-    ];
+VISUAL DIRECTION RULES:
+- option_a_scene and option_b_scene must describe a SPECIFIC cinematic shot — not a vague mood board
+- Include: who (age, gender, outfit), where (exact location type), what action (specific physical behavior), and lighting
+- contrast_type describes how the two images should visually differ
+- emotion_a / emotion_b describe the feeling each image must evoke
+- pair_relationship describes why these two options are interesting as a pair
 
-    const userPrompt = category 
-      ? `Create a simple "X vs Y" comparison poll in the "${category}" category that resonates with Egyptian audiences. 
-         
-IMPORTANT: Be creative and unique! Use Egyptian cultural references when possible.
-${category.toLowerCase() === 'food' ? `Consider Egyptian food items like: ${foodVariety[Math.floor(Math.random() * foodVariety.length)]}` : ''}
-Timestamp: ${timestamp} | Seed: ${randomSeed}
-Remember: 1-2 words per option only, format as "X vs Y".`
-      : `Create a simple "X vs Y" comparison poll about any trending topic in Egypt. Pick from categories like: Egyptian Food, Egyptian TV/Movies, Egyptian Music, Egyptian Football, Cairo Life, Egyptian Fashion, Gaming, Technology, Egyptian Brands, Lifestyle. 
-         
-IMPORTANT: Be creative and pick something that Egyptians would love to debate!
-Timestamp: ${timestamp} | Seed: ${randomSeed}
-Remember: 1-2 words per option only, format as "X vs Y".`;
+Example for "Careem vs Uber":
+  option_a_scene: "Young Egyptian woman in casual clothes confidently hailing a white car on a busy Cairo street at golden hour — warm light, street energy, local familiarity"
+  option_b_scene: "Young Egyptian man checking a ride app on his phone outside a modern glass office building in New Cairo — cool blue light, clean environment, efficiency"
+  contrast_type: "local vs corporate, warm vs cool, street vs modern"
+  emotion_a: "familiar comfort, local pride"
+  emotion_b: "modern efficiency, aspirational"
+  pair_relationship: "everyday local vs aspirational modern"`;
 
-    console.log('Calling Lovable AI Gateway for poll content...');
-    
+    const userPrompt = category
+      ? `Create a simple "X vs Y" poll in the "${category}" category for ${resolvedCountry} audiences. Be creative! Timestamp: ${timestamp} | Seed: ${randomSeed}`
+      : `Create a simple "X vs Y" poll about any trending topic in ${resolvedCountry}. Be creative! Timestamp: ${timestamp} | Seed: ${randomSeed}`;
+
+    console.log('Calling AI for poll content with visual_direction...');
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
         temperature: 0.9,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'AI credits exhausted. Please add credits to continue.' }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      throw new Error(`AI Gateway error: ${response.status}`);
+      console.error('AI error:', response.status, errorText);
+      if (response.status === 429) return new Response(JSON.stringify({ error: 'Rate limit exceeded.' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      if (response.status === 402) return new Response(JSON.stringify({ error: 'AI credits exhausted.' }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      throw new Error(`AI error: ${response.status}`);
     }
 
     const aiData = await response.json();
-    console.log('AI Response:', JSON.stringify(aiData));
-    
     const content = aiData.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new Error('No content in AI response');
-    }
+    if (!content) throw new Error('No content in AI response');
 
-    // Parse the JSON from the response
     let pollData;
     try {
-      // Try to extract JSON from the response (it might be wrapped in markdown code blocks)
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         pollData = JSON.parse(jsonMatch[0]);
       } else {
-        // AI refused or returned non-JSON - provide a helpful error message
-        if (content.toLowerCase().includes('cannot') || content.toLowerCase().includes('refuse') || content.toLowerCase().includes('guidelines')) {
-          console.error('AI declined to generate poll:', content);
-          throw new Error('The AI cannot generate a poll for this category. Please try a different topic like Food, Sports, Entertainment, or Technology.');
-        }
-        throw new Error('No JSON found in response');
+        throw new Error('No JSON found in AI response');
       }
     } catch (parseError: any) {
-      console.error('Failed to parse AI response:', content);
-      // Provide more helpful error message
-      if (parseError.message.includes('cannot generate') || parseError.message.includes('different topic')) {
-        throw parseError;
-      }
-      throw new Error('Failed to generate poll. Please try a different category.');
+      console.error('Parse error:', content);
+      throw new Error('Failed to generate poll. Try a different category.');
     }
 
-    // Validate the poll data
-    if (!pollData.question || !pollData.option_a || !pollData.option_b) {
-      console.error('Invalid poll data:', pollData);
-      throw new Error('Invalid poll data structure');
-    }
+    if (!pollData.question || !pollData.option_a || !pollData.option_b) throw new Error('Invalid poll data');
 
-    // Clamp category to allowed list (server-side enforcement)
+    // Clamp category
     const clampCategory = (raw: string | undefined | null): string => {
       const n = (raw || '').trim().toLowerCase();
       const exact = ALLOWED_CATEGORIES.find((c) => c.toLowerCase() === n);
       if (exact) return exact;
       if (/(deliver|restaurant|dining|cafe|café|talabat|elmenus|otlob)/.test(n)) return 'Food Delivery & Dining';
-      if (/(beauty|makeup|skincare|cosmetic|shampoo|perfume|hair)/.test(n)) return 'Beauty & Personal Care';
-      if (/(bank|finance|fintech|money|budget|crypto|payment|wallet|loan|business|startup)/.test(n)) return 'Financial Services';
-      if (/(telecom|mobile|phone|network|internet|wifi|tech|app|software|gadget|telco)/.test(n)) return 'Telco & Tech';
-      if (/(car|auto|vehicle|mobility|ride|uber|careem|swvl|motorcycle|scooter)/.test(n)) return 'Automotive & Mobility';
-      if (/(retail|shopping|ecommerce|e-commerce|store|brand|noon|jumia|amazon)/.test(n)) return 'Retail & E-commerce';
-      if (/(movie|film|series|tv|show|celeb|music|song|artist|sport|football|game|gaming|entertainment)/.test(n)) return 'Media & Entertainment';
-      if (/(food|drink|snack|beverage|fmcg|coffee|tea|chips|cola|juice|chocolate)/.test(n)) return 'FMCG & Food';
-      if (/(lifestyle|society|relationship|dating|wellness|habit|style|fashion|design|personality|travel)/.test(n)) return 'Lifestyle & Society';
+      if (/(beauty|makeup|skincare|cosmetic)/.test(n)) return 'Beauty & Personal Care';
+      if (/(bank|finance|fintech|money|payment|wallet)/.test(n)) return 'Financial Services';
+      if (/(telecom|mobile|phone|tech|app|software|telco)/.test(n)) return 'Telco & Tech';
+      if (/(car|auto|mobility|ride|uber|careem)/.test(n)) return 'Automotive & Mobility';
+      if (/(retail|shopping|ecommerce|store|noon|jumia)/.test(n)) return 'Retail & E-commerce';
+      if (/(movie|film|series|tv|celeb|music|sport|game|entertainment)/.test(n)) return 'Media & Entertainment';
+      if (/(food|drink|snack|beverage|fmcg|coffee|tea|chips|cola)/.test(n)) return 'FMCG & Food';
+      if (/(lifestyle|society|relationship|wellness|fashion|travel)/.test(n)) return 'Lifestyle & Society';
       return 'The Pulse';
     };
     pollData.category = clampCategory(pollData.category || category);
 
-    // Generate images for both options in parallel and upload to storage
-    console.log('Generating images for poll options...');
+    // ─── Step 2: Image generation using visual_direction ───
+    console.log('Generating images with visual_direction...');
+
+    const countryDirective = resolveCountryDirective(resolvedCountry);
+    const combinedText = `${pollData.question} ${pollData.option_a} ${pollData.option_b}`;
+    const keywordBoost = detectEgyptContext(combinedText)
+      ? ' Local cue detected: ensure Egyptian / Arabic signage and local Egyptian atmosphere are clearly present.'
+      : '';
+    const contextDirective = ''; // generate-poll uses country only, no specific cultural_context
+
+    const vd = pollData.visual_direction;
+    let promptA: string;
+    let promptB: string;
+
+    if (vd?.option_a_scene && vd?.option_b_scene) {
+      // Use visual_direction as primary brief
+      promptA = buildVisualDirectionPrompt(
+        vd.option_a_scene, vd.emotion_a || '', vd.contrast_type || '', vd.pair_relationship || '',
+        countryDirective, contextDirective, keywordBoost
+      );
+      promptB = buildVisualDirectionPrompt(
+        vd.option_b_scene, vd.emotion_b || '', vd.contrast_type || '', vd.pair_relationship || '',
+        countryDirective, contextDirective, keywordBoost
+      );
+    } else {
+      // Fallback to simple prompt
+      promptA = buildSimpleImagePrompt(pollData.option_a, pollData.question, countryDirective, contextDirective, keywordBoost);
+      promptB = buildSimpleImagePrompt(pollData.option_b, pollData.question, countryDirective, contextDirective, keywordBoost);
+    }
+
     const [imageA, imageB] = await Promise.all([
-      generateAndUploadImage(LOVABLE_API_KEY, pollData.option_a, supabase),
-      generateAndUploadImage(LOVABLE_API_KEY, pollData.option_b, supabase),
+      generateAndUploadImage(LOVABLE_API_KEY, promptA, supabase),
+      generateAndUploadImage(LOVABLE_API_KEY, promptB, supabase),
     ]);
 
-    console.log('Image A generated:', !!imageA);
-    console.log('Image B generated:', !!imageB);
+    const needsManualImage = !imageA || !imageB;
 
     const startsAt = new Date();
-    const endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     const { data: poll, error: insertError } = await supabase
       .from('polls')
@@ -372,53 +325,34 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
         target_gender: targetGender || null,
         target_country: targetCountry || null,
         weight_score: 500,
+        needs_manual_image: needsManualImage,
       })
       .select()
       .single();
 
     if (insertError) {
-      console.error('Database insert error:', insertError);
-      // If duplicate, return a friendly message instead of crashing
+      console.error('DB insert error:', insertError);
       if (insertError.code === '23505') {
-        return new Response(JSON.stringify({ 
-          ok: false,
-          error: 'This poll already exists. Try generating again.',
-          duplicate: true 
-        }), {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        return new Response(JSON.stringify({ ok: false, error: 'This poll already exists. Try again.', duplicate: true }), {
+          status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      throw new Error('Failed to save poll to database');
+      throw new Error('Failed to save poll');
     }
 
-    console.log('Poll created successfully with images:', poll.id);
+    console.log('Poll created:', poll.id, needsManualImage ? '(needs manual image)' : '');
 
-    // Send push notifications for new poll
+    // Push notification
     try {
-      const notificationResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+      await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseServiceKey}`,
-        },
-        body: JSON.stringify({
-          title: '🔥 New Poll!',
-          body: `${poll.question} - Vote now!`,
-          url: '/',
-          poll_id: poll.id,
-        }),
-      });
-      
-      const notifResult = await notificationResponse.json();
-      console.log('Push notification result:', notifResult);
-    } catch (notifError) {
-      console.error('Failed to send push notifications:', notifError);
-      // Don't fail the whole request if notifications fail
-    }
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseServiceKey}` },
+        body: JSON.stringify({ title: '🔥 New Poll!', body: `${poll.question} - Vote now!`, url: '/', poll_id: poll.id }),
+      }).then(r => r.json());
+    } catch (e) { console.warn('Push notification failed:', e); }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    return new Response(JSON.stringify({
+      success: true,
       poll: {
         id: poll.id,
         question: poll.question,
@@ -427,17 +361,16 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
         category: poll.category,
         image_a_url: poll.image_a_url,
         image_b_url: poll.image_b_url,
+        visual_direction: vd || null,
+        needs_manual_image: needsManualImage,
       }
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (error) {
-    console.error('Error in generate-poll function:', error);
+    console.error('generate-poll error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
