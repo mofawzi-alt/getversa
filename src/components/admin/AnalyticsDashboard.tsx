@@ -46,6 +46,8 @@ interface DashboardData {
   genderBreakdown: { name: string; value: number }[];
   ageBreakdown: { name: string; value: number }[];
   countryBreakdown: { name: string; value: number }[];
+  nationalityBreakdown: { name: string; value: number }[];
+  cityOfResidenceBreakdown: { name: string; value: number }[];
   topPolls: { question: string; optionA: string; optionB: string; votes: number; winner: string; winPercent: number }[];
   categoryPerformance: { category: string; polls: number; votes: number; avgVotes: number }[];
   peakHours: { hour: string; votes: number }[];
