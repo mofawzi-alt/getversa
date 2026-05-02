@@ -335,6 +335,9 @@ export default function Ask() {
               <p className="text-xs text-muted-foreground mt-1 break-words">
                 Each insight costs credits. Vote to earn more.
               </p>
+              <p className="text-[11px] text-muted-foreground/70 mt-0.5 break-words">
+                You have {askCredits} credit{askCredits === 1 ? '' : 's'} · each insight costs 1 credit
+              </p>
             </div>
             <SuggestionChips label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'} suggestions={promptSuggestions} onPick={runPreview} />
           </>
