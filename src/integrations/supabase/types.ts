@@ -1238,6 +1238,7 @@ export type Database = {
           id: string
           image_a_url: string | null
           image_b_url: string | null
+          image_rejection_count: number
           notes: string | null
           option_a: string
           option_b: string
@@ -1265,6 +1266,7 @@ export type Database = {
           id?: string
           image_a_url?: string | null
           image_b_url?: string | null
+          image_rejection_count?: number
           notes?: string | null
           option_a: string
           option_b: string
@@ -1292,6 +1294,7 @@ export type Database = {
           id?: string
           image_a_url?: string | null
           image_b_url?: string | null
+          image_rejection_count?: number
           notes?: string | null
           option_a?: string
           option_b?: string
@@ -1734,6 +1737,7 @@ export type Database = {
           is_hot_take: boolean
           is_reviewed: boolean
           needs_image_fix: boolean
+          needs_manual_image: boolean
           option_a: string
           option_a_tag: string | null
           option_b: string
@@ -1776,6 +1780,7 @@ export type Database = {
           is_hot_take?: boolean
           is_reviewed?: boolean
           needs_image_fix?: boolean
+          needs_manual_image?: boolean
           option_a: string
           option_a_tag?: string | null
           option_b: string
@@ -1818,6 +1823,7 @@ export type Database = {
           is_hot_take?: boolean
           is_reviewed?: boolean
           needs_image_fix?: boolean
+          needs_manual_image?: boolean
           option_a?: string
           option_a_tag?: string | null
           option_b?: string
