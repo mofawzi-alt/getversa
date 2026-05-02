@@ -122,8 +122,27 @@ const CATEGORY_EMOJI: Record<string, string> = {
   'lifestyle': '✨', 'wellness & habits': '🧠', 'telecom': '📱',
   'style & design': '👗', 'business & startups': '🚀', 'relationships': '💕',
   'personality': '🧬', 'the pulse': '🔥',
+  'fmcg & food': '🛒', 'beauty & personal care': '💄',
+  'financial services': '💰', 'media & entertainment': '🎬',
+  'retail & e-commerce': '🛍️', 'telco & tech': '📱',
+  'food delivery & dining': '🍕', 'automotive & mobility': '🚗',
+  'lifestyle & society': '✨',
 };
 const emojiFor = (cat: string) => CATEGORY_EMOJI[cat.toLowerCase()] || '🔥';
+
+// Category circle gradient colors
+const CATEGORY_GRADIENTS: Record<string, { tile: string; ring: string }> = {
+  'fmcg & food': { tile: 'bg-gradient-to-br from-green-500 to-emerald-600', ring: 'bg-gradient-to-tr from-green-400 via-emerald-500 to-teal-400' },
+  'beauty & personal care': { tile: 'bg-gradient-to-br from-pink-500 to-rose-600', ring: 'bg-gradient-to-tr from-pink-400 via-rose-500 to-fuchsia-400' },
+  'financial services': { tile: 'bg-gradient-to-br from-blue-500 to-indigo-600', ring: 'bg-gradient-to-tr from-blue-400 via-indigo-500 to-violet-400' },
+  'media & entertainment': { tile: 'bg-gradient-to-br from-amber-500 to-orange-600', ring: 'bg-gradient-to-tr from-amber-400 via-orange-500 to-red-400' },
+  'retail & e-commerce': { tile: 'bg-gradient-to-br from-purple-500 to-violet-600', ring: 'bg-gradient-to-tr from-purple-400 via-violet-500 to-indigo-400' },
+  'telco & tech': { tile: 'bg-gradient-to-br from-teal-500 to-cyan-600', ring: 'bg-gradient-to-tr from-teal-400 via-cyan-500 to-sky-400' },
+  'food delivery & dining': { tile: 'bg-gradient-to-br from-orange-500 to-red-600', ring: 'bg-gradient-to-tr from-orange-400 via-red-500 to-rose-400' },
+  'automotive & mobility': { tile: 'bg-gradient-to-br from-slate-500 to-gray-700', ring: 'bg-gradient-to-tr from-slate-400 via-gray-500 to-zinc-400' },
+  'lifestyle & society': { tile: 'bg-gradient-to-br from-rose-500 to-pink-600', ring: 'bg-gradient-to-tr from-rose-400 via-pink-500 to-fuchsia-400' },
+  'the pulse': { tile: 'bg-gradient-to-br from-red-500 to-rose-700', ring: 'bg-gradient-to-tr from-red-400 via-rose-500 to-orange-400' },
+};
 
 const isPollMediaUrl = (url?: string | null) =>
   !!url && (/^https?:\/\//i.test(url) || url.startsWith('/'));
