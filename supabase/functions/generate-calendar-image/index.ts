@@ -63,39 +63,23 @@ Deno.serve(async (req) => {
     const targets: ("A" | "B")[] = option === "both" ? ["A", "B"] : [option as "A" | "B"];
     const updates: Record<string, string> = {};
 
-    const CONTEXT_DIRECTIVES: Record<string, string> = {
-      "Cairo street": " Scene: a contemporary Cairo street — local architecture, Egyptian pedestrians, Arabic signage, authentic urban atmosphere.",
-      "Sahel beach": " Scene: North Coast (Sahel) Egypt — Mediterranean beach, white compound aesthetic, Egyptian Gen Z in summer mode.",
-      "Egyptian home": " Scene: a modern Egyptian home interior — local decor cues, family or friends, warm natural light.",
-      "Egyptian office": " Scene: a contemporary Cairo office or co-working space — Egyptian professionals, modern but locally rooted.",
-      "Egyptian café": " Scene: a Cairo specialty café or ahwa — Egyptian Gen Z, local atmosphere, occasional Arabic signage in background.",
-      "Generic global": "",
-    };
-
     const COUNTRY_DIRECTIVES: Record<string, string> = {
-      egypt: "Setting: contemporary Cairo or Egyptian city. Cast: Egyptian / North African faces, Gen Z. Arabic signage, local streets, Egyptian lifestyle atmosphere.",
-      uae: "Setting: contemporary Dubai or Abu Dhabi. Cast: mixed Arab and South Asian faces, cosmopolitan MENA. Modern Gulf architecture, clean urban environment.",
-      "united arab emirates": "Setting: contemporary Dubai or Abu Dhabi. Cast: mixed Arab and South Asian faces, cosmopolitan MENA. Modern Gulf architecture, clean urban environment.",
-      "saudi arabia": "Setting: contemporary Riyadh or Jeddah. Cast: Saudi Arab faces, modest fashion, Gen Z. Modern Saudi urban environment, Vision 2030 aesthetic.",
-      ksa: "Setting: contemporary Riyadh or Jeddah. Cast: Saudi Arab faces, modest fashion, Gen Z. Modern Saudi urban environment, Vision 2030 aesthetic.",
-      kuwait: "Setting: contemporary Kuwait City. Cast: Kuwaiti Arab faces, Gulf aesthetic, Gen Z. Modern Gulf urban environment.",
-      jordan: "Setting: contemporary Amman. Cast: Jordanian / Levantine Arab faces, Gen Z. Modern Amman urban atmosphere.",
-      lebanon: "Setting: contemporary Beirut. Cast: Lebanese / Levantine faces, cosmopolitan, Gen Z. Beirut urban lifestyle atmosphere.",
-      morocco: "Setting: contemporary Casablanca or Rabat. Cast: Moroccan / North African faces, Gen Z. Modern Moroccan urban environment.",
-      mena: "Setting: contemporary Middle East and North Africa. Cast: Arab faces, diverse MENA nationalities, Gen Z. Modern urban MENA environment. No Western-coded settings.",
-      gcc: "Setting: contemporary Gulf region. Cast: Arab Gulf faces, cosmopolitan mix, Gen Z. Modern Gulf urban environment, clean and premium aesthetic.",
-      global: "Setting: neutral cosmopolitan urban environment. Cast: diverse international Gen Z. No specific national markers.",
+      egypt: "Contemporary Egyptian setting. Egyptian faces, authentic Cairo or Egyptian urban atmosphere. Arabic signage where natural.",
+      uae: "Contemporary Gulf setting. Cosmopolitan MENA atmosphere, modern Gulf urban environment.",
+      "united arab emirates": "Contemporary Gulf setting. Cosmopolitan MENA atmosphere, modern Gulf urban environment.",
+      "saudi arabia": "Contemporary Saudi setting. Modern Riyadh or Jeddah urban atmosphere.",
+      ksa: "Contemporary Saudi setting. Modern Riyadh or Jeddah urban atmosphere.",
+      mena: "Contemporary Middle East and North Africa. Arab faces, modern MENA urban environment.",
     };
     const countryDirective = COUNTRY_DIRECTIVES[resolvedCountry.toLowerCase()] || COUNTRY_DIRECTIVES.mena;
 
     for (const opt of targets) {
       const optionText = opt === "A" ? row.option_a : row.option_b;
       const combined = `${row.question || ""} ${optionText} ${row.category || ""}`;
-      const contextDirective = resolvedContext ? (CONTEXT_DIRECTIVES[resolvedContext] || "") : "";
       const keywordBoost = detectEgyptContext(combined)
         ? " Local cue detected: ensure Egyptian / Arabic signage and local Egyptian atmosphere are clearly present."
         : "";
-      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. ${countryDirective}${contextDirective}${keywordBoost} Never default to Western, American, or European settings.`;
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments. NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements of any kind. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. ${countryDirective}${keywordBoost} If the subject is an abstract concept (like Price, Freedom, Yes, No, Quality, Safety, Trust), generate a lifestyle scene that represents the feeling — real people in a real setting embodying that concept. Never default to Western, American, or European settings.`;
 
       // Try pro image model first, fallback to flash image on failure
       const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
