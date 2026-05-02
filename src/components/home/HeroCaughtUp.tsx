@@ -77,7 +77,7 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
         {/* 2. Personality progress */}
         {dimensionInfo ? (
           <button
-            onClick={() => navigate('/insights')}
+            onClick={() => navigate('/taste-profile')}
             className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-[hsl(270_60%_96%)] border border-[hsl(270_60%_90%)] text-left group"
           >
             <div className="flex items-center justify-between">
@@ -91,7 +91,7 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
           </button>
         ) : (
           <button
-            onClick={() => navigate('/insights')}
+            onClick={() => navigate('/taste-profile')}
             className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-[hsl(270_60%_96%)] border border-[hsl(270_60%_90%)] text-left group"
           >
             <div className="flex items-center justify-between">
