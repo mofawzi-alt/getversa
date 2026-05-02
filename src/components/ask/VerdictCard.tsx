@@ -42,7 +42,7 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
         </p>
         {verdict.baseline_active && (
           <p className="text-[10px] text-muted-foreground/70 italic mt-1">
-            Still building real user data — totals include baseline.
+            Based on {verdict.total_votes.toLocaleString()} votes · Growing daily
           </p>
         )}
       </div>
