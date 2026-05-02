@@ -10,16 +10,53 @@ const corsHeaders = {
 function isProductOrBrand(s: string): boolean {
   const t = s.trim();
   if (!t) return false;
-  // Multi-word phrases that read like behaviors usually contain verbs/spaces > 3 words
   const wordCount = t.split(/\s+/).length;
   if (wordCount >= 4) return false;
-  // Capitalized proper noun, or single short token (typical brand/product)
   const firstChar = t[0];
   const looksProper = firstChar === firstChar.toUpperCase() && /[A-Za-z]/.test(firstChar);
   return looksProper && wordCount <= 3;
 }
 
+// Heuristic: detect celebrity / public figure names (2-4 capitalized words, no common product words)
+function isCelebrityName(s: string): boolean {
+  const t = s.trim();
+  if (!t) return false;
+  const words = t.split(/\s+/);
+  if (words.length < 2 || words.length > 4) return false;
+  // All words should start with uppercase (proper noun pattern)
+  const allCapitalized = words.every(w => /^[A-Z\u0600-\u06FF]/.test(w));
+  if (!allCapitalized) return false;
+  // Exclude common product/brand patterns
+  const productWords = /^(iphone|samsung|galaxy|coca|pepsi|nike|adidas|vodafone|orange|etisalat|noon|amazon|uber|careem|netflix|shahid|youtube|instagram|tiktok|facebook|twitter|whatsapp|spotify|apple|google|microsoft|toyota|bmw|mercedes|hyundai|kia)$/i;
+  if (words.some(w => productWords.test(w))) return false;
+  return true;
+}
+
 const PROMPT_TPL = (subject: string, question: string, otherOption: string) => {
+  const bothCelebrities = isCelebrityName(subject) && isCelebrityName(otherOption);
+  
+  if (bothCelebrities) {
+    return `CELEBRITY POLL IMAGE — CINEMATIC MOVIE POSTER / STREAMING SCREEN STYLE
+
+Create a dramatic, cinematic movie-poster-style image for "${subject}" in the context of "${question}".
+
+CONCEPT: Design a stylish, moody movie poster or streaming platform (like Netflix/Shahid) title card that prominently features the name "${subject}" as the HERO TITLE TEXT.
+
+MANDATORY ELEMENTS:
+- The name "${subject}" MUST appear as large, bold, elegant TITLE TEXT — like a movie title on a poster or a show title on a streaming app screen
+- Cinematic dramatic lighting — dark background with spotlight effects, lens flares, or neon glow
+- Film-grade color grading — deep blues, warm ambers, dramatic contrast
+- A silhouette or abstract human figure in the background (NOT a real face — just a dramatic shadowy outline or artistic blur)
+- Visual elements suggesting the entertainment industry: film grain, bokeh lights, stage lights, red carpet glow, or a theater/screen frame
+- The overall feel should be PREMIUM and CINEMATIC — like an award-winning movie poster or a Shahid/Netflix original series card
+
+STYLE: Dark cinematic photography, dramatic lighting, movie poster composition, 4:5 portrait, premium streaming platform aesthetic.
+
+TEXT RULES: The name "${subject}" MUST be rendered as stylish typography — think movie credits font, bold serif or elegant sans-serif, with cinematic effects (glow, shadow, metallic sheen).
+
+STRICTLY FORBIDDEN: NO real human faces, NO photographs of actual people, NO logos of streaming platforms, NO brand names other than the person's name. The person's name IS the visual centerpiece.`;
+  }
+
   const isProduct = isProductOrBrand(subject) && isProductOrBrand(otherOption);
   const mode = isProduct ? 'HYBRID' : 'LIFESTYLE';
 
