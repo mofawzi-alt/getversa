@@ -128,10 +128,16 @@ export default function AnalyticsDashboard() {
       const genderMap = new Map<string, number>();
       const ageMap = new Map<string, number>();
       const countryMap = new Map<string, number>();
+      const nationalityMap = new Map<string, number>();
+      const cityOfResidenceMap = new Map<string, number>();
       users.forEach(u => {
         if (u.gender) genderMap.set(u.gender, (genderMap.get(u.gender) || 0) + 1);
         if (u.age_range) ageMap.set(u.age_range, (ageMap.get(u.age_range) || 0) + 1);
         if (u.country) countryMap.set(u.country, (countryMap.get(u.country) || 0) + 1);
+        const nat = (u as any).nationality;
+        if (nat) nationalityMap.set(nat, (nationalityMap.get(nat) || 0) + 1);
+        const cor = (u as any).city_of_residence;
+        if (cor) cityOfResidenceMap.set(cor, (cityOfResidenceMap.get(cor) || 0) + 1);
       });
 
       const toChartData = (map: Map<string, number>) =>
