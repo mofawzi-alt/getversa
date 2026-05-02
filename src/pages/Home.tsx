@@ -724,6 +724,17 @@ export default function Home() {
     }
   }, [loading, profileComplete, user]);
 
+  // Show first-time welcome tour for authenticated users who haven't seen it
+  useEffect(() => {
+    if (loading || !user || !profile) return;
+    if (isWelcomeTourDone()) return;
+    if (profile.has_seen_welcome_tour) {
+      localStorage.setItem('versa_welcome_tour_done', 'true');
+      return;
+    }
+    setShowWelcomeTour(true);
+  }, [loading, user, profile]);
+
   // Realtime subscription: invalidate vote-related queries on new votes AND new polls
   useEffect(() => {
     const invalidateHomePollQueries = () => {
