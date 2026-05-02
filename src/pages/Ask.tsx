@@ -60,6 +60,7 @@ export default function Ask() {
   const location = useLocation();
   const { profile } = useAuth();
   const qc = useQueryClient();
+  const { data: askCredits = 0 } = useAskCredits();
   const [mode, setMode] = useState<Mode>('decide');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
