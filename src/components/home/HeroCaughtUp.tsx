@@ -117,7 +117,7 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
         className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border/60 text-left group"
       >
         <MessageCircleQuestion className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        <p className="text-sm font-semibold text-foreground flex-1">{getAskCtaLabel(profile?.country || profile?.nationality)}</p>
+        <p className="text-sm font-semibold text-foreground flex-1">{getAskCtaLabel((profile?.country || profile?.nationality) as string | undefined)}</p>
         <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
       </button>
     </div>
