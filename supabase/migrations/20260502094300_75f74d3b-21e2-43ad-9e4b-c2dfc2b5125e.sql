@@ -1,0 +1,1 @@
+UPDATE polls SET category = 'Lifestyle & Society' WHERE category = 'Education';
