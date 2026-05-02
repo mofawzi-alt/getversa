@@ -225,38 +225,39 @@ export default function InsightProfile() {
                   const colors = DIMENSION_COLORS[insight.dimension_name] || { bg: 'bg-muted/30', accent: 'text-foreground', bar: 'bg-primary' };
                   const dimIcon = DIMENSION_ICONS[insight.dimension_name] || '📊';
 
-                  return (
+                    return (
                     <motion.div
                       key={insight.dimension_name}
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1, duration: 0.4 }}
-                      className={`${colors.bg} rounded-2xl p-5 space-y-1 border border-black/[0.03]`}
+                      className={`${colors.bg} rounded-2xl p-5 space-y-2 border border-black/[0.06] shadow-sm`}
                     >
                       {/* Dimension header */}
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-xs">{dimIcon}</span>
-                        <span className={`text-[10px] font-semibold uppercase tracking-wider ${colors.accent}`}>
-                          {insight.dimension_name}
-                        </span>
-                      </div>
-
-                      {/* Label + emoji */}
-                      <div className="flex items-baseline justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">{display.emoji}</span>
-                          <span className="text-xl font-display font-bold text-foreground">
-                            {display.label}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm">{dimIcon}</span>
+                          <span className={`text-[11px] font-bold uppercase tracking-wider ${colors.accent}`}>
+                            {insight.dimension_name}
                           </span>
                         </div>
-                        <span className="text-[10px] text-muted-foreground bg-background/60 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-semibold text-muted-foreground bg-background/70 px-2.5 py-1 rounded-full shadow-sm">
                           {insight.vote_count} votes
                         </span>
                       </div>
 
-                      <p className="text-sm text-muted-foreground pl-9">
-                        {display.description}
-                      </p>
+                      {/* Label + emoji — big and prominent */}
+                      <div className="flex items-center gap-3 pt-1">
+                        <span className="text-3xl">{display.emoji}</span>
+                        <div>
+                          <span className="text-2xl font-display font-black text-foreground leading-tight block">
+                            {display.label}
+                          </span>
+                          <p className="text-[13px] text-foreground/70 font-medium mt-0.5 leading-snug">
+                            {display.description}
+                          </p>
+                        </div>
+                      </div>
 
                       <SpectrumBar
                         score={insight.score}
