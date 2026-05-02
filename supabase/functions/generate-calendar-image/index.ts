@@ -79,7 +79,14 @@ Deno.serve(async (req) => {
       const keywordBoost = detectEgyptContext(combined)
         ? " Local cue detected: ensure Egyptian / Arabic signage and local Egyptian atmosphere are clearly present."
         : "";
-      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments. NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements of any kind. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. ${countryDirective}${keywordBoost} If the subject is an abstract concept (like Price, Freedom, Yes, No, Quality, Safety, Trust), generate a lifestyle scene that represents the feeling — real people in a real setting embodying that concept. Never default to Western, American, or European settings.`;
+      const contextLine = resolvedContext ? ` Cultural context: ${resolvedContext}.` : "";
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments. NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements of any kind.
+
+Poll question: "${row.question}". This person's answer: "${optionText}". Category: ${row.category || "lifestyle"}.${contextLine}
+
+Show a Gen Z person performing the EXACT real-life behavior implied by answering "${optionText}" to the question "${row.question}". The behavior must be obvious in under 1 second — this is the user's "this is me" moment. For example: if the question is about investing and the answer is "Yes — I invest", show someone checking a trading app on their phone; if the answer is about preferring cash, show someone handling cash at a counter. If the option is a brand name, translate it into a real-life usage scene — NEVER show the logo. If the subject is an abstract concept (Yes, No, Quality, Trust, etc.), show a lifestyle scene that embodies that feeling through visible action.
+
+${countryDirective}${keywordBoost} Never default to Western, American, or European settings.`;
 
       // Try pro image model first, fallback to flash image on failure
       const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
