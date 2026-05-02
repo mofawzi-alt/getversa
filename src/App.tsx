@@ -29,7 +29,7 @@ const ProfileNotifications = lazy(() => import("./pages/ProfileNotifications"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
-const InsightProfile = lazy(() => import("./pages/InsightProfile"));
+
 const Explore = lazy(() => import("./pages/Explore"));
 const Browse = lazy(() => import("./pages/Browse"));
 const LiveDebate = lazy(() => import("./pages/LiveDebate"));
@@ -188,7 +188,7 @@ function AppInner() {
             <Route path="/profile/notifications" element={<ProtectedRoute><ProfileNotifications /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/insights" element={<ProtectedRoute><InsightProfile /></ProtectedRoute>} />
+            <Route path="/insights" element={<Navigate to="/taste-profile" replace />} />
             <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
             <Route path="/personality" element={<ProtectedRoute><PersonalityResults /></ProtectedRoute>} />
             <Route path="/weekly-results" element={<WeeklyTopResults />} />

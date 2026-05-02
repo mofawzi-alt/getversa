@@ -61,7 +61,7 @@ export default function ProfileDimensionsSection() {
       <div className="glass rounded-2xl overflow-hidden">
         {/* Dimensions header + preview */}
         <button
-          onClick={() => navigate('/insights')}
+          onClick={() => navigate('/taste-profile')}
           className="w-full p-4 text-left group"
         >
           <div className="flex items-center justify-between mb-3">
