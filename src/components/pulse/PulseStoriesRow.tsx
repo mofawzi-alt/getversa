@@ -231,18 +231,25 @@ export default function PulseStoriesRow() {
   const [openEditorial, setOpenEditorial] = useState<EditorialStory | null>(null);
   const [bump, setBump] = useState(0);
   const [shareFinding, setShareFinding] = useState<BreakdownFinding | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [hiddenCats, setHiddenCats] = useState(() => getHiddenCategories());
   const { data: editorialStories } = useEditorialStories();
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
   const { data: updatesData } = useYourPollsUpdated();
   const { data: friendsData } = useFriendsActivity();
-  const { data: categoriesData } = useYourCategories();
+  const { data: categoryStories } = useCategoryStories();
   const { data: predictData } = usePredictRecap();
   const { data: closingData } = useClosingSoon();
   const { data: weeklyData } = useWeeklyVerdict();
   const { data: newPollsData } = useNewThisWeek(lastVisit);
   const { data: breakdownData } = useBreakdownFindings();
+
+  const onFilterUpdate = useCallback(() => {
+    setHiddenCats(getHiddenCategories());
+    setBump((b) => b + 1);
+  }, []);
 
   const circles: CircleSpec[] = useMemo(() => {
     if (!pulse) return [];
