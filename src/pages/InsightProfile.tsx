@@ -12,33 +12,33 @@ const TENDENCY_LABELS: Record<string, Record<string, { label: string; descriptio
     lean_b: { label: 'Forward-leaning', description: 'You are drawn to what is emerging.' },
     strong_b: { label: 'Visionary', description: 'You seek what has not been built yet.' },
   },
-  'Independence vs Community': {
-    strong_a: { label: 'Self-directed', description: 'You trust your own compass above all.' },
-    lean_a: { label: 'Autonomous', description: 'You prefer your own path, but value connection.' },
-    balanced: { label: 'Interwoven', description: 'You move between solitude and togetherness.' },
-    lean_b: { label: 'Communal', description: 'You draw energy from those around you.' },
-    strong_b: { label: 'Collective', description: 'You believe we rise together.' },
+  'Budget vs Premium': {
+    strong_a: { label: 'Saver', description: 'You optimize for value and savings.' },
+    lean_a: { label: 'Budget-minded', description: 'You lean toward deals, but treat yourself sometimes.' },
+    balanced: { label: 'Balanced spender', description: 'You weigh cost and quality equally.' },
+    lean_b: { label: 'Quality-first', description: 'You invest in what lasts.' },
+    strong_b: { label: 'Premium', description: 'You choose the best, cost aside.' },
   },
-  'Logic vs Intuition': {
-    strong_a: { label: 'Analytical', description: 'You trust evidence and structure.' },
-    lean_a: { label: 'Reasoned', description: 'You lean on logic, but listen to instinct.' },
-    balanced: { label: 'Dual-minded', description: 'You blend thinking and feeling.' },
-    lean_b: { label: 'Perceptive', description: 'You often sense the answer before finding it.' },
-    strong_b: { label: 'Instinctive', description: 'You trust what you feel deeply.' },
+  'Local vs Global': {
+    strong_a: { label: 'Homegrown', description: 'You champion what is local.' },
+    lean_a: { label: 'Local-leaning', description: 'You prefer homegrown, but stay open.' },
+    balanced: { label: 'Glocal', description: 'You blend the local and the global.' },
+    lean_b: { label: 'World-curious', description: 'You gravitate toward international choices.' },
+    strong_b: { label: 'Global citizen', description: 'You reach for the world stage.' },
   },
-  'Comfort vs Adventure': {
-    strong_a: { label: 'Anchored', description: 'You find depth in the familiar.' },
-    lean_a: { label: 'Steady', description: 'You appreciate stability with occasional exploration.' },
-    balanced: { label: 'Versatile', description: 'You are equally at home in stillness and motion.' },
-    lean_b: { label: 'Curious', description: 'You lean into the unknown with interest.' },
-    strong_b: { label: 'Explorer', description: 'You are most alive when discovering.' },
+  'Practicality vs Experience': {
+    strong_a: { label: 'Pragmatist', description: 'You prioritize function and value.' },
+    lean_a: { label: 'Practical', description: 'You lean toward what works, with room for flair.' },
+    balanced: { label: 'Versatile', description: 'You balance practicality and experience.' },
+    lean_b: { label: 'Experience-seeker', description: 'You value moments over material.' },
+    strong_b: { label: 'Experientialist', description: 'You live for feelings and moments.' },
   },
-  'Present vs Future': {
-    strong_a: { label: 'Present-focused', description: 'You live fully in the now.' },
-    lean_a: { label: 'Grounded in today', description: 'You prioritize what is in front of you.' },
-    balanced: { label: 'Temporal', description: 'You hold both today and tomorrow.' },
-    lean_b: { label: 'Forward-looking', description: 'You plan with purpose.' },
-    strong_b: { label: 'Futurist', description: 'Your mind lives in what is next.' },
+  'Health vs Indulgence': {
+    strong_a: { label: 'Wellness-driven', description: 'You consistently choose what is healthy.' },
+    lean_a: { label: 'Health-conscious', description: 'You lean toward wellness with occasional treats.' },
+    balanced: { label: 'Balanced', description: 'You enjoy both discipline and indulgence.' },
+    lean_b: { label: 'Treat-yourself', description: 'You enjoy life\'s pleasures freely.' },
+    strong_b: { label: 'Indulgent', description: 'You follow your cravings without apology.' },
   },
 };
 
@@ -46,10 +46,10 @@ const FALLBACK_LABEL = { label: 'Emerging', description: 'This dimension is stil
 
 const DIMENSION_POLES: Record<string, [string, string]> = {
   'Tradition vs Innovation': ['Tradition', 'Innovation'],
-  'Independence vs Community': ['Independence', 'Community'],
-  'Logic vs Intuition': ['Logic', 'Intuition'],
-  'Comfort vs Adventure': ['Comfort', 'Adventure'],
-  'Present vs Future': ['Present', 'Future'],
+  'Budget vs Premium': ['Budget', 'Premium'],
+  'Local vs Global': ['Local', 'Global'],
+  'Practicality vs Experience': ['Practicality', 'Experience'],
+  'Health vs Indulgence': ['Health', 'Indulgence'],
 };
 
 function getTendencyDisplay(dimension: string, tendency: string) {
