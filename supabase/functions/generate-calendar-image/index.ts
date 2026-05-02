@@ -76,11 +76,10 @@ Deno.serve(async (req) => {
     for (const opt of targets) {
       const optionText = opt === "A" ? row.option_a : row.option_b;
       const combined = `${row.question || ""} ${optionText} ${row.category || ""}`;
-      const contextDirective = resolvedContext ? (CONTEXT_DIRECTIVES[resolvedContext] || "") : "";
       const keywordBoost = detectEgyptContext(combined)
         ? " Local cue detected: ensure Egyptian / Arabic signage and local Egyptian atmosphere are clearly present."
         : "";
-      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. ${countryDirective}${contextDirective}${keywordBoost} Never default to Western, American, or European settings.`;
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments. NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements of any kind. Subject: ${optionText}. Visual context: ${row.category || "lifestyle"}. ${countryDirective}${keywordBoost} If the subject is an abstract concept (like Price, Freedom, Yes, No, Quality, Safety, Trust), generate a lifestyle scene that represents the feeling — real people in a real setting embodying that concept. Never default to Western, American, or European settings.`;
 
       // Try pro image model first, fallback to flash image on failure
       const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
