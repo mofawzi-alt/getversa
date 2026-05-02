@@ -724,27 +724,8 @@ export default function PulseStoriesRow() {
             );
           })}
 
-          {/* ── Filter button at end ── */}
-          <button
-            type="button"
-            onClick={() => setFilterOpen(true)}
-            className="flex flex-col items-center gap-1.5 w-16 active:scale-95 transition-transform"
-          >
-            <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center border border-border/50">
-              <SlidersHorizontal className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <span className="text-[10px] font-medium text-muted-foreground truncate w-full text-center">
-              Filter
-            </span>
-          </button>
         </div>
       </div>
-
-      <CategoryStoriesFilter
-        open={filterOpen}
-        onOpenChange={setFilterOpen}
-        onUpdate={onFilterUpdate}
-      />
 
       <EditorialStoryViewer
         open={!!openEditorial}
