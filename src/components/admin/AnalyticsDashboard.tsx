@@ -46,6 +46,8 @@ interface DashboardData {
   genderBreakdown: { name: string; value: number }[];
   ageBreakdown: { name: string; value: number }[];
   countryBreakdown: { name: string; value: number }[];
+  nationalityBreakdown: { name: string; value: number }[];
+  cityOfResidenceBreakdown: { name: string; value: number }[];
   topPolls: { question: string; optionA: string; optionB: string; votes: number; winner: string; winPercent: number }[];
   categoryPerformance: { category: string; polls: number; votes: number; avgVotes: number }[];
   peakHours: { hour: string; votes: number }[];
@@ -62,7 +64,7 @@ export default function AnalyticsDashboard() {
       ] = await Promise.all([
         supabase.from('polls').select('id, question, option_a, option_b, category, created_at'),
         supabase.from('votes').select('id, poll_id, user_id, choice, created_at'),
-        supabase.from('users').select('id, gender, age_range, country, created_at'),
+        supabase.from('users').select('id, gender, age_range, country, nationality, city_of_residence, created_at'),
       ]);
 
       if (!polls || !votes || !users) return null;
@@ -126,10 +128,16 @@ export default function AnalyticsDashboard() {
       const genderMap = new Map<string, number>();
       const ageMap = new Map<string, number>();
       const countryMap = new Map<string, number>();
+      const nationalityMap = new Map<string, number>();
+      const cityOfResidenceMap = new Map<string, number>();
       users.forEach(u => {
         if (u.gender) genderMap.set(u.gender, (genderMap.get(u.gender) || 0) + 1);
         if (u.age_range) ageMap.set(u.age_range, (ageMap.get(u.age_range) || 0) + 1);
         if (u.country) countryMap.set(u.country, (countryMap.get(u.country) || 0) + 1);
+        const nat = (u as any).nationality;
+        if (nat) nationalityMap.set(nat, (nationalityMap.get(nat) || 0) + 1);
+        const cor = (u as any).city_of_residence;
+        if (cor) cityOfResidenceMap.set(cor, (cityOfResidenceMap.get(cor) || 0) + 1);
       });
 
       const toChartData = (map: Map<string, number>) =>
@@ -194,6 +202,8 @@ export default function AnalyticsDashboard() {
         genderBreakdown: toChartData(genderMap),
         ageBreakdown: toChartData(ageMap),
         countryBreakdown: toChartData(countryMap),
+        nationalityBreakdown: toChartData(nationalityMap),
+        cityOfResidenceBreakdown: toChartData(cityOfResidenceMap),
         topPolls, categoryPerformance, peakHours,
       };
     },
@@ -309,6 +319,10 @@ export default function AnalyticsDashboard() {
         <DemoPieChart title="Gender" icon={Users} data={data.genderBreakdown} colorMap={GENDER_COLORS} />
         <DemoPieChart title="Age Range" icon={Calendar} data={data.ageBreakdown} />
         <DemoPieChart title="Country" icon={Globe} data={data.countryBreakdown} />
+      </div>
+      <div className="grid md:grid-cols-2 gap-4">
+        <DemoPieChart title="Nationality" icon={Globe} data={data.nationalityBreakdown} />
+        <DemoPieChart title="City of Residence" icon={Globe} data={data.cityOfResidenceBreakdown} />
       </div>
 
       {/* Peak Hours */}

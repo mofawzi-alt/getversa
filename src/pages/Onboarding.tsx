@@ -16,22 +16,6 @@ const COUNTRIES = [
   'Jordan', 'Lebanon', 'Syria', 'Iraq', 'Palestine', 'Yemen', 'Egypt'
 ];
 
-const CITIES: Record<string, string[]> = {
-  'Saudi Arabia': ['Riyadh', 'Jeddah', 'Mecca', 'Medina', 'Dammam', 'Khobar', 'Dhahran', 'Tabuk', 'Abha', 'Taif', 'Jubail', 'Yanbu', 'Buraidah', 'Najran', 'Hail', 'Jazan'],
-  'United Arab Emirates': ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain', 'Al Ain'],
-  'Qatar': ['Doha', 'Al Wakrah', 'Al Khor', 'Lusail', 'Al Rayyan', 'Umm Salal'],
-  'Kuwait': ['Kuwait City', 'Hawalli', 'Salmiya', 'Farwaniya', 'Jahra', 'Ahmadi', 'Mangaf'],
-  'Bahrain': ['Manama', 'Muharraq', 'Riffa', 'Hamad Town', 'Isa Town', 'Sitra'],
-  'Oman': ['Muscat', 'Salalah', 'Sohar', 'Nizwa', 'Sur', 'Ibri', 'Barka', 'Rustaq'],
-  'Jordan': ['Amman', 'Zarqa', 'Irbid', 'Aqaba', 'Madaba', 'Salt', 'Jerash', 'Mafraq'],
-  'Lebanon': ['Beirut', 'Tripoli', 'Sidon', 'Tyre', 'Jounieh', 'Byblos', 'Zahle', 'Baalbek'],
-  'Syria': ['Damascus', 'Aleppo', 'Homs', 'Latakia', 'Hama', 'Tartus', 'Deir ez-Zor', 'Raqqa'],
-  'Iraq': ['Baghdad', 'Basra', 'Erbil', 'Mosul', 'Sulaymaniyah', 'Najaf', 'Karbala', 'Kirkuk', 'Duhok'],
-  'Palestine': ['Ramallah', 'Gaza', 'Nablus', 'Hebron', 'Bethlehem', 'Jenin', 'Tulkarm', 'Jericho'],
-  'Yemen': ['Sanaa', 'Aden', 'Taiz', 'Hodeidah', 'Mukalla', 'Ibb', 'Dhamar'],
-  'Egypt': ['Cairo', 'Alexandria', 'Giza', 'Sharm El Sheikh', 'Hurghada', 'Luxor', 'Aswan', 'Mansoura', 'Tanta', 'Port Said', 'Suez', 'Ismailia'],
-};
-
 // Try to detect country from timezone
 function detectCountry(): string {
   try {
@@ -59,14 +43,14 @@ export default function Onboarding() {
 
   // Determine which steps are needed based on existing profile data
   const allSteps = useMemo(() => {
-    const steps: ('username' | 'age' | 'gender' | 'country' | 'city')[] = [];
+    const steps: ('username' | 'age' | 'gender' | 'nationality' | 'city_of_residence')[] = [];
     if (!profile?.username) steps.push('username');
     if (!profile?.age_range) steps.push('age');
     if (!profile?.gender) steps.push('gender');
-    if (!profile?.country) steps.push('country');
-    if (!profile?.city) steps.push('city');
+    if (!(profile as any)?.nationality && !profile?.country) steps.push('nationality');
+    if (!(profile as any)?.city_of_residence && !profile?.city) steps.push('city_of_residence');
     // If somehow all fields are filled, show all (shouldn't happen)
-    if (steps.length === 0) return ['username', 'age', 'gender', 'country', 'city'] as const;
+    if (steps.length === 0) return ['username', 'age', 'gender', 'nationality', 'city_of_residence'] as const;
     return steps;
   }, [profile]);
 
@@ -77,9 +61,8 @@ export default function Onboarding() {
   const [username, setUsername] = useState(profile?.username || '');
   const [ageRange, setAgeRange] = useState(profile?.age_range || '');
   const [gender, setGender] = useState(profile?.gender || '');
-  const [country, setCountry] = useState(profile?.country || detectCountry());
-  const [city, setCity] = useState(profile?.city || '');
-  const [citySearch, setCitySearch] = useState('');
+  const [nationality, setNationality] = useState((profile as any)?.nationality || profile?.country || detectCountry());
+  const [cityOfResidence, setCityOfResidence] = useState((profile as any)?.city_of_residence || profile?.city || '');
   const [loading, setLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -89,8 +72,10 @@ export default function Onboarding() {
       if (profile.username && !username) setUsername(profile.username);
       if (profile.age_range && !ageRange) setAgeRange(profile.age_range);
       if (profile.gender && !gender) setGender(profile.gender);
-      if (profile.country && !country) setCountry(profile.country);
-      if (profile.city && !city) setCity(profile.city);
+      if ((profile as any)?.nationality && !nationality) setNationality((profile as any).nationality);
+      else if (profile.country && !nationality) setNationality(profile.country);
+      if ((profile as any)?.city_of_residence && !cityOfResidence) setCityOfResidence((profile as any).city_of_residence);
+      else if (profile.city && !cityOfResidence) setCityOfResidence(profile.city);
     }
   }, [profile]);
 
@@ -99,8 +84,8 @@ export default function Onboarding() {
     if (!username.trim()) { toast.error('Please enter a username'); return; }
     if (!ageRange) { toast.error('Please select your age range'); return; }
     if (!gender) { toast.error('Please select your gender'); return; }
-    if (!country) { toast.error('Please select your country'); return; }
-    if (!city) { toast.error('Please select your city'); return; }
+    if (!nationality) { toast.error('Please select your nationality'); return; }
+    if (!cityOfResidence.trim()) { toast.error('Please enter your city'); return; }
 
     setLoading(true);
     try {
@@ -112,9 +97,11 @@ export default function Onboarding() {
           username: username.trim(),
           age_range: ageRange,
           gender,
-          country,
-          city,
-        }, { onConflict: 'id' });
+          country: nationality,
+          city: cityOfResidence.trim(),
+          nationality,
+          city_of_residence: cityOfResidence.trim(),
+        } as any, { onConflict: 'id' });
 
       if (profileError) {
         if (profileError.message.includes('duplicate') && profileError.message.includes('username')) {
@@ -144,15 +131,10 @@ export default function Onboarding() {
     if (currentStep === 'username' && !username.trim()) { toast.error('Please enter a username'); return; }
     if (currentStep === 'age' && !ageRange) { toast.error('Please select your age range'); return; }
     if (currentStep === 'gender' && !gender) { toast.error('Please select your gender'); return; }
-    if (currentStep === 'country' && !country) { toast.error('Please select your country'); return; }
-    if (currentStep === 'country') { setCity(''); setCitySearch(''); }
+    if (currentStep === 'nationality' && !nationality) { toast.error('Please select your nationality'); return; }
+    if (currentStep === 'city_of_residence' && !cityOfResidence.trim()) { toast.error('Please enter your city'); return; }
     setStepIndex(stepIndex + 1);
   };
-
-  // Filter cities by search
-  const availableCities = (CITIES[country] || []).filter(c =>
-    !citySearch || c.toLowerCase().includes(citySearch.toLowerCase())
-  );
 
   // Confirmation screen
   if (showConfirmation) {
@@ -279,22 +261,22 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 3: Country (auto-filled, selectable) */}
-          {currentStep === 'country' && (
+          {/* Step 3: Nationality (country selector dropdown) */}
+          {currentStep === 'nationality' && (
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-display font-bold text-foreground mb-2">Where are you from?</h1>
                 <p className="text-foreground/60">
-                  {country ? `Detected: ${country}` : 'Select your country'}
+                  {nationality ? `Detected: ${nationality}` : 'Select your nationality'}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-2 max-h-[50vh] overflow-y-auto scrollbar-hide">
                 {COUNTRIES.map((c) => (
                   <button
                     key={c}
-                    onClick={() => { setCountry(c); setCity(''); setCitySearch(''); }}
+                    onClick={() => setNationality(c)}
                     className={`p-3 rounded-xl border-2 transition-all text-sm font-medium text-left ${
-                      country === c
+                      nationality === c
                         ? 'border-primary bg-primary/10 text-primary'
                         : 'border-border bg-card text-foreground hover:border-primary/50'
                     }`}
@@ -306,37 +288,24 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 4: City (searchable) */}
-          {currentStep === 'city' && (
-            <div className="space-y-4">
+          {/* Step 4: City of residence (free text) */}
+          {currentStep === 'city_of_residence' && (
+            <div className="space-y-6">
               <div>
-                <h1 className="text-3xl font-display font-bold text-foreground mb-2">What city are you in?</h1>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">Which city do you live in?</h1>
                 <p className="text-foreground/60">Helps with local polls</p>
               </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className="space-y-2 bg-card rounded-xl p-4 border border-border">
+                <Label htmlFor="city_of_residence">City</Label>
                 <Input
-                  placeholder="Search cities..."
-                  value={citySearch}
-                  onChange={(e) => setCitySearch(e.target.value)}
-                  className="pl-10 h-12"
+                  id="city_of_residence"
+                  placeholder="e.g. Cairo, Dubai, Riyadh..."
+                  value={cityOfResidence}
+                  onChange={(e) => setCityOfResidence(e.target.value)}
+                  className="text-lg h-14"
+                  maxLength={100}
                   autoFocus
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-2 max-h-[45vh] overflow-y-auto scrollbar-hide">
-                {availableCities.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setCity(c)}
-                    className={`p-3 rounded-xl border-2 transition-all text-sm font-medium text-left ${
-                      city === c
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-card text-foreground hover:border-primary/50'
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
               </div>
             </div>
           )}
@@ -357,7 +326,7 @@ export default function Onboarding() {
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         ) : (
-          <Button onClick={handleComplete} disabled={loading || !city} className="flex-1 h-14 bg-gradient-primary hover:opacity-90 rounded-xl">
+          <Button onClick={handleComplete} disabled={loading || !cityOfResidence.trim()} className="flex-1 h-14 bg-gradient-primary hover:opacity-90 rounded-xl">
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (
               <>Get Started<ArrowRight className="ml-2 h-5 w-5" /></>
             )}
