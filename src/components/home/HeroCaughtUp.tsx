@@ -13,8 +13,17 @@ function getNextDimensionInfo(totalVotes: number) {
   return { remaining: next - totalVotes, threshold: next };
 }
 
+const MENA_COUNTRIES = ['Egypt','UAE','Saudi Arabia','Jordan','Lebanon','Morocco','Tunisia','Algeria','Libya','Iraq','Kuwait','Bahrain','Qatar','Oman','Yemen','Syria','Palestine','Sudan'];
+
+function getAskCtaLabel(country?: string | null): string {
+  if (!country) return 'Ask Versa →';
+  const short: Record<string, string> = { 'Saudi Arabia': 'Saudi', 'United Arab Emirates': 'UAE' };
+  if (MENA_COUNTRIES.includes(country)) return `Ask ${short[country] || country} anything →`;
+  return 'Ask Versa →';
+}
+
 export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (poll: any) => void }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
 
   const { data: totalVotes } = useQuery({
