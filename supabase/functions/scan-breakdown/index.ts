@@ -304,9 +304,27 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Deduplicate: skip findings where the same poll+type already exists
+    // in recent findings (last 7 days) to avoid showing the same card daily
+    const recentSince = new Date(Date.now() - 7 * 86400 * 1000).toISOString();
+    const { data: recentFindings } = await supabase
+      .from('breakdown_findings')
+      .select('poll_id, finding_type')
+      .gte('created_at', recentSince);
+    const existingKeys = new Set(
+      (recentFindings || []).map((f: any) => `${f.finding_type}:${f.poll_id}`)
+    );
+    const fresh = winners.filter(w => !existingKeys.has(`${w.finding_type}:${w.poll_id}`));
+
+    if (!fresh.length) {
+      return new Response(JSON.stringify({ ok: true, reason: 'all_duplicates', candidates: candidates.length, winners: winners.length }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Insert as pending
     const scanRunId = crypto.randomUUID();
-    const rows = winners.map(w => ({
+    const rows = fresh.map(w => ({
       scan_run_id: scanRunId,
       finding_type: w.finding_type,
       poll_id: w.poll_id,
