@@ -494,6 +494,19 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
+    } // end retry loop
+
+    // All attempts resulted in duplicates
+    console.error('All attempts produced duplicates');
+    return new Response(JSON.stringify({ 
+      ok: false,
+      error: 'Could not generate a unique poll after multiple attempts. This category may have too many existing polls. Try a different category.',
+      duplicate: true 
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
   } catch (error) {
     console.error('Error in generate-poll function:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
