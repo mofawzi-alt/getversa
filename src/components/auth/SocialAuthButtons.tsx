@@ -3,13 +3,13 @@ import { lovable } from '@/integrations/lovable';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { getAuthRedirectUrl } from '@/lib/nativeSession';
-import { isNativePlatform, signInWithAppleNative, signInWithGoogleNative } from '@/lib/nativeAuth';
 import { useNavigate } from 'react-router-dom';
 
 /**
  * Apple HIG-compliant Sign in with Apple button + Google button.
- * On native iOS/Android: uses platform plugins (Apple Sign-In, Google Sign-In)
- * On web: uses Lovable Cloud managed OAuth (browser redirect).
+ * Uses Lovable Cloud managed OAuth (browser redirect) on both web and native.
+ * Since the Capacitor WebView loads from https://getversa.app, the standard
+ * redirect flow works natively without platform-specific plugins.
  */
 export default function SocialAuthButtons({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const [busy, setBusy] = useState<'apple' | 'google' | null>(null);
@@ -18,17 +18,6 @@ export default function SocialAuthButtons({ mode = 'signin' }: { mode?: 'signin'
   const handleOAuth = async (provider: 'apple' | 'google') => {
     setBusy(provider);
     try {
-      // ---- NATIVE path (iOS / Android) ----
-      if (isNativePlatform()) {
-        const { error } = provider === 'apple'
-          ? await signInWithAppleNative()
-          : await signInWithGoogleNative();
-        if (error) {
-          toast.message('Native social sign-in is not active in this build yet. Opening web sign-in…');
-        }
-      }
-
-      // ---- WEB path ----
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: getAuthRedirectUrl(),
       });
