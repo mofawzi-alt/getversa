@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import { NotificationToggle } from '@/components/NotificationToggle';
 import { NotificationPreferences } from '@/components/profile/NotificationPreferences';
+import CategoryStoriesFilter from '@/components/pulse/CategoryStoriesFilter';
 
 export default function ProfileNotifications() {
   const { profile } = useAuth();
