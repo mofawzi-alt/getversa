@@ -115,7 +115,7 @@ export function mapToVersaCategory(input?: string | null): VersaCategory {
   if (/(retail|shopping|ecommerce|e-commerce|store|brand|amazon|noon|jumia)/.test(n)) return 'Retail & E-commerce';
   if (/(movie|film|series|tv|show|celeb|music|song|artist|sport|football|game|gaming|entertainment)/.test(n)) return 'Media & Entertainment';
   if (/(food|drink|snack|beverage|fmcg|coffee|tea|chips|cola|juice|chocolate)/.test(n)) return 'FMCG & Food';
-  if (/(lifestyle|society|relationship|dating|wellness|habit|style|fashion|design|personality|travel)/.test(n)) return 'Lifestyle & Society';
+  if (/(lifestyle|society|relationship|dating|wellness|habit|style|fashion|design|personality|travel|education|school|university|study|learning)/.test(n)) return 'Lifestyle & Society';
   if (/(pulse|trend|viral|culture|news|politic|debate)/.test(n)) return 'The Pulse';
 
   return 'The Pulse';
