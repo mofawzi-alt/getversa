@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
 
     const { data: row, error: fetchErr } = await supabase
       .from("poll_calendar")
-      .select("id,question,option_a,option_b,category,cultural_context,target_country")
+      .select("id,question,option_a,option_b,category,cultural_context,target_country,target_age_range,target_gender")
       .eq("id", calendar_id)
       .single();
     if (fetchErr || !row) throw fetchErr || new Error("not found");
@@ -73,6 +73,45 @@ Deno.serve(async (req) => {
     };
     const countryDirective = COUNTRY_DIRECTIVES[resolvedCountry.toLowerCase()] || COUNTRY_DIRECTIVES.mena;
 
+    // Build demographic directive for lifestyle accuracy
+    const ageRange = (row.target_age_range || "").trim();
+    const gender = (row.target_gender || "").trim();
+    let demographicDirective = "";
+    if (ageRange || gender) {
+      const ageParts: string[] = [];
+      if (gender && gender !== "All") ageParts.push(gender === "male" ? "a young man" : gender === "female" ? "a young woman" : "a young person");
+      else ageParts.push("a young person");
+      
+      if (ageRange && ageRange !== "All") {
+        const AGE_LIFESTYLE: Record<string, string> = {
+          "13-17": "teenager, school-age, casual youthful style",
+          "18-24": "university student or early career, trendy Gen Z style, modern apartment or campus setting",
+          "25-34": "young professional, polished style, modern apartment or upscale café, higher standard of living",
+          "35-44": "established professional, premium lifestyle, well-furnished home or upscale environment",
+          "45-54": "mature professional, affluent setting, luxury or classic style",
+          "55+": "senior, distinguished style, comfortable upscale home",
+        };
+        const lifestyleHint = AGE_LIFESTYLE[ageRange] || "";
+        ageParts.push(`aged ${ageRange}`);
+        if (lifestyleHint) ageParts.push(lifestyleHint);
+      }
+      demographicDirective = ` The subject should be ${ageParts.join(", ")}. The setting, clothing, and environment must reflect their demographic — modern, aspirational, and realistic for someone in this age/lifestyle bracket.`;
+    }
+
+    // Infer logical setting from question context
+    const SETTING_HINTS: Array<{ keywords: string[]; hint: string }> = [
+      { keywords: ["online", "e-commerce", "order", "delivery", "return", "website", "app"], hint: "Indoor/home setting — this activity happens at home or in a modern apartment, NOT on the street or in a market." },
+      { keywords: ["invest", "stock", "fund", "savings", "bank", "fintech", "wallet"], hint: "Show interaction with a phone/laptop screen showing financial data — indoor modern setting." },
+      { keywords: ["gym", "workout", "exercise", "fitness", "sport"], hint: "Gym, sports facility, or outdoor exercise setting." },
+      { keywords: ["cook", "kitchen", "recipe", "homemade", "meal prep"], hint: "Modern home kitchen setting." },
+      { keywords: ["café", "coffee", "restaurant", "dining", "eat out"], hint: "Upscale café or restaurant setting." },
+      { keywords: ["drive", "car", "commute", "transport"], hint: "In or near a vehicle, road setting." },
+      { keywords: ["study", "university", "exam", "college", "school"], hint: "Campus, library, or study space setting." },
+    ];
+    const questionLower = `${row.question} ${row.option_a} ${row.option_b}`.toLowerCase();
+    const settingHint = SETTING_HINTS.find(s => s.keywords.some(k => questionLower.includes(k)))?.hint || "";
+    const settingLine = settingHint ? ` SETTING RULE: ${settingHint}` : "";
+
     for (const opt of targets) {
       const optionText = opt === "A" ? row.option_a : row.option_b;
       const combined = `${row.question || ""} ${optionText} ${row.category || ""}`;
@@ -84,7 +123,9 @@ Deno.serve(async (req) => {
 
 Poll question: "${row.question}". This person's answer: "${optionText}". Category: ${row.category || "lifestyle"}.${contextLine}
 
-Show a Gen Z person performing the EXACT real-life behavior implied by answering "${optionText}" to the question "${row.question}". The behavior must be obvious in under 1 second — this is the user's "this is me" moment. For example: if the question is about investing and the answer is "Yes — I invest", show someone checking a trading app on their phone; if the answer is about preferring cash, show someone handling cash at a counter. If the option is a brand name, translate it into a real-life usage scene — NEVER show the logo. If the subject is an abstract concept (Yes, No, Quality, Trust, etc.), show a lifestyle scene that embodies that feeling through visible action.
+Show a person performing the EXACT real-life behavior implied by answering "${optionText}" to the question "${row.question}". The behavior must be obvious in under 1 second — this is the user's "this is me" moment. Think logically about WHERE this activity happens in real life and show THAT setting. For example: returning an online order = at home packing a box with a shipping label; investing = checking a trading app on phone in a modern apartment; cooking = in a kitchen. NEVER show street/market scenes for activities that happen indoors.${demographicDirective}${settingLine}
+
+If the option is a brand name, translate it into a real-life usage scene — NEVER show the logo. If the subject is an abstract concept (Yes, No, Quality, Trust, etc.), show a lifestyle scene that embodies that feeling through visible action.
 
 ${countryDirective}${keywordBoost} Never default to Western, American, or European settings.`;
 
