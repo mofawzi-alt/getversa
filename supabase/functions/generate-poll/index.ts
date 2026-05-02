@@ -198,6 +198,20 @@ serve(async (req) => {
       'The Pulse',
     ];
 
+    // Fetch existing polls in this category to avoid duplicates
+    const mappedCategory = category === 'Media' ? 'Media & Entertainment' : category;
+    const { data: existingPolls } = await supabase
+      .from('polls')
+      .select('question')
+      .eq('category', mappedCategory || '')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    const existingQuestions = (existingPolls || []).map((p: any) => p.question);
+    const avoidList = existingQuestions.length > 0
+      ? `\n\nCRITICAL — AVOID DUPLICATES! These polls ALREADY EXIST in this category, do NOT repeat them:\n${existingQuestions.map((q: string) => `- ${q}`).join('\n')}\n\nYou MUST create something DIFFERENT from ALL of the above!`
+      : '';
+
     const systemPrompt = `You are an expert poll creator for a social voting app called VERSA, targeting audiences in EGYPT. 
 Your job is to create simple "X vs Y" or "This or That" style comparison polls that resonate with Egyptian culture.
 
@@ -207,6 +221,7 @@ CRITICAL: VARIETY IS ESSENTIAL!
 - Think creatively and explore diverse options within each category
 - Random seed for this request: ${randomSeed} - use this to inspire variety
 - FOCUS ON EGYPTIAN culture, brands, food, celebrities, and trends
+${avoidList}
 
 CRITICAL FORMAT RULES:
 - The question MUST be exactly in this format: "Option A vs Option B" (e.g., "Al Ahly vs Zamalek", "Koshari vs Foul")
@@ -284,6 +299,16 @@ IMPORTANT: Be creative and pick something that Egyptians would love to debate!
 Timestamp: ${timestamp} | Seed: ${randomSeed}
 Remember: 1-2 words per option only, format as "X vs Y".`;
 
+    // Retry loop — up to 3 attempts if we hit a duplicate
+    const MAX_ATTEMPTS = 3;
+    let lastError: any = null;
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const attemptSeed = randomSeed + attempt * 123456;
+      const attemptPrompt = attempt === 0
+        ? userPrompt
+        : userPrompt + `\n\nATTEMPT ${attempt + 1}: The previous poll was a duplicate. You MUST pick completely different subjects this time! New seed: ${attemptSeed}`;
+
     console.log('Calling Lovable AI Gateway for poll content...');
     
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -296,9 +321,9 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: attemptPrompt }
         ],
-        temperature: 0.9,
+        temperature: Math.min(0.9 + attempt * 0.1, 1.2),
       }),
     });
 
@@ -420,16 +445,11 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
 
     if (insertError) {
       console.error('Database insert error:', insertError);
-      // If duplicate, return a friendly message instead of crashing
+      // If duplicate, retry with a different poll
       if (insertError.code === '23505') {
-        return new Response(JSON.stringify({ 
-          ok: false,
-          error: 'This poll already exists. Try generating again.',
-          duplicate: true 
-        }), {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        console.log(`Duplicate detected on attempt ${attempt + 1}, retrying...`);
+        lastError = insertError;
+        continue; // retry the loop
       }
       throw new Error('Failed to save poll to database');
     }
@@ -471,6 +491,19 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
         image_b_url: poll.image_b_url,
       }
     }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+    } // end retry loop
+
+    // All attempts resulted in duplicates
+    console.error('All attempts produced duplicates');
+    return new Response(JSON.stringify({ 
+      ok: false,
+      error: 'Could not generate a unique poll after multiple attempts. This category may have too many existing polls. Try a different category.',
+      duplicate: true 
+    }), {
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
