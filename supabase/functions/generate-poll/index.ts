@@ -445,16 +445,11 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
 
     if (insertError) {
       console.error('Database insert error:', insertError);
-      // If duplicate, return a friendly message instead of crashing
+      // If duplicate, retry with a different poll
       if (insertError.code === '23505') {
-        return new Response(JSON.stringify({ 
-          ok: false,
-          error: 'This poll already exists. Try generating again.',
-          duplicate: true 
-        }), {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        console.log(`Duplicate detected on attempt ${attempt + 1}, retrying...`);
+        lastError = insertError;
+        continue; // retry the loop
       }
       throw new Error('Failed to save poll to database');
     }
