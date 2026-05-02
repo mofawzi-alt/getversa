@@ -374,11 +374,11 @@ export default function TasteProfile() {
           </motion.section>
         )}
 
-         {/* ── TASTE PROFILE ── */}
+         {/* ── YOUR DIMENSIONS ── */}
          <motion.section variants={fadeUp} className="space-y-3">
            <div className="flex items-center justify-between">
              <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2">
-               🔮 Taste Profile
+               🔮 Your Dimensions
             </h3>
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <ShieldCheck className="h-3 w-3" />
@@ -396,7 +396,7 @@ export default function TasteProfile() {
                 <span className="text-2xl">🔒</span>
               </div>
               <div>
-                <p className="text-base font-display font-bold text-foreground">Your taste profile is forming</p>
+                <p className="text-base font-display font-bold text-foreground">Your dimensions are forming</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   {Math.max(0, 20 - totalVotes)} more vote{Math.max(0, 20 - totalVotes) !== 1 ? 's' : ''} to unlock ✨
                 </p>
