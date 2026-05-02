@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState, useCallback } from 'react';
+import { lazy, Suspense, useMemo, useState, useCallback, useEffect } from 'react';
 import { useDailyPulse, usePulseSettings, type PulseCard } from '@/hooks/useDailyPulse';
 import { useAuth } from '@/contexts/AuthContext';
 import StoryViewer, { type StoryCardData } from './StoryViewer';
@@ -7,7 +7,6 @@ import { trackStoryEvent } from '@/lib/storyAnalytics';
 import {
   Pin, Flame, MapPin, Building2, Bell, Users, Sparkles,
   Swords, Layers, Brain, Clock, Trophy, PartyPopper, BarChart3, Sunrise,
-  SlidersHorizontal,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -23,7 +22,7 @@ import EditorialStoryViewer from './EditorialStoryViewer';
 import { hasSeenLocally as hasSeenLocallyKey } from '@/lib/pulseTime';
 import { useCategoryStories, getHiddenCategories } from '@/hooks/useCategoryStories';
 import { getCategoryIcon, getCategoryColorClass } from '@/lib/categoryMeta';
-import CategoryStoriesFilter from './CategoryStoriesFilter';
+
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
 
@@ -250,9 +249,15 @@ export default function PulseStoriesRow() {
   const [openEditorial, setOpenEditorial] = useState<EditorialStory | null>(null);
   const [bump, setBump] = useState(0);
   const [shareFinding, setShareFinding] = useState<BreakdownFinding | null>(null);
-  const [filterOpen, setFilterOpen] = useState(false);
   const [hiddenCats, setHiddenCats] = useState(() => getHiddenCategories());
   const { data: editorialStories } = useEditorialStories();
+
+  // Listen for changes from settings page
+  useEffect(() => {
+    const handler = () => setHiddenCats(getHiddenCategories());
+    window.addEventListener('versa-category-filter-changed', handler);
+    return () => window.removeEventListener('versa-category-filter-changed', handler);
+  }, []);
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
@@ -264,11 +269,6 @@ export default function PulseStoriesRow() {
   const { data: weeklyData } = useWeeklyVerdict();
   const { data: newPollsData } = useNewThisWeek(lastVisit);
   const { data: breakdownData } = useBreakdownFindings();
-
-  const onFilterUpdate = useCallback(() => {
-    setHiddenCats(getHiddenCategories());
-    setBump((b) => b + 1);
-  }, []);
 
   const circles: CircleSpec[] = useMemo(() => {
     if (!pulse) return [];
@@ -723,27 +723,8 @@ export default function PulseStoriesRow() {
             );
           })}
 
-          {/* ── Filter button at end ── */}
-          <button
-            type="button"
-            onClick={() => setFilterOpen(true)}
-            className="flex flex-col items-center gap-1.5 w-16 active:scale-95 transition-transform"
-          >
-            <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center border border-border/50">
-              <SlidersHorizontal className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <span className="text-[10px] font-medium text-muted-foreground truncate w-full text-center">
-              Filter
-            </span>
-          </button>
         </div>
       </div>
-
-      <CategoryStoriesFilter
-        open={filterOpen}
-        onOpenChange={setFilterOpen}
-        onUpdate={onFilterUpdate}
-      />
 
       <EditorialStoryViewer
         open={!!openEditorial}
