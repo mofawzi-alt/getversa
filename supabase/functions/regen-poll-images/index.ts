@@ -10,13 +10,26 @@ const corsHeaders = {
 function isProductOrBrand(s: string): boolean {
   const t = s.trim();
   if (!t) return false;
-  // Multi-word phrases that read like behaviors usually contain verbs/spaces > 3 words
   const wordCount = t.split(/\s+/).length;
   if (wordCount >= 4) return false;
-  // Capitalized proper noun, or single short token (typical brand/product)
   const firstChar = t[0];
   const looksProper = firstChar === firstChar.toUpperCase() && /[A-Za-z]/.test(firstChar);
   return looksProper && wordCount <= 3;
+}
+
+// Heuristic: detect celebrity / public figure names (2-4 capitalized words, no common product words)
+function isCelebrityName(s: string): boolean {
+  const t = s.trim();
+  if (!t) return false;
+  const words = t.split(/\s+/);
+  if (words.length < 2 || words.length > 4) return false;
+  // All words should start with uppercase (proper noun pattern)
+  const allCapitalized = words.every(w => /^[A-Z\u0600-\u06FF]/.test(w));
+  if (!allCapitalized) return false;
+  // Exclude common product/brand patterns
+  const productWords = /^(iphone|samsung|galaxy|coca|pepsi|nike|adidas|vodafone|orange|etisalat|noon|amazon|uber|careem|netflix|shahid|youtube|instagram|tiktok|facebook|twitter|whatsapp|spotify|apple|google|microsoft|toyota|bmw|mercedes|hyundai|kia)$/i;
+  if (words.some(w => productWords.test(w))) return false;
+  return true;
 }
 
 const PROMPT_TPL = (subject: string, question: string, otherOption: string) => {
