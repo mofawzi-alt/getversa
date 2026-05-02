@@ -139,6 +139,8 @@ export default function ProfileNotifications() {
             />
           </div>
         </div>
+
+        <CategoryStoriesFilter />
       </div>
     </AppLayout>
   );
