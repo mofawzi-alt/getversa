@@ -290,24 +290,26 @@ export default function PollCalendarPanel() {
   return (
     <div className="space-y-4">
       {/* Header controls */}
-      <div className="flex flex-wrap items-center gap-2 justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1))}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="text-lg font-semibold min-w-[180px] text-center">{fmtMonthLabel(monthCursor)}</h2>
-          <Button variant="outline" size="icon" onClick={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1))}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setMonthCursor(startOfMonth(new Date()))}>Today</Button>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" onClick={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1))}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <h2 className="text-base font-semibold min-w-[140px] text-center">{fmtMonthLabel(monthCursor)}</h2>
+            <Button variant="outline" size="icon" onClick={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1))}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setMonthCursor(startOfMonth(new Date()))}>Today</Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={downloadCsvTemplate}>
             <Download className="h-4 w-4 mr-1" /> Template
           </Button>
           <Button size="sm" onClick={() => fileRef.current?.click()} disabled={importCsv.isPending}>
             {importCsv.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Upload className="h-4 w-4 mr-1" />}
-            Upload CSV
+            CSV
           </Button>
           <input
             ref={fileRef}
@@ -322,7 +324,7 @@ export default function PollCalendarPanel() {
           />
           {!bulkProgress?.running ? (
             <Button variant="secondary" size="sm" onClick={bulkGenerateImages} disabled={!!generatingId}>
-              <Sparkles className="h-4 w-4 mr-1" /> Bulk Generate Images
+              <Sparkles className="h-4 w-4 mr-1" /> Bulk AI
             </Button>
           ) : (
             <div className="flex items-center gap-2">
