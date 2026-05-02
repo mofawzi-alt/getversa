@@ -669,10 +669,16 @@ export default function PulseStoriesRow() {
             );
           })}
 
-          {/* ── Existing pulse circles (unchanged) ── */}
+          {/* ── Existing pulse circles + category circles ── */}
           {sorted.map((circle) => {
-            const visual = TOPIC_VISUALS[circle.topic] || FALLBACK_VISUAL;
-            const Icon = visual.Icon;
+            const isCatCircle = circle.topic.startsWith('cat:');
+            const catName = isCatCircle ? circle.topic.slice(4) : '';
+            const catGrad = isCatCircle ? CATEGORY_GRADIENTS[catName.toLowerCase()] : null;
+            const visual = isCatCircle ? null : (TOPIC_VISUALS[circle.topic] || FALLBACK_VISUAL);
+            const CatIcon = isCatCircle ? getCategoryIcon(catName) : (visual?.Icon || Sparkles);
+            const tileGrad = isCatCircle ? (catGrad?.tile || 'bg-gradient-to-br from-slate-500 to-slate-700') : visual!.tileGradient;
+            const ringGrad = isCatCircle ? (catGrad?.ring || 'bg-gradient-to-tr from-primary via-fuchsia-500 to-amber-400') : visual!.ringGradient;
+            const iconClr = 'text-white';
             const showRing = !!circle.dot;
             const dotClass =
               circle.dot === 'red' ? 'bg-red-500'
@@ -694,16 +700,16 @@ export default function PulseStoriesRow() {
                     circle.goldBorder
                       ? 'bg-gradient-to-tr from-amber-300 via-yellow-400 to-amber-500 shadow-lg shadow-amber-500/30'
                       : showRing
-                        ? `${visual.ringGradient} shadow-lg shadow-primary/10`
+                        ? `${ringGrad} shadow-lg shadow-primary/10`
                         : 'bg-muted'
                   }`}
                 >
                   <div className="w-full h-full rounded-full bg-background flex items-center justify-center p-[3px]">
-                    <div className={`w-full h-full rounded-full ${visual.tileGradient} flex items-center justify-center shadow-inner relative ${!showRing ? 'opacity-70' : ''}`}>
+                    <div className={`w-full h-full rounded-full ${tileGrad} flex items-center justify-center shadow-inner relative ${!showRing ? 'opacity-70' : ''}`}>
                       {circle.topic === 'egypt_today' && pulse?.pinned_poll_id && (
                         <Pin className="absolute top-0.5 right-0.5 w-3 h-3 text-white fill-white" />
                       )}
-                      <Icon className={`w-6 h-6 ${visual.iconColor} drop-shadow`} strokeWidth={2.25} />
+                      <CatIcon className={`w-6 h-6 ${iconClr} drop-shadow`} strokeWidth={2.25} />
                       {circle.dot && (
                         <span className={`absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full ${dotClass} border-2 border-background`} />
                       )}
@@ -716,8 +722,28 @@ export default function PulseStoriesRow() {
               </button>
             );
           })}
+
+          {/* ── Filter button at end ── */}
+          <button
+            type="button"
+            onClick={() => setFilterOpen(true)}
+            className="flex flex-col items-center gap-1.5 w-16 active:scale-95 transition-transform"
+          >
+            <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center border border-border/50">
+              <SlidersHorizontal className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <span className="text-[10px] font-medium text-muted-foreground truncate w-full text-center">
+              Filter
+            </span>
+          </button>
         </div>
       </div>
+
+      <CategoryStoriesFilter
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        onUpdate={onFilterUpdate}
+      />
 
       <EditorialStoryViewer
         open={!!openEditorial}
