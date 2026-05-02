@@ -98,6 +98,7 @@ type PollCard = {
   created_at: string;
   starts_at: string | null;
   ends_at: string | null;
+  weight_score?: number | null;
   totalVotes: number;
   percentA: number;
   percentB: number;
@@ -1083,13 +1084,17 @@ export default function Home() {
     // This enforces first_day_limit / daily_limit so users don't see all 99 active polls at once.
     if (user && queuePollIds.length > 0) {
       const queueSet = new Set(queuePollIds);
+      const freshCutoff = Date.now() - 48 * 60 * 60 * 1000;
+      const freshUnqueuedPolls = unvoted
+        .filter(p => !queueSet.has(p.id) && new Date(p.created_at).getTime() >= freshCutoff)
+        .sort((a, b) => ((b.weight_score || 0) - (a.weight_score || 0)) || (new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
       const queuePolls = unvoted.filter(p => queueSet.has(p.id));
       queuePolls.sort((a, b) => {
         const aIdx = queuePollIds.indexOf(a.id);
         const bIdx = queuePollIds.indexOf(b.id);
         return aIdx - bIdx;
       });
-      return queuePolls;
+      return [...freshUnqueuedPolls, ...queuePolls];
     }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
   }, [allPolls, votedPollIds, profile?.age_range, user, queuePollIds]);
