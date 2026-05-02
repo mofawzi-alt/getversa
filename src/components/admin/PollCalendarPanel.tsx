@@ -235,6 +235,7 @@ export default function PollCalendarPanel() {
     toast.success(`Bulk generation complete: ${succeeded} succeeded, ${failed} failed`);
   };
 
+  const acceptAiImage = (row: CalendarRow, opt: 'A' | 'B') => {
     const preview = opt === 'A' ? row.ai_image_a_preview : row.ai_image_b_preview;
     if (!preview) return;
     const newAUrl = opt === 'A' ? preview : row.image_a_url;
