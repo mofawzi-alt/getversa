@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import {
   Upload, Download, Sparkles, Check, Trash2, Pencil, Calendar as CalIcon,
   Loader2, ChevronLeft, ChevronRight, Image as ImageIcon, AlertTriangle,
+  CheckCircle2, XCircle,
 } from 'lucide-react';
 import { downloadCsvTemplate, parseCalendarCsv } from '@/lib/calendarCsv';
 
@@ -33,9 +34,11 @@ interface CalendarRow {
   target_country: string | null;
   target_age_range: string | null;
   target_gender: string | null;
+  cultural_context: string | null;
   status: Status;
   published_poll_id: string | null;
   notes: string | null;
+  image_rejection_count: number;
 }
 
 const STATUS_STYLES: Record<Status, string> = {
@@ -45,6 +48,31 @@ const STATUS_STYLES: Record<Status, string> = {
   published: 'bg-primary/15 text-primary',
   skipped: 'bg-destructive/15 text-destructive',
 };
+
+const CULTURAL_CONTEXT_OPTIONS = [
+  'Cairo street',
+  'Sahel beach',
+  'Egyptian home',
+  'Egyptian office',
+  'Egyptian café',
+  'Egyptian university campus',
+  'Egyptian mall or shopping center',
+  'Egyptian gym or outdoor public space',
+  'Nile view or Cairo waterfront',
+  'Egyptian wedding venue or celebration',
+  'New Cairo compound or premium residential',
+  'Generic global',
+];
+
+const APPROVAL_CHECKLIST = [
+  { key: 'one_second', label: '1-second test — option meaning immediately clear' },
+  { key: 'exact_match', label: 'Image matches the option exactly — not approximately or symbolically' },
+  { key: 'mena_atmosphere', label: 'Egyptian or MENA atmosphere confirmed — no Western or American settings' },
+  { key: 'pair_balanced', label: 'Both poll images are visually balanced as a pair' },
+  { key: 'no_logos', label: 'No logos, text, UI elements, or brand identifiers visible' },
+  { key: 'cinematic', label: 'Premium cinematic quality — not stock photo feel' },
+  { key: 'human_subject', label: 'Human subject present, looks 18-30, Egyptian or MENA appearance' },
+];
 
 function fmtMonthLabel(d: Date) {
   return d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
@@ -74,6 +102,7 @@ export default function PollCalendarPanel() {
   const [monthCursor, setMonthCursor] = useState(() => startOfMonth(new Date()));
   const [editingRow, setEditingRow] = useState<CalendarRow | null>(null);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [approvalRow, setApprovalRow] = useState<CalendarRow | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const monthStart = startOfMonth(monthCursor);
@@ -214,13 +243,37 @@ export default function PollCalendarPanel() {
     toast.success(`Image ${opt} approved${newAUrl && newBUrl ? ' — ready for final approval' : ''}`);
   };
 
-  const setStatus = (row: CalendarRow, status: Status) => {
-    const patch: any = { id: row.id, status };
-    if (status === 'approved') {
-      patch.approved_by = user!.id;
-      patch.approved_at = new Date().toISOString();
+  const rejectAiImage = (row: CalendarRow, opt: 'A' | 'B') => {
+    const newCount = (row.image_rejection_count || 0) + 1;
+    const patch: any = {
+      id: row.id,
+      [opt === 'A' ? 'ai_image_a_preview' : 'ai_image_b_preview']: null,
+      image_rejection_count: newCount,
+    };
+    if (newCount >= 3) {
+      toast.error('3 rejections reached — please upload images manually for this entry.');
+    } else {
+      toast.info(`Image ${opt} rejected (${newCount}/3). Regenerating...`);
+      generateImage(row, opt);
     }
     updateRow.mutate(patch);
+  };
+
+  const setStatus = (row: CalendarRow, status: Status) => {
+    if (status === 'approved') {
+      // Open approval checklist dialog instead of directly approving
+      setApprovalRow(row);
+      return;
+    }
+    const patch: any = { id: row.id, status };
+    updateRow.mutate(patch);
+  };
+
+  const confirmApproval = (row: CalendarRow) => {
+    const patch: any = { id: row.id, status: 'approved' as Status, approved_by: user!.id, approved_at: new Date().toISOString() };
+    updateRow.mutate(patch);
+    setApprovalRow(null);
+    toast.success('Poll approved for release');
   };
 
   const releaseHour = settings?.release_hour_cairo ?? 7;
@@ -366,6 +419,9 @@ export default function PollCalendarPanel() {
                 <span className="text-xs font-mono text-muted-foreground">{r.release_date}</span>
                 {r.category && <Badge variant="outline" className="text-[10px]">{r.category}</Badge>}
                 <Badge className={`text-[10px] ${STATUS_STYLES[r.status]}`}>{r.status}</Badge>
+                {(r.image_rejection_count || 0) >= 3 && (
+                  <Badge className="text-[10px] bg-destructive/15 text-destructive">needs manual image</Badge>
+                )}
               </div>
               <p className="text-sm font-semibold leading-snug">{r.question}</p>
               <p className="text-xs text-muted-foreground mt-0.5">A: {r.option_a} • B: {r.option_b}</p>
@@ -423,6 +479,7 @@ export default function PollCalendarPanel() {
                   setEditingRow(null);
                 }}
                 onAcceptAi={(opt) => acceptAiImage(fresh, opt)}
+                onRejectAi={(opt) => rejectAiImage(fresh, opt)}
                 onGen={(opt) => generateImage(fresh, opt)}
                 generating={generatingId === fresh.id}
               />
@@ -430,16 +487,99 @@ export default function PollCalendarPanel() {
           })()}
         </DialogContent>
       </Dialog>
+
+      {/* Approval checklist dialog */}
+      <ApprovalChecklistDialog
+        row={approvalRow}
+        onClose={() => setApprovalRow(null)}
+        onApprove={(row) => confirmApproval(row)}
+        onReject={(row) => {
+          rejectAiImage(row, 'A');
+          rejectAiImage(row, 'B');
+          setApprovalRow(null);
+        }}
+      />
     </div>
   );
 }
 
+function ApprovalChecklistDialog({
+  row,
+  onClose,
+  onApprove,
+  onReject,
+}: {
+  row: CalendarRow | null;
+  onClose: () => void;
+  onApprove: (row: CalendarRow) => void;
+  onReject: (row: CalendarRow) => void;
+}) {
+  const [checks, setChecks] = useState<Record<string, boolean>>({});
+
+  const allChecked = APPROVAL_CHECKLIST.every((item) => checks[item.key]);
+
+  if (!row) return null;
+
+  return (
+    <Dialog open={!!row} onOpenChange={(o) => { if (!o) { onClose(); setChecks({}); } }}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Image Approval Checklist</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground mb-2">
+          <strong>{row.question}</strong> — Confirm ALL items before approving:
+        </p>
+
+        {/* Show images side by side */}
+        {(row.image_a_url || row.image_b_url) && (
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            {row.image_a_url && <img src={row.image_a_url} alt="Option A" className="aspect-[4/5] w-full rounded object-cover border" />}
+            {row.image_b_url && <img src={row.image_b_url} alt="Option B" className="aspect-[4/5] w-full rounded object-cover border" />}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          {APPROVAL_CHECKLIST.map((item) => (
+            <label key={item.key} className="flex items-start gap-2 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={!!checks[item.key]}
+                onChange={(e) => setChecks({ ...checks, [item.key]: e.target.checked })}
+                className="mt-0.5 h-4 w-4 rounded border-border"
+              />
+              <span className={`text-sm ${checks[item.key] ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {checks[item.key] ? <CheckCircle2 className="inline h-3.5 w-3.5 mr-1 text-emerald-500" /> : <XCircle className="inline h-3.5 w-3.5 mr-1 text-muted-foreground/40" />}
+                {item.label}
+              </span>
+            </label>
+          ))}
+        </div>
+
+        <DialogFooter className="gap-2 mt-4">
+          <Button variant="destructive" size="sm" onClick={() => { onReject(row); setChecks({}); }}>
+            Reject & Regenerate
+          </Button>
+          <Button
+            size="sm"
+            disabled={!allChecked}
+            onClick={() => { onApprove(row); setChecks({}); }}
+          >
+            <Check className="h-3.5 w-3.5 mr-1" />
+            {allChecked ? 'Approve' : `${APPROVAL_CHECKLIST.filter(i => checks[i.key]).length}/${APPROVAL_CHECKLIST.length} checked`}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function EditForm({
-  row, onSave, onAcceptAi, onGen, generating,
+  row, onSave, onAcceptAi, onRejectAi, onGen, generating,
 }: {
   row: CalendarRow;
   onSave: (patch: Partial<CalendarRow>) => void;
   onAcceptAi: (opt: 'A' | 'B') => void;
+  onRejectAi: (opt: 'A' | 'B') => void;
   onGen: (opt: 'A' | 'B' | 'both') => void;
   generating: boolean;
 }) {
@@ -478,6 +618,7 @@ function EditForm({
         approved={form.image_a_url}
         preview={form.ai_image_a_preview}
         onApprove={() => onAcceptAi('A')}
+        onReject={() => onRejectAi('A')}
         onGen={() => onGen('A')}
         onUrlChange={(v) => setForm({ ...form, image_a_url: v })}
         generating={generating}
@@ -487,16 +628,33 @@ function EditForm({
         approved={form.image_b_url}
         preview={form.ai_image_b_preview}
         onApprove={() => onAcceptAi('B')}
+        onReject={() => onRejectAi('B')}
         onGen={() => onGen('B')}
         onUrlChange={(v) => setForm({ ...form, image_b_url: v })}
         generating={generating}
       />
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <Label>Country</Label>
           <Input value={form.target_country || ''} onChange={(e) => setForm({ ...form, target_country: e.target.value })} placeholder="Egypt" />
         </div>
+        <div>
+          <Label>Cultural Context</Label>
+          <select
+            value={form.cultural_context || ''}
+            onChange={(e) => setForm({ ...form, cultural_context: e.target.value || null })}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          >
+            <option value="">— None —</option>
+            {CULTURAL_CONTEXT_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <Label>Age range</Label>
           <Input value={form.target_age_range || ''} onChange={(e) => setForm({ ...form, target_age_range: e.target.value })} placeholder="18-24" />
@@ -516,6 +674,12 @@ function EditForm({
         <Input value={form.source || ''} onChange={(e) => setForm({ ...form, source: e.target.value })} />
       </div>
 
+      {(row.image_rejection_count || 0) >= 3 && (
+        <div className="flex items-center gap-2 text-xs text-destructive">
+          <AlertTriangle className="h-3.5 w-3.5" /> Images rejected 3 times. Please upload manually.
+        </div>
+      )}
+
       {(!form.image_a_url || !form.image_b_url) && (
         <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
           <AlertTriangle className="h-3.5 w-3.5" /> Both images must be approved before this row can be marked Approved.
@@ -530,12 +694,13 @@ function EditForm({
 }
 
 function ImageBlock({
-  label, approved, preview, onApprove, onGen, onUrlChange, generating,
+  label, approved, preview, onApprove, onReject, onGen, onUrlChange, generating,
 }: {
   label: string;
   approved: string | null;
   preview: string | null;
   onApprove: () => void;
+  onReject: () => void;
   onGen: () => void;
   onUrlChange: (v: string) => void;
   generating: boolean;
@@ -612,9 +777,14 @@ function ImageBlock({
           {preview ? (
             <>
               <img src={preview} alt="" className="aspect-square w-full rounded object-cover border-2 border-amber-500" />
-              <Button size="sm" variant="default" className="mt-1 h-7 text-xs" onClick={onApprove}>
-                <Check className="h-3 w-3 mr-1" /> Approve
-              </Button>
+              <div className="flex gap-1 mt-1">
+                <Button size="sm" variant="default" className="h-7 text-xs flex-1" onClick={onApprove}>
+                  <Check className="h-3 w-3 mr-1" /> Accept
+                </Button>
+                <Button size="sm" variant="destructive" className="h-7 text-xs flex-1" onClick={onReject}>
+                  <XCircle className="h-3 w-3 mr-1" /> Reject
+                </Button>
+              </div>
             </>
           ) : (
             <div className="aspect-square w-full rounded border-dashed border flex items-center justify-center text-muted-foreground">
