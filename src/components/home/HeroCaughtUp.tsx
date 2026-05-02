@@ -76,15 +76,15 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
         {/* Taste Profile */}
         <button
           onClick={() => navigate('/taste-profile')}
-          className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-[hsl(270_60%_96%)] border border-[hsl(270_60%_90%)] text-center group"
+          className="flex flex-col items-center gap-2 px-2 py-4 rounded-2xl bg-[hsl(270_50%_92%)] border border-[hsl(270_50%_82%)] text-center group"
         >
           {dimensionInfo ? (
-            <Lock className="h-5 w-5 text-[hsl(270_60%_50%)]" />
+            <Lock className="h-6 w-6 text-[hsl(270_60%_42%)]" />
           ) : (
-            <Eye className="h-5 w-5 text-[hsl(270_60%_50%)]" />
+            <Eye className="h-6 w-6 text-[hsl(270_60%_42%)]" />
           )}
-          <p className="text-[11px] font-bold text-foreground leading-tight">Taste Profile</p>
-          <p className="text-[9px] text-muted-foreground leading-tight">
+          <p className="text-xs font-extrabold text-[hsl(270_50%_25%)] leading-tight">Taste Profile</p>
+          <p className="text-[10px] font-medium text-[hsl(270_30%_45%)] leading-tight">
             {dimensionInfo
               ? `${dimensionInfo.remaining} to unlock`
               : 'View profile'}
@@ -94,21 +94,21 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
         {/* Ask */}
         <button
           onClick={() => navigate('/ask')}
-          className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-[hsl(145_50%_95%)] border border-[hsl(145_50%_88%)] text-center group"
+          className="flex flex-col items-center gap-2 px-2 py-4 rounded-2xl bg-[hsl(145_40%_90%)] border border-[hsl(145_40%_78%)] text-center group"
         >
-          <MessageCircleQuestion className="h-5 w-5 text-[hsl(145_63%_38%)]" />
-          <p className="text-[11px] font-bold text-foreground leading-tight">{askLabel}</p>
-          <p className="text-[9px] text-muted-foreground leading-tight">AI insights</p>
+          <MessageCircleQuestion className="h-6 w-6 text-[hsl(145_55%_30%)]" />
+          <p className="text-xs font-extrabold text-[hsl(145_40%_20%)] leading-tight">{askLabel}</p>
+          <p className="text-[10px] font-medium text-[hsl(145_25%_40%)] leading-tight">AI insights</p>
         </button>
 
         {/* Challenge */}
         <button
           onClick={() => navigate('/play')}
-          className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-[hsl(10_80%_96%)] border border-[hsl(10_80%_90%)] text-center group"
+          className="flex flex-col items-center gap-2 px-2 py-4 rounded-2xl bg-[hsl(10_70%_92%)] border border-[hsl(10_70%_80%)] text-center group"
         >
-          <Swords className="h-5 w-5 text-[hsl(10_80%_50%)]" />
-          <p className="text-[11px] font-bold text-foreground leading-tight">Challenge</p>
-          <p className="text-[9px] text-muted-foreground leading-tight">10-poll duel</p>
+          <Swords className="h-6 w-6 text-[hsl(10_75%_42%)]" />
+          <p className="text-xs font-extrabold text-[hsl(10_60%_25%)] leading-tight">Challenge</p>
+          <p className="text-[10px] font-medium text-[hsl(10_40%_40%)] leading-tight">10-poll duel</p>
         </button>
       </div>
     </div>
