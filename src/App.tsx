@@ -29,7 +29,7 @@ const ProfileNotifications = lazy(() => import("./pages/ProfileNotifications"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
-const InsightProfile = lazy(() => import("./pages/InsightProfile"));
+
 const Explore = lazy(() => import("./pages/Explore"));
 const Browse = lazy(() => import("./pages/Browse"));
 const LiveDebate = lazy(() => import("./pages/LiveDebate"));
