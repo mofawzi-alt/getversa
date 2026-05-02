@@ -41,6 +41,7 @@ import WhatsNewBanner from '@/components/home/WhatsNewBanner';
 import { WelcomeBanner, TimedFloatingNudge } from '@/components/onboarding/GuestNudges';
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
 import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/NotificationPrompt';
+import FirstTimeWelcomeTour, { isWelcomeTourDone } from '@/components/onboarding/FirstTimeWelcomeTour';
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
@@ -672,6 +673,7 @@ export default function Home() {
   // Authenticated users with completed profiles should never see the welcome flow
   const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showWelcomeTour, setShowWelcomeTour] = useState(false);
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   
@@ -721,6 +723,17 @@ export default function Home() {
       setShowWelcome(true);
     }
   }, [loading, profileComplete, user]);
+
+  // Show first-time welcome tour for authenticated users who haven't seen it
+  useEffect(() => {
+    if (loading || !user || !profile) return;
+    if (isWelcomeTourDone()) return;
+    if (profile.has_seen_welcome_tour) {
+      localStorage.setItem('versa_welcome_tour_done', 'true');
+      return;
+    }
+    setShowWelcomeTour(true);
+  }, [loading, user, profile]);
 
   // Realtime subscription: invalidate vote-related queries on new votes AND new polls
   useEffect(() => {
@@ -1273,6 +1286,10 @@ export default function Home() {
   const { data: trendingIdSet } = useTrendingPolls(livePollIds);
 
   // (auto-rotate removed — static horizontal scroll)
+
+  if (showWelcomeTour && user) {
+    return <FirstTimeWelcomeTour userId={user.id} onComplete={() => setShowWelcomeTour(false)} />;
+  }
 
   if (showWelcome) {
     return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); }} />;
