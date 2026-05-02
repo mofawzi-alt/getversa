@@ -62,64 +62,73 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
   const dimensionInfo = getNextDimensionInfo(totalVotes ?? 0);
 
   return (
-    <div className="w-full px-4 py-6 space-y-3">
-      {/* 1. Countdown */}
-      <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border/60">
-        <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground">Next drop in {countdown}</p>
-          <p className="text-xs text-muted-foreground">New polls drop daily at 9 AM</p>
+    <div className="w-full px-4 py-6">
+      <div className="grid grid-cols-2 gap-2.5">
+        {/* 1. Countdown */}
+        <div className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-[hsl(210_100%_96%)] border border-[hsl(210_100%_90%)]">
+          <div className="flex items-center justify-between">
+            <Clock className="h-5 w-5 text-primary flex-shrink-0" />
+            <ChevronRight className="h-4 w-4 text-primary/60" />
+          </div>
+          <p className="text-[13px] font-bold text-foreground leading-tight">Next drop in {countdown}</p>
+          <p className="text-[10px] text-muted-foreground leading-tight">New polls at 9 AM</p>
         </div>
-      </div>
 
-      {/* 2. Personality progress */}
-      {dimensionInfo ? (
-        <button
-          onClick={() => navigate('/insights')}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border/60 text-left group"
-        >
-          <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">
-              Vote on {dimensionInfo.remaining} more poll{dimensionInfo.remaining !== 1 ? 's' : ''} to unlock your next dimension
+        {/* 2. Personality progress */}
+        {dimensionInfo ? (
+          <button
+            onClick={() => navigate('/insights')}
+            className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-[hsl(270_60%_96%)] border border-[hsl(270_60%_90%)] text-left group"
+          >
+            <div className="flex items-center justify-between">
+              <Lock className="h-5 w-5 text-[hsl(270_60%_50%)] flex-shrink-0" />
+              <ChevronRight className="h-4 w-4 text-[hsl(270_60%_50%)]/60 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+            <p className="text-[13px] font-bold text-foreground leading-tight">
+              {dimensionInfo.remaining} poll{dimensionInfo.remaining !== 1 ? 's' : ''} to next dimension
             </p>
-            <p className="text-xs text-muted-foreground">Discover what your choices reveal</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-        </button>
-      ) : (
+            <p className="text-[10px] text-muted-foreground leading-tight">Unlock insights</p>
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate('/insights')}
+            className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-[hsl(270_60%_96%)] border border-[hsl(270_60%_90%)] text-left group"
+          >
+            <div className="flex items-center justify-between">
+              <Eye className="h-5 w-5 text-[hsl(270_60%_50%)] flex-shrink-0" />
+              <ChevronRight className="h-4 w-4 text-[hsl(270_60%_50%)]/60 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+            <p className="text-[13px] font-bold text-foreground leading-tight">All dimensions unlocked</p>
+            <p className="text-[10px] text-muted-foreground leading-tight">View full profile</p>
+          </button>
+        )}
+
+        {/* 3. Duel CTA */}
         <button
-          onClick={() => navigate('/insights')}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border/60 text-left group"
+          onClick={() => navigate('/play')}
+          className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-[hsl(10_80%_96%)] border border-[hsl(10_80%_90%)] text-left group"
         >
-          <Eye className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">All dimensions unlocked</p>
-            <p className="text-xs text-muted-foreground">View your full insight profile</p>
+          <div className="flex items-center justify-between">
+            <Swords className="h-5 w-5 text-[hsl(10_80%_50%)] flex-shrink-0" />
+            <ChevronRight className="h-4 w-4 text-[hsl(10_80%_50%)]/60 group-hover:translate-x-0.5 transition-transform" />
           </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+          <p className="text-[13px] font-bold text-foreground leading-tight">Challenge a friend</p>
+          <p className="text-[10px] text-muted-foreground leading-tight">10-poll duel</p>
         </button>
-      )}
 
-      {/* 3. Duel CTA */}
-      <button
-        onClick={() => navigate('/play')}
-        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border/60 text-left group"
-      >
-        <Swords className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        <p className="text-sm font-semibold text-foreground flex-1">Challenge a friend to a 10-poll duel</p>
-        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-      </button>
-
-      {/* 4. Ask Versa CTA */}
-      <button
-        onClick={() => navigate('/ask')}
-        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border/60 text-left group"
-      >
-        <MessageCircleQuestion className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        <p className="text-sm font-semibold text-foreground flex-1">{getAskCtaLabel((profile?.country || profile?.nationality) as string | undefined)}</p>
-        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-      </button>
+        {/* 4. Ask Versa CTA */}
+        <button
+          onClick={() => navigate('/ask')}
+          className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-[hsl(145_50%_95%)] border border-[hsl(145_50%_88%)] text-left group"
+        >
+          <div className="flex items-center justify-between">
+            <MessageCircleQuestion className="h-5 w-5 text-[hsl(145_63%_38%)] flex-shrink-0" />
+            <ChevronRight className="h-4 w-4 text-[hsl(145_63%_38%)]/60 group-hover:translate-x-0.5 transition-transform" />
+          </div>
+          <p className="text-[13px] font-bold text-foreground leading-tight">{getAskCtaLabel((profile?.country || profile?.nationality) as string | undefined).replace(' →', '')}</p>
+          <p className="text-[10px] text-muted-foreground leading-tight">AI-powered insights</p>
+        </button>
+      </div>
     </div>
   );
 }
