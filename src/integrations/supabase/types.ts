@@ -2638,6 +2638,7 @@ export type Database = {
           employment_status: string | null
           first_vote_date: string | null
           gender: string | null
+          has_seen_welcome_tour: boolean
           id: string
           income_range: string | null
           industry: string | null
@@ -2669,6 +2670,7 @@ export type Database = {
           employment_status?: string | null
           first_vote_date?: string | null
           gender?: string | null
+          has_seen_welcome_tour?: boolean
           id: string
           income_range?: string | null
           industry?: string | null
@@ -2700,6 +2702,7 @@ export type Database = {
           employment_status?: string | null
           first_vote_date?: string | null
           gender?: string | null
+          has_seen_welcome_tour?: boolean
           id?: string
           income_range?: string | null
           industry?: string | null
