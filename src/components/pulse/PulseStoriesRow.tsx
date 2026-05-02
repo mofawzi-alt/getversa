@@ -396,31 +396,33 @@ export default function PulseStoriesRow() {
       });
     }
 
-    // ── Your Categories (BLUE dot)
-    if (categoriesData && categoriesData.length > 0) {
-      list.push({
-        topic: 'categories',
-        label: 'For You',
-        cards: categoriesData.map((c: any) => {
-          const total = c.tally.total;
-          const pctA = total ? Math.round((c.tally.a / total) * 100) : 50;
-          const winner = pctA >= 50 ? c.poll.option_a : c.poll.option_b;
-          return {
-            backgroundImage: pctA >= 50 ? c.poll.image_a_url : c.poll.image_b_url,
-            label: c.category,
-            categoryEmoji: emojiFor(c.category),
-            headline: c.poll.question,
+    // ── Per-Category circles (one per category with activity, filtered by user prefs)
+    if (categoryStories && categoryStories.length > 0) {
+      for (const cs of categoryStories) {
+        if (hiddenCats.has(cs.category)) continue;
+        const total = cs.tally.total;
+        const pctA = total ? Math.round((cs.tally.a / total) * 100) : 50;
+        const winner = pctA >= 50 ? cs.poll.option_a : cs.poll.option_b;
+        const topicKey = `cat:${cs.category}`;
+        list.push({
+          topic: topicKey,
+          label: cs.category.length > 12 ? cs.category.split(' ')[0] : cs.category,
+          cards: [{
+            backgroundImage: pctA >= 50 ? cs.poll.image_a_url : cs.poll.image_b_url,
+            label: cs.category,
+            categoryEmoji: emojiFor(cs.category),
+            headline: cs.poll.question,
             primaryText: total > 0 ? `${winner} wins ${Math.max(pctA, 100 - pctA)}%` : 'Be the first to vote',
             secondaryText: total > 0 ? `${total.toLocaleString()} votes today` : '',
-            splitA: { label: c.poll.option_a, pct: pctA },
-            splitB: { label: c.poll.option_b, pct: 100 - pctA },
-            votePollId: c.poll.id,
+            splitA: { label: cs.poll.option_a, pct: pctA },
+            splitB: { label: cs.poll.option_b, pct: 100 - pctA },
+            votePollId: cs.poll.id,
             shareable: true,
-          };
-        }),
-        dot: hasSeenLocally('categories') ? null : 'blue',
-        priority: 40,
-      });
+          }],
+          dot: hasSeenLocally(topicKey) ? null : 'blue',
+          priority: 40,
+        });
+      }
     }
 
     // ── Predict Results (BLUE dot)
