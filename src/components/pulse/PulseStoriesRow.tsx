@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState, useCallback } from 'react';
 import { useDailyPulse, usePulseSettings, type PulseCard } from '@/hooks/useDailyPulse';
 import { useAuth } from '@/contexts/AuthContext';
 import StoryViewer, { type StoryCardData } from './StoryViewer';
@@ -7,10 +7,11 @@ import { trackStoryEvent } from '@/lib/storyAnalytics';
 import {
   Pin, Flame, MapPin, Building2, Bell, Users, Sparkles,
   Swords, Layers, Brain, Clock, Trophy, PartyPopper, BarChart3, Sunrise,
+  SlidersHorizontal,
   type LucideIcon,
 } from 'lucide-react';
 import {
-  useBattleOfTheDay, useFriendsActivity, useYourCategories,
+  useBattleOfTheDay, useFriendsActivity,
   useYourPollsUpdated, usePredictRecap, useClosingSoon,
   useWeeklyVerdict, useNewThisWeek, useLastVisit,
 } from '@/hooks/usePulseCircles';
@@ -20,6 +21,9 @@ import { useEditorialStories, type EditorialStory } from '@/hooks/useEditorialSt
 import { EDITORIAL_STORY_META } from '@/lib/editorialStoryTypes';
 import EditorialStoryViewer from './EditorialStoryViewer';
 import { hasSeenLocally as hasSeenLocallyKey } from '@/lib/pulseTime';
+import { useCategoryStories, getHiddenCategories } from '@/hooks/useCategoryStories';
+import { getCategoryIcon, getCategoryColorClass } from '@/lib/categoryMeta';
+import CategoryStoriesFilter from './CategoryStoriesFilter';
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
 
