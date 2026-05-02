@@ -377,11 +377,18 @@ Remember: 1-2 words per option only, format as "X vs Y".`;
     };
     pollData.category = clampCategory(pollData.category || category);
 
-    // Generate images for both options in parallel and upload to storage
+    // Generate images — use celebrity poster style when both options are person names
     console.log('Generating images for poll options...');
+    const bothCelebs = isCelebrityName(pollData.option_a) && isCelebrityName(pollData.option_b);
+    const promptA = bothCelebs
+      ? getCelebrityImagePrompt(pollData.option_a, pollData.question)
+      : pollData.option_a;
+    const promptB = bothCelebs
+      ? getCelebrityImagePrompt(pollData.option_b, pollData.question)
+      : pollData.option_b;
     const [imageA, imageB] = await Promise.all([
-      generateAndUploadImage(LOVABLE_API_KEY, pollData.option_a, supabase),
-      generateAndUploadImage(LOVABLE_API_KEY, pollData.option_b, supabase),
+      generateAndUploadImage(LOVABLE_API_KEY, promptA, supabase),
+      generateAndUploadImage(LOVABLE_API_KEY, promptB, supabase),
     ]);
 
     console.log('Image A generated:', !!imageA);
