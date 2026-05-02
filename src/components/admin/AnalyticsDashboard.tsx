@@ -64,7 +64,7 @@ export default function AnalyticsDashboard() {
       ] = await Promise.all([
         supabase.from('polls').select('id, question, option_a, option_b, category, created_at'),
         supabase.from('votes').select('id, poll_id, user_id, choice, created_at'),
-        supabase.from('users').select('id, gender, age_range, country, created_at'),
+        supabase.from('users').select('id, gender, age_range, country, nationality, city_of_residence, created_at'),
       ]);
 
       if (!polls || !votes || !users) return null;
