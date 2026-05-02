@@ -202,6 +202,8 @@ export default function AnalyticsDashboard() {
         genderBreakdown: toChartData(genderMap),
         ageBreakdown: toChartData(ageMap),
         countryBreakdown: toChartData(countryMap),
+        nationalityBreakdown: toChartData(nationalityMap),
+        cityOfResidenceBreakdown: toChartData(cityOfResidenceMap),
         topPolls, categoryPerformance, peakHours,
       };
     },
