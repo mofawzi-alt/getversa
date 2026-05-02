@@ -74,6 +74,8 @@ export default function PollCalendarPanel() {
   const [monthCursor, setMonthCursor] = useState(() => startOfMonth(new Date()));
   const [editingRow, setEditingRow] = useState<CalendarRow | null>(null);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [bulkProgress, setBulkProgress] = useState<{ current: number; total: number; running: boolean } | null>(null);
+  const bulkAbortRef = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const monthStart = startOfMonth(monthCursor);
