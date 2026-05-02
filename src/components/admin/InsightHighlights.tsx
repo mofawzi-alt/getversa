@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Flame, Target, Zap, ChevronRight } from 'lucide-react';
+import { Flame, Target, Zap } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface InsightItem {
@@ -215,79 +215,70 @@ export default function InsightHighlights({ onPollSelect }: InsightHighlightsPro
     );
   }
 
-  const hasAnyInsight = insights?.polarizing || insights?.segmentBias || insights?.fastest;
-
-  if (!hasAnyInsight) {
-    return null;
-  }
-
   return (
     <div className="grid grid-cols-3 gap-2 mb-4">
       {/* Most Polarizing Poll */}
-      {insights?.polarizing && (
-        <button
-          onClick={() => handleClick(insights.polarizing!.pollId)}
-          title={insights.polarizing.question}
-          className="rounded-lg p-2.5 border-l-2 border-l-orange-500 bg-orange-500/10 text-left transition-all hover:bg-orange-500/20 active:scale-[0.98] cursor-pointer min-w-0"
-        >
+      <button
+        onClick={() => insights?.polarizing && handleClick(insights.polarizing.pollId)}
+        title={insights?.polarizing?.question || 'Waiting for votes'}
+        disabled={!insights?.polarizing}
+        className="rounded-lg p-2.5 border-l-2 border-l-primary bg-primary/10 text-left transition-all hover:bg-primary/20 active:scale-[0.98] disabled:cursor-default disabled:opacity-100 min-w-0"
+      >
           <div className="flex items-center gap-1.5 mb-1">
-            <Flame className="h-3.5 w-3.5 text-orange-400 shrink-0" />
-            <span className="text-[10px] font-bold text-orange-400 uppercase tracking-wide truncate">
+            <Flame className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span className="text-[10px] font-bold text-primary uppercase truncate">
               Top Split
             </span>
           </div>
-          <p className="text-sm font-semibold text-white">
-            {insights.polarizing.splitPercentage}/{100 - insights.polarizing.splitPercentage}
+          <p className="text-sm font-semibold text-foreground">
+            {insights?.polarizing ? `${insights.polarizing.splitPercentage}/${100 - insights.polarizing.splitPercentage}` : '—'}
           </p>
-          <p className="text-[10px] text-white/60 truncate mt-0.5">
-            {insights.polarizing.question}
+          <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+            {insights?.polarizing?.question || 'Waiting for 3+ votes'}
           </p>
-        </button>
-      )}
+      </button>
 
       {/* Strongest Segment Bias */}
-      {insights?.segmentBias && (
-        <button
-          onClick={() => handleClick(insights.segmentBias!.pollId)}
-          title={insights.segmentBias.question}
-          className="rounded-lg p-2.5 border-l-2 border-l-violet-500 bg-violet-500/10 text-left transition-all hover:bg-violet-500/20 active:scale-[0.98] cursor-pointer min-w-0"
-        >
+      <button
+        onClick={() => insights?.segmentBias && handleClick(insights.segmentBias.pollId)}
+        title={insights?.segmentBias?.question || 'Waiting for demographic signal'}
+        disabled={!insights?.segmentBias}
+        className="rounded-lg p-2.5 border-l-2 border-l-accent bg-accent/10 text-left transition-all hover:bg-accent/20 active:scale-[0.98] disabled:cursor-default disabled:opacity-100 min-w-0"
+      >
           <div className="flex items-center gap-1.5 mb-1">
-            <Target className="h-3.5 w-3.5 text-violet-400 shrink-0" />
-            <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wide truncate">
+            <Target className="h-3.5 w-3.5 text-accent shrink-0" />
+            <span className="text-[10px] font-bold text-accent uppercase truncate">
               Segment Bias
             </span>
           </div>
-          <p className="text-sm font-semibold text-white">
-            {insights.segmentBias.biasPercentage}%
+          <p className="text-sm font-semibold text-foreground">
+            {insights?.segmentBias ? `${insights.segmentBias.biasPercentage}%` : '—'}
           </p>
-          <p className="text-[10px] text-white/60 truncate mt-0.5">
-            {insights.segmentBias.segment}
+          <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+            {insights?.segmentBias?.segment || 'Need segment votes'}
           </p>
-        </button>
-      )}
+      </button>
 
       {/* Fastest Decision Poll */}
-      {insights?.fastest && (
-        <button
-          onClick={() => handleClick(insights.fastest!.pollId)}
-          title={insights.fastest.question}
-          className="rounded-lg p-2.5 border-l-2 border-l-amber-500 bg-amber-500/10 text-left transition-all hover:bg-amber-500/20 active:scale-[0.98] cursor-pointer min-w-0"
-        >
+      <button
+        onClick={() => insights?.fastest && handleClick(insights.fastest.pollId)}
+        title={insights?.fastest?.question || 'Waiting for response time'}
+        disabled={!insights?.fastest}
+        className="rounded-lg p-2.5 border-l-2 border-l-primary bg-primary/10 text-left transition-all hover:bg-primary/20 active:scale-[0.98] disabled:cursor-default disabled:opacity-100 min-w-0"
+      >
           <div className="flex items-center gap-1.5 mb-1">
-            <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wide truncate">
+            <Zap className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span className="text-[10px] font-bold text-primary uppercase truncate">
               Fastest
             </span>
           </div>
-          <p className="text-sm font-semibold text-white">
-            {formatTime(insights.fastest.avgSeconds)}
+          <p className="text-sm font-semibold text-foreground">
+            {insights?.fastest ? formatTime(insights.fastest.avgSeconds) : '—'}
           </p>
-          <p className="text-[10px] text-white/60 truncate mt-0.5">
-            {insights.fastest.question}
+          <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+            {insights?.fastest?.question || 'Need live votes'}
           </p>
-        </button>
-      )}
+      </button>
     </div>
   );
 }

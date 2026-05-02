@@ -501,6 +501,9 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-polls'] });
+      queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+      queryClient.invalidateQueries({ queryKey: ['daily-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
       toast.success(`Poll created (${expiryType === 'evergreen' ? 'Evergreen' : expiryType === 'trending' ? '48h Trending' : 'Campaign'})!`);
       setShowForm(false);
       setQuestion('');
@@ -586,6 +589,10 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
     }
     
     queryClient.invalidateQueries({ queryKey: ['admin-polls'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-insights'] });
+    queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
+    queryClient.invalidateQueries({ queryKey: ['daily-queue'] });
+    queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
     
     if (results.success > 0) {
       toast.success(`Generated ${results.success} poll${results.success > 1 ? 's' : ''}!`, {
