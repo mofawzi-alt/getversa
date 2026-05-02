@@ -2629,6 +2629,7 @@ export type Database = {
           avatar_url: string | null
           category_interests: string[] | null
           city: string | null
+          city_of_residence: string | null
           country: string | null
           created_at: string | null
           current_streak: number | null
@@ -2644,6 +2645,7 @@ export type Database = {
           last_daily_credit_date: string | null
           last_vote_date: string | null
           longest_streak: number | null
+          nationality: string | null
           points: number | null
           prediction_accuracy: number | null
           prediction_total: number | null
@@ -2658,6 +2660,7 @@ export type Database = {
           avatar_url?: string | null
           category_interests?: string[] | null
           city?: string | null
+          city_of_residence?: string | null
           country?: string | null
           created_at?: string | null
           current_streak?: number | null
@@ -2673,6 +2676,7 @@ export type Database = {
           last_daily_credit_date?: string | null
           last_vote_date?: string | null
           longest_streak?: number | null
+          nationality?: string | null
           points?: number | null
           prediction_accuracy?: number | null
           prediction_total?: number | null
@@ -2687,6 +2691,7 @@ export type Database = {
           avatar_url?: string | null
           category_interests?: string[] | null
           city?: string | null
+          city_of_residence?: string | null
           country?: string | null
           created_at?: string | null
           current_streak?: number | null
@@ -2702,6 +2707,7 @@ export type Database = {
           last_daily_credit_date?: string | null
           last_vote_date?: string | null
           longest_streak?: number | null
+          nationality?: string | null
           points?: number | null
           prediction_accuracy?: number | null
           prediction_total?: number | null
