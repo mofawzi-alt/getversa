@@ -1002,7 +1002,7 @@ export default function Home() {
           if (queuedPollsError) throw queuedPollsError;
 
           if (queuedPolls?.length) {
-            mergedPolls = [...rawPolls, ...queuedPolls.filter(p => !fetchedIds.has(p.id))];
+            mergedPolls = [...mergedPolls, ...queuedPolls.filter(p => !fetchedIds.has(p.id))];
           }
         }
 
