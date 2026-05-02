@@ -52,7 +52,7 @@ export default function DimensionsSummary() {
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
           <Eye className="h-4 w-4" />
-          Your Dimensions
+          Taste Profile
         </h3>
         <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
       </div>

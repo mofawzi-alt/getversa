@@ -85,7 +85,7 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
               <ChevronRight className="h-4 w-4 text-[hsl(270_60%_50%)]/60 group-hover:translate-x-0.5 transition-transform" />
             </div>
             <p className="text-[13px] font-bold text-foreground leading-tight">
-              {dimensionInfo.remaining} poll{dimensionInfo.remaining !== 1 ? 's' : ''} to next dimension
+              {dimensionInfo.remaining} poll{dimensionInfo.remaining !== 1 ? 's' : ''} to next taste insight
             </p>
             <p className="text-[10px] text-muted-foreground leading-tight">Unlock insights</p>
           </button>
@@ -98,7 +98,7 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
               <Eye className="h-5 w-5 text-[hsl(270_60%_50%)] flex-shrink-0" />
               <ChevronRight className="h-4 w-4 text-[hsl(270_60%_50%)]/60 group-hover:translate-x-0.5 transition-transform" />
             </div>
-            <p className="text-[13px] font-bold text-foreground leading-tight">All dimensions unlocked</p>
+            <p className="text-[13px] font-bold text-foreground leading-tight">Taste Profile complete</p>
             <p className="text-[10px] text-muted-foreground leading-tight">View full profile</p>
           </button>
         )}

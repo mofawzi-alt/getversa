@@ -67,7 +67,7 @@ export default function ProfileDimensionsSection() {
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-display font-bold text-base flex items-center gap-2">
               <Eye className="h-4 w-4 text-primary" />
-              Your Dimensions
+              Taste Profile
             </h3>
             <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
           </div>
