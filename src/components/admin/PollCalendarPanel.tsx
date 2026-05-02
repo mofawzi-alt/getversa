@@ -189,7 +189,52 @@ export default function PollCalendarPanel() {
     }
   };
 
-  const acceptAiImage = (row: CalendarRow, opt: 'A' | 'B') => {
+  const bulkGenerateImages = async () => {
+    // Fetch ALL draft/image_pending entries without approved images
+    const { data: entries, error } = await supabase
+      .from('poll_calendar')
+      .select('id, question, image_a_url, image_b_url, status')
+      .in('status', ['draft', 'image_pending'])
+      .is('image_a_url', null)
+      .order('release_date', { ascending: true });
+    if (error || !entries?.length) {
+      toast.info(entries?.length === 0 ? 'All entries already have images!' : 'Failed to fetch entries');
+      return;
+    }
+    bulkAbortRef.current = false;
+    setBulkProgress({ current: 0, total: entries.length, running: true });
+    let succeeded = 0;
+    let failed = 0;
+    for (let i = 0; i < entries.length; i++) {
+      if (bulkAbortRef.current) {
+        toast.info(`Bulk generation stopped. ${succeeded} completed, ${failed} failed, ${entries.length - i} remaining.`);
+        break;
+      }
+      setBulkProgress({ current: i + 1, total: entries.length, running: true });
+      try {
+        const { error: genErr } = await supabase.functions.invoke('generate-calendar-image', {
+          body: { calendar_id: entries[i].id, option: 'both' },
+        });
+        if (genErr) throw genErr;
+        succeeded++;
+      } catch (e: any) {
+        failed++;
+        console.error(`Bulk gen failed for ${entries[i].id}:`, e);
+        if (e?.message?.includes('402') || e?.message?.includes('429')) {
+          toast.error('Rate limited or out of credits — stopping bulk generation.');
+          break;
+        }
+      }
+      // Refresh data every 5 entries
+      if ((i + 1) % 5 === 0) {
+        qc.invalidateQueries({ queryKey: ['poll-calendar'] });
+      }
+    }
+    setBulkProgress(null);
+    qc.invalidateQueries({ queryKey: ['poll-calendar'] });
+    toast.success(`Bulk generation complete: ${succeeded} succeeded, ${failed} failed`);
+  };
+
     const preview = opt === 'A' ? row.ai_image_a_preview : row.ai_image_b_preview;
     if (!preview) return;
     const newAUrl = opt === 'A' ? preview : row.image_a_url;
