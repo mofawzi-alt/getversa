@@ -41,6 +41,7 @@ import WhatsNewBanner from '@/components/home/WhatsNewBanner';
 import { WelcomeBanner, TimedFloatingNudge } from '@/components/onboarding/GuestNudges';
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
 import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/NotificationPrompt';
+import FirstTimeWelcomeTour, { isWelcomeTourDone } from '@/components/onboarding/FirstTimeWelcomeTour';
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
