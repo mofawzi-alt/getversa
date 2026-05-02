@@ -266,10 +266,6 @@ export default function PollCalendarPanel() {
       return;
     }
     const patch: any = { id: row.id, status };
-    if (status === 'approved') {
-      patch.approved_by = user!.id;
-      patch.approved_at = new Date().toISOString();
-    }
     updateRow.mutate(patch);
   };
 
