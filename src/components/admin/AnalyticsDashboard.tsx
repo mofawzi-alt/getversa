@@ -320,6 +320,10 @@ export default function AnalyticsDashboard() {
         <DemoPieChart title="Age Range" icon={Calendar} data={data.ageBreakdown} />
         <DemoPieChart title="Country" icon={Globe} data={data.countryBreakdown} />
       </div>
+      <div className="grid md:grid-cols-2 gap-4">
+        <DemoPieChart title="Nationality" icon={Globe} data={data.nationalityBreakdown} />
+        <DemoPieChart title="City of Residence" icon={Globe} data={data.cityOfResidenceBreakdown} />
+      </div>
 
       {/* Peak Hours */}
       <Card>
