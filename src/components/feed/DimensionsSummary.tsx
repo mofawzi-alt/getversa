@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom';
 
 const TENDENCY_LABELS: Record<string, Record<string, string>> = {
   'Tradition vs Innovation': { strong_a: 'Rooted', lean_a: 'Grounded', balanced: 'Adaptive', lean_b: 'Forward-leaning', strong_b: 'Visionary' },
-  'Independence vs Community': { strong_a: 'Self-directed', lean_a: 'Autonomous', balanced: 'Interwoven', lean_b: 'Communal', strong_b: 'Collective' },
-  'Logic vs Intuition': { strong_a: 'Analytical', lean_a: 'Reasoned', balanced: 'Dual-minded', lean_b: 'Perceptive', strong_b: 'Instinctive' },
-  'Comfort vs Adventure': { strong_a: 'Anchored', lean_a: 'Steady', balanced: 'Versatile', lean_b: 'Curious', strong_b: 'Explorer' },
-  'Present vs Future': { strong_a: 'Present-focused', lean_a: 'Grounded in today', balanced: 'Temporal', lean_b: 'Forward-looking', strong_b: 'Futurist' },
+  'Budget vs Premium': { strong_a: 'Saver', lean_a: 'Budget-minded', balanced: 'Balanced spender', lean_b: 'Quality-first', strong_b: 'Premium' },
+  'Local vs Global': { strong_a: 'Homegrown', lean_a: 'Local-leaning', balanced: 'Glocal', lean_b: 'World-curious', strong_b: 'Global citizen' },
+  'Practicality vs Experience': { strong_a: 'Pragmatist', lean_a: 'Practical', balanced: 'Versatile', lean_b: 'Experience-seeker', strong_b: 'Experientialist' },
+  'Health vs Indulgence': { strong_a: 'Wellness-driven', lean_a: 'Health-conscious', balanced: 'Balanced', lean_b: 'Treat-yourself', strong_b: 'Indulgent' },
 };
 
 export default function DimensionsSummary() {
