@@ -22,10 +22,13 @@ export function useBreakdownFindings() {
   return useQuery({
     queryKey: ['breakdown-findings-approved'],
     queryFn: async () => {
+      // Only show findings from last 3 days to keep content fresh
+      const since = new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString();
       const { data, error } = await supabase
         .from('breakdown_findings' as any)
         .select('*')
         .eq('status', 'approved')
+        .gte('scan_at', since)
         .order('pinned', { ascending: false })
         .order('scan_at', { ascending: false })
         .limit(20);
