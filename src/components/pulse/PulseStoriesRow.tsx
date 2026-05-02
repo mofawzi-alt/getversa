@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState, useCallback } from 'react';
 import { useDailyPulse, usePulseSettings, type PulseCard } from '@/hooks/useDailyPulse';
 import { useAuth } from '@/contexts/AuthContext';
 import StoryViewer, { type StoryCardData } from './StoryViewer';
@@ -7,10 +7,11 @@ import { trackStoryEvent } from '@/lib/storyAnalytics';
 import {
   Pin, Flame, MapPin, Building2, Bell, Users, Sparkles,
   Swords, Layers, Brain, Clock, Trophy, PartyPopper, BarChart3, Sunrise,
+  SlidersHorizontal,
   type LucideIcon,
 } from 'lucide-react';
 import {
-  useBattleOfTheDay, useFriendsActivity, useYourCategories,
+  useBattleOfTheDay, useFriendsActivity,
   useYourPollsUpdated, usePredictRecap, useClosingSoon,
   useWeeklyVerdict, useNewThisWeek, useLastVisit,
 } from '@/hooks/usePulseCircles';
@@ -20,6 +21,9 @@ import { useEditorialStories, type EditorialStory } from '@/hooks/useEditorialSt
 import { EDITORIAL_STORY_META } from '@/lib/editorialStoryTypes';
 import EditorialStoryViewer from './EditorialStoryViewer';
 import { hasSeenLocally as hasSeenLocallyKey } from '@/lib/pulseTime';
+import { useCategoryStories, getHiddenCategories } from '@/hooks/useCategoryStories';
+import { getCategoryIcon, getCategoryColorClass } from '@/lib/categoryMeta';
+import CategoryStoriesFilter from './CategoryStoriesFilter';
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
 
@@ -118,8 +122,27 @@ const CATEGORY_EMOJI: Record<string, string> = {
   'lifestyle': '✨', 'wellness & habits': '🧠', 'telecom': '📱',
   'style & design': '👗', 'business & startups': '🚀', 'relationships': '💕',
   'personality': '🧬', 'the pulse': '🔥',
+  'fmcg & food': '🛒', 'beauty & personal care': '💄',
+  'financial services': '💰', 'media & entertainment': '🎬',
+  'retail & e-commerce': '🛍️', 'telco & tech': '📱',
+  'food delivery & dining': '🍕', 'automotive & mobility': '🚗',
+  'lifestyle & society': '✨',
 };
 const emojiFor = (cat: string) => CATEGORY_EMOJI[cat.toLowerCase()] || '🔥';
+
+// Category circle gradient colors
+const CATEGORY_GRADIENTS: Record<string, { tile: string; ring: string }> = {
+  'fmcg & food': { tile: 'bg-gradient-to-br from-green-500 to-emerald-600', ring: 'bg-gradient-to-tr from-green-400 via-emerald-500 to-teal-400' },
+  'beauty & personal care': { tile: 'bg-gradient-to-br from-pink-500 to-rose-600', ring: 'bg-gradient-to-tr from-pink-400 via-rose-500 to-fuchsia-400' },
+  'financial services': { tile: 'bg-gradient-to-br from-blue-500 to-indigo-600', ring: 'bg-gradient-to-tr from-blue-400 via-indigo-500 to-violet-400' },
+  'media & entertainment': { tile: 'bg-gradient-to-br from-amber-500 to-orange-600', ring: 'bg-gradient-to-tr from-amber-400 via-orange-500 to-red-400' },
+  'retail & e-commerce': { tile: 'bg-gradient-to-br from-purple-500 to-violet-600', ring: 'bg-gradient-to-tr from-purple-400 via-violet-500 to-indigo-400' },
+  'telco & tech': { tile: 'bg-gradient-to-br from-teal-500 to-cyan-600', ring: 'bg-gradient-to-tr from-teal-400 via-cyan-500 to-sky-400' },
+  'food delivery & dining': { tile: 'bg-gradient-to-br from-orange-500 to-red-600', ring: 'bg-gradient-to-tr from-orange-400 via-red-500 to-rose-400' },
+  'automotive & mobility': { tile: 'bg-gradient-to-br from-slate-500 to-gray-700', ring: 'bg-gradient-to-tr from-slate-400 via-gray-500 to-zinc-400' },
+  'lifestyle & society': { tile: 'bg-gradient-to-br from-rose-500 to-pink-600', ring: 'bg-gradient-to-tr from-rose-400 via-pink-500 to-fuchsia-400' },
+  'the pulse': { tile: 'bg-gradient-to-br from-red-500 to-rose-700', ring: 'bg-gradient-to-tr from-red-400 via-rose-500 to-orange-400' },
+};
 
 const isPollMediaUrl = (url?: string | null) =>
   !!url && (/^https?:\/\//i.test(url) || url.startsWith('/'));
@@ -227,18 +250,25 @@ export default function PulseStoriesRow() {
   const [openEditorial, setOpenEditorial] = useState<EditorialStory | null>(null);
   const [bump, setBump] = useState(0);
   const [shareFinding, setShareFinding] = useState<BreakdownFinding | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [hiddenCats, setHiddenCats] = useState(() => getHiddenCategories());
   const { data: editorialStories } = useEditorialStories();
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
   const { data: updatesData } = useYourPollsUpdated();
   const { data: friendsData } = useFriendsActivity();
-  const { data: categoriesData } = useYourCategories();
+  const { data: categoryStories } = useCategoryStories();
   const { data: predictData } = usePredictRecap();
   const { data: closingData } = useClosingSoon();
   const { data: weeklyData } = useWeeklyVerdict();
   const { data: newPollsData } = useNewThisWeek(lastVisit);
   const { data: breakdownData } = useBreakdownFindings();
+
+  const onFilterUpdate = useCallback(() => {
+    setHiddenCats(getHiddenCategories());
+    setBump((b) => b + 1);
+  }, []);
 
   const circles: CircleSpec[] = useMemo(() => {
     if (!pulse) return [];
@@ -385,31 +415,33 @@ export default function PulseStoriesRow() {
       });
     }
 
-    // ── Your Categories (BLUE dot)
-    if (categoriesData && categoriesData.length > 0) {
-      list.push({
-        topic: 'categories',
-        label: 'For You',
-        cards: categoriesData.map((c: any) => {
-          const total = c.tally.total;
-          const pctA = total ? Math.round((c.tally.a / total) * 100) : 50;
-          const winner = pctA >= 50 ? c.poll.option_a : c.poll.option_b;
-          return {
-            backgroundImage: pctA >= 50 ? c.poll.image_a_url : c.poll.image_b_url,
-            label: c.category,
-            categoryEmoji: emojiFor(c.category),
-            headline: c.poll.question,
+    // ── Per-Category circles (one per category with activity, filtered by user prefs)
+    if (categoryStories && categoryStories.length > 0) {
+      for (const cs of categoryStories) {
+        if (hiddenCats.has(cs.category)) continue;
+        const total = cs.tally.total;
+        const pctA = total ? Math.round((cs.tally.a / total) * 100) : 50;
+        const winner = pctA >= 50 ? cs.poll.option_a : cs.poll.option_b;
+        const topicKey = `cat:${cs.category}`;
+        list.push({
+          topic: topicKey,
+          label: cs.category.length > 12 ? cs.category.split(' ')[0] : cs.category,
+          cards: [{
+            backgroundImage: pctA >= 50 ? cs.poll.image_a_url : cs.poll.image_b_url,
+            label: cs.category,
+            categoryEmoji: emojiFor(cs.category),
+            headline: cs.poll.question,
             primaryText: total > 0 ? `${winner} wins ${Math.max(pctA, 100 - pctA)}%` : 'Be the first to vote',
             secondaryText: total > 0 ? `${total.toLocaleString()} votes today` : '',
-            splitA: { label: c.poll.option_a, pct: pctA },
-            splitB: { label: c.poll.option_b, pct: 100 - pctA },
-            votePollId: c.poll.id,
+            splitA: { label: cs.poll.option_a, pct: pctA },
+            splitB: { label: cs.poll.option_b, pct: 100 - pctA },
+            votePollId: cs.poll.id,
             shareable: true,
-          };
-        }),
-        dot: hasSeenLocally('categories') ? null : 'blue',
-        priority: 40,
-      });
+          }],
+          dot: hasSeenLocally(topicKey) ? null : 'blue',
+          priority: 40,
+        });
+      }
     }
 
     // ── Predict Results (BLUE dot)
@@ -574,7 +606,7 @@ export default function PulseStoriesRow() {
 
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pulse, settings, battleData, updatesData, friendsData, categoriesData, predictData, closingData, weeklyData, newPollsData, breakdownData, user, bump]);
+  }, [pulse, settings, battleData, updatesData, friendsData, categoryStories, hiddenCats, predictData, closingData, weeklyData, newPollsData, breakdownData, user, bump]);
 
   // Sort: fixedPosition first (egypt=0, battle=1, updates=2), then by dot priority then by priority field
   const sorted = useMemo(() => {
@@ -637,10 +669,16 @@ export default function PulseStoriesRow() {
             );
           })}
 
-          {/* ── Existing pulse circles (unchanged) ── */}
+          {/* ── Existing pulse circles + category circles ── */}
           {sorted.map((circle) => {
-            const visual = TOPIC_VISUALS[circle.topic] || FALLBACK_VISUAL;
-            const Icon = visual.Icon;
+            const isCatCircle = circle.topic.startsWith('cat:');
+            const catName = isCatCircle ? circle.topic.slice(4) : '';
+            const catGrad = isCatCircle ? CATEGORY_GRADIENTS[catName.toLowerCase()] : null;
+            const visual = isCatCircle ? null : (TOPIC_VISUALS[circle.topic] || FALLBACK_VISUAL);
+            const CatIcon = isCatCircle ? getCategoryIcon(catName) : (visual?.Icon || Sparkles);
+            const tileGrad = isCatCircle ? (catGrad?.tile || 'bg-gradient-to-br from-slate-500 to-slate-700') : visual!.tileGradient;
+            const ringGrad = isCatCircle ? (catGrad?.ring || 'bg-gradient-to-tr from-primary via-fuchsia-500 to-amber-400') : visual!.ringGradient;
+            const iconClr = 'text-white';
             const showRing = !!circle.dot;
             const dotClass =
               circle.dot === 'red' ? 'bg-red-500'
@@ -662,16 +700,16 @@ export default function PulseStoriesRow() {
                     circle.goldBorder
                       ? 'bg-gradient-to-tr from-amber-300 via-yellow-400 to-amber-500 shadow-lg shadow-amber-500/30'
                       : showRing
-                        ? `${visual.ringGradient} shadow-lg shadow-primary/10`
+                        ? `${ringGrad} shadow-lg shadow-primary/10`
                         : 'bg-muted'
                   }`}
                 >
                   <div className="w-full h-full rounded-full bg-background flex items-center justify-center p-[3px]">
-                    <div className={`w-full h-full rounded-full ${visual.tileGradient} flex items-center justify-center shadow-inner relative ${!showRing ? 'opacity-70' : ''}`}>
+                    <div className={`w-full h-full rounded-full ${tileGrad} flex items-center justify-center shadow-inner relative ${!showRing ? 'opacity-70' : ''}`}>
                       {circle.topic === 'egypt_today' && pulse?.pinned_poll_id && (
                         <Pin className="absolute top-0.5 right-0.5 w-3 h-3 text-white fill-white" />
                       )}
-                      <Icon className={`w-6 h-6 ${visual.iconColor} drop-shadow`} strokeWidth={2.25} />
+                      <CatIcon className={`w-6 h-6 ${iconClr} drop-shadow`} strokeWidth={2.25} />
                       {circle.dot && (
                         <span className={`absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full ${dotClass} border-2 border-background`} />
                       )}
@@ -684,8 +722,28 @@ export default function PulseStoriesRow() {
               </button>
             );
           })}
+
+          {/* ── Filter button at end ── */}
+          <button
+            type="button"
+            onClick={() => setFilterOpen(true)}
+            className="flex flex-col items-center gap-1.5 w-16 active:scale-95 transition-transform"
+          >
+            <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center border border-border/50">
+              <SlidersHorizontal className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <span className="text-[10px] font-medium text-muted-foreground truncate w-full text-center">
+              Filter
+            </span>
+          </button>
         </div>
       </div>
+
+      <CategoryStoriesFilter
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        onUpdate={onFilterUpdate}
+      />
 
       <EditorialStoryViewer
         open={!!openEditorial}
