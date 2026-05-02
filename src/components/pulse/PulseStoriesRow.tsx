@@ -587,7 +587,7 @@ export default function PulseStoriesRow() {
 
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pulse, settings, battleData, updatesData, friendsData, categoriesData, predictData, closingData, weeklyData, newPollsData, breakdownData, user, bump]);
+  }, [pulse, settings, battleData, updatesData, friendsData, categoryStories, hiddenCats, predictData, closingData, weeklyData, newPollsData, breakdownData, user, bump]);
 
   // Sort: fixedPosition first (egypt=0, battle=1, updates=2), then by dot priority then by priority field
   const sorted = useMemo(() => {
