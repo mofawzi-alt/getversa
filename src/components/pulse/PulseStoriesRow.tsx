@@ -593,7 +593,7 @@ export default function PulseStoriesRow() {
 
   if (settings?.stories_row_enabled === false) return null;
   const hasEditorial = (editorialStories?.length || 0) > 0;
-  if (!hasEditorial && sorted.length === 0) return null;
+  if (!hasEditorial && (!pulse || sorted.length === 0)) return null;
 
   const activeCircle = sorted.find((c) => c.topic === openTopic);
 
