@@ -195,7 +195,9 @@ export function useYourCategories() {
           .map((p: any) => ({ poll: p, t: tally.get(p.id) || { a: 0, b: 0, total: 0 } }))
           .filter((x: any) => x.t.total > 0)
           .sort((a: any, b: any) => b.t.total - a.t.total);
-        const pick = ranked[0] || { poll: polls[0], t: { a: 0, b: 0, total: 0 } };
+        // Only include categories that have polls with actual votes today
+        if (ranked.length === 0) continue;
+        const pick = ranked[0];
         cards.push({ category: cat, poll: pick.poll, tally: pick.t });
       }
       return cards;
