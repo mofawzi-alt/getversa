@@ -43,7 +43,6 @@ function resolveCountryDirective(country?: string | null): string {
 async function generateAndUploadImage(apiKey: string, prompt: string, supabase: any, culturalContext?: string | null, targetCountry?: string | null): Promise<string | null> {
   try {
     const countryDirective = resolveCountryDirective(targetCountry);
-    const contextDirective = culturalContext ? (CONTEXT_DIRECTIVES[culturalContext] || '') : '';
     const keywordBoost = detectEgyptContext(prompt)
       ? ' Local cue detected: ensure Egyptian / Arabic signage and local Egyptian atmosphere are clearly present.'
       : '';
@@ -52,7 +51,7 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'google/gemini-3-pro-image-preview',
-        messages: [{ role: 'user', content: `Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations. Subject: "${prompt}". ${countryDirective}${contextDirective}${keywordBoost} Never default to Western, American, or European settings. Real scene only — people, hands, environments, or products in authentic use.` }],
+        messages: [{ role: 'user', content: `Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments. NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements of any kind. Subject: "${prompt}". ${countryDirective}${keywordBoost} If the subject is an abstract concept (like Price, Freedom, Yes, No, Quality, Safety, Trust), generate a lifestyle scene that represents the feeling — real people in a real setting embodying that concept. Never default to Western, American, or European settings.` }],
         modalities: ['image', 'text']
       }),
     });
