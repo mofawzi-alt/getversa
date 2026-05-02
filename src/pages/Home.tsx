@@ -673,6 +673,7 @@ export default function Home() {
   // Authenticated users with completed profiles should never see the welcome flow
   const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showWelcomeTour, setShowWelcomeTour] = useState(false);
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   
