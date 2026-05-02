@@ -10,6 +10,7 @@ import FollowButton from '@/components/poll/FollowButton';
 import { useAuth } from '@/contexts/AuthContext';
 import SwipeableFriendRow from '@/components/friends/SwipeableFriendRow';
 import CompatibilityRing from '@/components/friends/CompatibilityRing';
+import ShareCompatibilityButton from '@/components/friends/ShareCompatibilityButton';
 import UserAvatar from '@/components/UserAvatar';
 import { useIncomingDuels } from '@/hooks/useIncomingDuels';
 import { 
