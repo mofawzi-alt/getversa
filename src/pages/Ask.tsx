@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAskCredits } from '@/hooks/useAskCredits';
 import SuggestionChips from '@/components/ask/SuggestionChips';
 import AskThread, { type AskTurn, type Mode } from '@/components/ask/AskThread';
 import CreditBalance from '@/components/ask/CreditBalance';
@@ -59,6 +60,7 @@ export default function Ask() {
   const location = useLocation();
   const { profile } = useAuth();
   const qc = useQueryClient();
+  const { data: askCredits = 0 } = useAskCredits();
   const [mode, setMode] = useState<Mode>('decide');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -332,6 +334,9 @@ export default function Ask() {
               </p>
               <p className="text-xs text-muted-foreground mt-1 break-words">
                 Each insight costs credits. Vote to earn more.
+              </p>
+              <p className="text-[11px] text-muted-foreground/70 mt-0.5 break-words">
+                You have {askCredits} credit{askCredits === 1 ? '' : 's'} · each insight costs 1 credit
               </p>
             </div>
             <SuggestionChips label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'} suggestions={promptSuggestions} onPick={runPreview} />
