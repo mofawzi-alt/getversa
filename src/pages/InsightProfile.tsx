@@ -85,7 +85,7 @@ function SpectrumBar({ score, poleA, poleB, barColor }: { score: number; poleA: 
 
   return (
     <div className="mt-3 space-y-1.5">
-      <div className="flex justify-between text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+      <div className="flex justify-between text-[11px] text-foreground/60 font-bold uppercase tracking-wider">
         <span>{poleA}</span>
         <span>{poleB}</span>
       </div>
