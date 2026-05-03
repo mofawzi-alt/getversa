@@ -582,6 +582,11 @@ function HomeLiveDebateCard({
       <SharePollToFriendSheet
         pollId={poll.id}
         pollQuestion={poll.question}
+        optionA={poll.option_a}
+        optionB={poll.option_b}
+        percentA={poll.percentA}
+        percentB={poll.percentB}
+        imageUrl={poll.image_a_url || poll.image_b_url}
         open={shareSheetOpen}
         onOpenChange={setShareSheetOpen}
       />
