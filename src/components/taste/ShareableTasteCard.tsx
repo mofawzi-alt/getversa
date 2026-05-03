@@ -193,8 +193,7 @@ export default function ShareableTasteCard({ archetype, description, topCategory
     ctx.lineTo(W - 100, H - 280);
     ctx.stroke();
 
-    // Versa full branded logo at bottom (speech bubble + "versa" text)
-    // The source image has 3 rows — crop the middle row (simplest version)
+    // Versa wordmark logo at bottom
     try {
       const logo = new Image();
       logo.crossOrigin = 'anonymous';
@@ -203,11 +202,6 @@ export default function ShareableTasteCard({ archetype, description, topCategory
         logo.onerror = reject;
         logo.src = versaLogoImg;
       });
-      // Source image: crop middle third (row 2 of 3)
-      const srcX = 0;
-      const srcY = Math.floor(logo.height * 0.33);
-      const srcW = logo.width;
-      const srcH = Math.floor(logo.height * 0.33);
       // Draw at bottom of card
       const destH = 80;
       const destW = (srcW / srcH) * destH;
