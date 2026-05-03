@@ -606,6 +606,125 @@ export type Database = {
           },
         ]
       }
+      decision_intelligence_reports: {
+        Row: {
+          audience_segments: Json
+          brand_recommendations: Json
+          campaign_id: string | null
+          concept_score: number
+          created_at: string
+          drivers_of_choice: Json
+          executive_summary: string | null
+          generated_at: string | null
+          generated_by: string | null
+          id: string
+          loser_option: string
+          loser_pct: number
+          methodology_note: string | null
+          personality_segments: Json
+          poll_id: string | null
+          report_status: string
+          share_token: string | null
+          total_votes: number
+          trend_momentum: Json
+          updated_at: string
+          winner_option: string
+          winner_pct: number
+        }
+        Insert: {
+          audience_segments?: Json
+          brand_recommendations?: Json
+          campaign_id?: string | null
+          concept_score?: number
+          created_at?: string
+          drivers_of_choice?: Json
+          executive_summary?: string | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          loser_option?: string
+          loser_pct?: number
+          methodology_note?: string | null
+          personality_segments?: Json
+          poll_id?: string | null
+          report_status?: string
+          share_token?: string | null
+          total_votes?: number
+          trend_momentum?: Json
+          updated_at?: string
+          winner_option?: string
+          winner_pct?: number
+        }
+        Update: {
+          audience_segments?: Json
+          brand_recommendations?: Json
+          campaign_id?: string | null
+          concept_score?: number
+          created_at?: string
+          drivers_of_choice?: Json
+          executive_summary?: string | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          loser_option?: string
+          loser_pct?: number
+          methodology_note?: string | null
+          personality_segments?: Json
+          poll_id?: string | null
+          report_status?: string
+          share_token?: string | null
+          total_votes?: number
+          trend_momentum?: Json
+          updated_at?: string
+          winner_option?: string
+          winner_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_intelligence_reports_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_effective_counts"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "decision_intelligence_reports_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      di_report_views: {
+        Row: {
+          id: string
+          report_id: string
+          viewed_at: string
+          viewer_ip_hash: string | null
+        }
+        Insert: {
+          id?: string
+          report_id: string
+          viewed_at?: string
+          viewer_ip_hash?: string | null
+        }
+        Update: {
+          id?: string
+          report_id?: string
+          viewed_at?: string
+          viewer_ip_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "di_report_views_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "decision_intelligence_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dimensions: {
         Row: {
           created_at: string
