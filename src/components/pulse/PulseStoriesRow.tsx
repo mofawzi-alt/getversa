@@ -842,6 +842,13 @@ export default function PulseStoriesRow() {
             setOpenEditorial(lastEditorial);
             return true;
           }
+          // Hand off to last user story group
+          const lastGroup = storyGroups[storyGroups.length - 1];
+          if (lastGroup) {
+            setOpenTopic(null);
+            setOpenUserStoryGroup(lastGroup);
+            return true;
+          }
           return false;
         }}
         onShareOverride={
