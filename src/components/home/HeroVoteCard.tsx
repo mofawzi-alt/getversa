@@ -280,6 +280,15 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
       return;
     }
 
+    // Update dimension scores (fire-and-forget)
+    if (user?.id) {
+      supabase.rpc('update_user_dimension_scores', {
+        p_user_id: user.id,
+        p_poll_id: poll.id,
+        p_choice: choice,
+      } as any).then(() => {});
+    }
+
     const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: [poll.id] });
     let pA = poll.percentA;
     let pB = poll.percentB;
