@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import UserAvatar from '@/components/UserAvatar';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 
 interface CompatibilityTrend {
   overall_score: number | null;
