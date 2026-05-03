@@ -100,13 +100,19 @@ Deno.serve(async (req) => {
 
     // Infer logical setting from question context
     const SETTING_HINTS: Array<{ keywords: string[]; hint: string }> = [
-      { keywords: ["online", "e-commerce", "order", "delivery", "return", "website", "app"], hint: "Indoor/home setting — this activity happens at home or in a modern apartment, NOT on the street or in a market." },
-      { keywords: ["invest", "stock", "fund", "savings", "bank", "fintech", "wallet"], hint: "Show interaction with a phone/laptop screen showing financial data — indoor modern setting." },
+      { keywords: ["sahel", "beach", "coast", "sea", "swim", "resort"], hint: "OUTDOOR beach/resort/coastal setting — turquoise water, sand, summer vibes. NOT indoors." },
+      { keywords: ["ride", "uber", "careem", "taxi", "commute", "transport", "traffic"], hint: "In or near a vehicle on a busy city road. Show actual transportation scene." },
+      { keywords: ["street food", "koshary", "falafel", "shawarma", "food cart", "food stall"], hint: "At a vibrant street food stall or cart, eating while standing. Outdoor." },
+      { keywords: ["online", "e-commerce", "order", "delivery", "return", "website"], hint: "At home on couch — opening a package or browsing phone. NOT at a desk." },
+      { keywords: ["invest", "stock", "fund", "savings", "bank", "fintech", "wallet"], hint: "Show interaction with a phone screen — indoor modern setting." },
       { keywords: ["gym", "workout", "exercise", "fitness", "sport"], hint: "Gym, sports facility, or outdoor exercise setting." },
       { keywords: ["cook", "kitchen", "recipe", "homemade", "meal prep"], hint: "Modern home kitchen setting." },
-      { keywords: ["café", "coffee", "restaurant", "dining", "eat out"], hint: "Upscale café or restaurant setting." },
-      { keywords: ["drive", "car", "commute", "transport"], hint: "In or near a vehicle, road setting." },
+      { keywords: ["café", "coffee", "restaurant", "dining", "eat out", "fine dining"], hint: "Upscale café or restaurant setting." },
+      { keywords: ["drive", "car"], hint: "In or near a vehicle, road setting." },
       { keywords: ["study", "university", "exam", "college", "school"], hint: "Campus, library, or study space setting." },
+      { keywords: ["travel", "fly", "airport", "vacation", "trip"], hint: "Airport, airplane, or travel destination setting. Show travel energy." },
+      { keywords: ["shop", "mall", "buy", "brand", "luxury"], hint: "Inside a modern mall or boutique, browsing or holding shopping bags." },
+      { keywords: ["concert", "music", "festival", "party"], hint: "Live music venue, festival crowd, or party setting with energy and lights." },
     ];
     const questionLower = `${row.question} ${row.option_a} ${row.option_b}`.toLowerCase();
     const settingHint = SETTING_HINTS.find(s => s.keywords.some(k => questionLower.includes(k)))?.hint || "";
@@ -119,15 +125,27 @@ Deno.serve(async (req) => {
         ? " Local cue detected: ensure Egyptian / Arabic signage and local Egyptian atmosphere are clearly present."
         : "";
       const contextLine = resolvedContext ? ` Cultural context: ${resolvedContext}.` : "";
-      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments. NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements of any kind.
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph for a Gen Z polling app. DSLR quality, shallow depth-of-field, warm natural lighting, editorial-grade color grading. Real people in REAL environments. Absolutely NO logos, brand names, text overlays, UI elements, illustrations, icons, abstract art, or graphic design.
 
-Poll question: "${row.question}". This person's answer: "${optionText}". Category: ${row.category || "lifestyle"}.${contextLine}
+CRITICAL RULES — READ CAREFULLY:
+1. The image MUST directly depict the SPECIFIC TOPIC of this poll. If the poll is about Sahel, show a BEACH/RESORT. If about ride-hailing, show someone IN A CAR or hailing a ride on a busy street. If about coffee, show ACTUAL COFFEE. NEVER default to "person sitting at desk with phone" — that is WRONG for 90% of topics.
+2. The subject must be a real, attractive, stylish Gen Z person (18-25 years old) with contemporary fashion. NEVER show middle-aged or older people unless the poll specifically targets them.
+3. The person must be ACTIVELY DOING the thing the option describes — not just sitting somewhere.
 
-Show a person performing the EXACT real-life behavior implied by answering "${optionText}" to the question "${row.question}". The behavior must be obvious in under 1 second — this is the user's "this is me" moment. Think logically about WHERE this activity happens in real life and show THAT setting. For example: returning an online order = at home packing a box with a shipping label; investing = checking a trading app on phone in a modern apartment; cooking = in a kitchen. NEVER show street/market scenes for activities that happen indoors.${demographicDirective}${settingLine}
+Poll: "${row.question}"
+This person chose: "${optionText}"
+Category: ${row.category || "lifestyle"}${contextLine}
 
-If the option is a brand name, translate it into a real-life usage scene — NEVER show the logo. If the subject is an abstract concept (Yes, No, Quality, Trust, etc.), show a lifestyle scene that embodies that feeling through visible action.
+Show this person LIVING their answer to "${optionText}". The scene must make the viewer instantly think "${optionText}" within 1 second. Examples of CORRECT interpretation:
+- "Going to Sahel" → young person at a beautiful beach resort, turquoise water, summer vibes
+- "Peak hours ride-hailing" → young person in the back seat of a car in Cairo traffic
+- "Street food" → young person eating koshary/falafel at a street stall
+- "Save money" → NOT a person at a desk — instead show putting cash in a jar, or walking past shops without buying
+- "Online shopping" → person on couch excitedly opening a delivery box, NOT at a desk
 
-${countryDirective}${keywordBoost} Never default to Western, American, or European settings.`;
+${countryDirective}${demographicDirective}${settingLine}${keywordBoost}
+
+FINAL CHECK: Does this image SCREAM "${optionText}"? If someone saw only the image with no text, would they guess the topic? If not, rethink the scene. Never default to Western settings.`;
 
       // Try pro image model first, fallback to flash image on failure
       const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
