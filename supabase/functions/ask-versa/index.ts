@@ -195,9 +195,9 @@ serve(async (req) => {
     const lastUserTurn = [...trimmedHistory].reverse().find((h) => h.role === "user");
     const looksLikeGenericFollowup = (() => {
       const q = question.toLowerCase().trim();
-      if (q.length > 60) return false;
-      return /^(show|give|bring|list|find|any|more|other|related|what about|polls?|votes?)/.test(q)
-        && /(poll|vote|data|result)/.test(q);
+      if (q.length > 80) return false;
+      return /^(show|give|bring|list|find|any|more|other|related|what about|polls?|votes?|versa)/.test(q)
+        && /(poll|vote|data|result|opinion|think|prefer|versa)/.test(q);
     })();
     let effectiveQuestion = question;
     if (looksLikeGenericFollowup && lastUserTurn) {
@@ -215,8 +215,8 @@ serve(async (req) => {
             content: `You classify questions for an Egyptian opinion-poll app called Versa, then extract filters.
 
 Step 1 — INTENT (mandatory, exact value):
-- "preference": user is asking which option people PREFER, PICK, CHOOSE, LEAN toward, LOVE more, vote for, or "X or Y?". This is what Versa's polls answer.
-- "factual": user wants a number, fact, definition, market size, news, history, technical info, formula, or anything Versa votes cannot answer (e.g. "iPhone market size?", "Who founded Vodafone?", "When did Talabat launch?").
+- "preference": user is asking which option people PREFER, PICK, CHOOSE, LEAN toward, LOVE more, vote for, or "X or Y?". This is what Versa's polls answer. IMPORTANT: if the user mentions "versa opinion", "versa votes", "what do users think", "any opinions", or asks for poll/vote data on a topic — this is ALWAYS "preference", never "factual". The user is asking for Versa poll results.
+- "factual": user wants a number, fact, definition, market size, news, history, technical info, formula, or anything Versa votes cannot answer (e.g. "iPhone market size?", "Who founded Vodafone?", "When did Talabat launch?"). Do NOT classify as factual if the user is asking for opinions, preferences, or what people think.
 - "offscope": anything Versa shouldn't answer at all — rude, harmful, hate speech, illegal, code-writing requests ("write me python code"), math homework ("solve 2x+5=11"), personal advice unrelated to consumer choices ("should I dump my partner"), medical/legal advice, gibberish. When in doubt between factual and offscope, prefer factual.
 
 Step 2 — ENTITIES: every brand/product/person/place explicitly named, in canonical lowercase form. "iPhone vs Samsung" → ["iphone","samsung"]. "iPhone market size" → ["iphone"]. "How divided are Egyptians on Ahly vs Zamalek" → ["ahly","zamalek"]. NEVER hallucinate entities not in the question.
@@ -268,8 +268,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 {"intent": "preference"|"factual"|"offscope", "keywords": ["..."], "entities": ["..."], "category": "any" or one of (${KNOWN_CATEGORIES.join(", ")}), "route": "simple"|"medium"|"complex", "controversial": false, "intent_summary": "..."}
 Rules:
 - keywords/entities MUST be JSON arrays of lowercase strings (NEVER a single string).
-- "preference" = user asks which option people prefer (Versa polls answer this).
-- "factual" = needs a number/fact/news Versa votes can't answer.
+- "preference" = user asks which option people prefer, what users think/vote/opinion (Versa polls answer this). If the user says "versa opinion", "any opinions", "what do users think" → ALWAYS "preference".
+- "factual" = needs a number/fact/news Versa votes can't answer. NOT for opinion questions.
 - "offscope" = harmful, code, math homework, gibberish.`,
             },
             ...historyMessages,
@@ -406,8 +406,13 @@ Rules:
       const q = question.toLowerCase().trim();
       // Match English "versa" or Arabic spellings (ڤيرسا / فيرسا / ڤرسا)
       const mentionsVersa = /\bversa\b/.test(q) || /(ڤيرسا|فيرسا|ڤرسا|ڤيرزا|فيرزا)/.test(question);
-      const aboutShape = /\b(what(?:'?s| is)?|whats|whts|wat|wht|who(?:'?s| is| made| owns| built| created)|how(?: do(?:es)?| can)|why|is|are|does|tell me about|explain|describe|about)\b/.test(q)
-        || /(إيه|ايه|ما هي|ما هو|مين|إزاي|ازاي|عن|يعني|بتعمل|بيعمل|بتشتغل|بيشتغل|التطبيق|الأبلكيشن|الابلكيشن)/.test(question);
+      // If the user is asking for Versa opinions/data/votes (not about the app itself), skip self-ref guard
+      const askingForVersaData = /\b(opinion|vote|result|data|think|prefer|say|feel|poll)\b/.test(q)
+        || /(رأي|تصويت|نتيجة|بيقول|بيفضل)/.test(question);
+      const aboutShape = !askingForVersaData && (
+        /\b(what(?:'?s| is)?|whats|whts|wat|wht|who(?:'?s| is| made| owns| built| created)|how(?: do(?:es)?| can)|why|is|are|does|tell me about|explain|describe|about)\b/.test(q)
+        || /(إيه|ايه|ما هي|ما هو|مين|إزاي|ازاي|عن|يعني|بتعمل|بيعمل|بتشتغل|بيشتغل|التطبيق|الأبلكيشن|الابلكيشن)/.test(question)
+      );
       // Short bare queries like "versa", "versa?", "what is this app"
       const bareSelf = /^(versa\??|what(?:'s| is)? (?:this|the) app\??|what does this app do\??|how does this app work\??|about (?:this )?app\??)$/i.test(q)
         || /^(ڤيرسا|فيرسا|ڤرسا)\??$/.test(question.trim());
