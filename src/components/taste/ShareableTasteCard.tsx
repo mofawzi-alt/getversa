@@ -2,7 +2,7 @@ import { useRef, useCallback, useState } from 'react';
 import { Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import versaLogoImg from '@/assets/versa-logo.png';
+import versaLogoImg from '@/assets/versa-logo-full.jpg';
 
 interface TasteCardProps {
   archetype: string;
