@@ -61,12 +61,32 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
     const keywordBoost = detectEgyptContext(prompt)
       ? ' Local cue detected: ensure Egyptian / Arabic signage and local Egyptian atmosphere are clearly present.'
       : '';
+    const contextScene = culturalContext && CULTURAL_CONTEXTS[culturalContext.toLowerCase()]
+      ? ` SCENE SETTING: ${CULTURAL_CONTEXTS[culturalContext.toLowerCase()]}`
+      : '';
+    const imagePrompt = `Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments.
+
+IMAGE V4 RULES:
+- Real life scenes ONLY. No abstract visuals, no icons.
+- Each image must represent: a lifestyle, a feeling, and a status signal.
+- Real faces, real expressions, real human moments. No people looking at cameras.
+- Human centered: people USING or EXPERIENCING the option — not objects alone.
+- Premium cinematic quality: warm tones, clean composition, shallow depth of field.
+- 1 second clarity test: the image must communicate the meaning instantly.
+
+NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements.
+
+Subject: "${prompt}". ${countryDirective}${contextScene}${keywordBoost}
+
+If the subject is an abstract concept, generate a lifestyle scene showing real people embodying that concept.
+Never default to Western, American, or European settings. No alcohol imagery.`;
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'google/gemini-3-pro-image-preview',
-        messages: [{ role: 'user', content: `Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments. NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements of any kind. Subject: "${prompt}". ${countryDirective}${keywordBoost} If the subject is an abstract concept (like Price, Freedom, Yes, No, Quality, Safety, Trust), generate a lifestyle scene that represents the feeling — real people in a real setting embodying that concept. Never default to Western, American, or European settings.` }],
+        messages: [{ role: 'user', content: imagePrompt }],
         modalities: ['image', 'text']
       }),
     });
