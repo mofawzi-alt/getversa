@@ -857,6 +857,26 @@ export default function PulseStoriesRow() {
           />
         </Suspense>
       )}
+
+      <UserStoryViewer
+        open={!!openUserStoryGroup}
+        group={openUserStoryGroup}
+        onClose={() => setOpenUserStoryGroup(null)}
+        onViewed={markViewed}
+        onDelete={(id) => { deleteStory(id); setOpenUserStoryGroup(null); }}
+        onNext={() => {
+          const idx = storyGroups.findIndex(g => g.user_id === openUserStoryGroup?.user_id);
+          const next = idx >= 0 ? storyGroups[idx + 1] : undefined;
+          if (next) { setOpenUserStoryGroup(next); return true; }
+          return false;
+        }}
+        onPrevious={() => {
+          const idx = storyGroups.findIndex(g => g.user_id === openUserStoryGroup?.user_id);
+          const prev = idx > 0 ? storyGroups[idx - 1] : undefined;
+          if (prev) { setOpenUserStoryGroup(prev); return true; }
+          return false;
+        }}
+      />
     </>
   );
 }
