@@ -23,13 +23,13 @@ export default function EarnCreditsCTA({ balance, charged }: Props) {
         <div>
           <p className="text-xs font-bold text-foreground">
             {balance > 0
-              ? `${balance} credit${balance === 1 ? '' : 's'} left`
-              : 'Browse polls to earn credits'}
+              ? `${balance} insight${balance === 1 ? '' : 's'} ready to unlock`
+              : 'Unlock insights using your votes'}
           </p>
           <p className="text-[11px] text-muted-foreground">
             {balance >= nextCost
-              ? 'Ready for your next insight'
-              : `Vote on ${votesNeeded} more poll${votesNeeded === 1 ? '' : 's'} in Browse to unlock →`}
+              ? 'Your votes earned this — tap to explore'
+              : `Vote on ${votesNeeded} more poll${votesNeeded === 1 ? '' : 's'} to unlock →`}
           </p>
         </div>
       </div>
