@@ -1,4 +1,5 @@
 import { Sparkles, User, Brain, Users, Globe, Zap } from 'lucide-react';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import VerdictCard, { type Verdict } from './VerdictCard';
 import ResearchBrief from './ResearchBrief';
 import SuggestionChips from './SuggestionChips';
