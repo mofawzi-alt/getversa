@@ -1,0 +1,1 @@
+UPDATE public.polls SET image_b_url = 'https://jfpwuzifydxlbrrcofjh.supabase.co/storage/v1/object/public/poll-images/onboarding%2Fpoll1-small-circle.jpg' WHERE id = 'a0000001-0001-4000-8000-000000000001';
