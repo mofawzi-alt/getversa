@@ -121,6 +121,6 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
             className="w-full justify-center"
           />
         </div>
-    </div>
+      </div>
   );
 }
