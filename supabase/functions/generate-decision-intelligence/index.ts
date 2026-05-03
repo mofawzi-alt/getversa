@@ -111,11 +111,15 @@ serve(async (req) => {
     // Build analysis per poll
     const pollAnalyses = polls.map((poll: any) => {
       const pollVotes = (votes || []).filter((v: any) => v.poll_id === poll.id);
-      const realVotesA = (poll.votes_a || 0) - (poll.baseline_a || 0);
-      const realVotesB = (poll.votes_b || 0) - (poll.baseline_b || 0);
-      const totalRealVotes = Math.max(0, realVotesA) + Math.max(0, realVotesB);
-      const totalVotes = (poll.votes_a || 0) + (poll.votes_b || 0);
-      const pctA = totalRealVotes > 0 ? Math.round((Math.max(0, realVotesA) / totalRealVotes) * 100) : 50;
+      const votesA = pollVotes.filter((v: any) => v.choice === 'A').length;
+      const votesB = pollVotes.filter((v: any) => v.choice === 'B').length;
+      const baselineA = poll.baseline_votes_a || 0;
+      const baselineB = poll.baseline_votes_b || 0;
+      const totalVotes = votesA + votesB + baselineA + baselineB;
+      const realVotesA = votesA;
+      const realVotesB = votesB;
+      const totalRealVotes = realVotesA + realVotesB;
+      const pctA = totalRealVotes > 0 ? Math.round((realVotesA / totalRealVotes) * 100) : 50;
       const pctB = 100 - pctA;
 
       // Decision time analysis
