@@ -1,6 +1,7 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Users } from 'lucide-react';
 import ShareButton from '@/components/poll/ShareButton';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 
