@@ -25,6 +25,21 @@ function detectEgyptContext(text: string): boolean {
   return EGYPT_KEYWORDS.some((kw) => lower.includes(kw));
 }
 
+const CULTURAL_CONTEXTS: Record<string, string> = {
+  'cairo street': 'Downtown Cairo street — bustling traffic, old buildings, baladi shops, warm chaotic atmosphere.',
+  'sahel beach': 'Egyptian North Coast / Sahel beach — turquoise water, white sand, resort lifestyle.',
+  'egyptian home': 'Egyptian home interior — warm family kitchen, Arabic tiles, cozy living room.',
+  'egyptian office': 'Modern Egyptian office — co-working space, startup vibe, New Cairo business park.',
+  'egyptian café': 'Egyptian café — ahwa aesthetic or modern specialty coffee shop in Zamalek/Maadi.',
+  'egyptian university campus': 'Egyptian university campus — AUC, GUC, or Cairo University grounds, students in casual wear.',
+  'egyptian mall': 'Egyptian shopping mall — City Stars, Mall of Egypt style, modern retail environment.',
+  'egyptian gym': 'Egyptian gym or outdoor fitness — modern gym equipment, or Nile corniche jogging.',
+  'nile view': 'Nile waterfront / Cairo skyline — feluccas, city lights, aspirational evening mood.',
+  'egyptian wedding': 'Egyptian wedding celebration — joyful, colorful, family gathering, dabke energy.',
+  'new cairo compound': 'New Cairo premium residential compound — gated community, modern villas, manicured gardens.',
+  'generic global': 'Global cosmopolitan setting — modern urban environment, diverse faces.',
+};
+
 const COUNTRY_DIRECTIVES: Record<string, string> = {
   egypt: 'Contemporary Egyptian setting. Egyptian faces, authentic Cairo or Egyptian urban atmosphere. Arabic signage where natural.',
   uae: 'Contemporary Gulf setting. Cosmopolitan MENA atmosphere, modern Gulf urban environment.',
