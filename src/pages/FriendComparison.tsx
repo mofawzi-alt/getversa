@@ -277,6 +277,21 @@ export default function FriendComparison() {
               </div>
             </div>
           )}
+          {compatibilityScore !== null && (
+            <div className="mt-4 flex justify-center">
+              <ShareToStoryButton
+                storyType="duel_result"
+                content={{
+                  opponent: friend.username,
+                  won: compatibilityScore >= 70,
+                  tied: compatibilityScore >= 40 && compatibilityScore < 70,
+                  score: `${compatibilityScore}% compatible · ${matchingVotes}/${totalVotes} matched`,
+                  match_rate: compatibilityScore,
+                }}
+                variant="compact"
+              />
+            </div>
+          )}
         </div>
 
         {/* Vote History */}
