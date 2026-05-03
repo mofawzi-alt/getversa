@@ -39,7 +39,7 @@ export default function DecisionIntelligencePanel() {
         .limit(20);
       
       if (searchQuery) {
-        query = query.ilike('question', `%${searchQuery}%`);
+        query = query.or(`question.ilike.%${searchQuery}%,option_a.ilike.%${searchQuery}%,option_b.ilike.%${searchQuery}%`);
       }
       
       const { data, error } = await query;
