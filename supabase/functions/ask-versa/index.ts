@@ -406,8 +406,13 @@ Rules:
       const q = question.toLowerCase().trim();
       // Match English "versa" or Arabic spellings (ڤيرسا / فيرسا / ڤرسا)
       const mentionsVersa = /\bversa\b/.test(q) || /(ڤيرسا|فيرسا|ڤرسا|ڤيرزا|فيرزا)/.test(question);
-      const aboutShape = /\b(what(?:'?s| is)?|whats|whts|wat|wht|who(?:'?s| is| made| owns| built| created)|how(?: do(?:es)?| can)|why|is|are|does|tell me about|explain|describe|about)\b/.test(q)
-        || /(إيه|ايه|ما هي|ما هو|مين|إزاي|ازاي|عن|يعني|بتعمل|بيعمل|بتشتغل|بيشتغل|التطبيق|الأبلكيشن|الابلكيشن)/.test(question);
+      // If the user is asking for Versa opinions/data/votes (not about the app itself), skip self-ref guard
+      const askingForVersaData = /\b(opinion|vote|result|data|think|prefer|say|feel|poll)\b/.test(q)
+        || /(رأي|تصويت|نتيجة|بيقول|بيفضل)/.test(question);
+      const aboutShape = !askingForVersaData && (
+        /\b(what(?:'?s| is)?|whats|whts|wat|wht|who(?:'?s| is| made| owns| built| created)|how(?: do(?:es)?| can)|why|is|are|does|tell me about|explain|describe|about)\b/.test(q)
+        || /(إيه|ايه|ما هي|ما هو|مين|إزاي|ازاي|عن|يعني|بتعمل|بيعمل|بتشتغل|بيشتغل|التطبيق|الأبلكيشن|الابلكيشن)/.test(question)
+      );
       // Short bare queries like "versa", "versa?", "what is this app"
       const bareSelf = /^(versa\??|what(?:'s| is)? (?:this|the) app\??|what does this app do\??|how does this app work\??|about (?:this )?app\??)$/i.test(q)
         || /^(ڤيرسا|فيرسا|ڤرسا)\??$/.test(question.trim());
