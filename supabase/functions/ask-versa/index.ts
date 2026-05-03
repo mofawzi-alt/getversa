@@ -195,9 +195,9 @@ serve(async (req) => {
     const lastUserTurn = [...trimmedHistory].reverse().find((h) => h.role === "user");
     const looksLikeGenericFollowup = (() => {
       const q = question.toLowerCase().trim();
-      if (q.length > 60) return false;
-      return /^(show|give|bring|list|find|any|more|other|related|what about|polls?|votes?)/.test(q)
-        && /(poll|vote|data|result)/.test(q);
+      if (q.length > 80) return false;
+      return /^(show|give|bring|list|find|any|more|other|related|what about|polls?|votes?|versa)/.test(q)
+        && /(poll|vote|data|result|opinion|think|prefer|versa)/.test(q);
     })();
     let effectiveQuestion = question;
     if (looksLikeGenericFollowup && lastUserTurn) {
