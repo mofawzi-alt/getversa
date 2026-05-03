@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Input } from '@/components/ui/input';
