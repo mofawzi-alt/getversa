@@ -255,6 +255,8 @@ export default function PulseStoriesRow() {
   const [shareFinding, setShareFinding] = useState<BreakdownFinding | null>(null);
   const [hiddenCats, setHiddenCats] = useState(() => getHiddenCategories());
   const { data: editorialStories } = useEditorialStories();
+  const { storyGroups, markViewed, deleteStory } = useUserStories();
+  const [openUserStoryGroup, setOpenUserStoryGroup] = useState<GroupedUserStories | null>(null);
 
   // Listen for changes from settings page
   useEffect(() => {
