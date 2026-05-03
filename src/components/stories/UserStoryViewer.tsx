@@ -41,7 +41,11 @@ function storyContent(story: UserStory) {
       return {
         headline: c.archetype || 'My Taste Profile',
         primary: c.description || 'Check out my taste identity',
-        secondary: c.top_categories?.join(' • '),
+        secondary: [
+          c.personality_name ? `${c.personality_name}` : null,
+          c.top_categories?.length ? c.top_categories.join(' • ') : null,
+          c.total_votes ? `${Number(c.total_votes).toLocaleString()} votes` : null,
+        ].filter(Boolean).join('  ·  ') || undefined,
         bg: c.card_image || null,
         emoji: '🧬',
         label: 'Taste Profile',
