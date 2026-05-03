@@ -107,6 +107,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
           }`}>
             {userPickedWinner ? 'Majority' : 'Minority'}
           </span>
+          <p className="text-[11px] text-muted-foreground italic mt-1">{microFeedback}</p>
           {celebrityVotes.length > 0 && (
             <div className="space-y-0.5 mt-1">
               {celebrityVotes.map((celeb, i) => (
