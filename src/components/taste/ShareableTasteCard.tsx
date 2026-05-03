@@ -328,10 +328,10 @@ export default function ShareableTasteCard({ archetype, description, topCategory
             ))}
           </div>
 
-          {/* Branded logo */}
-          <div className="mt-5 flex justify-center">
-            <img src={versaLogoImg} alt="Versa" className="h-6 object-contain object-center" 
-              style={{ objectPosition: 'center 50%', clipPath: 'inset(33% 0 33% 0)' }} />
+          {/* Branded logo — show full image small enough that the middle row dominates */}
+          <div className="mt-5 flex justify-center overflow-hidden" style={{ maxHeight: 28 }}>
+            <img src={versaLogoImg} alt="Versa" className="h-20 object-cover" 
+              style={{ objectPosition: 'center 50%' }} />
           </div>
           <p className="text-[10px] text-white/20 mt-1">getversa.app</p>
         </div>
