@@ -120,7 +120,7 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
             variant="compact"
             className="w-full justify-center"
           />
-      </div>
+        </div>
     </div>
   );
 }
