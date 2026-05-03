@@ -90,12 +90,13 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "No polls found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const { data: polls } = await supabase
+    const { data: polls, error: pollError } = await supabase
       .from("polls")
-      .select("id, question, option_a, option_b, category, votes_a, votes_b, created_at, subtitle, baseline_a, baseline_b")
+      .select("id, question, option_a, option_b, category, created_at, subtitle, baseline_votes_a, baseline_votes_b")
       .in("id", pollIds);
 
-    if (!polls || polls.length === 0) {
+    if (pollError || !polls || polls.length === 0) {
+      console.error("Poll fetch error:", pollError);
       return new Response(JSON.stringify({ error: "Polls not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
