@@ -357,7 +357,7 @@ export default function TasteProfile() {
 
         {/* ── TASTE IDENTITY ── */}
         <motion.section variants={fadeUp}>
-          <ShareableTasteCard
+           <ShareableTasteCard
             archetype={archetype.name}
             description={dynamicDescription}
             topCategory={topCategory}
@@ -366,6 +366,19 @@ export default function TasteProfile() {
             personalityCode={personality.ready ? personality.code : undefined}
             personalityName={personality.ready ? personality.name : undefined}
           />
+          <div className="flex justify-center mt-3">
+            <ShareToStoryButton
+              storyType="taste_profile"
+              content={{
+                archetype: archetype.name,
+                description: dynamicDescription,
+                top_categories: topCategory ? [topCategory] : [],
+                total_votes: totalVotes,
+                personality_code: personality.ready ? personality.code : undefined,
+                personality_name: personality.ready ? personality.name : undefined,
+              }}
+            />
+          </div>
         </motion.section>
 
         {/* ── PERSONALITY TYPE ── */}
