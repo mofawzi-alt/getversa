@@ -121,7 +121,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
             <div className="p-5 pb-3 shrink-0">
               <DialogHeader className="text-left">
                 <DialogTitle className="text-base font-bold flex items-center gap-2">
-                  <Swords className="h-4 w-4 text-primary" /> Challenge a Friend
+                  <Swords className="h-4 w-4 text-primary" /> Prove who's right
                 </DialogTitle>
               </DialogHeader>
               <p className="text-xs text-muted-foreground line-clamp-2 mt-2">{pollQuestion}</p>
