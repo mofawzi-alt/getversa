@@ -203,6 +203,27 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     <p className="text-sm text-foreground break-words">{t.summary}</p>
                   </div>
                 )}
+                {/* Share to Story for completed answers */}
+                {!t.loading && !t.lowData && !t.variant && (t.verdict || t.summary) && (
+                  <ShareToStoryButton
+                    storyType="poll_result"
+                    content={{
+                      question: t.question,
+                      option_a: t.verdict?.option_a || 'Option A',
+                      option_b: t.verdict?.option_b || 'Option B',
+                      pct_a: t.verdict ? (t.verdict.winner_side === 'A' ? t.verdict.winner_pct : t.verdict.loser_pct) : 50,
+                      pct_b: t.verdict ? (t.verdict.winner_side === 'B' ? t.verdict.winner_pct : t.verdict.loser_pct) : 50,
+                      total_votes: t.verdict?.total_votes || 0,
+                      winning_option: t.verdict?.winner_label || '',
+                      winning_pct: t.verdict?.winner_pct || 0,
+                      image_a_url: t.verdict?.image_a_url,
+                      image_b_url: t.verdict?.image_b_url,
+                      poll_id: t.verdict?.poll_id,
+                    }}
+                    imageUrl={t.verdict?.image_a_url || t.verdict?.image_b_url}
+                    variant="compact"
+                  />
+                )}
 
                 {/* Earn credits CTA after a successful paid answer */}
                 {!t.loading && !t.lowData && !t.variant && typeof t.creditsBalance === 'number' && (t.verdict || (t.polls && t.polls.length > 0) || t.summary) && (
