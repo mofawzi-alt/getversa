@@ -1,6 +1,7 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Users } from 'lucide-react';
 import ShareButton from '@/components/poll/ShareButton';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 
@@ -82,16 +83,36 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
               <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {poll.totalVotes} votes</span>
               {poll.category && <span className="px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-[10px]">{poll.category}</span>}
             </div>
-            <ShareButton
-              pollId={poll.id}
-              pollQuestion={poll.question}
-              optionA={poll.option_a}
-              optionB={poll.option_b}
-              percentA={poll.percentA}
-              percentB={poll.percentB}
-              showResults={true}
-              variant="icon"
-            />
+            <div className="flex items-center gap-1">
+              <ShareToStoryButton
+                storyType="poll_result"
+                content={{
+                  poll_id: poll.id,
+                  question: poll.question,
+                  option_a: poll.option_a,
+                  option_b: poll.option_b,
+                  pct_a: poll.percentA,
+                  pct_b: poll.percentB,
+                  total_votes: poll.totalVotes,
+                  winning_option: poll.percentA >= poll.percentB ? poll.option_a : poll.option_b,
+                  winning_pct: Math.max(poll.percentA, poll.percentB),
+                  image_a_url: poll.image_a_url,
+                  image_b_url: poll.image_b_url,
+                }}
+                imageUrl={poll.percentA >= poll.percentB ? poll.image_a_url : poll.image_b_url}
+                variant="icon"
+              />
+              <ShareButton
+                pollId={poll.id}
+                pollQuestion={poll.question}
+                optionA={poll.option_a}
+                optionB={poll.option_b}
+                percentA={poll.percentA}
+                percentB={poll.percentB}
+                showResults={true}
+                variant="icon"
+              />
+            </div>
           </div>
 
           {/* Bars */}

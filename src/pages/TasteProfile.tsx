@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import ShareableTasteCard from '@/components/taste/ShareableTasteCard';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye, Clock, ShieldCheck } from 'lucide-react';
 import TasteEvolutionTimeline from '@/components/taste/TasteEvolutionTimeline';
 import { motion } from 'framer-motion';
@@ -356,7 +357,7 @@ export default function TasteProfile() {
 
         {/* ── TASTE IDENTITY ── */}
         <motion.section variants={fadeUp}>
-          <ShareableTasteCard
+           <ShareableTasteCard
             archetype={archetype.name}
             description={dynamicDescription}
             topCategory={topCategory}
@@ -365,6 +366,19 @@ export default function TasteProfile() {
             personalityCode={personality.ready ? personality.code : undefined}
             personalityName={personality.ready ? personality.name : undefined}
           />
+          <div className="flex justify-center mt-3">
+            <ShareToStoryButton
+              storyType="taste_profile"
+              content={{
+                archetype: archetype.name,
+                description: dynamicDescription,
+                top_categories: topCategory ? [topCategory] : [],
+                total_votes: totalVotes,
+                personality_code: personality.ready ? personality.code : undefined,
+                personality_name: personality.ready ? personality.name : undefined,
+              }}
+            />
+          </div>
         </motion.section>
 
         {/* ── PERSONALITY TYPE ── */}

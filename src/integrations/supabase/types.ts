@@ -2575,6 +2575,68 @@ export type Database = {
         }
         Relationships: []
       }
+      user_stories: {
+        Row: {
+          content: Json
+          created_at: string
+          expires_at: string
+          id: string
+          image_url: string | null
+          story_type: string
+          user_id: string
+          views_count: number
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          expires_at?: string
+          id?: string
+          image_url?: string | null
+          story_type: string
+          user_id: string
+          views_count?: number
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          expires_at?: string
+          id?: string
+          image_url?: string | null
+          story_type?: string
+          user_id?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
+      user_story_views: {
+        Row: {
+          id: string
+          story_id: string
+          viewed_at: string
+          viewer_id: string
+        }
+        Insert: {
+          id?: string
+          story_id: string
+          viewed_at?: string
+          viewer_id: string
+        }
+        Update: {
+          id?: string
+          story_id?: string
+          viewed_at?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "user_stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_subscriptions: {
         Row: {
           created_at: string | null
@@ -2857,6 +2919,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      can_view_user_stories: {
+        Args: { author_id: string; viewer_id: string }
+        Returns: boolean
       }
       count_eligible_panelists: {
         Args: { p_age_range?: string; p_city?: string; p_gender?: string }
