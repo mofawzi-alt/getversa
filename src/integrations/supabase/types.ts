@@ -609,9 +609,12 @@ export type Database = {
       decision_intelligence_reports: {
         Row: {
           audience_segments: Json
+          avg_decision_time_ms: number | null
           brand_recommendations: Json
+          business_application: Json
           campaign_id: string | null
           concept_score: number
+          confidence_level: string
           created_at: string
           drivers_of_choice: Json
           executive_summary: string | null
@@ -623,6 +626,7 @@ export type Database = {
           methodology_note: string | null
           personality_segments: Json
           poll_id: string | null
+          real_vote_count: number
           report_status: string
           share_token: string | null
           total_votes: number
@@ -633,9 +637,12 @@ export type Database = {
         }
         Insert: {
           audience_segments?: Json
+          avg_decision_time_ms?: number | null
           brand_recommendations?: Json
+          business_application?: Json
           campaign_id?: string | null
           concept_score?: number
+          confidence_level?: string
           created_at?: string
           drivers_of_choice?: Json
           executive_summary?: string | null
@@ -647,6 +654,7 @@ export type Database = {
           methodology_note?: string | null
           personality_segments?: Json
           poll_id?: string | null
+          real_vote_count?: number
           report_status?: string
           share_token?: string | null
           total_votes?: number
@@ -657,9 +665,12 @@ export type Database = {
         }
         Update: {
           audience_segments?: Json
+          avg_decision_time_ms?: number | null
           brand_recommendations?: Json
+          business_application?: Json
           campaign_id?: string | null
           concept_score?: number
+          confidence_level?: string
           created_at?: string
           drivers_of_choice?: Json
           executive_summary?: string | null
@@ -671,6 +682,7 @@ export type Database = {
           methodology_note?: string | null
           personality_segments?: Json
           poll_id?: string | null
+          real_vote_count?: number
           report_status?: string
           share_token?: string | null
           total_votes?: number
