@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import ShareableTasteCard from '@/components/taste/ShareableTasteCard';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye, Clock, ShieldCheck } from 'lucide-react';
 import TasteEvolutionTimeline from '@/components/taste/TasteEvolutionTimeline';
 import { motion } from 'framer-motion';
