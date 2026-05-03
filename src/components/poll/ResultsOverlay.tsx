@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useMemo } from 'react';
 import ShareButton from './ShareButton';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import ChallengeButton from './ChallengeButton';
 import { pickFeedbackMessage } from '@/components/feed/VoteFeedbackOverlay';
 import CliffhangerSeries from './CliffhangerSeries';
@@ -131,6 +132,24 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
           <StreakInsightTeaser pollId={poll.id} choice={result.choice} />
           
           <div className="flex items-center justify-center gap-3 mt-2">
+            <ShareToStoryButton
+              storyType="poll_result"
+              content={{
+                poll_id: poll.id,
+                question: poll.question,
+                option_a: poll.option_a,
+                option_b: poll.option_b,
+                pct_a: result.percentA,
+                pct_b: result.percentB,
+                total_votes: result.totalVotes,
+                winning_option: isWinnerA ? poll.option_a : poll.option_b,
+                winning_pct: isWinnerA ? result.percentA : result.percentB,
+                image_a_url: poll.image_a_url,
+                image_b_url: poll.image_b_url,
+              }}
+              imageUrl={isWinnerA ? poll.image_a_url : poll.image_b_url}
+              variant="icon"
+            />
             <ChallengeButton pollId={poll.id} pollQuestion={poll.question} userChoice={result.choice} />
           </div>
           <CliffhangerSeries currentPollId={poll.id} onPollTap={() => onContinue()} />

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Input } from '@/components/ui/input';
@@ -259,6 +260,21 @@ export default function Compare() {
                 ? 'No shared votes yet — vote on more polls!'
                 : `Based on ${sharedVotes.length} shared poll${sharedVotes.length !== 1 ? 's' : ''}`}
           </p>
+          {overallScore !== null && (
+            <div className="mt-4 flex justify-center">
+              <ShareToStoryButton
+                storyType="duel_result"
+                content={{
+                  opponent: selectedFriend?.friend_username || 'Friend',
+                  won: overallScore >= 70,
+                  tied: overallScore >= 40 && overallScore < 70,
+                  score: `${overallScore}% compatible`,
+                  match_rate: overallScore,
+                }}
+                variant="compact"
+              />
+            </div>
+          )}
         </div>
 
         {/* Category Breakdown */}

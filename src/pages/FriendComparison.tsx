@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import UserAvatar from '@/components/UserAvatar';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 
 interface CompatibilityTrend {
   overall_score: number | null;
@@ -274,6 +275,21 @@ export default function FriendComparison() {
                   {trendData.older_score}%
                 </div>
               </div>
+            </div>
+          )}
+          {compatibilityScore !== null && (
+            <div className="mt-4 flex justify-center">
+              <ShareToStoryButton
+                storyType="duel_result"
+                content={{
+                  opponent: friend.username,
+                  won: compatibilityScore >= 70,
+                  tied: compatibilityScore >= 40 && compatibilityScore < 70,
+                  score: `${compatibilityScore}% compatible · ${matchingVotes}/${totalVotes} matched`,
+                  match_rate: compatibilityScore,
+                }}
+                variant="compact"
+              />
             </div>
           )}
         </div>
