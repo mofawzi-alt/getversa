@@ -113,7 +113,7 @@ export default function DecisionIntelligencePanel() {
         
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {polls?.map((poll: any) => {
-            const totalVotes = (poll.votes_a || 0) + (poll.votes_b || 0);
+            const totalVotes = poll.totalVotes || 0;
             return (
               <div key={poll.id} className="flex items-center justify-between p-3 bg-background rounded-lg border">
                 <div className="flex-1 min-w-0">
