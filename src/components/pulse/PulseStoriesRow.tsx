@@ -639,7 +639,45 @@ export default function PulseStoriesRow() {
     <>
       <div className="w-full overflow-x-auto no-scrollbar -mx-4 px-4 py-3 border-b border-border/40 bg-background">
         <div className="flex gap-3 min-w-max">
-          {/* ── NEW: Editorial 5-card stories first ── */}
+          {/* ── User Stories circles (IG-style) ── */}
+          {storyGroups.map((group) => {
+            const isOwn = group.user_id === user?.id;
+            return (
+              <button
+                key={`user-story-${group.user_id}`}
+                type="button"
+                onClick={() => setOpenUserStoryGroup(group)}
+                className="flex flex-col items-center gap-1.5 w-16 active:scale-95 transition-transform relative"
+              >
+                <div
+                  className={`w-16 h-16 rounded-full p-[2.5px] shadow-lg ${
+                    group.hasUnviewed
+                      ? 'bg-gradient-to-tr from-primary via-rose-500 to-amber-400'
+                      : 'bg-muted'
+                  }`}
+                >
+                  <div className="w-full h-full rounded-full bg-background flex items-center justify-center p-[2px]">
+                    <Avatar className="w-full h-full">
+                      {group.avatar_url && <AvatarImage src={group.avatar_url} />}
+                      <AvatarFallback className="text-sm font-semibold bg-muted text-foreground/60">
+                        {(group.username || '?')[0].toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </div>
+                {isOwn && (
+                  <span className="absolute bottom-5 right-0 w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center border-2 border-background">
+                    <Plus className="w-3 h-3" />
+                  </span>
+                )}
+                <span className="text-[10px] font-medium text-foreground/80 truncate w-full text-center">
+                  {isOwn ? 'Your Story' : (group.username || 'User')}
+                </span>
+              </button>
+            );
+          })}
+
+          {/* ── Editorial 5-card stories ── */}
           {(editorialStories || []).map((story) => {
             const meta = EDITORIAL_STORY_META[story.story_type];
             if (!meta) return null;
