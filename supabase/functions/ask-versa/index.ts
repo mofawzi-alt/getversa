@@ -1152,6 +1152,7 @@ Rules:
         stage: "answer",
         summary,
         verdict,
+        insight_parts,
         filters,
         polls: enrichedPolls,
         count: enrichedPolls.length,
