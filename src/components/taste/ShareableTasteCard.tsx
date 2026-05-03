@@ -2,7 +2,7 @@ import { useRef, useCallback, useState } from 'react';
 import { Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import versaLogoImg from '@/assets/versa-logo.png';
+import versaLogoImg from '@/assets/versa-logo-full.jpg';
 
 interface TasteCardProps {
   archetype: string;
@@ -193,7 +193,8 @@ export default function ShareableTasteCard({ archetype, description, topCategory
     ctx.lineTo(W - 100, H - 280);
     ctx.stroke();
 
-    // Versa logo at bottom
+    // Versa full branded logo at bottom (speech bubble + "versa" text)
+    // The source image has 3 rows — crop the middle row (simplest version)
     try {
       const logo = new Image();
       logo.crossOrigin = 'anonymous';
@@ -202,11 +203,15 @@ export default function ShareableTasteCard({ archetype, description, topCategory
         logo.onerror = reject;
         logo.src = versaLogoImg;
       });
-      const logoH = 55;
-      const logoW = (logo.width / logo.height) * logoH;
-      ctx.filter = 'invert(1)';
-      ctx.drawImage(logo, (W - logoW) / 2, H - 230, logoW, logoH);
-      ctx.filter = 'none';
+      // Source image: crop middle third (row 2 of 3)
+      const srcX = 0;
+      const srcY = Math.floor(logo.height * 0.33);
+      const srcW = logo.width;
+      const srcH = Math.floor(logo.height * 0.33);
+      // Draw at bottom of card
+      const destH = 80;
+      const destW = (srcW / srcH) * destH;
+      ctx.drawImage(logo, srcX, srcY, srcW, srcH, (W - destW) / 2, H - 250, destW, destH);
     } catch {
       ctx.font = 'bold 40px "Space Grotesk", sans-serif';
       ctx.fillStyle = 'rgba(255,255,255,0.6)';
@@ -322,6 +327,13 @@ export default function ShareableTasteCard({ archetype, description, topCategory
               </div>
             ))}
           </div>
+
+          {/* Branded logo — show full image small enough that the middle row dominates */}
+          <div className="mt-5 flex justify-center overflow-hidden" style={{ maxHeight: 28 }}>
+            <img src={versaLogoImg} alt="Versa" className="h-20 object-cover" 
+              style={{ objectPosition: 'center 50%' }} />
+          </div>
+          <p className="text-[10px] text-white/20 mt-1">getversa.app</p>
         </div>
       </div>
 
