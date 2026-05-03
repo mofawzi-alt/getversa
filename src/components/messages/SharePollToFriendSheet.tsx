@@ -4,10 +4,16 @@ import { useFriends } from '@/hooks/useFriends';
 import { useOpenConversation, useSendMessage } from '@/hooks/useMessages';
 import { Send, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 
 interface Props {
   pollId: string;
   pollQuestion?: string;
+  optionA?: string;
+  optionB?: string;
+  percentA?: number;
+  percentB?: number;
+  imageUrl?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
