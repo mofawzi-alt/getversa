@@ -9,6 +9,14 @@ import type { ResearchPoll } from '@/lib/askExport';
 
 export type Mode = 'decide' | 'research';
 
+export interface InsightParts {
+  verdict?: string;
+  why?: string;
+  demographic_split?: string;
+  cultural_context?: string;
+  action_line?: string;
+}
+
 export interface AskTurn {
   id: string;
   question: string;
@@ -28,6 +36,7 @@ export interface AskTurn {
   askQueryId?: string | null;
   creditsCharged?: number;
   creditsBalance?: number;
+  insightParts?: InsightParts | null;
 }
 
 interface Props {
