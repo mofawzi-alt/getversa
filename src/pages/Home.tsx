@@ -11,8 +11,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteScoring';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
@@ -201,14 +202,25 @@ function HomeLiveDebateCard({
   const chosenA = hasVoted && chosenOptionLabel === poll.option_a;
   const chosenB = hasVoted && chosenOptionLabel === poll.option_b;
 
-  const handleShareClick = (e: React.MouseEvent) => {
+  const handleShareClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const pollUrl = `${window.location.origin}/poll/${poll.id}`;
-    if (navigator.share) {
-      navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
-    } else {
-      navigator.clipboard.writeText(pollUrl);
-      import('sonner').then(m => m.toast.success('Link copied!'));
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
+      } else {
+        await navigator.clipboard.writeText(pollUrl);
+        (await import('sonner')).toast.success('Link copied!');
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        try {
+          await navigator.clipboard.writeText(pollUrl);
+          (await import('sonner')).toast.success('Link copied!');
+        } catch {
+          // silently fail
+        }
+      }
     }
   };
 
@@ -516,6 +528,23 @@ function HomeLiveDebateCard({
               <Send className="h-3.5 w-3.5" /> Send
             </button>
           )}
+          <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+            <ShareToStoryButton
+              storyType="poll_result"
+              content={{
+                poll_id: poll.id,
+                question: poll.question,
+                option_a: poll.option_a,
+                option_b: poll.option_b,
+                pct_a: poll.percentA,
+                pct_b: poll.percentB,
+                winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
+                image_url: poll.image_a_url || poll.image_b_url,
+              }}
+              imageUrl={poll.image_a_url || poll.image_b_url}
+              variant="icon"
+            />
+          </div>
           <button
             onClick={handleShareClick}
             className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-primary-foreground text-[12px] font-bold shadow-sm active:scale-95 transition"
@@ -553,6 +582,11 @@ function HomeLiveDebateCard({
       <SharePollToFriendSheet
         pollId={poll.id}
         pollQuestion={poll.question}
+        optionA={poll.option_a}
+        optionB={poll.option_b}
+        percentA={poll.percentA}
+        percentB={poll.percentB}
+        imageUrl={poll.image_a_url || poll.image_b_url}
         open={shareSheetOpen}
         onOpenChange={setShareSheetOpen}
       />

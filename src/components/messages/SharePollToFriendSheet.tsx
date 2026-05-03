@@ -4,15 +4,21 @@ import { useFriends } from '@/hooks/useFriends';
 import { useOpenConversation, useSendMessage } from '@/hooks/useMessages';
 import { Send, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 
 interface Props {
   pollId: string;
   pollQuestion?: string;
+  optionA?: string;
+  optionB?: string;
+  percentA?: number;
+  percentB?: number;
+  imageUrl?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function SharePollToFriendSheet({ pollId, pollQuestion, open, onOpenChange }: Props) {
+export default function SharePollToFriendSheet({ pollId, pollQuestion, optionA, optionB, percentA, percentB, imageUrl, open, onOpenChange }: Props) {
   const { friends, loadingFriends } = useFriends();
   const openConv = useOpenConversation();
   const sendMessage = useSendMessage();
@@ -42,6 +48,26 @@ export default function SharePollToFriendSheet({ pollId, pollQuestion, open, onO
             <p className="text-sm text-muted-foreground line-clamp-2">{pollQuestion}</p>
           )}
         </SheetHeader>
+
+        {/* Share to Story option */}
+        <div className="mb-3 pb-3 border-b border-border/50">
+          <ShareToStoryButton
+            storyType="poll_result"
+            content={{
+              poll_id: pollId,
+              question: pollQuestion,
+              option_a: optionA,
+              option_b: optionB,
+              pct_a: percentA,
+              pct_b: percentB,
+              winning_option: (percentA ?? 0) >= (percentB ?? 0) ? optionA : optionB,
+              image_url: imageUrl,
+            }}
+            imageUrl={imageUrl}
+            variant="compact"
+            className="w-full justify-center"
+          />
+        </div>
 
         {loadingFriends && (
           <div className="flex justify-center py-8">
