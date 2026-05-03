@@ -33,7 +33,7 @@ export default function DecisionIntelligencePanel() {
     queryFn: async () => {
       let query = supabase
         .from('polls')
-        .select('id, question, option_a, option_b, votes_a, votes_b, category')
+        .select('id, question, option_a, option_b, category')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -42,9 +42,21 @@ export default function DecisionIntelligencePanel() {
         query = query.or(`question.ilike.%${searchQuery}%,option_a.ilike.%${searchQuery}%,option_b.ilike.%${searchQuery}%`);
       }
       
-      const { data, error } = await query;
+      const { data: pollData, error } = await query;
       if (error) throw error;
-      return data;
+      if (!pollData || pollData.length === 0) return [];
+
+      // Get vote counts for these polls
+      const pollIds = pollData.map(p => p.id);
+      const { data: voteCounts } = await supabase
+        .from('votes')
+        .select('poll_id')
+        .in('poll_id', pollIds);
+      
+      const countMap = new Map<string, number>();
+      voteCounts?.forEach(v => countMap.set(v.poll_id, (countMap.get(v.poll_id) || 0) + 1));
+      
+      return pollData.map(p => ({ ...p, totalVotes: countMap.get(p.id) || 0 }));
     },
     enabled: true,
   });
@@ -101,7 +113,7 @@ export default function DecisionIntelligencePanel() {
         
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {polls?.map((poll: any) => {
-            const totalVotes = (poll.votes_a || 0) + (poll.votes_b || 0);
+            const totalVotes = poll.totalVotes || 0;
             return (
               <div key={poll.id} className="flex items-center justify-between p-3 bg-background rounded-lg border">
                 <div className="flex-1 min-w-0">
