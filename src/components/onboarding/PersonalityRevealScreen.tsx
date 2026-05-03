@@ -1,9 +1,44 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { PERSONALITY_TYPES, computePersonalityType } from '@/lib/personalityType';
+import { PERSONALITY_TYPES } from '@/lib/personalityType';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Simplified axis scoring for onboarding (no minimum vote requirement)
+const AXIS_TAGS = {
+  E: ['social', 'extrovert', 'public', 'expressive', 'glam'],
+  I: ['independent', 'introvert', 'private', 'homebody', 'calm'],
+  S: ['traditional', 'authentic', 'safe_asset', 'structured'],
+  N: ['growth', 'innovation', 'trendy', 'curated'],
+  T: ['price_sensitive', 'quality', 'speed', 'boss', 'practical'],
+  F: ['indulgent', 'luxury', 'romantic', 'soft', 'natural', 'experience'],
+  J: ['brand_oriented', 'structured', 'safe_asset'],
+  P: ['experience', 'adventurous', 'spontaneous', 'flexible', 'risktaker', 'variety'],
+};
+
+function scoreOnboardingAxis(tags: Map<string, number>, pos: string[], neg: string[]): number {
+  let p = 0, n = 0;
+  for (const [tag, count] of tags) {
+    if (pos.includes(tag)) p += count;
+    if (neg.includes(tag)) n += count;
+  }
+  const total = p + n;
+  return total === 0 ? 0 : (p - n) / total;
+}
+
+function computeOnboardingType(tagCounts: Map<string, number>): string {
+  const ei = scoreOnboardingAxis(tagCounts, AXIS_TAGS.E, AXIS_TAGS.I);
+  const sn = scoreOnboardingAxis(tagCounts, AXIS_TAGS.S, AXIS_TAGS.N);
+  const tf = scoreOnboardingAxis(tagCounts, AXIS_TAGS.T, AXIS_TAGS.F);
+  const jp = scoreOnboardingAxis(tagCounts, AXIS_TAGS.J, AXIS_TAGS.P);
+
+  return (
+    (ei >= 0 ? 'E' : 'I') +
+    (sn >= 0 ? 'S' : 'N') +
+    (tf >= 0 ? 'T' : 'F') +
+    (jp >= 0 ? 'J' : 'P')
+  );
+}
 
 interface PersonalityRevealScreenProps {
   onComplete: () => void;
@@ -11,76 +46,54 @@ interface PersonalityRevealScreenProps {
 
 export default function PersonalityRevealScreen({ onComplete }: PersonalityRevealScreenProps) {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [phase, setPhase] = useState<'building' | 'reveal' | 'done'>('building');
+  const [phase, setPhase] = useState<'building' | 'reveal'>('building');
   const [personalityCode, setPersonalityCode] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchType() {
-      if (!user) {
-        setPersonalityCode('ENFP'); // fallback
-        return;
-      }
-      // Fetch user's trait entries from their votes
-      const { data: traits } = await supabase
-        .from('user_dimension_scores')
-        .select('dimension_id, score')
-        .eq('user_id', user.id);
+      if (!user) { setPersonalityCode('ENFP'); return; }
 
-      // Also try to get personality from the scoring function
-      const { data: tagData } = await supabase
+      // Get user's recent votes with poll tags
+      const { data: votes } = await supabase
         .from('votes')
         .select('poll_id, choice')
         .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
         .limit(10);
 
-      if (tagData && tagData.length > 0) {
-        // Get poll tags for voted polls
-        const pollIds = tagData.map(v => v.poll_id);
-        const { data: pollsData } = await supabase
-          .from('polls')
-          .select('id, option_a_tag, option_b_tag')
-          .in('id', pollIds);
+      if (!votes?.length) { setPersonalityCode('ENFP'); return; }
 
-        if (pollsData) {
-          // Build trait entries from votes
-          const traitMap = new Map<string, number>();
-          tagData.forEach(vote => {
-            const poll = pollsData.find(p => p.id === vote.poll_id);
-            if (!poll) return;
-            const tag = vote.choice === 'A' ? poll.option_a_tag : poll.option_b_tag;
-            if (tag) {
-              traitMap.set(tag, (traitMap.get(tag) || 0) + 1);
-            }
-          });
+      const pollIds = votes.map(v => v.poll_id);
+      const { data: polls } = await supabase
+        .from('polls')
+        .select('id, option_a_tag, option_b_tag')
+        .in('id', pollIds);
 
-          const traitEntries = Array.from(traitMap.entries()).map(([tag, count]) => ({
-            tag,
-            vote_count: count,
-          }));
+      if (!polls?.length) { setPersonalityCode('ENFP'); return; }
 
-          const result = computePersonalityType(traitEntries);
-          setPersonalityCode(result.code);
-          return;
-        }
-      }
+      const tagCounts = new Map<string, number>();
+      votes.forEach(vote => {
+        const poll = polls.find(p => p.id === vote.poll_id);
+        if (!poll) return;
+        const tag = vote.choice === 'A' ? poll.option_a_tag : poll.option_b_tag;
+        if (tag) tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+      });
 
-      setPersonalityCode('ENFP'); // fallback
+      setPersonalityCode(computeOnboardingType(tagCounts));
     }
 
     fetchType();
   }, [user]);
 
   useEffect(() => {
-    // Phase timeline: building (2s) → reveal (stays)
-    const t1 = setTimeout(() => setPhase('reveal'), 2000);
-    return () => clearTimeout(t1);
+    const t = setTimeout(() => setPhase('reveal'), 2200);
+    return () => clearTimeout(t);
   }, []);
 
-  const personality = personalityCode ? PERSONALITY_TYPES[personalityCode] : null;
+  const personality = personalityCode ? (PERSONALITY_TYPES[personalityCode] || PERSONALITY_TYPES['ENFP']) : null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center p-6">
+    <div className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center p-6 safe-area-top safe-area-bottom">
       <AnimatePresence mode="wait">
         {phase === 'building' && (
           <motion.div
@@ -92,7 +105,7 @@ export default function PersonalityRevealScreen({ onComplete }: PersonalityRevea
           >
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
               className="w-16 h-16 rounded-full border-4 border-primary border-t-transparent"
             />
             <p className="text-lg font-display font-bold text-foreground">
