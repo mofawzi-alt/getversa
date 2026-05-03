@@ -31,14 +31,14 @@ const GUEST_VOTE_LIMIT = 5;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
 const RESULT_DISPLAY_MS = 1800;
 const MICRO_FEEDBACK_INTERVAL = 5;
-const SUSPENSE_DELAY_MS = 500;
+const SUSPENSE_DELAY_MS = 650;
 const HIGH_STAKES_INTERVAL = 20;
 
 // Milestone definitions
 const MILESTONES: { at: number; message: string; type: 'banner' | 'modal' | 'badge'; duration: number }[] = [
-  { at: 10, message: "🔥 You're on a roll", type: 'banner', duration: 1500 },
+  { at: 10, message: "🔥 You're on a roll — keep going!", type: 'banner', duration: 1500 },
   { at: 25, message: '', type: 'modal', duration: 3000 },
-  { at: 50, message: "You're in the top 15% most active voters today.", type: 'badge', duration: 2000 },
+  { at: 50, message: "You just unlocked deeper insights 🔥", type: 'badge', duration: 2500 },
 ];
 
 function getGuestVoteCount(): number {
@@ -82,6 +82,17 @@ const ALIGNMENT_MESSAGES = [
   "You think like {pct}% of people in {city}.",
   "Your taste matches {pct}% of {city}.",
 ];
+
+// Identity trait signals shown every 3-5 votes
+const IDENTITY_TRAITS = [
+  { trait: 'Independent', emoji: '⚡', message: "You're leaning: Independent ⚡" },
+  { trait: 'Social', emoji: '👥', message: "You're leaning: Social 👥" },
+  { trait: 'Practical', emoji: '🎯', message: "You're leaning: Practical 🎯" },
+  { trait: 'Bold', emoji: '🔥', message: "You're leaning: Bold 🔥" },
+  { trait: 'Creative', emoji: '✨', message: "You're leaning: Creative ✨" },
+  { trait: 'Trendsetter', emoji: '🚀', message: "You're leaning: Trendsetter 🚀" },
+];
+const IDENTITY_SIGNAL_INTERVAL = 4; // every 4 votes
 
 interface Poll {
   id: string;
@@ -414,19 +425,35 @@ function ImmersivePollCard({
             <p className="text-white text-base font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
           </div>
 
-          {/* Suspense loading pulse */}
+          {/* Suspense reveal animation */}
           {hasResult && showSuspense && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+              initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+              animate={{ opacity: 1, backdropFilter: 'blur(8px)' }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-30 flex items-center justify-center bg-black/50"
             >
               <motion.div
-                animate={{ scale: [1, 1.15, 1] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-                className="w-12 h-12 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center"
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: [0.6, 1.2, 1], opacity: 1 }}
+                transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
+                className="flex flex-col items-center gap-2"
               >
-                <span className="text-white text-lg font-bold">?</span>
+                <motion.div
+                  animate={{ rotate: [0, 180, 360] }}
+                  transition={{ duration: 0.6, ease: 'easeInOut' }}
+                  className="w-14 h-14 rounded-full bg-white/15 border-2 border-white/40 flex items-center justify-center"
+                >
+                  <span className="text-white text-xl">✨</span>
+                </motion.div>
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="text-white/80 text-xs font-semibold"
+                >
+                  Revealing results...
+                </motion.p>
               </motion.div>
             </motion.div>
           )}
@@ -674,6 +701,7 @@ export default function SwipeFeed() {
   const [dailySwipeCount, setDailySwipeCount] = useState(0);
   const [milestoneMsg, setMilestoneMsg] = useState<{ message: string; type: 'banner' | 'modal' | 'badge' } | null>(null);
   const [showValueMsg, setShowValueMsg] = useState(false);
+  const [identitySignal, setIdentitySignal] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [cinematicData, setCinematicData] = useState<{
@@ -997,6 +1025,15 @@ export default function SwipeFeed() {
         setTimeout(() => triggerMicroFeedback(), 2000);
       }
 
+      // Identity signal every 4 votes
+      if (newCount % IDENTITY_SIGNAL_INTERVAL === 0 && newCount > 0 && user) {
+        const trait = IDENTITY_TRAITS[Math.floor(Math.random() * IDENTITY_TRAITS.length)];
+        setTimeout(() => {
+          setIdentitySignal(trait.message);
+          setTimeout(() => setIdentitySignal(null), 3000);
+        }, 2200);
+      }
+
       // Value message — show once at threshold
       if (newCount === VALUE_MSG_VOTE_THRESHOLD && !showValueMsg) {
         setTimeout(() => {
@@ -1225,6 +1262,22 @@ export default function SwipeFeed() {
           >
             <Zap className="h-3.5 w-3.5 text-accent-foreground" />
             <span className="text-sm font-display font-bold text-accent-foreground">+5 pts</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Identity signal toast */}
+      <AnimatePresence>
+        {identitySignal && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -15, scale: 0.9 }}
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-[70] px-5 py-3 rounded-2xl bg-foreground/90 backdrop-blur-md shadow-xl"
+          >
+            <p className="text-sm font-display font-bold text-background text-center whitespace-nowrap">
+              {identitySignal}
+            </p>
           </motion.div>
         )}
       </AnimatePresence>

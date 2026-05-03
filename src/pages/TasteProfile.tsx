@@ -352,7 +352,8 @@ export default function TasteProfile() {
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-xs font-bold text-primary uppercase tracking-wider">Your Taste Profile</span>
           </div>
-          <p className="text-muted-foreground text-sm">Discover who you are through your choices</p>
+          <h1 className="text-3xl font-display font-black text-foreground">{archetype.emoji} {archetype.name}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{dynamicDescription}</p>
         </motion.header>
 
         {/* ── TASTE IDENTITY ── */}

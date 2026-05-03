@@ -70,7 +70,7 @@ export default function UnlockModal({
             disabled={loading}
             className="w-full h-12 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-[0.98] transition disabled:opacity-60"
           >
-            {loading ? 'Unlocking…' : `Unlock for ${cost} credit${cost === 1 ? '' : 's'}`}
+            {loading ? 'Unlocking…' : `Unlock with ${cost} vote${cost === 1 ? '' : 's'} earned`}
           </button>
         ) : (
           <div className="space-y-2">
@@ -78,10 +78,10 @@ export default function UnlockModal({
               onClick={onEarn}
               className="w-full h-12 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-[0.98] transition"
             >
-              Browse polls to earn credits
+              Vote to unlock insights
             </button>
             <p className="text-[11px] text-center text-muted-foreground">
-              Need {cost - balance} more. Earn +1 credit per vote — unlimited polls in Browse.
+              {cost - balance} more vote{cost - balance === 1 ? '' : 's'} to go. You earn credits by voting — unlimited polls in Browse.
             </p>
           </div>
         )}

@@ -10,16 +10,53 @@ interface DemoData {
   gender?: string | null;
 }
 
+const PERSONAL_MESSAGES: Record<string, string[]> = {
+  tie: [
+    "This one splits people — no clear winner",
+    "You just broke the tie.",
+    "The world can't decide either.",
+  ],
+  close: [
+    "Close call — could go either way.",
+    "This choice says something about you.",
+    "Interesting choice.",
+  ],
+  controversial: [
+    "That one's controversial.",
+    "Most people disagree with you.",
+    "You think differently on this.",
+  ],
+  majority: [
+    "You're aligned with the majority.",
+    "You're with the crowd on this one.",
+    "Popular opinion — you fit right in.",
+  ],
+  minority: [
+    "You see it differently.",
+    "You think differently on this.",
+    "Not many agree — and that's interesting.",
+  ],
+  neutral: [
+    "You sparked a shift.",
+    "This choice says something about your style.",
+    "Interesting choice.",
+  ],
+};
+
+function pickRandom(arr: string[]): string {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 function pickFeedbackMessage(percentA: number, percentB: number, choice: 'A' | 'B'): string {
   const userPercent = choice === 'A' ? percentA : percentB;
   const diff = Math.abs(percentA - percentB);
 
-  if (diff <= 4) return "You just broke the tie.";
-  if (diff <= 12) return "Close call.";
-  if (diff >= 30 && diff <= 50) return "That one's controversial.";
-  if (userPercent >= 55) return "You're with the majority.";
-  if (userPercent < 45) return "You see it differently.";
-  return "You sparked a shift.";
+  if (diff <= 4) return pickRandom(PERSONAL_MESSAGES.tie);
+  if (diff <= 12) return pickRandom(PERSONAL_MESSAGES.close);
+  if (diff >= 30 && diff <= 50) return pickRandom(PERSONAL_MESSAGES.controversial);
+  if (userPercent >= 55) return pickRandom(PERSONAL_MESSAGES.majority);
+  if (userPercent < 45) return pickRandom(PERSONAL_MESSAGES.minority);
+  return pickRandom(PERSONAL_MESSAGES.neutral);
 }
 
 interface VoteFeedbackOverlayProps {

@@ -1,6 +1,7 @@
-import { forwardRef, useEffect } from 'react';
+import { forwardRef, useEffect, useMemo } from 'react';
 import ShareButton from './ShareButton';
 import ChallengeButton from './ChallengeButton';
+import { pickFeedbackMessage } from '@/components/feed/VoteFeedbackOverlay';
 import CliffhangerSeries from './CliffhangerSeries';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
@@ -9,6 +10,7 @@ import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
 import { getInsightTier } from '@/lib/streakGating';
 import { useAuth } from '@/contexts/AuthContext';
 import StreakInsightTeaser from './StreakInsightTeaser';
+  
 
 
 interface Poll {
@@ -50,6 +52,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
   const insightTier = getInsightTier(streak);
   const { data: genderTeaser } = useGenderSplitTeaser(poll.id, poll.option_a, poll.option_b, result.percentA, result.percentB);
   const { data: peopleLikeYou } = usePeopleLikeYou(poll.id, result.choice, poll.option_a, poll.option_b);
+  const microFeedback = useMemo(() => pickFeedbackMessage(result.percentA, result.percentB, result.choice), [result.percentA, result.percentB, result.choice]);
 
   // Auto-advance after 1.4 seconds
   useEffect(() => {
@@ -104,6 +107,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
           }`}>
             {userPickedWinner ? 'Majority' : 'Minority'}
           </span>
+          <p className="text-[11px] text-muted-foreground italic mt-1">{microFeedback}</p>
           {celebrityVotes.length > 0 && (
             <div className="space-y-0.5 mt-1">
               {celebrityVotes.map((celeb, i) => (
