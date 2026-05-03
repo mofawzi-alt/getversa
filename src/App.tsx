@@ -61,6 +61,7 @@ const Rewards = lazy(() => import("./pages/Rewards"));
 const Ask = lazy(() => import("./pages/Ask"));
 const Support = lazy(() => import("./pages/Support"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const DecisionIntelligenceReport = lazy(() => import("./pages/DecisionIntelligenceReport"));
 
 import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
@@ -188,6 +189,7 @@ function AppInner() {
             <Route path="/profile/notifications" element={<ProtectedRoute><ProfileNotifications /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/di/report/:id" element={<DecisionIntelligenceReport />} />
             <Route path="/insights" element={<Navigate to="/taste-profile" replace />} />
             <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
             <Route path="/personality" element={<ProtectedRoute><PersonalityResults /></ProtectedRoute>} />

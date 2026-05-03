@@ -41,6 +41,7 @@ import BaselineSeeding from '@/components/admin/BaselineSeeding';
 import PollSuggestionsAdmin from '@/components/admin/PollSuggestionsAdmin';
 import { usePendingSuggestionsCount } from '@/hooks/usePendingSuggestionsCount';
 import PollCalendarPanel from '@/components/admin/PollCalendarPanel';
+import DecisionIntelligencePanel from '@/components/admin/DecisionIntelligencePanel';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
@@ -104,6 +105,7 @@ export default function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger value="seeding" className="text-xs px-4 py-2">Seeding</TabsTrigger>
           <TabsTrigger value="users" className="text-xs px-4 py-2">Users</TabsTrigger>
+          <TabsTrigger value="decision-intel" className="text-xs px-4 py-2 text-primary font-semibold">Decision Intel</TabsTrigger>
         </TabsList>
 
         <TabsContent value="campaigns" className="space-y-4">
@@ -229,6 +231,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="users" className="space-y-4">
           <UserManagement />
+        </TabsContent>
+
+        <TabsContent value="decision-intel" className="space-y-4">
+          <DecisionIntelligencePanel />
         </TabsContent>
 
       </Tabs>
