@@ -268,8 +268,8 @@ If conversation history is provided, the new question may be a FOLLOW-UP — inf
 {"intent": "preference"|"factual"|"offscope", "keywords": ["..."], "entities": ["..."], "category": "any" or one of (${KNOWN_CATEGORIES.join(", ")}), "route": "simple"|"medium"|"complex", "controversial": false, "intent_summary": "..."}
 Rules:
 - keywords/entities MUST be JSON arrays of lowercase strings (NEVER a single string).
-- "preference" = user asks which option people prefer (Versa polls answer this).
-- "factual" = needs a number/fact/news Versa votes can't answer.
+- "preference" = user asks which option people prefer, what users think/vote/opinion (Versa polls answer this). If the user says "versa opinion", "any opinions", "what do users think" → ALWAYS "preference".
+- "factual" = needs a number/fact/news Versa votes can't answer. NOT for opinion questions.
 - "offscope" = harmful, code, math homework, gibberish.`,
             },
             ...historyMessages,
