@@ -1009,6 +1009,15 @@ export default function SwipeFeed() {
         setTimeout(() => triggerMicroFeedback(), 2000);
       }
 
+      // Identity signal every 4 votes
+      if (newCount % IDENTITY_SIGNAL_INTERVAL === 0 && newCount > 0 && user) {
+        const trait = IDENTITY_TRAITS[Math.floor(Math.random() * IDENTITY_TRAITS.length)];
+        setTimeout(() => {
+          setIdentitySignal(trait.message);
+          setTimeout(() => setIdentitySignal(null), 3000);
+        }, 2200);
+      }
+
       // Value message — show once at threshold
       if (newCount === VALUE_MSG_VOTE_THRESHOLD && !showValueMsg) {
         setTimeout(() => {
