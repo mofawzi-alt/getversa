@@ -44,6 +44,7 @@ const UserAvatar = forwardRef<HTMLDivElement, UserAvatarProps>(function UserAvat
       />
     );
   }
+  const initial = username?.trim()?.[0]?.toUpperCase();
   return (
     <div
       ref={ref}
@@ -54,7 +55,11 @@ const UserAvatar = forwardRef<HTMLDivElement, UserAvatarProps>(function UserAvat
       )}
       aria-label={username ? `@${username}` : 'User avatar'}
     >
-      <Camera className="w-1/2 h-1/2 opacity-60" strokeWidth={1.75} />
+      {initial ? (
+        <span className="font-semibold text-[45%] leading-none select-none">{initial}</span>
+      ) : (
+        <Camera className="w-1/2 h-1/2 opacity-60" strokeWidth={1.75} />
+      )}
     </div>
   );
 });
