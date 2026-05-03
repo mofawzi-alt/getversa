@@ -800,6 +800,13 @@ export default function PulseStoriesRow() {
             setOpenEditorial(prevEditorial);
             return true;
           }
+          // Chain back to last user story group
+          const lastGroup = storyGroups[storyGroups.length - 1];
+          if (lastGroup) {
+            setOpenEditorial(null);
+            setOpenUserStoryGroup(lastGroup);
+            return true;
+          }
           return false;
         }}
       />
