@@ -119,15 +119,27 @@ Deno.serve(async (req) => {
         ? " Local cue detected: ensure Egyptian / Arabic signage and local Egyptian atmosphere are clearly present."
         : "";
       const contextLine = resolvedContext ? ` Cultural context: ${resolvedContext}.` : "";
-      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments. NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements of any kind.
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph for a Gen Z polling app. DSLR quality, shallow depth-of-field, warm natural lighting, editorial-grade color grading. Real people in REAL environments. Absolutely NO logos, brand names, text overlays, UI elements, illustrations, icons, abstract art, or graphic design.
 
-Poll question: "${row.question}". This person's answer: "${optionText}". Category: ${row.category || "lifestyle"}.${contextLine}
+CRITICAL RULES — READ CAREFULLY:
+1. The image MUST directly depict the SPECIFIC TOPIC of this poll. If the poll is about Sahel, show a BEACH/RESORT. If about ride-hailing, show someone IN A CAR or hailing a ride on a busy street. If about coffee, show ACTUAL COFFEE. NEVER default to "person sitting at desk with phone" — that is WRONG for 90% of topics.
+2. The subject must be a real, attractive, stylish Gen Z person (18-25 years old) with contemporary fashion. NEVER show middle-aged or older people unless the poll specifically targets them.
+3. The person must be ACTIVELY DOING the thing the option describes — not just sitting somewhere.
 
-Show a person performing the EXACT real-life behavior implied by answering "${optionText}" to the question "${row.question}". The behavior must be obvious in under 1 second — this is the user's "this is me" moment. Think logically about WHERE this activity happens in real life and show THAT setting. For example: returning an online order = at home packing a box with a shipping label; investing = checking a trading app on phone in a modern apartment; cooking = in a kitchen. NEVER show street/market scenes for activities that happen indoors.${demographicDirective}${settingLine}
+Poll: "${row.question}"
+This person chose: "${optionText}"
+Category: ${row.category || "lifestyle"}${contextLine}
 
-If the option is a brand name, translate it into a real-life usage scene — NEVER show the logo. If the subject is an abstract concept (Yes, No, Quality, Trust, etc.), show a lifestyle scene that embodies that feeling through visible action.
+Show this person LIVING their answer to "${optionText}". The scene must make the viewer instantly think "${optionText}" within 1 second. Examples of CORRECT interpretation:
+- "Going to Sahel" → young person at a beautiful beach resort, turquoise water, summer vibes
+- "Peak hours ride-hailing" → young person in the back seat of a car in Cairo traffic
+- "Street food" → young person eating koshary/falafel at a street stall
+- "Save money" → NOT a person at a desk — instead show putting cash in a jar, or walking past shops without buying
+- "Online shopping" → person on couch excitedly opening a delivery box, NOT at a desk
 
-${countryDirective}${keywordBoost} Never default to Western, American, or European settings.`;
+${countryDirective}${demographicDirective}${settingLine}${keywordBoost}
+
+FINAL CHECK: Does this image SCREAM "${optionText}"? If someone saw only the image with no text, would they guess the topic? If not, rethink the scene. Never default to Western settings.`;
 
       // Try pro image model first, fallback to flash image on failure
       const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
