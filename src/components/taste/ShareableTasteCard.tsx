@@ -202,10 +202,9 @@ export default function ShareableTasteCard({ archetype, description, topCategory
         logo.onerror = reject;
         logo.src = versaLogoImg;
       });
-      // Draw at bottom of card
-      const destH = 80;
-      const destW = (srcW / srcH) * destH;
-      ctx.drawImage(logo, srcX, srcY, srcW, srcH, (W - destW) / 2, H - 250, destW, destH);
+      const destH = 60;
+      const destW = (logo.width / logo.height) * destH;
+      ctx.drawImage(logo, (W - destW) / 2, H - 240, destW, destH);
     } catch {
       ctx.font = 'bold 40px "Space Grotesk", sans-serif';
       ctx.fillStyle = 'rgba(255,255,255,0.6)';
