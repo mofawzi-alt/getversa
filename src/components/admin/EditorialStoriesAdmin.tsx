@@ -103,7 +103,7 @@ export default function EditorialStoriesAdmin() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Select value={filterType} onValueChange={setFilterType}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
