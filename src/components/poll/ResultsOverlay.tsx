@@ -1,6 +1,7 @@
-import { forwardRef, useEffect } from 'react';
+import { forwardRef, useEffect, useMemo } from 'react';
 import ShareButton from './ShareButton';
 import ChallengeButton from './ChallengeButton';
+import { pickFeedbackMessage } from '@/components/feed/VoteFeedbackOverlay';
 import CliffhangerSeries from './CliffhangerSeries';
 import { useCelebrityVotes } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
