@@ -202,14 +202,25 @@ function HomeLiveDebateCard({
   const chosenA = hasVoted && chosenOptionLabel === poll.option_a;
   const chosenB = hasVoted && chosenOptionLabel === poll.option_b;
 
-  const handleShareClick = (e: React.MouseEvent) => {
+  const handleShareClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const pollUrl = `${window.location.origin}/poll/${poll.id}`;
-    if (navigator.share) {
-      navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
-    } else {
-      navigator.clipboard.writeText(pollUrl);
-      import('sonner').then(m => m.toast.success('Link copied!'));
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
+      } else {
+        await navigator.clipboard.writeText(pollUrl);
+        (await import('sonner')).toast.success('Link copied!');
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        try {
+          await navigator.clipboard.writeText(pollUrl);
+          (await import('sonner')).toast.success('Link copied!');
+        } catch {
+          // silently fail
+        }
+      }
     }
   };
 
