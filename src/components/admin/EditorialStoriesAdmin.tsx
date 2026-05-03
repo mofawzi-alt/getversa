@@ -78,17 +78,17 @@ export default function EditorialStoriesAdmin() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold">Editorial Stories</h2>
           <p className="text-sm text-muted-foreground">5-card editorial stories for the home stories row</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => triggerAutoGen.mutate(undefined)} disabled={triggerAutoGen.isPending}>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => triggerAutoGen.mutate(undefined)} disabled={triggerAutoGen.isPending} className="flex-1 sm:flex-none">
             {triggerAutoGen.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Zap className="w-4 h-4 mr-2" />}
-            Run auto-gen now
+            Run auto-gen
           </Button>
-          <Button onClick={() => { setEditing(null); setShowEditor(true); }}>
+          <Button size="sm" onClick={() => { setEditing(null); setShowEditor(true); }} className="flex-1 sm:flex-none">
             <Plus className="w-4 h-4 mr-2" /> Create story
           </Button>
         </div>
@@ -103,7 +103,7 @@ export default function EditorialStoriesAdmin() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Select value={filterType} onValueChange={setFilterType}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
