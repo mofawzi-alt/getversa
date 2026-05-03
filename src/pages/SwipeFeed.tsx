@@ -36,9 +36,9 @@ const HIGH_STAKES_INTERVAL = 20;
 
 // Milestone definitions
 const MILESTONES: { at: number; message: string; type: 'banner' | 'modal' | 'badge'; duration: number }[] = [
-  { at: 10, message: "🔥 You're on a roll", type: 'banner', duration: 1500 },
+  { at: 10, message: "🔥 You're on a roll — keep going!", type: 'banner', duration: 1500 },
   { at: 25, message: '', type: 'modal', duration: 3000 },
-  { at: 50, message: "You're in the top 15% most active voters today.", type: 'badge', duration: 2000 },
+  { at: 50, message: "You just unlocked deeper insights 🔥", type: 'badge', duration: 2500 },
 ];
 
 function getGuestVoteCount(): number {
