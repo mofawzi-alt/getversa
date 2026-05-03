@@ -41,6 +41,7 @@ import BaselineSeeding from '@/components/admin/BaselineSeeding';
 import PollSuggestionsAdmin from '@/components/admin/PollSuggestionsAdmin';
 import { usePendingSuggestionsCount } from '@/hooks/usePendingSuggestionsCount';
 import PollCalendarPanel from '@/components/admin/PollCalendarPanel';
+import DecisionIntelligencePanel from '@/components/admin/DecisionIntelligencePanel';
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
