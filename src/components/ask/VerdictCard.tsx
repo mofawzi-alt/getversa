@@ -122,5 +122,6 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
           />
         </div>
       </div>
+    </div>
   );
 }
