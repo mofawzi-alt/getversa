@@ -1,4 +1,4 @@
-import { Sparkles, User } from 'lucide-react';
+import { Sparkles, User, Brain, Users, Globe, Zap } from 'lucide-react';
 import VerdictCard, { type Verdict } from './VerdictCard';
 import ResearchBrief from './ResearchBrief';
 import SuggestionChips from './SuggestionChips';
