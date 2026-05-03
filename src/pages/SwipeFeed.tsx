@@ -1217,8 +1217,32 @@ export default function SwipeFeed() {
   const hasPolls = polls && polls.length > 0;
   const unvotedCount = polls?.filter(p => !votedResults.has(p.id)).length || 0;
 
+  if (showPersonalityReveal) {
+    return (
+      <PersonalityRevealScreen
+        onComplete={() => {
+          setShowPersonalityReveal(false);
+          navigate('/home', { replace: true });
+        }}
+      />
+    );
+  }
+
   return (
     <div className="h-dvh w-full flex flex-col bg-secondary/50 overflow-hidden">
+      {/* Onboarding micro-feedback overlay */}
+      <AnimatePresence>
+        {onboardingFeedback && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl bg-card border border-border shadow-lg"
+          >
+            <p className="text-sm font-display font-bold text-foreground text-center">{onboardingFeedback}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Top bar with home + streak + info */}
       <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
         <button
