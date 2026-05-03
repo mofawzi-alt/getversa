@@ -1,4 +1,8 @@
 import { lazy, Suspense, useMemo, useState, useCallback, useEffect } from 'react';
+import { useUserStories, type GroupedUserStories } from '@/hooks/useUserStories';
+import UserStoryViewer from '@/components/stories/UserStoryViewer';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Plus } from 'lucide-react';
 import { useDailyPulse, usePulseSettings, type PulseCard } from '@/hooks/useDailyPulse';
 import { useAuth } from '@/contexts/AuthContext';
 import StoryViewer, { type StoryCardData } from './StoryViewer';
