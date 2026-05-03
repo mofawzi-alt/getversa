@@ -1,4 +1,4 @@
-import { Sparkles, User } from 'lucide-react';
+import { Sparkles, User, Brain, Users, Globe, Zap } from 'lucide-react';
 import VerdictCard, { type Verdict } from './VerdictCard';
 import ResearchBrief from './ResearchBrief';
 import SuggestionChips from './SuggestionChips';
@@ -8,6 +8,14 @@ import SuggestPollButton from './SuggestPollButton';
 import type { ResearchPoll } from '@/lib/askExport';
 
 export type Mode = 'decide' | 'research';
+
+export interface InsightParts {
+  verdict?: string;
+  why?: string;
+  demographic_split?: string;
+  cultural_context?: string;
+  action_line?: string;
+}
 
 export interface AskTurn {
   id: string;
@@ -28,6 +36,7 @@ export interface AskTurn {
   askQueryId?: string | null;
   creditsCharged?: number;
   creditsBalance?: number;
+  insightParts?: InsightParts | null;
 }
 
 interface Props {
@@ -139,6 +148,48 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                 {!t.loading && !t.lowData && !t.variant && t.mode === 'decide' && !t.verdict && t.summary && (
                   <div className="rounded-2xl rounded-tl-sm bg-card border border-border p-3.5">
                     <p className="text-sm text-foreground break-words">{t.summary}</p>
+                  </div>
+                )}
+
+                {/* 5-part insight breakdown (both modes) */}
+                {!t.loading && !t.lowData && !t.variant && t.insightParts && (
+                  <div className="rounded-2xl bg-card border border-border overflow-hidden">
+                    {t.insightParts.why && (
+                      <div className="flex items-start gap-2.5 px-3.5 py-2.5 border-b border-border/50">
+                        <Brain className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-primary">Why</p>
+                          <p className="text-sm text-foreground leading-relaxed">{t.insightParts.why}</p>
+                        </div>
+                      </div>
+                    )}
+                    {t.insightParts.demographic_split && (
+                      <div className="flex items-start gap-2.5 px-3.5 py-2.5 border-b border-border/50">
+                        <Users className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-blue-500">Demo Split</p>
+                          <p className="text-sm text-foreground leading-relaxed">{t.insightParts.demographic_split}</p>
+                        </div>
+                      </div>
+                    )}
+                    {t.insightParts.cultural_context && (
+                      <div className="flex items-start gap-2.5 px-3.5 py-2.5 border-b border-border/50">
+                        <Globe className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-amber-500">Cultural Context</p>
+                          <p className="text-sm text-foreground leading-relaxed">{t.insightParts.cultural_context}</p>
+                        </div>
+                      </div>
+                    )}
+                    {t.insightParts.action_line && (
+                      <div className="flex items-start gap-2.5 px-3.5 py-2.5">
+                        <Zap className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-emerald-500">Action</p>
+                          <p className="text-sm text-foreground font-semibold leading-relaxed">{t.insightParts.action_line}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

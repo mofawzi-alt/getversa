@@ -3447,6 +3447,10 @@ export type Database = {
         Args: { p_card_index?: number; p_event: string; p_story_id: string }
         Returns: undefined
       }
+      update_user_dimension_scores: {
+        Args: { p_choice: string; p_poll_id: string; p_user_id: string }
+        Returns: undefined
+      }
       upsert_auto_editorial_story: {
         Args: {
           p_cards: Json

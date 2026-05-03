@@ -258,6 +258,7 @@ export default function Ask() {
         polls: data.polls || [],
         creditsCharged: data.credits_charged,
         creditsBalance: data.credits_balance,
+        insightParts: data.insight_parts || null,
       } as AskTurn : t));
       // Refresh balance pill
       qc.invalidateQueries({ queryKey: ['ask-credits'] });
