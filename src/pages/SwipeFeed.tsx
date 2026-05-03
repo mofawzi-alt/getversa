@@ -425,19 +425,35 @@ function ImmersivePollCard({
             <p className="text-white text-base font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
           </div>
 
-          {/* Suspense loading pulse */}
+          {/* Suspense reveal animation */}
           {hasResult && showSuspense && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+              initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+              animate={{ opacity: 1, backdropFilter: 'blur(8px)' }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-30 flex items-center justify-center bg-black/50"
             >
               <motion.div
-                animate={{ scale: [1, 1.15, 1] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-                className="w-12 h-12 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center"
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: [0.6, 1.2, 1], opacity: 1 }}
+                transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
+                className="flex flex-col items-center gap-2"
               >
-                <span className="text-white text-lg font-bold">?</span>
+                <motion.div
+                  animate={{ rotate: [0, 180, 360] }}
+                  transition={{ duration: 0.6, ease: 'easeInOut' }}
+                  className="w-14 h-14 rounded-full bg-white/15 border-2 border-white/40 flex items-center justify-center"
+                >
+                  <span className="text-white text-xl">✨</span>
+                </motion.div>
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="text-white/80 text-xs font-semibold"
+                >
+                  Revealing results...
+                </motion.p>
               </motion.div>
             </motion.div>
           )}
