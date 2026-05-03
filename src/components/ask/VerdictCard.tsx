@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Trophy, Users, ArrowRight } from 'lucide-react';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import ShareVerdictCard from './ShareVerdictCard';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 
 export interface Verdict {
   poll_id: string;
@@ -100,7 +101,25 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
             <ArrowRight className="h-4 w-4" />
           </button>
           <ShareVerdictCard verdict={verdict} />
-        </div>
+          <ShareToStoryButton
+            storyType="poll_result"
+            content={{
+              poll_id: verdict.poll_id,
+              question: verdict.question,
+              option_a: verdict.option_a,
+              option_b: verdict.option_b,
+              pct_a: winSideA ? verdict.winner_pct : verdict.loser_pct,
+              pct_b: winSideA ? verdict.loser_pct : verdict.winner_pct,
+              total_votes: verdict.total_votes,
+              winning_option: verdict.winner_label,
+              winning_pct: verdict.winner_pct,
+              image_a_url: verdict.image_a_url,
+              image_b_url: verdict.image_b_url,
+            }}
+            imageUrl={winSideA ? verdict.image_a_url : verdict.image_b_url}
+            variant="compact"
+            className="w-full justify-center"
+          />
       </div>
     </div>
   );

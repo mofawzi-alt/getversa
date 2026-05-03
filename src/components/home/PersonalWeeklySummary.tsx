@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Share2, Trophy, Target, Sparkles } from 'lucide-react';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -180,9 +181,20 @@ export default function PersonalWeeklySummary() {
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             <span className="text-xs font-display font-bold text-primary">Your Week</span>
           </div>
-          <button onClick={handleShare} className="p-1.5 rounded-full hover:bg-muted/50 text-muted-foreground">
-            <Share2 className="h-3.5 w-3.5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <ShareToStoryButton
+              storyType="achievement"
+              content={{
+                title: 'My Week on Versa',
+                description: `${summary.totalVoted} polls voted · ${summary.majority} majority · ${summary.minority} minority`,
+                detail: summary.biggestUpset ? `Most surprising: ${summary.biggestUpset.question}` : undefined,
+              }}
+              variant="icon"
+            />
+            <button onClick={handleShare} className="p-1.5 rounded-full hover:bg-muted/50 text-muted-foreground">
+              <Share2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* Stats row */}
