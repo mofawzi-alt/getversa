@@ -41,7 +41,11 @@ function storyContent(story: UserStory) {
       return {
         headline: c.archetype || 'My Taste Profile',
         primary: c.description || 'Check out my taste identity',
-        secondary: c.top_categories?.join(' • '),
+        secondary: [
+          c.personality_name ? `${c.personality_name}` : null,
+          c.top_categories?.length ? c.top_categories.join(' • ') : null,
+          c.total_votes ? `${Number(c.total_votes).toLocaleString()} votes` : null,
+        ].filter(Boolean).join('  ·  ') || undefined,
         bg: c.card_image || null,
         emoji: '🧬',
         label: 'Taste Profile',
@@ -198,15 +202,33 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
 
       {/* Content area — tap zones */}
       <div className="flex-1 relative" onClick={handleTap}>
-        {/* Background image */}
-        {(content.bg || story.image_url) && (
-          <img
-            src={content.bg || story.image_url!}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+        {/* Background — gradient for taste/achievement, image for others */}
+        {story.story_type === 'taste_profile' ? (
+          <>
+            <div className="absolute inset-0" style={{
+              background: 'linear-gradient(160deg, #0a0f2c 0%, #111b4d 25%, #1a2980 50%, #26348a 75%, #0d1440 100%)'
+            }} />
+            {/* Radial glow */}
+            <div className="absolute inset-0" style={{
+              background: 'radial-gradient(circle at 50% 40%, rgba(99,102,241,0.3) 0%, transparent 60%)'
+            }} />
+            {/* Large centered emoji */}
+            <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: '30%' }}>
+              <span className="text-[120px] opacity-90">{content.emoji}</span>
+            </div>
+          </>
+        ) : (
+          <>
+            {(content.bg || story.image_url) && (
+              <img
+                src={content.bg || story.image_url!}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/50" />
+          </>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/50" />
 
         {/* Story content */}
         <div className="absolute bottom-0 left-0 right-0 p-6 pb-20 flex flex-col gap-3">
