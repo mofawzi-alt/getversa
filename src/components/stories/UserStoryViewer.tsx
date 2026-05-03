@@ -202,33 +202,52 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
 
       {/* Content area — tap zones */}
       <div className="flex-1 relative" onClick={handleTap}>
-        {/* Background — gradient for taste/achievement, image for others */}
-        {story.story_type === 'taste_profile' ? (
-          <>
-            <div className="absolute inset-0" style={{
-              background: 'linear-gradient(160deg, #0a0f2c 0%, #111b4d 25%, #1a2980 50%, #26348a 75%, #0d1440 100%)'
-            }} />
-            {/* Radial glow */}
-            <div className="absolute inset-0" style={{
-              background: 'radial-gradient(circle at 50% 40%, rgba(99,102,241,0.3) 0%, transparent 60%)'
-            }} />
-            {/* Large centered emoji */}
-            <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: '30%' }}>
-              <span className="text-[120px] opacity-90">{content.emoji}</span>
-            </div>
-          </>
-        ) : (
-          <>
-            {(content.bg || story.image_url) && (
-              <img
-                src={content.bg || story.image_url!}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/50" />
-          </>
-        )}
+        {/* Background — themed gradients per story type, image when available */}
+        {(() => {
+          const hasImage = !!(content.bg || story.image_url);
+          const gradients: Record<string, { bg: string; glow: string }> = {
+            taste_profile: {
+              bg: 'linear-gradient(160deg, #0a0f2c 0%, #111b4d 25%, #1a2980 50%, #26348a 75%, #0d1440 100%)',
+              glow: 'radial-gradient(circle at 50% 40%, rgba(99,102,241,0.3) 0%, transparent 60%)',
+            },
+            achievement: {
+              bg: 'linear-gradient(160deg, #1a0a00 0%, #3d1c00 25%, #7a3d00 50%, #c9842a 75%, #3d1c00 100%)',
+              glow: 'radial-gradient(circle at 50% 40%, rgba(251,191,36,0.35) 0%, transparent 60%)',
+            },
+            duel_result: {
+              bg: 'linear-gradient(160deg, #1a0022 0%, #2d0041 25%, #5b21b6 50%, #7c3aed 75%, #1a0022 100%)',
+              glow: 'radial-gradient(circle at 50% 40%, rgba(139,92,246,0.35) 0%, transparent 60%)',
+            },
+            poll_result: {
+              bg: 'linear-gradient(160deg, #0a1628 0%, #0f2440 25%, #1e3a5f 50%, #2563eb 75%, #0a1628 100%)',
+              glow: 'radial-gradient(circle at 50% 40%, rgba(59,130,246,0.3) 0%, transparent 60%)',
+            },
+          };
+          const theme = gradients[story.story_type] || gradients.poll_result;
+
+          if (hasImage) {
+            return (
+              <>
+                <img
+                  src={content.bg || story.image_url!}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/50" />
+              </>
+            );
+          }
+
+          return (
+            <>
+              <div className="absolute inset-0" style={{ background: theme.bg }} />
+              <div className="absolute inset-0" style={{ background: theme.glow }} />
+              <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: '30%' }}>
+                <span className="text-[120px] opacity-90">{content.emoji}</span>
+              </div>
+            </>
+          );
+        })()}
 
         {/* Story content */}
         <div className="absolute bottom-0 left-0 right-0 p-6 pb-20 flex flex-col gap-3">
