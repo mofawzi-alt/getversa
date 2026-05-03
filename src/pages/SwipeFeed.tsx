@@ -721,8 +721,15 @@ export default function SwipeFeed() {
   const [showSwipeOverlay, setShowSwipeOverlay] = useState(!isSwipeOverlayDone());
   const [showSwipeHint, setShowSwipeHint] = useState(!isSwipeHintDone());
   const [totalUserVotes, setTotalUserVotes] = useState<number | null>(null);
+  const [showPersonalityReveal, setShowPersonalityReveal] = useState(false);
+  const [onboardingVoteCount, setOnboardingVoteCount] = useState(0);
+  const [onboardingFeedback, setOnboardingFeedback] = useState<string | null>(null);
   
   const NEW_USER_VOTE_THRESHOLD = 5;
+  const ONBOARDING_POLL_IDS = Array.from({ length: 10 }, (_, i) => 
+    `a0000001-0001-4000-8000-00000000000${i + 1}`
+  );
+  const isNewUser = totalUserVotes !== null && totalUserVotes < 10;
 
   useEffect(() => {
     if (loading) return;
