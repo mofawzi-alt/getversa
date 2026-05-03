@@ -183,7 +183,19 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
 
         {isOwn && (
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete?.(story.id); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window.confirm('Delete this story?')) {
+                onDelete?.(story.id);
+                // Advance instead of closing
+                if (stories.length > 1) {
+                  const nextIdx = idx >= stories.length - 1 ? Math.max(0, idx - 1) : idx;
+                  setIdx(nextIdx);
+                } else {
+                  onClose();
+                }
+              }
+            }}
             className="p-2 text-white/70 hover:text-white"
           >
             <Trash2 className="w-5 h-5" />
