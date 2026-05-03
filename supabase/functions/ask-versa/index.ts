@@ -962,9 +962,20 @@ Examples:
     }
     const newBalance = spendData.balance;
 
-    // Build verdict / research using selected model
+    // Build 5-part structured insight using selected model
     let summary = intent_summary || "Here's what I found.";
     let verdict: any = null;
+    let insight_parts: any = null;
+
+    // Compute gender split data for all matched polls
+    const genderInsights = matchedPolls.map((p: any) => {
+      const s = p._stats;
+      const mTotal = s.genderM?.total || 0;
+      const fTotal = s.genderF?.total || 0;
+      const mPctA = mTotal > 0 ? Math.round((s.genderM.a / mTotal) * 100) : null;
+      const fPctA = fTotal > 0 ? Math.round((s.genderF.a / fTotal) * 100) : null;
+      return { question: p.question, option_a: p.option_a, option_b: p.option_b, mPctA, fPctA, mTotal, fTotal };
+    }).filter((g: any) => g.mTotal >= 5 && g.fTotal >= 5);
 
     if (mode === "decide") {
       const top = matchedPolls[0];
@@ -982,16 +993,43 @@ Examples:
         viewerLine = `${vPct}% of ${viewer.age_range} agree`;
       }
 
-      const reasonResp = await callAI(LOVABLE_API_KEY, model, {
+      // Build the 5-part prompt for structured insights
+      const pollDataText = matchedPolls.slice(0, 5).map((p: any) => {
+        const ps = p._stats;
+        const pa = ps.total > 0 ? Math.round((ps.a / ps.total) * 100) : 50;
+        const gM = ps.genderM?.total >= 5 ? `Men: ${Math.round((ps.genderM.a / ps.genderM.total) * 100)}% ${p.option_a}` : "";
+        const gF = ps.genderF?.total >= 5 ? `Women: ${Math.round((ps.genderF.a / ps.genderF.total) * 100)}% ${p.option_a}` : "";
+        return `- "${p.question}" → ${p.option_a} ${pa}% vs ${p.option_b} ${100 - pa}% (n=${ps.total}) ${gM} ${gF}`;
+      }).join("\n");
+
+      const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: "You write ONE punchy sentence (max 18 words) explaining why Egyptians lean a certain way on a poll. No preamble, no quotes. Direct and confident." + arabicInstruction },
-          { role: "user", content: `Question: "${top.question}"\nWinner: ${winnerLabel} (${winnerPct}%)\nLoser: ${winnerSide === "A" ? top.option_b : top.option_a} (${100 - winnerPct}%)\nSample size: ${s.total}\n\nWhy did people pick ${winnerLabel}? One sentence.` },
+          { role: "system", content: `You are Versa's insight engine. Produce a structured JSON response with exactly 5 parts.
+Reply ONLY with valid JSON, no markdown, no backticks.
+
+{
+  "verdict": "One punchy sentence (max 18 words) — the headline finding. Lead with the winning % and option name.",
+  "why": "One sentence explaining the behavioral driver behind the preference. What does choosing this say about the person?",
+  "demographic_split": "One sentence about the most interesting gender or age split in the data. If men and women disagree, highlight it. If no split data, say 'Consistent across demographics.'",
+  "cultural_context": "One sentence connecting this preference to Egyptian culture, identity, or current trends. Be specific to Egypt/MENA.",
+  "action_line": "One sentence — a direct, confident recommendation as if advising a friend. Start with 'Go with...' or 'Pick...' or 'Try...'"
+}
+
+Rules:
+- Every field must be a single sentence, max 20 words each.
+- Use real numbers from the data. Never invent statistics.
+- Never mention 'Gen Z' or generational labels.
+- Be conversational, confident, direct — like a smart Cairo friend who reads data.` + arabicInstruction },
+          { role: "user", content: `User asked: "${question}"\n\nPoll data:\n${pollDataText}\n\nTop result: ${winnerLabel} wins with ${winnerPct}% (n=${s.total})` },
         ],
+        response_format: { type: "json_object" },
       });
-      let reason = "";
-      if (reasonResp.ok) {
-        const rd = await readJsonSafely(reasonResp) || {};
-        reason = rd.choices?.[0]?.message?.content?.trim().replace(/^["']|["']$/g, "") || "";
+
+      let parts = { verdict: "", why: "", demographic_split: "", cultural_context: "", action_line: "" };
+      if (insightResp.ok) {
+        const rd = await readJsonSafely(insightResp) || {};
+        const content = rd.choices?.[0]?.message?.content || "";
+        try { parts = JSON.parse(content); } catch { /* use defaults */ }
       }
 
       verdict = {
@@ -1006,28 +1044,53 @@ Examples:
         total_votes: s.total,
         real_votes: s.realTotal,
         baseline_active: !!s.baselineActive,
-        reason,
+        reason: parts.verdict || `${winnerPct}% of Egyptians pick ${winnerLabel}.`,
         viewer_line: viewerLine,
       };
-      summary = isArabic
+      insight_parts = parts;
+      summary = parts.verdict || (isArabic
         ? `${winnerPct}% من المصريين بيختاروا ${winnerLabel}.`
-        : `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
+        : `${winnerPct}% of Egyptians pick ${winnerLabel}.`);
     } else {
+      // Research mode: 5-part structured insight across multiple polls
       const sampleText = matchedPolls.slice(0, 8).map((p: any) => {
         const s = p._stats;
         const pctA = s.total > 0 ? Math.round((s.a / s.total) * 100) : 50;
-        return `- "${p.question}" → ${p.option_a} ${pctA}% vs ${p.option_b} ${100 - pctA}% (n=${s.total})`;
+        const gM = s.genderM?.total >= 5 ? `Men: ${Math.round((s.genderM.a / s.genderM.total) * 100)}% ${p.option_a}` : "";
+        const gF = s.genderF?.total >= 5 ? `Women: ${Math.round((s.genderF.a / s.genderF.total) * 100)}% ${p.option_a}` : "";
+        return `- "${p.question}" → ${p.option_a} ${pctA}% vs ${p.option_b} ${100 - pctA}% (n=${s.total}) ${gM} ${gF}`;
       }).join("\n");
-      const sumResp = await callAI(LOVABLE_API_KEY, model, {
+
+      const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: "You write a 2-3 sentence research-style insight summary. Lead with the strongest concrete number. No bullet points. No mention of 'Gen Z' or generations. Direct and citation-worthy." + arabicInstruction },
-          { role: "user", content: `User's research question: "${question}"\n\nMatched polls with results:\n${sampleText}\n\nWrite 2-3 sentences leading with the most striking stat.` },
+          { role: "system", content: `You are Versa's research insight engine. Produce a structured JSON response with exactly 5 parts.
+Reply ONLY with valid JSON, no markdown, no backticks.
+
+{
+  "verdict": "2-3 sentence research-style summary. Lead with the strongest concrete number. Citation-worthy.",
+  "why": "One sentence on the behavioral pattern — what do these choices collectively reveal about Egyptian consumers?",
+  "demographic_split": "One sentence about the most interesting demographic divergence across the polls. If none, say 'Consistent across demographics.'",
+  "cultural_context": "One sentence connecting patterns to Egyptian market dynamics or cultural identity.",
+  "action_line": "One sentence — a strategic takeaway for someone making decisions based on this data."
+}
+
+Rules:
+- Use real numbers from the data. Never invent statistics.
+- Never mention 'Gen Z' or generational labels.
+- Be analytical but accessible — like a consulting brief, not an academic paper.` + arabicInstruction },
+          { role: "user", content: `User's research question: "${question}"\n\nMatched polls with results:\n${sampleText}` },
         ],
+        response_format: { type: "json_object" },
       });
-      if (sumResp.ok) {
-        const sd = await readJsonSafely(sumResp) || {};
-        summary = sd.choices?.[0]?.message?.content?.trim() || summary;
+
+      let parts = { verdict: "", why: "", demographic_split: "", cultural_context: "", action_line: "" };
+      if (insightResp.ok) {
+        const rd = await readJsonSafely(insightResp) || {};
+        const content = rd.choices?.[0]?.message?.content || "";
+        try { parts = JSON.parse(content); } catch { /* use defaults */ }
       }
+      insight_parts = parts;
+      summary = parts.verdict || summary;
     }
 
     // Enriched poll cards
