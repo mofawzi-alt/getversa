@@ -49,6 +49,26 @@ export default function SharePollToFriendSheet({ pollId, pollQuestion, optionA, 
           )}
         </SheetHeader>
 
+        {/* Share to Story option */}
+        <div className="mb-3 pb-3 border-b border-border/50">
+          <ShareToStoryButton
+            storyType="poll_result"
+            content={{
+              poll_id: pollId,
+              question: pollQuestion,
+              option_a: optionA,
+              option_b: optionB,
+              pct_a: percentA,
+              pct_b: percentB,
+              winning_option: (percentA ?? 0) >= (percentB ?? 0) ? optionA : optionB,
+              image_url: imageUrl,
+            }}
+            imageUrl={imageUrl}
+            variant="compact"
+            className="w-full justify-center"
+          />
+        </div>
+
         {loadingFriends && (
           <div className="flex justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
