@@ -32,6 +32,30 @@ function isCelebrityName(s: string): boolean {
   return true;
 }
 
+// Brand disambiguation: map ambiguous brand names to their product category for image gen
+const BRAND_CONTEXT: Record<string, string> = {
+  apple: 'Apple (the tech company — iPhone, MacBook, AirPods). Show a sleek modern SMARTPHONE or LAPTOP. NOT the fruit.',
+  orange: 'Orange (the telecom company). Show a MOBILE PHONE with a SIM card or cellular signal. NOT the fruit.',
+  amazon: 'Amazon (the e-commerce platform). Show ONLINE SHOPPING / package delivery. NOT a rainforest.',
+  uber: 'Uber (the ride-hailing app). Show a RIDE-HAILING car pickup scene with a phone.',
+  noon: 'Noon (the Middle East e-commerce platform). Show ONLINE SHOPPING / package delivery.',
+  dove: 'Dove (the personal care brand). Show SOAP, SHAMPOO, or BODY WASH. NOT the bird.',
+  puma: 'Puma (the sportswear brand). Show SNEAKERS or ATHLETIC WEAR. NOT the animal.',
+  jaguar: 'Jaguar (the luxury car brand). Show a LUXURY SEDAN. NOT the animal.',
+  boss: 'Boss (Hugo Boss fashion brand). Show FASHION / PERFUME. NOT a manager.',
+  mango: 'Mango (the fashion brand). Show CLOTHING / FASHION. NOT the fruit.',
+  sprite: 'Sprite (the lemon-lime soda). Show a CLEAR FIZZY DRINK in a can/glass.',
+  galaxy: 'Samsung Galaxy (smartphone). Show a SMARTPHONE.',
+  safari: 'Safari (the web browser or the travel experience, based on context).',
+};
+
+function getBrandHint(subject: string, question: string): string {
+  const key = subject.toLowerCase().trim();
+  const hint = BRAND_CONTEXT[key];
+  if (!hint) return '';
+  return `\n\n⚠️ BRAND DISAMBIGUATION — CRITICAL: "${subject}" refers to ${hint} This is NOT the literal word meaning. Generate imagery of the BRAND/PRODUCT, never the literal object/animal/fruit.`;
+}
+
 const PROMPT_TPL = (subject: string, question: string, otherOption: string) => {
   const bothCelebrities = isCelebrityName(subject) && isCelebrityName(otherOption);
   
@@ -59,8 +83,9 @@ STRICTLY FORBIDDEN: NO real human faces, NO photographs of actual people, NO log
 
   const isProduct = isProductOrBrand(subject) && isProductOrBrand(otherOption);
   const mode = isProduct ? 'HYBRID' : 'LIFESTYLE';
+  const brandHint = getBrandHint(subject, question);
 
-  const hybridBlock = `MODE: HYBRID (product-in-context). Show ONE Gen Z person actively USING, HOLDING, OPENING, EATING, DRINKING, OR INTERACTING WITH a generic version of the product "${subject}" inside a real-life moment that ALSO matches the question topic "${question}". The product must be CLEARLY VISIBLE and recognizable as the correct CATEGORY (e.g. soda can, chocolate bar, food delivery bag, smartphone, sneakers) but with NO logos, NO wordmarks, NO brand colors, NO packaging text. The human interaction is mandatory — never a static product-only shot.`;
+  const hybridBlock = `MODE: HYBRID (product-in-context). Show ONE Gen Z person actively USING, HOLDING, OPENING, EATING, DRINKING, OR INTERACTING WITH a generic version of the product "${subject}" inside a real-life moment that ALSO matches the question topic "${question}". The product must be CLEARLY VISIBLE and recognizable as the correct CATEGORY (e.g. soda can, chocolate bar, food delivery bag, smartphone, sneakers) but with NO logos, NO wordmarks, NO brand colors, NO packaging text. The human interaction is mandatory — never a static product-only shot.${brandHint}`;
 
   const lifestyleBlock = `MODE: LIFESTYLE (behavior). The QUESTION is "${question}" and this option means "${subject}".
 
