@@ -959,7 +959,7 @@ export default function SwipeFeed() {
         p_user_id: user.id,
         p_poll_id: pollId,
         p_choice: choice,
-      }).then(() => {}).catch(() => {});
+      } as any).then(() => {});
       // Fetch global results and demographic breakdown in parallel
       const [globalRes, demoRes] = await Promise.all([
         supabase.rpc('get_poll_results', { poll_ids: [pollId] }),
