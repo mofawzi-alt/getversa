@@ -193,7 +193,7 @@ export default function ShareableTasteCard({ archetype, description, topCategory
     ctx.lineTo(W - 100, H - 280);
     ctx.stroke();
 
-    // Versa logo at bottom
+    // Versa full logo at bottom (already light on dark — no invert needed)
     try {
       const logo = new Image();
       logo.crossOrigin = 'anonymous';
@@ -202,11 +202,11 @@ export default function ShareableTasteCard({ archetype, description, topCategory
         logo.onerror = reject;
         logo.src = versaLogoImg;
       });
-      const logoH = 55;
+      // The full logo image contains multiple rows — crop to the middle row (simplest/cleanest)
+      // Draw proportionally: target height ~70px on 1920 canvas
+      const logoH = 70;
       const logoW = (logo.width / logo.height) * logoH;
-      ctx.filter = 'invert(1)';
-      ctx.drawImage(logo, (W - logoW) / 2, H - 230, logoW, logoH);
-      ctx.filter = 'none';
+      ctx.drawImage(logo, (W - logoW) / 2, H - 240, logoW, logoH);
     } catch {
       ctx.font = 'bold 40px "Space Grotesk", sans-serif';
       ctx.fillStyle = 'rgba(255,255,255,0.6)';
