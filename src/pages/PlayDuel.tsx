@@ -528,21 +528,35 @@ export default function PlayDuel() {
           {/* Bridge CTAs — funnel back into solo voting (B2B data) + game loop */}
           <div className="mt-6 space-y-2">
             {rate !== null && otherDone && (
-              <ShareDuelResultCard
-                duelId={duel.id}
-                myName={profile?.username || 'You'}
-                otherName={otherName}
-                myChoices={myChoices}
-                otherChoices={otherChoices}
-                polls={polls.map((p) => ({
-                  id: p.id,
-                  question: p.question,
-                  option_a: p.option_a,
-                  option_b: p.option_b,
-                }))}
-                matchRate={rate}
-                matches={matches!}
-              />
+              <>
+                <ShareToStoryButton
+                  storyType="duel_result"
+                  content={{
+                    opponent: otherName,
+                    won: rate >= 70,
+                    tied: rate >= 40 && rate < 70,
+                    score: `${matches}/${polls.length} matched · ${rate}% match`,
+                    match_rate: rate,
+                  }}
+                  variant="default"
+                  className="w-full"
+                />
+                <ShareDuelResultCard
+                  duelId={duel.id}
+                  myName={profile?.username || 'You'}
+                  otherName={otherName}
+                  myChoices={myChoices}
+                  otherChoices={otherChoices}
+                  polls={polls.map((p) => ({
+                    id: p.id,
+                    question: p.question,
+                    option_a: p.option_a,
+                    option_b: p.option_b,
+                  }))}
+                  matchRate={rate}
+                  matches={matches!}
+                />
+              </>
             )}
             <button
               onClick={() => navigate('/home')}
