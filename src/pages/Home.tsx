@@ -528,6 +528,23 @@ function HomeLiveDebateCard({
               <Send className="h-3.5 w-3.5" /> Send
             </button>
           )}
+          <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+            <ShareToStoryButton
+              storyType="poll_result"
+              content={{
+                poll_id: poll.id,
+                question: poll.question,
+                option_a: poll.option_a,
+                option_b: poll.option_b,
+                pct_a: poll.percentA,
+                pct_b: poll.percentB,
+                winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
+                image_url: poll.image_a_url || poll.image_b_url,
+              }}
+              imageUrl={poll.image_a_url || poll.image_b_url}
+              variant="icon"
+            />
+          </div>
           <button
             onClick={handleShareClick}
             className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-primary-foreground text-[12px] font-bold shadow-sm active:scale-95 transition"
