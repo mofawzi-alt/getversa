@@ -86,7 +86,7 @@ export default function Profile() {
     <AppLayout>
       <div className="p-4 space-y-6 animate-slide-up">
         {/* Profile Header */}
-        <div className="glass rounded-2xl p-4 text-center">
+        <div className="bg-card rounded-2xl p-4 text-center border border-border shadow-sm">
           {(profile as any)?.avatar_url ? (
             <img
               src={(profile as any).avatar_url}
@@ -111,7 +111,7 @@ export default function Profile() {
             <p className="text-[11px] text-blue-500 font-medium mt-0.5">{selfCategory}</p>
           )}
 
-          <p className="text-card-foreground/70 text-xs mt-0.5">
+          <p className="text-muted-foreground text-xs mt-0.5">
             {profile?.country || 'Unknown location'}
           </p>
 
