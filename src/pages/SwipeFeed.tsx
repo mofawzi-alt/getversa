@@ -31,7 +31,7 @@ const GUEST_VOTE_LIMIT = 5;
 const GUEST_VOTES_KEY = 'versa_guest_votes';
 const RESULT_DISPLAY_MS = 1800;
 const MICRO_FEEDBACK_INTERVAL = 5;
-const SUSPENSE_DELAY_MS = 500;
+const SUSPENSE_DELAY_MS = 650;
 const HIGH_STAKES_INTERVAL = 20;
 
 // Milestone definitions

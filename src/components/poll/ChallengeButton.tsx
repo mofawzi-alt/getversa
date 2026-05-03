@@ -112,7 +112,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
         }}
         className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors"
       >
-        <Swords className="h-3 w-3" /> Challenge
+        <Swords className="h-3 w-3" /> Prove who's right
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
