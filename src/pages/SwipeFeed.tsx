@@ -1061,9 +1061,24 @@ export default function SwipeFeed() {
       const newCount = sessionVoteCount + 1;
       setSessionVoteCount(newCount);
 
-      // New user: after 5 total votes, redirect to home
+      // Onboarding micro-feedback at polls 3, 6, 9 and personality reveal at 10
+      if (isNewUser && user) {
+        const obCount = onboardingVoteCount + 1;
+        setOnboardingVoteCount(obCount);
+        if (obCount === 3) {
+          setTimeout(() => { setOnboardingFeedback("You're starting to form a pattern…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
+        } else if (obCount === 6) {
+          setTimeout(() => { setOnboardingFeedback("Your style is taking shape…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
+        } else if (obCount === 9) {
+          setTimeout(() => { setOnboardingFeedback("We're getting close…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
+        } else if (obCount >= 10) {
+          setTimeout(() => setShowPersonalityReveal(true), 2200);
+        }
+      }
+
+      // New user: after 5 total votes, redirect to home (skip if in onboarding)
       const newTotal = (totalUserVotes ?? 0) + newCount;
-      if (totalUserVotes !== null && totalUserVotes < NEW_USER_VOTE_THRESHOLD && newTotal >= NEW_USER_VOTE_THRESHOLD) {
+      if (!isNewUser && totalUserVotes !== null && totalUserVotes < NEW_USER_VOTE_THRESHOLD && newTotal >= NEW_USER_VOTE_THRESHOLD) {
         setTimeout(() => navigate('/home', { replace: true }), 2000);
       }
 
