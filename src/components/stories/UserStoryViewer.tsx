@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, Trash2, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import type { GroupedUserStories, UserStory } from '@/hooks/useUserStories';
+import type { GroupedUserStories, UserStory, UserStoryType } from '@/hooks/useUserStories';
 import ShareButton from '@/components/poll/ShareButton';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
