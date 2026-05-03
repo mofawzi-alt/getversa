@@ -82,7 +82,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="polls" className="text-xs px-4 py-2">Polls</TabsTrigger>
           <TabsTrigger value="calendar" className="text-xs px-4 py-2">Calendar</TabsTrigger>
           <TabsTrigger value="campaigns" className="text-xs px-4 py-2">Campaigns</TabsTrigger>
-          <TabsTrigger value="analytics" className="text-xs px-4 py-2">Platform Intel</TabsTrigger>
+          <TabsTrigger value="analytics" className="text-xs px-4 py-2">Analytics</TabsTrigger>
           <TabsTrigger value="rewards" className="text-xs px-4 py-2">Rewards</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs px-4 py-2">Notify</TabsTrigger>
           <TabsTrigger value="pulse" className="text-xs px-4 py-2 relative">
