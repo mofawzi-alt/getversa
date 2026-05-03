@@ -61,6 +61,7 @@ const Rewards = lazy(() => import("./pages/Rewards"));
 const Ask = lazy(() => import("./pages/Ask"));
 const Support = lazy(() => import("./pages/Support"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const DecisionIntelligenceReport = lazy(() => import("./pages/DecisionIntelligenceReport"));
 
 import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
