@@ -800,6 +800,13 @@ export default function PulseStoriesRow() {
             setOpenEditorial(prevEditorial);
             return true;
           }
+          // Chain back to last user story group
+          const lastGroup = storyGroups[storyGroups.length - 1];
+          if (lastGroup) {
+            setOpenEditorial(null);
+            setOpenUserStoryGroup(lastGroup);
+            return true;
+          }
           return false;
         }}
       />
@@ -835,6 +842,13 @@ export default function PulseStoriesRow() {
             setOpenEditorial(lastEditorial);
             return true;
           }
+          // Hand off to last user story group
+          const lastGroup = storyGroups[storyGroups.length - 1];
+          if (lastGroup) {
+            setOpenTopic(null);
+            setOpenUserStoryGroup(lastGroup);
+            return true;
+          }
           return false;
         }}
         onShareOverride={
@@ -868,6 +882,21 @@ export default function PulseStoriesRow() {
           const idx = storyGroups.findIndex(g => g.user_id === openUserStoryGroup?.user_id);
           const next = idx >= 0 ? storyGroups[idx + 1] : undefined;
           if (next) { setOpenUserStoryGroup(next); return true; }
+          // Chain to first editorial story
+          const firstEditorial = (editorialStories || [])[0];
+          if (firstEditorial) {
+            setOpenUserStoryGroup(null);
+            setOpenEditorial(firstEditorial);
+            return true;
+          }
+          // Chain to first pulse circle
+          const firstCircle = sorted[0];
+          if (firstCircle) {
+            setOpenUserStoryGroup(null);
+            setOpenTopic(firstCircle.topic);
+            trackStoryEvent(firstCircle.topic);
+            return true;
+          }
           return false;
         }}
         onPrevious={() => {
