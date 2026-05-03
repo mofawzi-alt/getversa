@@ -233,6 +233,10 @@ export default function AdminDashboard() {
           <UserManagement />
         </TabsContent>
 
+        <TabsContent value="decision-intel" className="space-y-4">
+          <DecisionIntelligencePanel />
+        </TabsContent>
+
       </Tabs>
     </div>
   );
