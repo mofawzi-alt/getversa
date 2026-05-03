@@ -220,45 +220,6 @@ function PollOptionImageComponent({
   }
 
   // Photo treatment — varies by card variant
-  // Hero uses "smart zoom out": blurred background fill + full image on top
-  if (variant === 'hero') {
-    return (
-      <div className={`w-full h-full relative overflow-hidden ${className}`}>
-        {showLoader && !loaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/20">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        )}
-        {/* Blurred background fill */}
-        <img
-          src={imgSrc || undefined}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          style={{ objectFit: 'cover', objectPosition: 'center', filter: 'blur(20px) brightness(0.7)', transform: 'scale(1.15)' }}
-          draggable={false}
-          loading={loading}
-          decoding="async"
-        />
-        {/* Full image, no crop */}
-        <img
-          src={imgSrc || undefined}
-          alt={option}
-          className={`relative w-full h-full pointer-events-none transition-opacity duration-300 ${
-            showLoader && !loaded ? 'opacity-0' : 'opacity-100'
-          }`}
-          style={{ objectFit: 'contain', objectPosition: 'center' }}
-          onLoad={() => setLoaded(true)}
-          onError={(e) => handlePollImageError(e, { option, question, side })}
-          draggable={draggable}
-          loading={loading}
-          decoding="async"
-          {...(loading === 'eager' ? { fetchPriority: 'high' as any } : {})}
-        />
-      </div>
-    );
-  }
-
   const photoStyles: Record<CardVariant, { objectFit: string; objectPosition: string; bg: string }> = {
     hero: { objectFit: 'cover', objectPosition: 'center', bg: 'bg-muted' },
     browse: { objectFit: 'cover', objectPosition: 'center top', bg: 'bg-muted' },
