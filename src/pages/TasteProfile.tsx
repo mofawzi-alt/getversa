@@ -365,6 +365,7 @@ export default function TasteProfile() {
             streak={currentStreak}
             personalityCode={personality.ready ? personality.code : undefined}
             personalityName={personality.ready ? personality.name : undefined}
+            personalityEmoji={personality.emoji}
           />
           <div className="flex justify-center mt-3">
             <ShareToStoryButton
