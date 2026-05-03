@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
 import ShareDuelResultCard from '@/components/poll/ShareDuelResultCard';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
