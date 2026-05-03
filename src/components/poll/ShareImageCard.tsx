@@ -72,14 +72,36 @@ export default function ShareImageCard({
       ctx.stroke();
     }
 
-    const loadImg = (url: string): Promise<HTMLImageElement | null> =>
-      new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = url;
-      });
+    // Load images via fetch+blob to avoid CORS tainting the canvas
+    const loadImg = async (url: string): Promise<HTMLImageElement | null> => {
+      try {
+        const resp = await fetch(url, { mode: 'cors' });
+        if (!resp.ok) return null;
+        const blob = await resp.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(img);
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(null);
+          };
+          img.src = objectUrl;
+        });
+      } catch {
+        // Fallback: try crossOrigin attribute
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = url;
+        });
+      }
+    };
 
     const [imgA, imgB] = await Promise.all([
       imageAUrl ? loadImg(imageAUrl) : null,
@@ -219,19 +241,36 @@ export default function ShareImageCard({
     ctx.fillStyle = 'rgba(255,255,255,0.24)';
     ctx.fillText('Open the shared link to vote on this poll', W / 2, H - 34);
 
-    return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+    try {
+      return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+    } catch {
+      // Canvas tainted — return null so we fall back to text-only share
+      return null;
+    }
   }, [choice, displayHost, imageAUrl, imageBUrl, optionA, optionB, percentA, percentB, question]);
 
   const handleShare = useCallback(async () => {
     try {
       const blob = await generateImage();
+
+      const shareText = `What would you choose? Vote on Versa 👉 ${pollUrl}`;
+
+      // If image generation failed, share text-only instead of showing error
       if (!blob) {
-        toast.error('Failed to generate image');
+        if (navigator.share) {
+          await navigator.share({
+            title: 'VERSA Poll',
+            text: shareText,
+            url: pollUrl,
+          });
+        } else {
+          await navigator.clipboard.writeText(`${shareText}\n${pollUrl}`);
+          toast.success('Link copied to clipboard!');
+        }
         return;
       }
 
       const file = new File([blob], 'versa-poll.jpg', { type: 'image/jpeg' });
-      const shareText = `What would you choose? Vote on Versa 👉 ${pollUrl}`;
 
       if (navigator.share) {
         if (navigator.canShare?.({ files: [file] })) {
@@ -251,6 +290,7 @@ export default function ShareImageCard({
         return;
       }
 
+      // Desktop fallback: download image + copy link
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -266,7 +306,13 @@ export default function ShareImageCard({
       }
     } catch (err) {
       if ((err as Error).name !== 'AbortError') {
-        toast.error('Failed to share');
+        // Final fallback: just copy the link
+        try {
+          await navigator.clipboard.writeText(pollUrl);
+          toast.success('Link copied to clipboard!');
+        } catch {
+          toast.error('Could not share. Try copying the link manually.');
+        }
       }
     }
   }, [generateImage, pollUrl]);
