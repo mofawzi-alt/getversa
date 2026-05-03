@@ -727,7 +727,27 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   Share to Instagram Stories
                 </Button>
 
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-4 gap-1.5">
+                  <ShareToStoryButton
+                    storyType="poll_result"
+                    content={{
+                      poll_id: poll.id,
+                      question: poll.question,
+                      option_a: poll.option_a,
+                      option_b: poll.option_b,
+                      pct_a: percentA,
+                      pct_b: percentB,
+                      total_votes: totalVotes,
+                      winning_option: percentA >= percentB ? poll.option_a : poll.option_b,
+                      winning_pct: Math.max(percentA, percentB),
+                      image_a_url: poll.image_a_url,
+                      image_b_url: poll.image_b_url,
+                    }}
+                    imageUrl={choice === 'A' ? poll.image_a_url : poll.image_b_url}
+                    variant="compact"
+                    className="h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
+                  />
+
                   <Button
                     onClick={() => handleShare('whatsapp')}
                     variant="outline"
