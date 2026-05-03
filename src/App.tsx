@@ -189,6 +189,7 @@ function AppInner() {
             <Route path="/profile/notifications" element={<ProtectedRoute><ProfileNotifications /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/di/report/:id" element={<DecisionIntelligenceReport />} />
             <Route path="/insights" element={<Navigate to="/taste-profile" replace />} />
             <Route path="/taste-profile" element={<ProtectedRoute><TasteProfile /></ProtectedRoute>} />
             <Route path="/personality" element={<ProtectedRoute><PersonalityResults /></ProtectedRoute>} />
