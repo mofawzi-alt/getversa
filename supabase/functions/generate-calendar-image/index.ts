@@ -100,13 +100,19 @@ Deno.serve(async (req) => {
 
     // Infer logical setting from question context
     const SETTING_HINTS: Array<{ keywords: string[]; hint: string }> = [
-      { keywords: ["online", "e-commerce", "order", "delivery", "return", "website", "app"], hint: "Indoor/home setting — this activity happens at home or in a modern apartment, NOT on the street or in a market." },
-      { keywords: ["invest", "stock", "fund", "savings", "bank", "fintech", "wallet"], hint: "Show interaction with a phone/laptop screen showing financial data — indoor modern setting." },
+      { keywords: ["sahel", "beach", "coast", "sea", "swim", "resort"], hint: "OUTDOOR beach/resort/coastal setting — turquoise water, sand, summer vibes. NOT indoors." },
+      { keywords: ["ride", "uber", "careem", "taxi", "commute", "transport", "traffic"], hint: "In or near a vehicle on a busy city road. Show actual transportation scene." },
+      { keywords: ["street food", "koshary", "falafel", "shawarma", "food cart", "food stall"], hint: "At a vibrant street food stall or cart, eating while standing. Outdoor." },
+      { keywords: ["online", "e-commerce", "order", "delivery", "return", "website"], hint: "At home on couch — opening a package or browsing phone. NOT at a desk." },
+      { keywords: ["invest", "stock", "fund", "savings", "bank", "fintech", "wallet"], hint: "Show interaction with a phone screen — indoor modern setting." },
       { keywords: ["gym", "workout", "exercise", "fitness", "sport"], hint: "Gym, sports facility, or outdoor exercise setting." },
       { keywords: ["cook", "kitchen", "recipe", "homemade", "meal prep"], hint: "Modern home kitchen setting." },
-      { keywords: ["café", "coffee", "restaurant", "dining", "eat out"], hint: "Upscale café or restaurant setting." },
-      { keywords: ["drive", "car", "commute", "transport"], hint: "In or near a vehicle, road setting." },
+      { keywords: ["café", "coffee", "restaurant", "dining", "eat out", "fine dining"], hint: "Upscale café or restaurant setting." },
+      { keywords: ["drive", "car"], hint: "In or near a vehicle, road setting." },
       { keywords: ["study", "university", "exam", "college", "school"], hint: "Campus, library, or study space setting." },
+      { keywords: ["travel", "fly", "airport", "vacation", "trip"], hint: "Airport, airplane, or travel destination setting. Show travel energy." },
+      { keywords: ["shop", "mall", "buy", "brand", "luxury"], hint: "Inside a modern mall or boutique, browsing or holding shopping bags." },
+      { keywords: ["concert", "music", "festival", "party"], hint: "Live music venue, festival crowd, or party setting with energy and lights." },
     ];
     const questionLower = `${row.question} ${row.option_a} ${row.option_b}`.toLowerCase();
     const settingHint = SETTING_HINTS.find(s => s.keywords.some(k => questionLower.includes(k)))?.hint || "";
