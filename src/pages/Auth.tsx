@@ -427,7 +427,7 @@ export default function Auth() {
                   <label htmlFor="age-confirm" className="text-xs text-muted-foreground leading-tight cursor-pointer">
                     I confirm that I am 18 years of age or older and agree to the{' '}
                     <Link to="/terms" className="text-accent underline">Terms of Service</Link> and{' '}
-                    <Link to="/privacy-policy" className="text-accent underline">Privacy Policy</Link>
+                    <Link to="/privacy" className="text-accent underline">Privacy Policy</Link>
                   </label>
                 </div>
               </>
