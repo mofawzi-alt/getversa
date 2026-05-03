@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useMemo } from 'react';
 import ShareButton from './ShareButton';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import ChallengeButton from './ChallengeButton';
 import { pickFeedbackMessage } from '@/components/feed/VoteFeedbackOverlay';
 import CliffhangerSeries from './CliffhangerSeries';
