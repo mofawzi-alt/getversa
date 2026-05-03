@@ -83,6 +83,17 @@ const ALIGNMENT_MESSAGES = [
   "Your taste matches {pct}% of {city}.",
 ];
 
+// Identity trait signals shown every 3-5 votes
+const IDENTITY_TRAITS = [
+  { trait: 'Independent', emoji: '⚡', message: "You're leaning: Independent ⚡" },
+  { trait: 'Social', emoji: '👥', message: "You're leaning: Social 👥" },
+  { trait: 'Practical', emoji: '🎯', message: "You're leaning: Practical 🎯" },
+  { trait: 'Bold', emoji: '🔥', message: "You're leaning: Bold 🔥" },
+  { trait: 'Creative', emoji: '✨', message: "You're leaning: Creative ✨" },
+  { trait: 'Trendsetter', emoji: '🚀', message: "You're leaning: Trendsetter 🚀" },
+];
+const IDENTITY_SIGNAL_INTERVAL = 4; // every 4 votes
+
 interface Poll {
   id: string;
   question: string;
