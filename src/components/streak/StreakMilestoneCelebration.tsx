@@ -232,6 +232,17 @@ export default function StreakMilestoneCelebration({ streakDays, open, onClose }
                 {generating ? 'Generating...' : 'Share to Stories'}
               </Button>
 
+              <ShareToStoryButton
+                storyType="achievement"
+                content={{
+                  badge_name: `${streakDays}-Day Streak`,
+                  title: `${streakDays}-Day Streak 🔥`,
+                  description: `I'm on a ${streakDays} day voting streak on Versa!`,
+                }}
+                variant="default"
+                className="w-full h-12 rounded-2xl bg-white/20 border-white/30 text-white hover:bg-white/30"
+              />
+
               <button onClick={onClose} className="mt-4 text-sm opacity-50 hover:opacity-80">
                 Maybe later
               </button>
