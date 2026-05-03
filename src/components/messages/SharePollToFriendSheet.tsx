@@ -18,7 +18,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function SharePollToFriendSheet({ pollId, pollQuestion, open, onOpenChange }: Props) {
+export default function SharePollToFriendSheet({ pollId, pollQuestion, optionA, optionB, percentA, percentB, imageUrl, open, onOpenChange }: Props) {
   const { friends, loadingFriends } = useFriends();
   const openConv = useOpenConversation();
   const sendMessage = useSendMessage();
