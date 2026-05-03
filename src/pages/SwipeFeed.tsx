@@ -25,6 +25,7 @@ import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PWAInstallPrompt, { markFirstVote } from '@/components/PWAInstallPrompt';
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
 import SwipeHint, { isSwipeHintDone } from '@/components/onboarding/SwipeHint';
+import PersonalityRevealScreen from '@/components/onboarding/PersonalityRevealScreen';
 
 
 const GUEST_VOTE_LIMIT = 5;
