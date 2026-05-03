@@ -25,6 +25,7 @@ import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PWAInstallPrompt, { markFirstVote } from '@/components/PWAInstallPrompt';
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
 import SwipeHint, { isSwipeHintDone } from '@/components/onboarding/SwipeHint';
+import PersonalityRevealScreen from '@/components/onboarding/PersonalityRevealScreen';
 
 
 const GUEST_VOTE_LIMIT = 5;
@@ -720,8 +721,15 @@ export default function SwipeFeed() {
   const [showSwipeOverlay, setShowSwipeOverlay] = useState(!isSwipeOverlayDone());
   const [showSwipeHint, setShowSwipeHint] = useState(!isSwipeHintDone());
   const [totalUserVotes, setTotalUserVotes] = useState<number | null>(null);
+  const [showPersonalityReveal, setShowPersonalityReveal] = useState(false);
+  const [onboardingVoteCount, setOnboardingVoteCount] = useState(0);
+  const [onboardingFeedback, setOnboardingFeedback] = useState<string | null>(null);
   
   const NEW_USER_VOTE_THRESHOLD = 5;
+  const ONBOARDING_POLL_IDS = Array.from({ length: 10 }, (_, i) => 
+    `a0000001-0001-4000-8000-00000000000${i + 1}`
+  );
+  const isNewUser = totalUserVotes !== null && totalUserVotes < 10;
 
   useEffect(() => {
     if (loading) return;
@@ -898,7 +906,6 @@ export default function SwipeFeed() {
           const [t] = allPolls.splice(idx, 1);
           allPolls.unshift(t);
         } else if (idx === -1) {
-          // Target poll wasn't in the batch — fetch it directly
           const { data: targetPoll } = await supabase
             .from('polls')
             .select('*')
@@ -910,6 +917,39 @@ export default function SwipeFeed() {
           }
         }
       }
+
+      // For new users (< 10 votes): prepend onboarding polls in order
+      if (user && votedPollSet.size < 10 && !categoryFilter && !searchFilter && !targetPollId) {
+        const { data: onboardingRows } = await supabase
+          .from('onboarding_polls')
+          .select('poll_id, display_order')
+          .order('display_order', { ascending: true });
+        
+        if (onboardingRows && onboardingRows.length > 0) {
+          const onboardingPollIds = onboardingRows.map(r => r.poll_id);
+          const unvotedOnboarding = onboardingPollIds.filter(id => !votedPollSet.has(id));
+          
+          if (unvotedOnboarding.length > 0) {
+            // Fetch any onboarding polls not already in allPolls
+            const missingIds = unvotedOnboarding.filter(id => !allPolls.find(p => p.id === id));
+            if (missingIds.length > 0) {
+              const { data: missingPolls } = await supabase
+                .from('polls')
+                .select('*')
+                .in('id', missingIds);
+              if (missingPolls) allPolls.push(...missingPolls);
+            }
+            
+            // Move unvoted onboarding polls to the front in order
+            const onboardingFirst = unvotedOnboarding
+              .map(id => allPolls.find(p => p.id === id))
+              .filter(Boolean) as typeof allPolls;
+            const rest = allPolls.filter(p => !unvotedOnboarding.includes(p.id));
+            allPolls = [...onboardingFirst, ...rest];
+          }
+        }
+      }
+
       return allPolls;
     },
   });
@@ -1021,9 +1061,24 @@ export default function SwipeFeed() {
       const newCount = sessionVoteCount + 1;
       setSessionVoteCount(newCount);
 
-      // New user: after 5 total votes, redirect to home
+      // Onboarding micro-feedback at polls 3, 6, 9 and personality reveal at 10
+      if (isNewUser && user) {
+        const obCount = onboardingVoteCount + 1;
+        setOnboardingVoteCount(obCount);
+        if (obCount === 3) {
+          setTimeout(() => { setOnboardingFeedback("You're starting to form a pattern…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
+        } else if (obCount === 6) {
+          setTimeout(() => { setOnboardingFeedback("Your style is taking shape…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
+        } else if (obCount === 9) {
+          setTimeout(() => { setOnboardingFeedback("We're getting close…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
+        } else if (obCount >= 10) {
+          setTimeout(() => setShowPersonalityReveal(true), 2200);
+        }
+      }
+
+      // New user: after 5 total votes, redirect to home (skip if in onboarding)
       const newTotal = (totalUserVotes ?? 0) + newCount;
-      if (totalUserVotes !== null && totalUserVotes < NEW_USER_VOTE_THRESHOLD && newTotal >= NEW_USER_VOTE_THRESHOLD) {
+      if (!isNewUser && totalUserVotes !== null && totalUserVotes < NEW_USER_VOTE_THRESHOLD && newTotal >= NEW_USER_VOTE_THRESHOLD) {
         setTimeout(() => navigate('/home', { replace: true }), 2000);
       }
 
@@ -1162,8 +1217,32 @@ export default function SwipeFeed() {
   const hasPolls = polls && polls.length > 0;
   const unvotedCount = polls?.filter(p => !votedResults.has(p.id)).length || 0;
 
+  if (showPersonalityReveal) {
+    return (
+      <PersonalityRevealScreen
+        onComplete={() => {
+          setShowPersonalityReveal(false);
+          navigate('/home', { replace: true });
+        }}
+      />
+    );
+  }
+
   return (
     <div className="h-dvh w-full flex flex-col bg-secondary/50 overflow-hidden">
+      {/* Onboarding micro-feedback overlay */}
+      <AnimatePresence>
+        {onboardingFeedback && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl bg-card border border-border shadow-lg"
+          >
+            <p className="text-sm font-display font-bold text-foreground text-center">{onboardingFeedback}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Top bar with home + streak + info */}
       <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
         <button
