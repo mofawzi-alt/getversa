@@ -1250,6 +1250,22 @@ export default function SwipeFeed() {
         )}
       </AnimatePresence>
 
+      {/* Identity signal toast */}
+      <AnimatePresence>
+        {identitySignal && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -15, scale: 0.9 }}
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-[70] px-5 py-3 rounded-2xl bg-foreground/90 backdrop-blur-md shadow-xl"
+          >
+            <p className="text-sm font-display font-bold text-background text-center whitespace-nowrap">
+              {identitySignal}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showValueMsg && (
           <motion.div
