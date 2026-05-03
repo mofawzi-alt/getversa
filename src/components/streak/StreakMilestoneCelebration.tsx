@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, X, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { toast } from 'sonner';
 import versaLogoImg from '@/assets/versa-logo.png';
 
@@ -230,6 +231,17 @@ export default function StreakMilestoneCelebration({ streakDays, open, onClose }
                 <Share2 className="h-5 w-5" />
                 {generating ? 'Generating...' : 'Share to Stories'}
               </Button>
+
+              <ShareToStoryButton
+                storyType="achievement"
+                content={{
+                  badge_name: `${streakDays}-Day Streak`,
+                  title: `${streakDays}-Day Streak 🔥`,
+                  description: `I'm on a ${streakDays} day voting streak on Versa!`,
+                }}
+                variant="default"
+                className="w-full h-12 rounded-2xl bg-white/20 border-white/30 text-white hover:bg-white/30"
+              />
 
               <button onClick={onClose} className="mt-4 text-sm opacity-50 hover:opacity-80">
                 Maybe later
