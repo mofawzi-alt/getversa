@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, X, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { toast } from 'sonner';
 import versaLogoImg from '@/assets/versa-logo.png';
 
