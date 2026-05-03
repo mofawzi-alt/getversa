@@ -159,7 +159,11 @@ RULE 17B — PAIR COMPATIBILITY CHECK: Before finalizing — check both images t
 
 RULE 19 — CATEGORY SPECIFIC IMAGE RULES: FMCG and Food: show product being consumed or enjoyed — never just sitting on a surface. Food must look delicious enough to make someone hungry. Financial: show the emotional state and lifestyle of the financial choice — not just the transaction. Telco and Tech: show device in active use — screen visible and active, never held statically. Lifestyle: show the full environment — background tells as much story as the subject. The Pulse: maximum Egyptian cultural authenticity — these polls are about identity. Generic images are unacceptable for this category.
 
-RULE 20 — THE 1 SECOND TEST (MANDATORY FINAL STEP): Before finalizing any image — mentally show it for 1 second then look away. Ask: what did I see? If the answer matches the option exactly — PASS. If the answer is vague or wrong — FAIL — REGENERATE. This test cannot be skipped. A poll image that fails the 1 second test will never be approved regardless of how good it looks on longer inspection.`;
+RULE 20 — THE 1 SECOND TEST (MANDATORY FINAL STEP): Before finalizing any image — mentally show it for 1 second then look away. Ask: what did I see? If the answer matches the option exactly — PASS. If the answer is vague or wrong — FAIL — REGENERATE. This test cannot be skipped. A poll image that fails the 1 second test will never be approved regardless of how good it looks on longer inspection.
+
+RULE 21 — NO ALCOHOL: Never show wine, cocktails, beer, champagne, liquor bottles, or any alcohol imagery.
+
+RULE 22 — VISUAL DIRECTION: Each image must represent THREE things simultaneously: a lifestyle, a feeling, and a status signal. Both images must feel like they belong in the same visual world but represent completely different lifestyle choices.`;
 };
 
 function slugify(s: string) {
