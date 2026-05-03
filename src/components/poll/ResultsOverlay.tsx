@@ -10,7 +10,7 @@ import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
 import { getInsightTier } from '@/lib/streakGating';
 import { useAuth } from '@/contexts/AuthContext';
 import StreakInsightTeaser from './StreakInsightTeaser';
-  const microFeedback = useMemo(() => pickFeedbackMessage(result.percentA, result.percentB, result.choice), [result]);
+  
 
 interface Poll {
   id: string;
