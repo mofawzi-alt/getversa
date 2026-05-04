@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Loader2, Scale, FlaskConical, ArrowUp, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, Scale, FlaskConical, ArrowUp, RotateCcw, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAskCredits } from '@/hooks/useAskCredits';
+import { useUserVoteCount } from '@/hooks/useUserVoteCount';
+import { Progress } from '@/components/ui/progress';
 import SuggestionChips from '@/components/ask/SuggestionChips';
 import AskThread, { type AskTurn, type Mode } from '@/components/ask/AskThread';
 import CreditBalance from '@/components/ask/CreditBalance';
@@ -61,6 +63,7 @@ export default function Ask() {
   const { profile } = useAuth();
   const qc = useQueryClient();
   const { data: askCredits = 0 } = useAskCredits();
+  const { totalVotes, askLevel, levelLabel } = useUserVoteCount();
   const [mode, setMode] = useState<Mode>('decide');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -129,6 +132,7 @@ export default function Ask() {
     age_range: profile.age_range || undefined,
     city: profile.city || undefined,
     gender: profile.gender || undefined,
+    ask_level: askLevel,
   } : undefined;
 
   const runPreview = async (q?: string) => {
@@ -324,7 +328,26 @@ export default function Ask() {
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pt-4 pb-4 space-y-4 w-full max-w-lg mx-auto min-w-0 max-w-[100vw]">
-        {empty && (
+        {empty && askLevel === 0 && (
+          <div className="text-center pt-8 pb-4 w-full min-w-0 px-4">
+            <div className="inline-flex h-14 w-14 rounded-full bg-muted items-center justify-center mb-4">
+              <Lock className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="text-base font-bold text-foreground mb-2">Vote on 15 polls to unlock Ask Versa</p>
+            <div className="max-w-[200px] mx-auto mb-2">
+              <Progress value={(totalVotes / 15) * 100} className="h-2" />
+            </div>
+            <p className="text-xs text-muted-foreground">{totalVotes} of 15 polls voted</p>
+            <button
+              onClick={() => navigate('/home')}
+              className="mt-4 h-10 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-95 transition"
+            >
+              Start voting
+            </button>
+          </div>
+        )}
+
+        {empty && askLevel > 0 && (
           <>
             <div className="text-center pt-4 pb-2 w-full min-w-0">
               <div className="inline-flex h-12 w-12 rounded-full bg-primary/10 items-center justify-center mb-3">
@@ -334,7 +357,7 @@ export default function Ask() {
                 {mode === 'decide' ? 'Get a clear pick backed by real votes' : 'Get a research brief from Egypt\'s pulse'}
               </p>
               <p className="text-xs text-muted-foreground mt-1 break-words">
-                Unlock insights using your votes. You earn credits by voting.
+                {levelLabel}
               </p>
               <p className="text-[11px] text-muted-foreground/70 mt-0.5 break-words">
                 You have {askCredits} credit{askCredits === 1 ? '' : 's'} ready to use
@@ -348,33 +371,35 @@ export default function Ask() {
         <div ref={threadEndRef} />
       </div>
 
-      <form
-        onSubmit={(e) => { e.preventDefault(); runPreview(); }}
-        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-[100vw] overflow-x-hidden transition-transform duration-150"
-        style={{
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
-          transform: 'translateY(calc(-1 * var(--ask-kb-offset, 0px)))',
-        }}
-      >
-        <div className="relative max-w-lg mx-auto w-full min-w-0 overflow-hidden rounded-full">
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={placeholder}
-            disabled={loading}
-            className="block w-full min-w-0 max-w-full h-12 pl-4 pr-14 rounded-full border border-border bg-card text-base focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
-          />
-          <button
-            type="submit"
-            disabled={loading || query.trim().length < 3}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-primary text-primary-foreground disabled:opacity-40 active:scale-95 transition flex items-center justify-center"
-            aria-label="Send"
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
-          </button>
-        </div>
-      </form>
+      {askLevel > 0 && (
+        <form
+          onSubmit={(e) => { e.preventDefault(); runPreview(); }}
+          className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-[100vw] overflow-x-hidden transition-transform duration-150"
+          style={{
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
+            transform: 'translateY(calc(-1 * var(--ask-kb-offset, 0px)))',
+          }}
+        >
+          <div className="relative max-w-lg mx-auto w-full min-w-0 overflow-hidden rounded-full">
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={placeholder}
+              disabled={loading}
+              className="block w-full min-w-0 max-w-full h-12 pl-4 pr-14 rounded-full border border-border bg-card text-base focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+            />
+            <button
+              type="submit"
+              disabled={loading || query.trim().length < 3}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-primary text-primary-foreground disabled:opacity-40 active:scale-95 transition flex items-center justify-center"
+              aria-label="Send"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+            </button>
+          </div>
+        </form>
+      )}
 
       <UnlockModal
         open={!!preview}

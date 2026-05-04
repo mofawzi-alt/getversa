@@ -110,10 +110,28 @@ export default function Profile() {
           {selfVerified && selfCategory && (
             <p className="text-[11px] text-blue-500 font-medium mt-0.5">{selfCategory}</p>
           )}
+          {/* Milestone labels */}
+          {(stats?.votes ?? 0) >= 200 && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 text-[10px] font-bold mt-1">
+              🔥 Versa OG
+            </span>
+          )}
+          {(stats?.votes ?? 0) >= 100 && (stats?.votes ?? 0) < 200 && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold mt-1">
+              ⚡ Versa Insider
+            </span>
+          )}
 
           <p className="text-muted-foreground text-xs mt-0.5">
             {profile?.country || 'Unknown location'}
           </p>
+
+          {/* Profile confidence indicator */}
+          {(stats?.votes ?? 0) >= 30 && (stats?.votes ?? 0) < 50 && (
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+              Based on {stats?.votes}+ votes — your profile is taking shape
+            </p>
+          )}
 
           {/* Votes / Comparisons / Battles / Points / Majority */}
           <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
@@ -186,8 +204,8 @@ export default function Profile() {
         {/* Recent vote history grid */}
         {user && <VoteHistoryGrid userId={user.id} />}
 
-        {/* Your Dimensions (with quiz inside) */}
-        <ProfileDimensionsSection />
+        {/* Your Dimensions — visible at 50+ votes */}
+        {(stats?.votes ?? 0) >= 50 && <ProfileDimensionsSection />}
 
         {/* Voting Insights */}
         <VotingInsights />
