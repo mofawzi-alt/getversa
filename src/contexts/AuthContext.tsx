@@ -251,12 +251,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // when our ref is set — Supabase can emit any of these after a native
       // session restore on iOS cold-start.
       const externalSignInIntent = hasExternalSignInIntent();
+      const isPasswordRecovery = event === 'PASSWORD_RECOVERY';
       const isExplicitSignIn =
         !!nextSession &&
-        (deliberateSignInRef.current || externalSignInIntent) &&
+        (deliberateSignInRef.current || externalSignInIntent || isPasswordRecovery) &&
         (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED');
 
-      if (isExplicitSignIn) {
+      if (isExplicitSignIn || (!!nextSession && isPasswordRecovery)) {
         deliberateSignInRef.current = false;
         clearExternalSignInIntent();
         clearLogoutGuard();
