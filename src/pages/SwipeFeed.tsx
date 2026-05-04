@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame } from 'lucide-react';
+import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame, Check } from 'lucide-react';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import ShareImageCard from '@/components/poll/ShareImageCard';
