@@ -56,11 +56,11 @@ export default function VoteMilestoneCelebration({ milestone, open, onClose }: P
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="fixed top-16 left-1/2 -translate-x-1/2 z-[9999] w-[90vw] max-w-sm"
+          className="fixed top-16 left-0 right-0 z-[9999] mx-auto w-[calc(100vw-2rem)] max-w-sm px-4"
           onClick={onClose}
         >
           <div className="rounded-2xl bg-gradient-to-r from-primary/90 to-accent/90 backdrop-blur-md border border-primary/30 px-5 py-4 shadow-xl text-center">
-            <p className="text-primary-foreground font-display font-bold text-sm leading-snug">
+            <p className="text-primary-foreground font-display font-bold text-sm leading-snug break-words">
               {milestone.message}
             </p>
           </div>
