@@ -1086,16 +1086,18 @@ export default function SwipeFeed() {
         setTimeout(() => setFeedbackPollId(null), 1800);
       }
 
-      // Show cinematic results screen
-      const currentPoll = polls?.find(p => p.id === data.pollId);
-      if (currentPoll) {
-        setCinematicData({
-          poll: currentPoll,
-          choice: data.choice,
-          percentA: data.percentA,
-          percentB: data.percentB,
-          totalVotes: data.totalVotes,
-        });
+      // Show cinematic results screen (skip during onboarding)
+      if (!isNewUser) {
+        const currentPoll = polls?.find(p => p.id === data.pollId);
+        if (currentPoll) {
+          setCinematicData({
+            poll: currentPoll,
+            choice: data.choice,
+            percentA: data.percentA,
+            percentB: data.percentB,
+            totalVotes: data.totalVotes,
+          });
+        }
       }
 
       // Show points earned feedback
