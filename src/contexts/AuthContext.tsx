@@ -332,7 +332,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // On native cold-start, try to restore the session from Keychain BEFORE
     // falling back to web localStorage (which WKWebView can wipe under storage pressure).
     const fallbackTimer = window.setTimeout(async () => {
-      const forcedNativeLogout = await withTimeout(() => isNativeLoggedOut(), false, 800);
+      const onNative = isNative();
+      const forcedNativeLogout = onNative ? await withTimeout(() => isNativeLoggedOut(), false, 800) : false;
 
       if (hasLogoutGuard() || forcedNativeLogout) {
         clearAuthState();
@@ -340,26 +341,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const webSession = await getSessionWithTimeout(1200);
+      const webSession = await getSessionWithTimeout(onNative ? 1200 : 600);
       if (cancelled) return;
 
-      if (hasLogoutGuard() || await withTimeout(() => isNativeLoggedOut(), false, 800)) {
+      if (hasLogoutGuard() || (onNative && await withTimeout(() => isNativeLoggedOut(), false, 800))) {
         clearAuthState();
         finishBoot();
         return;
       }
 
       if (!webSession) {
-        // Treat a successful native restore as a deliberate sign-in so the
-        // SIGNED_IN listener accepts it and clears any stale logout flags.
-        deliberateSignInRef.current = true;
-        const restored = await withTimeout(() => restoreSessionNative(), false, 1200);
-        if (cancelled) return;
-        if (restored) {
-          // onAuthStateChange will fire and populate state — nothing else to do.
-          return;
+        if (onNative) {
+          // Treat a successful native restore as a deliberate sign-in so the
+          // SIGNED_IN listener accepts it and clears any stale logout flags.
+          deliberateSignInRef.current = true;
+          const restored = await withTimeout(() => restoreSessionNative(), false, 1200);
+          if (cancelled) return;
+          if (restored) {
+            // onAuthStateChange will fire and populate state — nothing else to do.
+            return;
+          }
+          deliberateSignInRef.current = false;
         }
-        deliberateSignInRef.current = false;
       }
 
       setSession((prev) => prev ?? webSession);
