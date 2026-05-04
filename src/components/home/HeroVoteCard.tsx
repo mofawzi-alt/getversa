@@ -42,7 +42,7 @@ interface HeroPoll {
 interface HeroVoteCardProps {
   poll: HeroPoll | null;
   unseenCount: number;
-  onVoteComplete?: () => void;
+  onVoteComplete?: (action: 'vote' | 'skip', pollId: string) => void;
   onPollTap?: (poll: any) => void;
 }
 
@@ -214,7 +214,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           setShowHookMoment(true);
           return;
         }
-        onVoteComplete?.();
+        onVoteComplete?.('vote', poll.id);
       }, FLASH_RESULT_MS);
 
       queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
@@ -367,7 +367,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         setIsMinority(false);
         setIsFirstVoteOfDay(false);
         setShowHint(true);
-        onVoteComplete?.();
+        onVoteComplete?.('vote', poll.id);
       }, FLASH_RESULT_MS);
     }
   }, [onVoteComplete, poll, profile, queryClient, result, isVoting, user]);
@@ -388,6 +388,14 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         ...(profile?.country ? { voter_country: profile.country } : {}),
         ...(profile?.city ? { voter_city: profile.city } : {}),
       });
+    } else {
+      try {
+        const stored = localStorage.getItem('versa_guest_skipped_polls');
+        const ids: string[] = stored ? JSON.parse(stored) : [];
+        if (!ids.includes(poll.id)) {
+          localStorage.setItem('versa_guest_skipped_polls', JSON.stringify([...ids, poll.id]));
+        }
+      } catch {}
     }
 
     queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
@@ -395,7 +403,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
     setIsVoting(false);
     setShowHint(true);
-    onVoteComplete?.();
+    onVoteComplete?.('skip', poll.id);
   }, [poll, result, isVoting, user, profile, queryClient, onVoteComplete]);
 
   if (!poll) {
