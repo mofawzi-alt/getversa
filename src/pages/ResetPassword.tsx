@@ -31,6 +31,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     let cancelled = false;
+    const startedFromRecoveryLink = hasRecoveryParams();
 
     // Listen for PASSWORD_RECOVERY before checking session, so we don't miss the event
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -51,7 +52,7 @@ export default function ResetPassword() {
 
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
-      setRecoverySession(Boolean(data.session && hasRecoveryParams()));
+      setRecoverySession(Boolean(data.session && startedFromRecoveryLink));
       setReady(true);
     })();
 
