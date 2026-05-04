@@ -88,7 +88,7 @@ export default function Auth() {
   const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const [ageConfirm, setAgeConfirm] = useState(false);
-  const { user, profile, session, signIn, signUp, refreshProfile } = useAuth();
+  const { user, session, signIn, signUp, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   // Biometric state (Face ID / Touch ID on native)
