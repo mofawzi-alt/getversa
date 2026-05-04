@@ -37,11 +37,11 @@ function usePollFallback(pollId: string | undefined, hasData: boolean) {
       const r = results?.[0];
       return {
         ...poll,
-        pct_a: r?.pct_a ?? 50,
-        pct_b: r?.pct_b ?? 50,
-        total_votes: r?.total ?? 0,
-        winning_option: (r?.pct_a ?? 50) >= (r?.pct_b ?? 50) ? poll.option_a : poll.option_b,
-        winning_pct: Math.max(r?.pct_a ?? 50, r?.pct_b ?? 50),
+        pct_a: r?.percent_a ?? 50,
+        pct_b: r?.percent_b ?? 50,
+        total_votes: r?.total_votes ?? 0,
+        winning_option: (r?.percent_a ?? 50) >= (r?.percent_b ?? 50) ? poll.option_a : poll.option_b,
+        winning_pct: Math.max(r?.percent_a ?? 50, r?.percent_b ?? 50),
       };
     },
     enabled: !!pollId && !hasData,
