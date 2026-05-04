@@ -1065,11 +1065,26 @@ export default function SwipeFeed() {
       return { pollId, choice, percentA, percentB: 100 - percentA, totalVotes, demoData };
     },
     onSuccess: (data) => {
-      // Result sound plays after suspense delay (when animation begins)
-      setTimeout(() => playResultSound(), SUSPENSE_DELAY_MS);
-      setVotedResults(prev => new Map(prev).set(data.pollId, data));
-      setFeedbackPollId(data.pollId);
-      setTimeout(() => setFeedbackPollId(null), 1800);
+      // During onboarding: skip result sounds/feedback, auto-advance after 0.8s
+      if (isNewUser) {
+        setVotedResults(prev => new Map(prev).set(data.pollId, data));
+        // Auto-scroll to next unvoted poll after 0.8s
+        setTimeout(() => {
+          if (!polls) return;
+          const currentIdx = polls.findIndex(p => p.id === data.pollId);
+          const nextCard = polls.find((p, i) => i > currentIdx && !votedResults.has(p.id) && p.id !== data.pollId);
+          if (nextCard) {
+            const el = cardRefs.current.get(nextCard.id);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 800);
+      } else {
+        // Normal flow: result sound after suspense delay
+        setTimeout(() => playResultSound(), SUSPENSE_DELAY_MS);
+        setVotedResults(prev => new Map(prev).set(data.pollId, data));
+        setFeedbackPollId(data.pollId);
+        setTimeout(() => setFeedbackPollId(null), 1800);
+      }
 
       // Show cinematic results screen
       const currentPoll = polls?.find(p => p.id === data.pollId);
