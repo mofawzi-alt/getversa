@@ -260,7 +260,7 @@ export default function PersonalityRevealScreen({ onComplete }: PersonalityRevea
         userChoices.set(vote.poll_id, choice);
         const tag = choice === 'A' ? poll.option_a_tag : poll.option_b_tag;
         if (tag) tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-        const order = orderMap.get(vote.poll_id) || 0;
+        const order = (orderMap.get(vote.poll_id) || 0) as number;
         voteRecords.push({ pollOrder: order, choice });
       }
 
