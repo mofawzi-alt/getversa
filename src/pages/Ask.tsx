@@ -132,6 +132,7 @@ export default function Ask() {
     age_range: profile.age_range || undefined,
     city: profile.city || undefined,
     gender: profile.gender || undefined,
+    ask_level: askLevel,
   } : undefined;
 
   const runPreview = async (q?: string) => {
