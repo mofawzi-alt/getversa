@@ -406,6 +406,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     if (result || isVoting) return;
     setIsDragging(true);
     isDraggingRef.current = true;
+    dragDirectionRef.current = 'none';
     startX.current = clientX;
     startY.current = clientY;
     currentDragX.current = 0;
@@ -414,10 +415,35 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     setShowHint(false);
   };
 
+  // Track whether we've committed to a drag direction
+  const dragDirectionRef = useRef<'none' | 'horizontal' | 'vertical-up' | 'scroll'>('none');
+
   const handleMove = (clientX: number, clientY: number) => {
     if (!isDraggingRef.current || result || isVoting) return;
     const dx = clientX - startX.current;
     const dy = clientY - startY.current;
+
+    // Once we decide to let the page scroll, stop tracking
+    if (dragDirectionRef.current === 'scroll') return;
+
+    // Decide direction on first significant movement
+    if (dragDirectionRef.current === 'none' && (Math.abs(dx) > TAP_MOVE_TOLERANCE || Math.abs(dy) > TAP_MOVE_TOLERANCE)) {
+      hasMoved.current = true;
+      if (dy > TAP_MOVE_TOLERANCE && Math.abs(dy) > Math.abs(dx)) {
+        // Downward drag → let page scroll naturally to reach Skip button
+        dragDirectionRef.current = 'scroll';
+        isDraggingRef.current = false;
+        setIsDragging(false);
+        setDragX(0);
+        setDragY(0);
+        return;
+      } else if (dy < -TAP_MOVE_TOLERANCE && Math.abs(dy) > Math.abs(dx)) {
+        dragDirectionRef.current = 'vertical-up';
+      } else {
+        dragDirectionRef.current = 'horizontal';
+      }
+    }
+
     if (Math.abs(dx) > TAP_MOVE_TOLERANCE || Math.abs(dy) > TAP_MOVE_TOLERANCE) {
       hasMoved.current = true;
     }
@@ -531,7 +557,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           !result && !isVoting ? 'cursor-pointer' : ''
         }`}
         style={{
-          touchAction: result || isVoting ? 'auto' : 'pan-y',
+          touchAction: result || isVoting ? 'auto' : 'manipulation',
           transform: result || isVoting
             ? 'none'
             : `translateX(${visualDragX}px) translateY(${Math.min(visualDragY, 0)}px) rotate(${rotation}deg)`,
