@@ -2,11 +2,39 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const VOTE_MILESTONES: { count: number; message: string }[] = [
+export interface VoteMilestoneData {
+  count: number;
+  message: string;
+  pushTitle?: string;
+  pushBody?: string;
+}
+
+const VOTE_MILESTONES: VoteMilestoneData[] = [
   { count: 10, message: "Your voice is being heard 👀 10 votes in" },
-  { count: 50, message: "You've voted 50 times 🔥 Your taste profile is taking shape" },
-  { count: 100, message: "100 votes 💯 You're officially a Versa regular" },
-  { count: 250, message: "Top voter 👑 250 votes — you're shaping what MENA thinks" },
+  {
+    count: 30,
+    message: "Your Versa personality just locked in 🔒 See your full profile →",
+    pushTitle: "Your personality just locked in",
+    pushBody: "Your Versa personality just locked in. See your full profile →",
+  },
+  {
+    count: 50,
+    message: "50 votes 🔥 Dimension scores unlocked on your profile",
+    pushTitle: "Ask Versa knows you now",
+    pushBody: "50 votes in. Ask Versa now knows what people like you think →",
+  },
+  {
+    count: 100,
+    message: "100 votes 💯 Full behavioral profile & Versa Insider unlocked",
+    pushTitle: "Full behavioral profile is live",
+    pushBody: "100 votes. Your full behavioral profile is now live →",
+  },
+  {
+    count: 200,
+    message: "200 votes 🔥 You are a Versa OG — Egypt's earliest opinion shapers",
+    pushTitle: "You are a Versa OG",
+    pushBody: "200 votes. You are a Versa OG 🔥 Egypt's earliest opinion shapers →",
+  },
 ];
 
 const SEEN_KEY = 'versa_vote_milestones_seen';
@@ -23,7 +51,7 @@ function markMilestoneSeen(count: number) {
   }
 }
 
-export function checkVoteMilestone(totalVotes: number): { count: number; message: string } | null {
+export function checkVoteMilestone(totalVotes: number): VoteMilestoneData | null {
   const seen = getSeenMilestones();
   for (const m of VOTE_MILESTONES) {
     if (totalVotes >= m.count && !seen.includes(m.count)) {
@@ -34,7 +62,7 @@ export function checkVoteMilestone(totalVotes: number): { count: number; message
 }
 
 interface Props {
-  milestone: { count: number; message: string };
+  milestone: VoteMilestoneData;
   open: boolean;
   onClose: () => void;
 }
