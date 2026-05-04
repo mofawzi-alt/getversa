@@ -7,6 +7,7 @@ import {
   restoreSessionNative,
   clearNativeSession,
   getAuthRedirectUrl,
+  isNative,
   isNativeLoggedOut,
   markNativeLoggedOut,
   clearNativeLoggedOut,
@@ -252,6 +253,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, 3500);
 
     const processAuthStateChange = async (event: string, nextSession: Session | null) => {
+      const onNative = isNative();
+
+      // Fast path: no session on web → finish boot immediately, skip native checks
+      if (!nextSession && !onNative && event === 'INITIAL_SESSION') {
+        clearAuthState();
+        finishBoot();
+        return;
+      }
+
       // Accept SIGNED_IN, INITIAL_SESSION, and TOKEN_REFRESHED as "deliberate"
       // when our ref is set — Supabase can emit any of these after a native
       // session restore on iOS cold-start.
@@ -274,7 +284,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const recoveringPassword = isPasswordRecovery || hasRecentPasswordRecoveryIntent();
       const forcedNativeLogout = (isExplicitSignIn || recoveringPassword)
         ? false
-        : await withTimeout(() => isNativeLoggedOut(), false, 800);
+        : onNative ? await withTimeout(() => isNativeLoggedOut(), false, 800) : false;
 
       if (cancelled) return;
 
@@ -322,7 +332,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // On native cold-start, try to restore the session from Keychain BEFORE
     // falling back to web localStorage (which WKWebView can wipe under storage pressure).
     const fallbackTimer = window.setTimeout(async () => {
-      const forcedNativeLogout = await withTimeout(() => isNativeLoggedOut(), false, 800);
+      const onNative = isNative();
+      const forcedNativeLogout = onNative ? await withTimeout(() => isNativeLoggedOut(), false, 800) : false;
 
       if (hasLogoutGuard() || forcedNativeLogout) {
         clearAuthState();
@@ -330,26 +341,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const webSession = await getSessionWithTimeout(1200);
+      const webSession = await getSessionWithTimeout(onNative ? 1200 : 600);
       if (cancelled) return;
 
-      if (hasLogoutGuard() || await withTimeout(() => isNativeLoggedOut(), false, 800)) {
+      if (hasLogoutGuard() || (onNative && await withTimeout(() => isNativeLoggedOut(), false, 800))) {
         clearAuthState();
         finishBoot();
         return;
       }
 
       if (!webSession) {
-        // Treat a successful native restore as a deliberate sign-in so the
-        // SIGNED_IN listener accepts it and clears any stale logout flags.
-        deliberateSignInRef.current = true;
-        const restored = await withTimeout(() => restoreSessionNative(), false, 1200);
-        if (cancelled) return;
-        if (restored) {
-          // onAuthStateChange will fire and populate state — nothing else to do.
-          return;
+        if (onNative) {
+          // Treat a successful native restore as a deliberate sign-in so the
+          // SIGNED_IN listener accepts it and clears any stale logout flags.
+          deliberateSignInRef.current = true;
+          const restored = await withTimeout(() => restoreSessionNative(), false, 1200);
+          if (cancelled) return;
+          if (restored) {
+            // onAuthStateChange will fire and populate state — nothing else to do.
+            return;
+          }
+          deliberateSignInRef.current = false;
         }
-        deliberateSignInRef.current = false;
       }
 
       setSession((prev) => prev ?? webSession);
