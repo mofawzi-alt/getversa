@@ -694,6 +694,7 @@ function LiveDebatesList({
               chosenOptionLabel={chosenOptionLabel}
               isTrending={trendingIdSet?.has(poll.id) || false}
               friendsOnPoll={friendsOnPoll}
+              enableGenderTeaser={i < 3}
               onVoteInline={(choice) => handleInlineVote(poll, choice)}
               onCardClick={() => {
                 if (hasVoted) {
