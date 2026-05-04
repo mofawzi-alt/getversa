@@ -684,7 +684,7 @@ function ImmersivePollCard({
           </div>
         )}
         {/* Skip up indicator when dragging up */}
-        {dragY < -30 && !hasResult && (
+        {dragY < -30 && !hasResult && !isOnboarding && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: Math.min(Math.abs(dragY) / THRESHOLD, 1) }}
