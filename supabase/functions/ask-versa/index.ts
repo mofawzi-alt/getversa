@@ -986,43 +986,48 @@ Examples:
     const highlightCount = askLevel <= 1 ? 0 : askLevel === 2 ? 1 : askLevel === 3 ? 1 : 2;
     const includePeopleLikeMe = askLevel >= 3;
 
-    // Compute "people like me" line from viewer's trait profile
+    // Compute "people like me" line from dimension scores
     let peopleLikeMeLine: string | null = null;
     if (includePeopleLikeMe && userId) {
       try {
-        // Find users with similar trait profiles and check their votes on matched polls
         const topPoll = matchedPolls[0];
         if (topPoll) {
-          const { data: userTraits } = await supabase
-            .from("user_trait_tags")
-            .select("tag")
+          // Get user's top dimension scores
+          const { data: userDims } = await supabase
+            .from("user_dimension_scores")
+            .select("dimension_id, score")
             .eq("user_id", userId)
             .order("vote_count", { ascending: false })
-            .limit(5);
+            .limit(3);
           
-          if (userTraits && userTraits.length > 0) {
-            const topTags = userTraits.map((t: any) => t.tag);
-            // Find users who share at least 2 top traits
-            const { data: similarVotes } = await supabase
-              .from("votes")
-              .select("choice")
-              .eq("poll_id", topPoll.id)
-              .in("user_id", (await supabase
-                .from("user_trait_tags")
-                .select("user_id")
-                .in("tag", topTags)
-                .neq("user_id", userId)
-                .limit(200)
-              ).data?.map((r: any) => r.user_id) || []);
+          if (userDims && userDims.length > 0) {
+            // Find similar users based on shared top dimensions
+            const dimIds = userDims.map((d: any) => d.dimension_id);
+            const { data: similarUsers } = await supabase
+              .from("user_dimension_scores")
+              .select("user_id")
+              .in("dimension_id", dimIds)
+              .neq("user_id", userId)
+              .limit(200);
             
-            if (similarVotes && similarVotes.length >= 5) {
-              const sA = similarVotes.filter((v: any) => v.choice === "A" || v.choice === "a").length;
-              const sTotal = similarVotes.length;
-              const topS = topPoll._stats;
-              const winnerSide = topS.total > 0 && topS.a >= topS.b ? "A" : "B";
-              const winnerLabel = winnerSide === "A" ? topPoll.option_a : topPoll.option_b;
-              const similarPct = Math.round(((winnerSide === "A" ? sA : sTotal - sA) / sTotal) * 100);
-              peopleLikeMeLine = `People like you chose ${winnerLabel} ${similarPct}% of the time.`;
+            const similarUserIds = [...new Set((similarUsers || []).map((r: any) => r.user_id))].slice(0, 100);
+            
+            if (similarUserIds.length >= 5) {
+              const { data: similarVotes } = await supabase
+                .from("votes")
+                .select("choice")
+                .eq("poll_id", topPoll.id)
+                .in("user_id", similarUserIds);
+              
+              if (similarVotes && similarVotes.length >= 5) {
+                const sA = similarVotes.filter((v: any) => v.choice === "A" || v.choice === "a").length;
+                const sTotal = similarVotes.length;
+                const topS = topPoll._stats;
+                const winnerSide = topS.total > 0 && topS.a >= topS.b ? "A" : "B";
+                const winnerLabel = winnerSide === "A" ? topPoll.option_a : topPoll.option_b;
+                const similarPct = Math.round(((winnerSide === "A" ? sA : sTotal - sA) / sTotal) * 100);
+                peopleLikeMeLine = `People like you chose ${winnerLabel} ${similarPct}% of the time.`;
+              }
             }
           }
         }
