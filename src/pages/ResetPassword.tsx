@@ -8,6 +8,12 @@ import { toast } from 'sonner';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
 
+const hasRecoveryParams = () => {
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const query = new URLSearchParams(window.location.search);
+  return hash.get('type') === 'recovery' || query.get('type') === 'recovery' || query.has('code');
+};
+
 /**
  * Password reset landing page. Supabase redirects users here from the email
  * link with a `type=recovery` token in the URL hash. We let the SDK pick that
@@ -24,6 +30,9 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+    const startedFromRecoveryLink = hasRecoveryParams();
+
     // Listen for PASSWORD_RECOVERY before checking session, so we don't miss the event
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
@@ -32,13 +41,25 @@ export default function ResetPassword() {
       }
     });
 
-    // Also check existing session in case event already fired
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setRecoverySession(true);
-      setReady(true);
-    });
+    (async () => {
+      const query = new URLSearchParams(window.location.search);
+      const code = query.get('code');
 
-    return () => sub.subscription.unsubscribe();
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) console.error('Password recovery exchange failed:', error.message);
+      }
+
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      setRecoverySession(Boolean(data.session && startedFromRecoveryLink));
+      setReady(true);
+    })();
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

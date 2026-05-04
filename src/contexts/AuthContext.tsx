@@ -33,18 +33,22 @@ const hasLogoutGuard = () => {
 const setLogoutGuard = () => {
   try {
     sessionStorage.setItem(LOGOUT_GUARD_KEY, 'true');
-  } catch {}
+  } catch {
+    // sessionStorage can be unavailable in restricted browsers.
+  }
 };
 
 const clearLogoutGuard = () => {
   try {
     sessionStorage.removeItem(LOGOUT_GUARD_KEY);
     localStorage.removeItem(LOGOUT_GUARD_KEY); // legacy cleanup
-  } catch {}
+  } catch {
+    // Storage cleanup is best-effort.
+  }
 };
 
 const markExternalSignInIntent = () => {
-  try { sessionStorage.setItem(EXTERNAL_SIGN_IN_INTENT_KEY, 'true'); } catch {}
+  try { sessionStorage.setItem(EXTERNAL_SIGN_IN_INTENT_KEY, 'true'); } catch { /* best-effort */ }
 };
 
 const hasExternalSignInIntent = () => {
@@ -52,7 +56,7 @@ const hasExternalSignInIntent = () => {
 };
 
 const clearExternalSignInIntent = () => {
-  try { sessionStorage.removeItem(EXTERNAL_SIGN_IN_INTENT_KEY); } catch {}
+  try { sessionStorage.removeItem(EXTERNAL_SIGN_IN_INTENT_KEY); } catch { /* best-effort */ }
 };
 
 const withTimeout = async <T,>(
@@ -251,12 +255,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // when our ref is set — Supabase can emit any of these after a native
       // session restore on iOS cold-start.
       const externalSignInIntent = hasExternalSignInIntent();
+      const isPasswordRecovery = event === 'PASSWORD_RECOVERY';
       const isExplicitSignIn =
         !!nextSession &&
-        (deliberateSignInRef.current || externalSignInIntent) &&
-        (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED');
+        (deliberateSignInRef.current || externalSignInIntent || isPasswordRecovery) &&
+        (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED' || isPasswordRecovery);
 
-      if (isExplicitSignIn) {
+      if (isExplicitSignIn || (!!nextSession && isPasswordRecovery)) {
         deliberateSignInRef.current = false;
         clearExternalSignInIntent();
         clearLogoutGuard();
@@ -475,7 +480,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       preservedBiometricEnabled = localStorage.getItem(BIO_ENABLED_KEY);
       preservedBiometricEmail = localStorage.getItem(BIO_EMAIL_KEY);
-    } catch {}
+    } catch {
+      // Preserving biometric preferences is best-effort.
+    }
 
     setLogoutGuard();
     deliberateSignInRef.current = false;
@@ -503,12 +510,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (preservedBiometricEmail) {
         localStorage.setItem(BIO_EMAIL_KEY, preservedBiometricEmail);
       }
-    } catch {}
+    } catch {
+      // Local token cleanup is best-effort across browser modes.
+    }
 
     // Fire-and-forget all native + network teardown so the UI never hangs
     // on a stalled WKWebView fetch or Capacitor bridge call.
     void withTimeout(async () => { await markNativeLoggedOut(); }, undefined, 1500);
-    try { clearBiometricUnlocked(); } catch {}
+    try { clearBiometricUnlocked(); } catch { /* best-effort */ }
     void withTimeout(async () => { await clearNativeSession(); }, undefined, 1500);
     void withTimeout(async () => { await supabase.auth.signOut({ scope: 'global' }); }, undefined, 3000);
     void withTimeout(async () => { await supabase.auth.signOut({ scope: 'local' }); }, undefined, 1500);
