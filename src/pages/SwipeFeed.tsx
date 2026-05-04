@@ -1287,37 +1287,58 @@ export default function SwipeFeed() {
           </motion.div>
         )}
       </AnimatePresence>
-      {/* Top bar with home + streak + info */}
-      <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
-        <button
-          onClick={() => navigate('/home')}
-          className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
-        >
-          <Home className="h-5 w-5" />
-        </button>
-
-        {/* Streak indicator */}
-        {streakData && user && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm shadow-sm">
-            <Flame className="h-3.5 w-3.5 text-destructive" />
-            <span className="text-[10px] font-bold text-foreground">
-              {streakData.current > 0 ? `${streakData.current}-Day Streak` : 'Start a Streak!'}
+      {/* Top bar — onboarding mode vs normal */}
+      {isNewUser ? (
+        <div className="shrink-0 px-4 pt-3 pb-2 safe-area-top">
+          {/* Poll X of 15 progress */}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex gap-1 flex-1">
+              {Array.from({ length: ONBOARDING_POLL_COUNT }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                    i < onboardingVoteCount ? 'bg-primary' : i === onboardingVoteCount ? 'bg-primary/50' : 'bg-secondary'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-xs font-bold text-foreground/70 whitespace-nowrap">
+              {Math.min(onboardingVoteCount + 1, ONBOARDING_POLL_COUNT)} of {ONBOARDING_POLL_COUNT}
             </span>
-            {!streakData.votedToday && streakData.current > 0 && (
-              <span className="text-[8px] text-destructive font-bold animate-pulse ml-0.5">⚠️</span>
-            )}
           </div>
-        )}
+        </div>
+      ) : (
+        <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
+          <button
+            onClick={() => navigate('/home')}
+            className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
+          >
+            <Home className="h-5 w-5" />
+          </button>
 
-        {unvotedCount > 0 && (
-          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm text-foreground shadow-sm flex items-center gap-1">
-            <Zap className="h-3 w-3 text-accent" /> New polls
-          </span>
-        )}
-      </div>
+          {/* Streak indicator */}
+          {streakData && user && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm shadow-sm">
+              <Flame className="h-3.5 w-3.5 text-destructive" />
+              <span className="text-[10px] font-bold text-foreground">
+                {streakData.current > 0 ? `${streakData.current}-Day Streak` : 'Start a Streak!'}
+              </span>
+              {!streakData.votedToday && streakData.current > 0 && (
+                <span className="text-[8px] text-destructive font-bold animate-pulse ml-0.5">⚠️</span>
+              )}
+            </div>
+          )}
+
+          {unvotedCount > 0 && (
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm text-foreground shadow-sm flex items-center gap-1">
+              <Zap className="h-3 w-3 text-accent" /> New polls
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Streak urgency message */}
-      {streakData && user && !streakData.votedToday && streakData.current > 0 && (
+      {!isNewUser && streakData && user && !streakData.votedToday && streakData.current > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1329,7 +1350,7 @@ export default function SwipeFeed() {
         </motion.div>
       )}
 
-      {/* Onboarding progress for new users */}
+      {/* Onboarding progress for guest users */}
       {!user && !isExploreUnlocked() && (
         <div className="shrink-0 px-4 pb-2">
           <VoteProgressIndicator voteCount={getGuestVoteCount()} target={3} />
