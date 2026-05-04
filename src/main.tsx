@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import "./lib/authRedirectCapture";
 import App from "./App.tsx";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
+import { clearPasswordRecoveryIntent, hasRecentPasswordRecoveryIntent } from '@/lib/authRedirectCapture';
 
 const hasRecoveryParams = () => {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
@@ -31,7 +32,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     let cancelled = false;
-    const startedFromRecoveryLink = hasRecoveryParams();
+    const startedFromRecoveryLink = hasRecoveryParams() || hasRecentPasswordRecoveryIntent();
 
     // Listen for PASSWORD_RECOVERY before checking session, so we don't miss the event
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -79,6 +80,7 @@ export default function ResetPassword() {
       toast.error(error.message || 'Could not update password');
       return;
     }
+    clearPasswordRecoveryIntent();
     toast.success('Password updated');
     // Sign out the recovery session so they log in fresh with the new password
     await supabase.auth.signOut();
