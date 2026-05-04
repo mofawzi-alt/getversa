@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
+import { getAuthRedirectUrl } from '@/lib/nativeSession';
 import {
   checkBiometricAvailability,
   promptBiometric,
@@ -390,8 +391,9 @@ export default function Auth() {
                         return;
                       }
                       setLoading(true);
+                      const resetRedirectBase = getAuthRedirectUrl().replace(/\/$/, '');
                       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                        redirectTo: `${window.location.origin}/reset-password`,
+                        redirectTo: `${resetRedirectBase}/reset-password`,
                       });
                       setLoading(false);
                       if (error) {
