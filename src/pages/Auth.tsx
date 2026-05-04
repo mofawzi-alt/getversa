@@ -71,6 +71,29 @@ const loginSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+const PENDING_SIGNUP_PROFILE_KEY = 'versa.pending_signup_profile';
+
+const savePendingSignupProfile = (emailAddress: string, metadata: Record<string, string>) => {
+  try {
+    localStorage.setItem(PENDING_SIGNUP_PROFILE_KEY, JSON.stringify({ email: emailAddress.toLowerCase(), metadata }));
+  } catch {}
+};
+
+const getPendingSignupProfile = (emailAddress: string) => {
+  try {
+    const raw = localStorage.getItem(PENDING_SIGNUP_PROFILE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { email?: string; metadata?: Record<string, string> };
+    return parsed.email === emailAddress.toLowerCase() ? parsed.metadata || null : null;
+  } catch {
+    return null;
+  }
+};
+
+const clearPendingSignupProfile = () => {
+  try { localStorage.removeItem(PENDING_SIGNUP_PROFILE_KEY); } catch {}
+};
+
 const selectClass = "flex h-10 w-full rounded-md border border-input bg-secondary/80 px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-foreground appearance-none cursor-pointer border-border/50 focus:border-accent focus:ring-accent/30";
 
 export default function Auth() {
@@ -90,6 +113,29 @@ export default function Auth() {
   const [ageConfirm, setAgeConfirm] = useState(false);
   const { user, session, signIn, signUp, refreshProfile } = useAuth();
   const navigate = useNavigate();
+
+  const applyProfileForUser = async (targetUser: NonNullable<typeof user>, metadata: Record<string, string>) => {
+    const rawUsername = metadata.username || metadata.name || targetUser.email?.split('@')[0] || 'user';
+    const safeUsernameBase = rawUsername.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20) || 'user';
+    const safeUsername = `${safeUsernameBase}_${targetUser.id.replace(/-/g, '').slice(0, 6)}`;
+    const { error: profileError } = await supabase
+      .from('users')
+      .upsert({
+        id: targetUser.id,
+        email: targetUser.email || email,
+        username: safeUsername,
+        age_range: metadata.age_range,
+        gender: metadata.gender,
+        country: metadata.country,
+        city: metadata.city,
+        nationality: metadata.nationality || metadata.country,
+        city_of_residence: metadata.city_of_residence || metadata.city,
+      }, { onConflict: 'id' });
+
+    if (profileError) throw profileError;
+    await supabase.from('automation_settings').upsert({ user_id: targetUser.id }, { onConflict: 'user_id' });
+    await refreshProfile(targetUser.id);
+  };
 
   // Biometric state (Face ID / Touch ID on native)
   const [bioType, setBioType] = useState<'face' | 'fingerprint' | 'iris' | 'generic' | 'none'>('none');
@@ -158,8 +204,19 @@ export default function Auth() {
         const { error } = await signIn(email, password);
         if (error) {
           hapticError();
-          toast.error(error.message.includes('Invalid login credentials') ? 'Invalid email or password' : error.message);
+          toast.error(error.message.includes('Invalid login credentials') ? 'Invalid email/password. If you joined with Google or Apple, use that button.' : error.message);
         } else {
+          const { data } = await supabase.auth.getSession();
+          const signedInUser = data.session?.user || session?.user || null;
+          const pendingProfile = getPendingSignupProfile(email);
+          if (signedInUser && pendingProfile) {
+            try {
+              await applyProfileForUser(signedInUser, pendingProfile);
+              clearPendingSignupProfile();
+            } catch (profileError) {
+              console.error('Profile save after sign-in failed:', profileError);
+            }
+          }
           hapticSuccess();
           toast.success('Welcome back!');
           // Offer to enable biometrics on first successful native login
@@ -216,41 +273,25 @@ export default function Auth() {
         return;
       }
 
-      // Save the completed profile against the exact user returned by signup.
-      // Do not rely on getUser() immediately after signup because the local
-      // session can lag on iOS/Safari and make the app think signup failed.
-      const newUser = createdUser || createdSession?.user || session?.user || null;
-      if (newUser) {
-        const safeUsernameBase = name.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20) || 'user';
-        const safeUsername = `${safeUsernameBase}_${newUser.id.replace(/-/g, '').slice(0, 6)}`;
-        const { error: profileError } = await supabase
-          .from('users')
-          .upsert({
-            id: newUser.id,
-            email: newUser.email || email,
-            username: safeUsername,
-            age_range: ageRange,
-            gender,
-            country,
-            city,
-            nationality: country,
-            city_of_residence: city,
-          }, { onConflict: 'id' });
-
-        if (profileError) {
-          console.error('Profile save error:', profileError);
-        }
-
-        await supabase.from('automation_settings').upsert({ user_id: newUser.id }, { onConflict: 'user_id' });
-        await refreshProfile();
-      }
-
       if (!createdSession) {
-        toast.success('Check your email to finish joining Versa.');
+        const repeatedSignup = Array.isArray((createdUser as any)?.identities) && (createdUser as any).identities.length === 0;
+        if (repeatedSignup) {
+          toast.error('This email already has an account. Sign in with Google/Apple or use Forgot password.');
+        } else {
+          savePendingSignupProfile(email, signupMetadata);
+          toast.success('Check your email to finish joining Versa.');
+        }
         setIsLogin(true);
         setLoading(false);
         return;
       }
+
+      // Save the completed profile only after a real authenticated session exists.
+      // Repeated signups can return a user object without a session, and writing
+      // then would fail RLS because there is no logged-in user yet.
+      const newUser = createdSession.user;
+      await applyProfileForUser(newUser, signupMetadata);
+      clearPendingSignupProfile();
 
       toast.success('Welcome to Versa! 🔥');
 
