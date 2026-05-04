@@ -722,6 +722,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               side="B"
               maxLogoSize="80%"
               variant="hero"
+              loading="eager"
             />
             {/* Blue brand-tinted bottom gradient */}
             <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-primary/85 via-primary/30 to-transparent pointer-events-none" />
