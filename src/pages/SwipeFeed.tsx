@@ -296,7 +296,8 @@ function ImmersivePollCard({
     return `Closes in ${mins}m`;
   }, [poll]);
 
-  const showResults = hasResult && !showSuspense;
+  // During onboarding, never show results — just confirm the choice visually
+  const showResults = isOnboarding ? false : (hasResult && !showSuspense);
 
   return (
     <div className={`w-full relative flex flex-col ${isHighStakes ? 'scale-[1.02]' : ''}`}>
