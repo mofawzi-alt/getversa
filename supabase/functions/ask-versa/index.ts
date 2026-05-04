@@ -978,6 +978,85 @@ Examples:
       return { question: p.question, option_a: p.option_a, option_b: p.option_b, mPctA, fPctA, mTotal, fTotal };
     }).filter((g: any) => g.mTotal >= 5 && g.fTotal >= 5);
 
+    // --- Level-based prompt construction ---
+    // Level 1: simple result sentence only
+    // Level 2: result + 1 conversational demographic highlight
+    // Level 3: result + 1 highlight + people-like-me
+    // Level 4: result + 2 highlights + people-like-me
+    const highlightCount = askLevel <= 1 ? 0 : askLevel === 2 ? 1 : askLevel === 3 ? 1 : 2;
+    const includePeopleLikeMe = askLevel >= 3;
+
+    // Compute "people like me" line from viewer's trait profile
+    let peopleLikeMeLine: string | null = null;
+    if (includePeopleLikeMe && userId) {
+      try {
+        // Find users with similar trait profiles and check their votes on matched polls
+        const topPoll = matchedPolls[0];
+        if (topPoll) {
+          const { data: userTraits } = await supabase
+            .from("user_trait_tags")
+            .select("tag")
+            .eq("user_id", userId)
+            .order("vote_count", { ascending: false })
+            .limit(5);
+          
+          if (userTraits && userTraits.length > 0) {
+            const topTags = userTraits.map((t: any) => t.tag);
+            // Find users who share at least 2 top traits
+            const { data: similarVotes } = await supabase
+              .from("votes")
+              .select("choice")
+              .eq("poll_id", topPoll.id)
+              .in("user_id", (await supabase
+                .from("user_trait_tags")
+                .select("user_id")
+                .in("tag", topTags)
+                .neq("user_id", userId)
+                .limit(200)
+              ).data?.map((r: any) => r.user_id) || []);
+            
+            if (similarVotes && similarVotes.length >= 5) {
+              const sA = similarVotes.filter((v: any) => v.choice === "A" || v.choice === "a").length;
+              const sTotal = similarVotes.length;
+              const topS = topPoll._stats;
+              const winnerSide = topS.total > 0 && topS.a >= topS.b ? "A" : "B";
+              const winnerLabel = winnerSide === "A" ? topPoll.option_a : topPoll.option_b;
+              const similarPct = Math.round(((winnerSide === "A" ? sA : sTotal - sA) / sTotal) * 100);
+              peopleLikeMeLine = `People like you chose ${winnerLabel} ${similarPct}% of the time.`;
+            }
+          }
+        }
+      } catch (e) {
+        console.error("People-like-me computation failed:", e);
+      }
+    }
+
+    // Build level-appropriate prompt instructions
+    const levelInstructions = askLevel <= 1
+      ? `Reply with ONLY a JSON object: {"verdict": "One simple sentence stating the result with the winning percentage and option name. Max 15 words."}
+Rules:
+- ONE sentence only. No demographic data. No cultural context. No recommendation.
+- Use real numbers from the data. Never invent statistics.
+- Be direct and factual.`
+      : `Reply ONLY with valid JSON, no markdown, no backticks.
+{
+  "verdict": "One punchy sentence (max 18 words) — the headline finding. Lead with the winning % and option name.",
+  ${highlightCount >= 1 ? `"highlight_1": "One surprising demographic finding as a CONVERSATIONAL sentence. Example: 'Cairo women went the other way.' or 'Most men chose the other side.' NEVER use tables, grids, or side-by-side percentages like 'Males: 62%, Females: 48%'. NEVER show a full breakdown. Just one natural, curiosity-driving sentence.",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "A second surprising demographic finding, different from highlight_1. Same conversational sentence format. Example: 'Gen Z voted strongest for this at 68%.' NEVER use table format.",` : ""}
+  "cultural_context": "One sentence connecting this preference to Egyptian culture.",
+  "action_line": "One sentence — a direct recommendation. Start with 'Go with...' or 'Pick...' or 'Try...'"
+}
+
+Rules:
+- Every field must be a single conversational sentence, max 20 words each.
+- Demographic highlights MUST be natural conversational sentences — NEVER tables, grids, or side-by-side percentage comparisons.
+- CORRECT formats: "Cairo women went the other way." / "Most men chose the other side." / "Alexandria disagreed with Cairo."
+- WRONG formats: "Males: 62%, Females: 48%" / "Cairo: 71% vs Alexandria: 54%" / Any table or grid.
+- Highlights should tease the most SURPRISING finding — not the obvious one.
+- Use real numbers from the data. Never invent statistics.
+- Never mention 'Gen Z' or generational labels.
+- Be conversational, confident, direct — like a smart Cairo friend who reads data.`;
+
     if (mode === "decide") {
       const top = matchedPolls[0];
       const s = top._stats;
@@ -994,7 +1073,6 @@ Examples:
         viewerLine = `${vPct}% of ${viewer.age_range} agree`;
       }
 
-      // Build the 5-part prompt for structured insights
       const pollDataText = matchedPolls.slice(0, 5).map((p: any) => {
         const ps = p._stats;
         const pa = ps.total > 0 ? Math.round((ps.a / ps.total) * 100) : 50;
@@ -1005,33 +1083,41 @@ Examples:
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: `You are Versa's insight engine. Produce a structured JSON response with exactly 5 parts.
-Reply ONLY with valid JSON, no markdown, no backticks.
-
-{
-  "verdict": "One punchy sentence (max 18 words) — the headline finding. Lead with the winning % and option name.",
-  "why": "One sentence explaining the behavioral driver behind the preference. What does choosing this say about the person?",
-  "demographic_split": "One sentence about the most interesting gender or age split in the data. If men and women disagree, highlight it. If no split data, say 'Consistent across demographics.'",
-  "cultural_context": "One sentence connecting this preference to Egyptian culture, identity, or current trends. Be specific to Egypt/MENA.",
-  "action_line": "One sentence — a direct, confident recommendation as if advising a friend. Start with 'Go with...' or 'Pick...' or 'Try...'"
-}
-
-Rules:
-- Every field must be a single sentence, max 20 words each.
-- Use real numbers from the data. Never invent statistics.
-- Never mention 'Gen Z' or generational labels.
-- Be conversational, confident, direct — like a smart Cairo friend who reads data.` + arabicInstruction },
+          { role: "system", content: `You are Versa's insight engine. Produce a structured JSON response.\n${levelInstructions}` + arabicInstruction },
           { role: "user", content: `User asked: "${question}"\n\nPoll data:\n${pollDataText}\n\nTop result: ${winnerLabel} wins with ${winnerPct}% (n=${s.total})` },
         ],
         response_format: { type: "json_object" },
       });
 
-      let parts = { verdict: "", why: "", demographic_split: "", cultural_context: "", action_line: "" };
+      let parts: any = { verdict: "" };
       if (insightResp.ok) {
         const rd = await readJsonSafely(insightResp) || {};
         const content = rd.choices?.[0]?.message?.content || "";
         try { parts = JSON.parse(content); } catch { /* use defaults */ }
       }
+
+      // Build insight_parts based on level
+      if (askLevel >= 2) {
+        insight_parts = {
+          verdict: parts.verdict || "",
+          why: parts.highlight_1 || parts.why || "",
+          demographic_split: parts.highlight_2 || "",
+          cultural_context: parts.cultural_context || "",
+          action_line: parts.action_line || "",
+        };
+        // Strip fields not allowed at this level
+        if (askLevel === 2) {
+          insight_parts.demographic_split = "";
+        }
+      }
+
+      // Build confidence line
+      const confidenceLine = `Based on ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real Versa votes.`;
+
+      // Build summary with people-like-me and confidence
+      let fullSummary = parts.verdict || `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
+      if (peopleLikeMeLine) fullSummary += ` ${peopleLikeMeLine}`;
+      fullSummary += `\n\n${confidenceLine}`;
 
       verdict = {
         poll_id: top.id,
@@ -1048,12 +1134,9 @@ Rules:
         reason: parts.verdict || `${winnerPct}% of Egyptians pick ${winnerLabel}.`,
         viewer_line: viewerLine,
       };
-      insight_parts = parts;
-      summary = parts.verdict || (isArabic
-        ? `${winnerPct}% من المصريين بيختاروا ${winnerLabel}.`
-        : `${winnerPct}% of Egyptians pick ${winnerLabel}.`);
+      summary = fullSummary;
     } else {
-      // Research mode: 5-part structured insight across multiple polls
+      // Research mode — same level-based approach
       const sampleText = matchedPolls.slice(0, 8).map((p: any) => {
         const s = p._stats;
         const pctA = s.total > 0 ? Math.round((s.a / s.total) * 100) : 50;
@@ -1062,36 +1145,55 @@ Rules:
         return `- "${p.question}" → ${p.option_a} ${pctA}% vs ${p.option_b} ${100 - pctA}% (n=${s.total}) ${gM} ${gF}`;
       }).join("\n");
 
+      const researchLevelInstructions = askLevel <= 1
+        ? `Reply with ONLY a JSON object: {"verdict": "2-3 sentence research summary with concrete numbers. No demographic data."}
+Rules: Use real numbers only. One factual summary paragraph.`
+        : `Reply ONLY with valid JSON, no markdown, no backticks.
+{
+  "verdict": "2-3 sentence research-style summary. Lead with the strongest concrete number.",
+  ${highlightCount >= 1 ? `"highlight_1": "One surprising demographic finding as a CONVERSATIONAL sentence. NEVER use tables or side-by-side percentages.",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "A second surprising finding, different angle. Same conversational format.",` : ""}
+  "cultural_context": "One sentence connecting patterns to Egyptian market dynamics.",
+  "action_line": "One sentence — a strategic takeaway."
+}
+Rules:
+- Demographic highlights MUST be natural conversational sentences — NEVER tables, grids, or comparisons like "Males: X%, Females: Y%".
+- Use real numbers from the data. Never invent statistics.
+- Be analytical but accessible.`;
+
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: `You are Versa's research insight engine. Produce a structured JSON response with exactly 5 parts.
-Reply ONLY with valid JSON, no markdown, no backticks.
-
-{
-  "verdict": "2-3 sentence research-style summary. Lead with the strongest concrete number. Citation-worthy.",
-  "why": "One sentence on the behavioral pattern — what do these choices collectively reveal about Egyptian consumers?",
-  "demographic_split": "One sentence about the most interesting demographic divergence across the polls. If none, say 'Consistent across demographics.'",
-  "cultural_context": "One sentence connecting patterns to Egyptian market dynamics or cultural identity.",
-  "action_line": "One sentence — a strategic takeaway for someone making decisions based on this data."
-}
-
-Rules:
-- Use real numbers from the data. Never invent statistics.
-- Never mention 'Gen Z' or generational labels.
-- Be analytical but accessible — like a consulting brief, not an academic paper.` + arabicInstruction },
+          { role: "system", content: `You are Versa's research insight engine.\n${researchLevelInstructions}` + arabicInstruction },
           { role: "user", content: `User's research question: "${question}"\n\nMatched polls with results:\n${sampleText}` },
         ],
         response_format: { type: "json_object" },
       });
 
-      let parts = { verdict: "", why: "", demographic_split: "", cultural_context: "", action_line: "" };
+      let parts: any = { verdict: "" };
       if (insightResp.ok) {
         const rd = await readJsonSafely(insightResp) || {};
         const content = rd.choices?.[0]?.message?.content || "";
         try { parts = JSON.parse(content); } catch { /* use defaults */ }
       }
-      insight_parts = parts;
-      summary = parts.verdict || summary;
+
+      if (askLevel >= 2) {
+        insight_parts = {
+          verdict: parts.verdict || "",
+          why: parts.highlight_1 || parts.why || "",
+          demographic_split: parts.highlight_2 || "",
+          cultural_context: parts.cultural_context || "",
+          action_line: parts.action_line || "",
+        };
+        if (askLevel === 2) {
+          insight_parts.demographic_split = "";
+        }
+      }
+
+      const confidenceLine = `Based on ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real Versa votes.`;
+      let fullSummary = parts.verdict || summary;
+      if (peopleLikeMeLine) fullSummary += ` ${peopleLikeMeLine}`;
+      fullSummary += `\n\n${confidenceLine}`;
+      summary = fullSummary;
     }
 
     // Enriched poll cards
