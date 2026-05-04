@@ -114,12 +114,11 @@ export default function Auth() {
 
   const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
 
-  // Redirect only fully ready authenticated users to home. During signup/OAuth,
-  // the session can arrive before the profile row finishes saving; redirecting
-  // too early caused users to bounce back to the form after their first vote.
+  // Redirect authenticated users once any in-progress email signup save has
+  // finished. OAuth users may still need demographics; Home shows that modal.
   useEffect(() => {
-    if (user && profileComplete) navigate('/home', { replace: true });
-  }, [user, profileComplete, navigate]);
+    if (user && !loading) navigate('/home', { replace: true });
+  }, [user, loading, navigate]);
 
   // Reset city when country changes
   useEffect(() => { setCity(''); }, [country]);
@@ -224,12 +223,14 @@ export default function Auth() {
       // session can lag on iOS/Safari and make the app think signup failed.
       const newUser = createdUser || createdSession?.user || session?.user || null;
       if (newUser) {
+        const safeUsernameBase = name.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20) || 'user';
+        const safeUsername = `${safeUsernameBase}_${newUser.id.replace(/-/g, '').slice(0, 6)}`;
         const { error: profileError } = await supabase
           .from('users')
           .upsert({
             id: newUser.id,
             email: newUser.email || email,
-            username: name.trim(),
+            username: safeUsername,
             age_range: ageRange,
             gender,
             country,
