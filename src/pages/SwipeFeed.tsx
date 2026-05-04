@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame } from 'lucide-react';
+import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame, Check } from 'lucide-react';
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import ShareImageCard from '@/components/poll/ShareImageCard';
@@ -145,6 +145,7 @@ function ImmersivePollCard({
   rareEvent,
   userCountry,
   sessionVoteCount,
+  isOnboarding,
 }: {
   poll: Poll;
   result: VoteResult | null;
@@ -156,6 +157,7 @@ function ImmersivePollCard({
   rareEvent?: string | null;
   userCountry?: string | null;
   sessionVoteCount?: number;
+  isOnboarding?: boolean;
 }) {
   const navigate = useNavigate();
   const [dragX, setDragX] = useState(0);
@@ -195,8 +197,8 @@ function ImmersivePollCard({
   const handleEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    if (dragY < -THRESHOLD) {
-      // Swipe up = skip
+    if (dragY < -THRESHOLD && !isOnboarding) {
+      // Swipe up = skip (disabled during onboarding)
       setFlyDirection('up');
       triggerHaptic('light');
       setTimeout(() => onSkip(poll.id), 300);
@@ -294,7 +296,8 @@ function ImmersivePollCard({
     return `Closes in ${mins}m`;
   }, [poll]);
 
-  const showResults = hasResult && !showSuspense;
+  // During onboarding, never show results — just confirm the choice visually
+  const showResults = isOnboarding ? false : (hasResult && !showSuspense);
 
   return (
     <div className={`w-full relative flex flex-col ${isHighStakes ? 'scale-[1.02]' : ''}`}>
@@ -431,8 +434,8 @@ function ImmersivePollCard({
             <p className="text-white text-base font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
           </div>
 
-          {/* Suspense reveal animation */}
-          {hasResult && showSuspense && (
+          {/* Suspense reveal animation — skip during onboarding */}
+          {hasResult && showSuspense && !isOnboarding && (
             <motion.div
               initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
               animate={{ opacity: 1, backdropFilter: 'blur(8px)' }}
@@ -460,6 +463,25 @@ function ImmersivePollCard({
                 >
                   Revealing results...
                 </motion.p>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Onboarding: brief checkmark confirmation */}
+          {hasResult && isOnboarding && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-30 flex items-center justify-center bg-black/40"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: [0, 1.3, 1] }}
+                transition={{ duration: 0.4 }}
+                className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
+              >
+                <Check className="h-8 w-8 text-white" />
               </motion.div>
             </motion.div>
           )}
@@ -646,12 +668,14 @@ function ImmersivePollCard({
             </div>
             <div className="flex flex-col items-center gap-0.5 flex-1">
               <span className="text-foreground/30 text-xs">swipe to choose</span>
-              <button
-                onClick={(e) => { e.stopPropagation(); onSkip(poll.id); }}
-                className="text-[9px] text-muted-foreground/50 mt-1 hover:text-muted-foreground/70 transition-colors active:scale-95"
-              >
-                Skip this one ↑
-              </button>
+              {!isOnboarding && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onSkip(poll.id); }}
+                  className="text-[9px] text-muted-foreground/50 mt-1 hover:text-muted-foreground/70 transition-colors active:scale-95"
+                >
+                  Skip this one ↑
+                </button>
+              )}
             </div>
             <div className="flex flex-col items-center gap-0.5 flex-1">
               <span className="text-option-b font-display font-bold text-lg">B</span>
@@ -660,7 +684,7 @@ function ImmersivePollCard({
           </div>
         )}
         {/* Skip up indicator when dragging up */}
-        {dragY < -30 && !hasResult && (
+        {dragY < -30 && !hasResult && !isOnboarding && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: Math.min(Math.abs(dragY) / THRESHOLD, 1) }}
@@ -731,10 +755,11 @@ export default function SwipeFeed() {
   const [onboardingFeedback, setOnboardingFeedback] = useState<string | null>(null);
   
   const NEW_USER_VOTE_THRESHOLD = 5;
-  const ONBOARDING_POLL_IDS = Array.from({ length: 10 }, (_, i) => 
-    `a0000001-0001-4000-8000-00000000000${i + 1}`
+  const ONBOARDING_POLL_COUNT = 15;
+  const ONBOARDING_POLL_IDS = Array.from({ length: ONBOARDING_POLL_COUNT }, (_, i) => 
+    `a0000001-0001-4000-8000-${String(i + 1).padStart(12, '0')}`
   );
-  const isNewUser = totalUserVotes !== null && totalUserVotes < 10;
+  const isNewUser = totalUserVotes !== null && totalUserVotes < ONBOARDING_POLL_COUNT;
 
   useEffect(() => {
     if (loading) return;
@@ -923,8 +948,8 @@ export default function SwipeFeed() {
         }
       }
 
-      // For new users / guests (< 10 votes): show ONLY onboarding polls first
-      if (votedPollSet.size < 10 && !categoryFilter && !searchFilter && !targetPollId) {
+      // For new users / guests (< 15 votes): show ONLY onboarding polls first
+      if (votedPollSet.size < ONBOARDING_POLL_COUNT && !categoryFilter && !searchFilter && !targetPollId) {
         const { data: onboardingRows } = await supabase
           .from('onboarding_polls')
           .select('poll_id, display_order')
@@ -954,11 +979,11 @@ export default function SwipeFeed() {
         }
       }
 
-      // First-day cap: after onboarding (10 votes), show only 10 more polls
-      // Users with < 20 total votes are still in their first day
+      // First-day cap: after onboarding (15 votes), show only 10 more polls
+      // Users with < 25 total votes are still in their first day
       const FIRST_DAY_CAP = 10;
-      const FIRST_DAY_TOTAL = 20; // 10 onboarding + 10 first-day
-      if (votedPollSet.size >= 10 && votedPollSet.size < FIRST_DAY_TOTAL && !categoryFilter && !searchFilter && !targetPollId) {
+      const FIRST_DAY_TOTAL = 25; // 15 onboarding + 10 first-day
+      if (votedPollSet.size >= ONBOARDING_POLL_COUNT && votedPollSet.size < FIRST_DAY_TOTAL && !categoryFilter && !searchFilter && !targetPollId) {
         const unvotedPolls = allPolls.filter(p => !votedPollSet.has(p.id));
         const votedPolls = allPolls.filter(p => votedPollSet.has(p.id));
         allPolls = [...unvotedPolls.slice(0, FIRST_DAY_CAP), ...votedPolls];
@@ -1040,26 +1065,43 @@ export default function SwipeFeed() {
       return { pollId, choice, percentA, percentB: 100 - percentA, totalVotes, demoData };
     },
     onSuccess: (data) => {
-      // Result sound plays after suspense delay (when animation begins)
-      setTimeout(() => playResultSound(), SUSPENSE_DELAY_MS);
-      setVotedResults(prev => new Map(prev).set(data.pollId, data));
-      setFeedbackPollId(data.pollId);
-      setTimeout(() => setFeedbackPollId(null), 1800);
-
-      // Show cinematic results screen
-      const currentPoll = polls?.find(p => p.id === data.pollId);
-      if (currentPoll) {
-        setCinematicData({
-          poll: currentPoll,
-          choice: data.choice,
-          percentA: data.percentA,
-          percentB: data.percentB,
-          totalVotes: data.totalVotes,
-        });
+      // During onboarding: skip result sounds/feedback, auto-advance after 0.8s
+      if (isNewUser) {
+        setVotedResults(prev => new Map(prev).set(data.pollId, data));
+        // Auto-scroll to next unvoted poll after 0.8s
+        setTimeout(() => {
+          if (!polls) return;
+          const currentIdx = polls.findIndex(p => p.id === data.pollId);
+          const nextCard = polls.find((p, i) => i > currentIdx && !votedResults.has(p.id) && p.id !== data.pollId);
+          if (nextCard) {
+            const el = cardRefs.current.get(nextCard.id);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 800);
+      } else {
+        // Normal flow: result sound after suspense delay
+        setTimeout(() => playResultSound(), SUSPENSE_DELAY_MS);
+        setVotedResults(prev => new Map(prev).set(data.pollId, data));
+        setFeedbackPollId(data.pollId);
+        setTimeout(() => setFeedbackPollId(null), 1800);
       }
 
-      // Show points earned feedback
-      if (user) {
+      // Show cinematic results screen (skip during onboarding)
+      if (!isNewUser) {
+        const currentPoll = polls?.find(p => p.id === data.pollId);
+        if (currentPoll) {
+          setCinematicData({
+            poll: currentPoll,
+            choice: data.choice,
+            percentA: data.percentA,
+            percentB: data.percentB,
+            totalVotes: data.totalVotes,
+          });
+        }
+      }
+
+      // Show points earned feedback (skip during onboarding)
+      if (user && !isNewUser) {
         setShowPointsEarned(true);
         setTimeout(() => setShowPointsEarned(false), 2000);
       }
@@ -1075,18 +1117,18 @@ export default function SwipeFeed() {
       const newCount = sessionVoteCount + 1;
       setSessionVoteCount(newCount);
 
-      // Onboarding micro-feedback at polls 3, 6, 9 and personality reveal at 10
+      // Onboarding micro-feedback at polls 5, 10, 14 and personality reveal at 15
       if (isNewUser && user) {
         const obCount = onboardingVoteCount + 1;
         setOnboardingVoteCount(obCount);
-        if (obCount === 3) {
-          setTimeout(() => { setOnboardingFeedback("You're starting to form a pattern…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
-        } else if (obCount === 6) {
-          setTimeout(() => { setOnboardingFeedback("Your style is taking shape…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
-        } else if (obCount === 9) {
-          setTimeout(() => { setOnboardingFeedback("We're getting close…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
-        } else if (obCount >= 10) {
-          setTimeout(() => setShowPersonalityReveal(true), 2200);
+        if (obCount === 5) {
+          setTimeout(() => { setOnboardingFeedback("You're starting to form a pattern…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 800);
+        } else if (obCount === 10) {
+          setTimeout(() => { setOnboardingFeedback("Your style is taking shape…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 800);
+        } else if (obCount === 14) {
+          setTimeout(() => { setOnboardingFeedback("Almost there — one more…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 800);
+        } else if (obCount >= ONBOARDING_POLL_COUNT) {
+          setTimeout(() => setShowPersonalityReveal(true), 1000);
         }
       }
 
@@ -1262,37 +1304,58 @@ export default function SwipeFeed() {
           </motion.div>
         )}
       </AnimatePresence>
-      {/* Top bar with home + streak + info */}
-      <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
-        <button
-          onClick={() => navigate('/home')}
-          className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
-        >
-          <Home className="h-5 w-5" />
-        </button>
-
-        {/* Streak indicator */}
-        {streakData && user && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm shadow-sm">
-            <Flame className="h-3.5 w-3.5 text-destructive" />
-            <span className="text-[10px] font-bold text-foreground">
-              {streakData.current > 0 ? `${streakData.current}-Day Streak` : 'Start a Streak!'}
+      {/* Top bar — onboarding mode vs normal */}
+      {isNewUser ? (
+        <div className="shrink-0 px-4 pt-3 pb-2 safe-area-top">
+          {/* Poll X of 15 progress */}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex gap-1 flex-1">
+              {Array.from({ length: ONBOARDING_POLL_COUNT }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                    i < onboardingVoteCount ? 'bg-primary' : i === onboardingVoteCount ? 'bg-primary/50' : 'bg-secondary'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-xs font-bold text-foreground/70 whitespace-nowrap">
+              {Math.min(onboardingVoteCount + 1, ONBOARDING_POLL_COUNT)} of {ONBOARDING_POLL_COUNT}
             </span>
-            {!streakData.votedToday && streakData.current > 0 && (
-              <span className="text-[8px] text-destructive font-bold animate-pulse ml-0.5">⚠️</span>
-            )}
           </div>
-        )}
+        </div>
+      ) : (
+        <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-secondary/80 backdrop-blur-sm safe-area-top">
+          <button
+            onClick={() => navigate('/home')}
+            className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/80 transition-colors shadow-sm"
+          >
+            <Home className="h-5 w-5" />
+          </button>
 
-        {unvotedCount > 0 && (
-          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm text-foreground shadow-sm flex items-center gap-1">
-            <Zap className="h-3 w-3 text-accent" /> New polls
-          </span>
-        )}
-      </div>
+          {/* Streak indicator */}
+          {streakData && user && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm shadow-sm">
+              <Flame className="h-3.5 w-3.5 text-destructive" />
+              <span className="text-[10px] font-bold text-foreground">
+                {streakData.current > 0 ? `${streakData.current}-Day Streak` : 'Start a Streak!'}
+              </span>
+              {!streakData.votedToday && streakData.current > 0 && (
+                <span className="text-[8px] text-destructive font-bold animate-pulse ml-0.5">⚠️</span>
+              )}
+            </div>
+          )}
+
+          {unvotedCount > 0 && (
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/60 backdrop-blur-sm text-foreground shadow-sm flex items-center gap-1">
+              <Zap className="h-3 w-3 text-accent" /> New polls
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Streak urgency message */}
-      {streakData && user && !streakData.votedToday && streakData.current > 0 && (
+      {!isNewUser && streakData && user && !streakData.votedToday && streakData.current > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1304,7 +1367,7 @@ export default function SwipeFeed() {
         </motion.div>
       )}
 
-      {/* Onboarding progress for new users */}
+      {/* Onboarding progress for guest users */}
       {!user && !isExploreUnlocked() && (
         <div className="shrink-0 px-4 pb-2">
           <VoteProgressIndicator voteCount={getGuestVoteCount()} target={3} />
@@ -1436,6 +1499,7 @@ export default function SwipeFeed() {
                   rareEvent={rareEvent}
                   userCountry={profile?.country}
                   sessionVoteCount={sessionVoteCount}
+                  isOnboarding={isNewUser}
                 />
                 {/* Swipe hint on very first card only */}
                 {idx === 0 && showSwipeHint && !result && <SwipeHint />}
