@@ -145,6 +145,7 @@ function ImmersivePollCard({
   rareEvent,
   userCountry,
   sessionVoteCount,
+  isOnboarding,
 }: {
   poll: Poll;
   result: VoteResult | null;
@@ -156,6 +157,7 @@ function ImmersivePollCard({
   rareEvent?: string | null;
   userCountry?: string | null;
   sessionVoteCount?: number;
+  isOnboarding?: boolean;
 }) {
   const navigate = useNavigate();
   const [dragX, setDragX] = useState(0);
