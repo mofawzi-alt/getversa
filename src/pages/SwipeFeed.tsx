@@ -1100,8 +1100,8 @@ export default function SwipeFeed() {
         }
       }
 
-      // Show points earned feedback
-      if (user) {
+      // Show points earned feedback (skip during onboarding)
+      if (user && !isNewUser) {
         setShowPointsEarned(true);
         setTimeout(() => setShowPointsEarned(false), 2000);
       }
