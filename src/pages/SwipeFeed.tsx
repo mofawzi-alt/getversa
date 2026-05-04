@@ -35,6 +35,11 @@ const MICRO_FEEDBACK_INTERVAL = 5;
 const SUSPENSE_DELAY_MS = 650;
 const HIGH_STAKES_INTERVAL = 20;
 
+const isAuthSessionError = (error: { code?: string; message?: string } | null) => {
+  const message = error?.message?.toLowerCase() || '';
+  return error?.code === '42501' || message.includes('row-level security') || message.includes('jwt') || message.includes('auth');
+};
+
 // Milestone definitions
 const MILESTONES: { at: number; message: string; type: 'banner' | 'modal' | 'badge'; duration: number }[] = [
   { at: 10, message: "🔥 You're on a roll — keep going!", type: 'banner', duration: 1500 },
@@ -1163,6 +1168,11 @@ export default function SwipeFeed() {
     onError: (error: any) => {
       if (error.message === 'GUEST_LIMIT') return;
       if (error.message === 'ALREADY_VOTED' || error.message?.includes('duplicate')) { toast.error('You already voted on this poll'); return; }
+      if (isAuthSessionError(error)) {
+        toast.error('Please sign in again to save your vote');
+        navigate('/auth');
+        return;
+      }
       toast.error('Failed to vote');
     },
   });

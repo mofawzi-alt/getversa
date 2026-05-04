@@ -14,6 +14,7 @@ import {
 import { clearBiometricUnlocked } from '@/lib/biometric';
 
 const LOGOUT_GUARD_KEY = 'versa.force_logged_out.guard';
+const EXTERNAL_SIGN_IN_INTENT_KEY = 'versa.external_sign_in.intent';
 const BIO_ENABLED_KEY = 'versa_biometric_enabled';
 const BIO_EMAIL_KEY = 'versa_biometric_email';
 
@@ -40,6 +41,18 @@ const clearLogoutGuard = () => {
     sessionStorage.removeItem(LOGOUT_GUARD_KEY);
     localStorage.removeItem(LOGOUT_GUARD_KEY); // legacy cleanup
   } catch {}
+};
+
+const markExternalSignInIntent = () => {
+  try { sessionStorage.setItem(EXTERNAL_SIGN_IN_INTENT_KEY, 'true'); } catch {}
+};
+
+const hasExternalSignInIntent = () => {
+  try { return sessionStorage.getItem(EXTERNAL_SIGN_IN_INTENT_KEY) === 'true'; } catch { return false; }
+};
+
+const clearExternalSignInIntent = () => {
+  try { sessionStorage.removeItem(EXTERNAL_SIGN_IN_INTENT_KEY); } catch {}
 };
 
 const withTimeout = async <T,>(
@@ -101,7 +114,8 @@ interface AuthContextType {
   ) => Promise<{ error: Error | null; user: User | null; session: Session | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: (userId?: string) => Promise<void>;
+  prepareForExternalSignIn: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -126,8 +140,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!profileData) {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (authUser) {
+        const metadata = authUser.user_metadata || {};
         // Generate a unique username — append random suffix to avoid collisions
-        const baseUsername = (authUser.email?.split('@')[0] || 'user').replace(/[^a-z0-9_]/gi, '').toLowerCase();
+        const rawUsername = String(metadata.username || metadata.name || metadata.full_name || authUser.email?.split('@')[0] || 'user');
+        const baseUsername = rawUsername.replace(/[^a-z0-9_]/gi, '').toLowerCase() || 'user';
         const uniqueUsername = `${baseUsername}_${Math.random().toString(36).slice(2, 6)}`;
         
         const { data: newProfile, error: insertError } = await supabase
@@ -136,6 +152,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             id: authUser.id,
             email: authUser.email || '',
             username: uniqueUsername,
+            age_range: metadata.age_range || null,
+            gender: metadata.gender || null,
+            country: metadata.country || null,
+            city: metadata.city || metadata.city_of_residence || null,
+            nationality: metadata.nationality || metadata.country || null,
+            city_of_residence: metadata.city_of_residence || metadata.city || null,
             points: 0,
             current_streak: 0,
             longest_streak: 0,
@@ -154,6 +176,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               id: authUser.id,
               email: authUser.email || '',
               username: fallbackUsername,
+            age_range: metadata.age_range || null,
+            gender: metadata.gender || null,
+            country: metadata.country || null,
+            city: metadata.city || metadata.city_of_residence || null,
+            nationality: metadata.nationality || metadata.country || null,
+            city_of_residence: metadata.city_of_residence || metadata.city || null,
               points: 0,
               current_streak: 0,
               longest_streak: 0,
@@ -180,10 +208,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAdmin(Array.isArray(rolesData) && rolesData.some((r) => r.role === 'admin'));
   };
 
-  const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id);
+  const refreshProfile = async (userId?: string) => {
+    const targetUserId = userId || user?.id || session?.user?.id;
+    if (targetUserId) {
+      await fetchProfile(targetUserId);
     }
+  };
+
+  const prepareForExternalSignIn = async () => {
+    deliberateSignInRef.current = true;
+    markExternalSignInIntent();
+    clearLogoutGuard();
+    await withTimeout(async () => {
+      await clearNativeLoggedOut();
+    }, undefined, 1200);
   };
 
   useEffect(() => {
@@ -212,13 +250,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Accept SIGNED_IN, INITIAL_SESSION, and TOKEN_REFRESHED as "deliberate"
       // when our ref is set — Supabase can emit any of these after a native
       // session restore on iOS cold-start.
+      const externalSignInIntent = hasExternalSignInIntent();
       const isExplicitSignIn =
         !!nextSession &&
-        deliberateSignInRef.current &&
+        (deliberateSignInRef.current || externalSignInIntent) &&
         (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED');
 
       if (isExplicitSignIn) {
         deliberateSignInRef.current = false;
+        clearExternalSignInIntent();
         clearLogoutGuard();
         void withTimeout(async () => {
           await clearNativeLoggedOut();
@@ -308,6 +348,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession((prev) => prev ?? webSession);
       setUser((prev) => prev ?? (webSession?.user ?? null));
       if (webSession?.user) {
+        clearExternalSignInIntent();
         clearLogoutGuard();
         void fetchProfile(webSession.user.id);
       }
@@ -491,6 +532,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signOut,
         refreshProfile,
+        prepareForExternalSignIn,
       }}
     >
       {children}

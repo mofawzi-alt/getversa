@@ -57,6 +57,11 @@ import TrendingBadge from '@/components/poll/TrendingBadge';
 import ClosingSoonStrip from '@/components/home/ClosingSoonStrip';
 import LiveVoterCount from '@/components/home/LiveVoterCount';
 
+const isAuthSessionError = (error: { code?: string; message?: string } | null) => {
+  const message = error?.message?.toLowerCase() || '';
+  return error?.code === '42501' || message.includes('row-level security') || message.includes('jwt') || message.includes('auth');
+};
+
 // Category display name mapping (canonical 8 categories)
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {};
 
@@ -639,7 +644,12 @@ function LiveDebatesList({
     const { error } = await supabase.from('votes').insert(votePayload);
     if (error && error.code !== '23505') {
       const { toast } = await import('sonner');
-      toast.error('Vote failed');
+      if (isAuthSessionError(error)) {
+        toast.error('Please sign in again to save your vote');
+        navigate('/auth');
+      } else {
+        toast.error('Vote failed');
+      }
       return;
     }
     try {
@@ -650,7 +660,7 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['user-vote-choices', user.id] });
     queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
-  }, [user, profile, queryClient]);
+  }, [user, profile, queryClient, navigate]);
 
   // Card height = viewport - app header (3.5rem + safe top + 0.5rem padding) - bottom nav (4rem + safe bottom)
   const cardHeight = 'calc(100dvh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 0.5rem - 4rem - env(safe-area-inset-bottom))';
