@@ -371,33 +371,35 @@ export default function Ask() {
         <div ref={threadEndRef} />
       </div>
 
-      <form
-        onSubmit={(e) => { e.preventDefault(); runPreview(); }}
-        className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-[100vw] overflow-x-hidden transition-transform duration-150"
-        style={{
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
-          transform: 'translateY(calc(-1 * var(--ask-kb-offset, 0px)))',
-        }}
-      >
-        <div className="relative max-w-lg mx-auto w-full min-w-0 overflow-hidden rounded-full">
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={placeholder}
-            disabled={loading}
-            className="block w-full min-w-0 max-w-full h-12 pl-4 pr-14 rounded-full border border-border bg-card text-base focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
-          />
-          <button
-            type="submit"
-            disabled={loading || query.trim().length < 3}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-primary text-primary-foreground disabled:opacity-40 active:scale-95 transition flex items-center justify-center"
-            aria-label="Send"
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
-          </button>
-        </div>
-      </form>
+      {askLevel > 0 && (
+        <form
+          onSubmit={(e) => { e.preventDefault(); runPreview(); }}
+          className="flex-shrink-0 bg-background/95 backdrop-blur border-t border-border px-3 py-3 w-full max-w-[100vw] overflow-x-hidden transition-transform duration-150"
+          style={{
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
+            transform: 'translateY(calc(-1 * var(--ask-kb-offset, 0px)))',
+          }}
+        >
+          <div className="relative max-w-lg mx-auto w-full min-w-0 overflow-hidden rounded-full">
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={placeholder}
+              disabled={loading}
+              className="block w-full min-w-0 max-w-full h-12 pl-4 pr-14 rounded-full border border-border bg-card text-base focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+            />
+            <button
+              type="submit"
+              disabled={loading || query.trim().length < 3}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-primary text-primary-foreground disabled:opacity-40 active:scale-95 transition flex items-center justify-center"
+              aria-label="Send"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+            </button>
+          </div>
+        </form>
+      )}
 
       <UnlockModal
         open={!!preview}
