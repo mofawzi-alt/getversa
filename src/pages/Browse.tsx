@@ -534,7 +534,7 @@ export default function Browse() {
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
-        .limit(liveFilter ? 300 : 250);
+        .limit(liveFilter ? 100 : 80);
 
       if (pollsError) throw pollsError;
       if (!polls || polls.length === 0) return [];
