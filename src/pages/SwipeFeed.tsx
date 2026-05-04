@@ -434,8 +434,8 @@ function ImmersivePollCard({
             <p className="text-white text-base font-display font-bold drop-shadow-lg text-center leading-snug">{poll.question}</p>
           </div>
 
-          {/* Suspense reveal animation */}
-          {hasResult && showSuspense && (
+          {/* Suspense reveal animation — skip during onboarding */}
+          {hasResult && showSuspense && !isOnboarding && (
             <motion.div
               initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
               animate={{ opacity: 1, backdropFilter: 'blur(8px)' }}
@@ -463,6 +463,25 @@ function ImmersivePollCard({
                 >
                   Revealing results...
                 </motion.p>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Onboarding: brief checkmark confirmation */}
+          {hasResult && isOnboarding && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-30 flex items-center justify-center bg-black/40"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: [0, 1.3, 1] }}
+                transition={{ duration: 0.4 }}
+                className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
+              >
+                <Check className="h-8 w-8 text-white" />
               </motion.div>
             </motion.div>
           )}
