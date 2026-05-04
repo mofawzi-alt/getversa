@@ -755,10 +755,11 @@ export default function SwipeFeed() {
   const [onboardingFeedback, setOnboardingFeedback] = useState<string | null>(null);
   
   const NEW_USER_VOTE_THRESHOLD = 5;
-  const ONBOARDING_POLL_IDS = Array.from({ length: 10 }, (_, i) => 
-    `a0000001-0001-4000-8000-00000000000${i + 1}`
+  const ONBOARDING_POLL_COUNT = 15;
+  const ONBOARDING_POLL_IDS = Array.from({ length: ONBOARDING_POLL_COUNT }, (_, i) => 
+    `a0000001-0001-4000-8000-${String(i + 1).padStart(12, '0')}`
   );
-  const isNewUser = totalUserVotes !== null && totalUserVotes < 10;
+  const isNewUser = totalUserVotes !== null && totalUserVotes < ONBOARDING_POLL_COUNT;
 
   useEffect(() => {
     if (loading) return;
