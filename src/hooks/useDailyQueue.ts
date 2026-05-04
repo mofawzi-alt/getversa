@@ -46,9 +46,9 @@ export function useDailyQueue() {
         return (data as DailyQueueItem[]) || [];
       }, null, 5000);
     },
-    staleTime: 1000 * 30,
-    refetchInterval: 1000 * 60,
-    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 5,
+    refetchInterval: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
     enabled: !!user,
   });
 

@@ -177,6 +177,7 @@ function HomeLiveDebateCard({
   chosenOptionLabel,
   isTrending = false,
   friendsOnPoll = [],
+  enableGenderTeaser = false,
   onCardClick,
   onVoteInline,
 }: {
@@ -186,6 +187,7 @@ function HomeLiveDebateCard({
   chosenOptionLabel: string | null;
   isTrending?: boolean;
   friendsOnPoll?: FriendOnPoll[];
+  enableGenderTeaser?: boolean;
   onCardClick: () => void;
   onVoteInline: (choice: 'A' | 'B') => void;
 }) {
@@ -198,7 +200,7 @@ function HomeLiveDebateCard({
     onVoteInline(choice);
   };
   const { data: genderTeaser } = useGenderSplitTeaser(
-    hasVoted ? poll.id : '',
+    hasVoted && enableGenderTeaser ? poll.id : '',
     poll.option_a,
     poll.option_b,
     poll.percentA,
@@ -692,6 +694,7 @@ function LiveDebatesList({
               chosenOptionLabel={chosenOptionLabel}
               isTrending={trendingIdSet?.has(poll.id) || false}
               friendsOnPoll={friendsOnPoll}
+              enableGenderTeaser={i < 3}
               onVoteInline={(choice) => handleInlineVote(poll, choice)}
               onCardClick={() => {
                 if (hasVoted) {
@@ -918,8 +921,8 @@ export default function Home() {
       const { count } = await supabase.from('votes').select('id', { count: 'exact', head: true }).gte('created_at', since);
       return count || 0;
     },
-    staleTime: 1000 * 60,
-    refetchInterval: 1000 * 60,
+    staleTime: 1000 * 60 * 5,
+    refetchInterval: 1000 * 120,
   });
 
   // User weekly vote count
@@ -1057,7 +1060,7 @@ export default function Home() {
           .or(`starts_at.is.null,starts_at.lte.${now}`)
           .order('weight_score', { ascending: false, nullsFirst: false })
           .order('created_at', { ascending: false })
-          .limit(200);
+          .limit(80);
 
         if (rawPollsError) throw rawPollsError;
         if (!rawPolls || rawPolls.length === 0) return [];

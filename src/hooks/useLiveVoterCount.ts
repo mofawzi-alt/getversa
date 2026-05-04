@@ -20,7 +20,7 @@ export function useLiveVoterCount() {
       }
       return count || 0;
     },
-    staleTime: 1000 * 60,
-    refetchInterval: 1000 * 60,
+    staleTime: 1000 * 60 * 3,
+    refetchInterval: 1000 * 60 * 3,
   });
 }

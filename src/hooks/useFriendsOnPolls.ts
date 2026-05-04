@@ -16,13 +16,15 @@ export type FriendOnPoll = {
  */
 export function useFriendsOnPolls(pollIds: string[] | undefined) {
   const { user } = useAuth();
-  const key = (pollIds || []).slice().sort().join(',');
+  // Only check first 20 polls to limit query size
+  const limitedPollIds = (pollIds || []).slice(0, 20);
+  const key = limitedPollIds.slice().sort().join(',');
   return useQuery({
     queryKey: ['friends-on-polls', user?.id, key],
-    enabled: !!user && !!pollIds && pollIds.length > 0,
-    staleTime: 2 * 60 * 1000,
+    enabled: !!user && limitedPollIds.length > 0,
+    staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<Record<string, FriendOnPoll[]>> => {
-      if (!user || !pollIds || pollIds.length === 0) return {};
+      if (!user || limitedPollIds.length === 0) return {};
 
       // 1) friend ids
       const { data: friendships } = await supabase
@@ -40,7 +42,7 @@ export function useFriendsOnPolls(pollIds: string[] | undefined) {
         .from('votes')
         .select('user_id, poll_id, choice, created_at')
         .in('user_id', friendIds)
-        .in('poll_id', pollIds)
+        .in('poll_id', limitedPollIds)
         .order('created_at', { ascending: false });
       if (!votes?.length) return {};
 
