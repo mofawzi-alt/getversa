@@ -255,7 +255,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const isExplicitSignIn =
         !!nextSession &&
         (deliberateSignInRef.current || externalSignInIntent || isPasswordRecovery) &&
-        (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED');
+        (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED' || isPasswordRecovery);
 
       if (isExplicitSignIn || (!!nextSession && isPasswordRecovery)) {
         deliberateSignInRef.current = false;
