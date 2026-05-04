@@ -662,6 +662,7 @@ function FullScreenCard({
               side="A"
               maxLogoSize="65%"
               draggable={false}
+              loading="eager"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
             <div className="absolute bottom-24 left-4 right-1">
@@ -677,6 +678,7 @@ function FullScreenCard({
               side="B"
               maxLogoSize="65%"
               draggable={false}
+              loading="eager"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
             <div className="absolute bottom-24 left-1 right-4 text-right">
