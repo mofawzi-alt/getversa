@@ -88,7 +88,7 @@ export default function Auth() {
   const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const [ageConfirm, setAgeConfirm] = useState(false);
-  const { user, session, signIn, signUp, refreshProfile } = useAuth();
+  const { user, profile, session, signIn, signUp, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   // Biometric state (Face ID / Touch ID on native)
@@ -112,10 +112,14 @@ export default function Auth() {
   // biometrics to be initiated by an explicit user action — the user must
   // tap the "Unlock with Face ID" button below (handleBiometricUnlock).
 
-  // Redirect authenticated users to home
+  const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
+
+  // Redirect only fully ready authenticated users to home. During signup/OAuth,
+  // the session can arrive before the profile row finishes saving; redirecting
+  // too early caused users to bounce back to the form after their first vote.
   useEffect(() => {
-    if (user) navigate('/home', { replace: true });
-  }, [user, navigate]);
+    if (user && profileComplete) navigate('/home', { replace: true });
+  }, [user, profileComplete, navigate]);
 
   // Reset city when country changes
   useEffect(() => { setCity(''); }, [country]);
@@ -194,7 +198,17 @@ export default function Auth() {
 
     setLoading(true);
     try {
-      const { error } = await signUp(email, password);
+      const signupMetadata = {
+        name: name.trim(),
+        username: name.trim(),
+        age_range: ageRange,
+        gender,
+        country,
+        city,
+        nationality: country,
+        city_of_residence: city,
+      };
+      const { error, user: createdUser, session: createdSession } = await signUp(email, password, signupMetadata);
       if (error) {
         if (error.message.includes('already registered')) {
           toast.error('This email is already registered. Please sign in instead.');
@@ -205,20 +219,23 @@ export default function Auth() {
         return;
       }
 
-      // Wait briefly for auth to settle, then save profile
-      // The AuthContext auto-creates the user row; we just update it
-      const { data: { user: newUser } } = await supabase.auth.getUser();
+      // Save the completed profile against the exact user returned by signup.
+      // Do not rely on getUser() immediately after signup because the local
+      // session can lag on iOS/Safari and make the app think signup failed.
+      const newUser = createdUser || createdSession?.user || session?.user || null;
       if (newUser) {
         const { error: profileError } = await supabase
           .from('users')
           .upsert({
             id: newUser.id,
-            email: newUser.email || '',
+            email: newUser.email || email,
             username: name.trim(),
             age_range: ageRange,
             gender,
             country,
             city,
+            nationality: country,
+            city_of_residence: city,
           }, { onConflict: 'id' });
 
         if (profileError) {
@@ -227,6 +244,13 @@ export default function Auth() {
 
         await supabase.from('automation_settings').upsert({ user_id: newUser.id }, { onConflict: 'user_id' });
         await refreshProfile();
+      }
+
+      if (!createdSession) {
+        toast.success('Check your email to finish joining Versa.');
+        setIsLogin(true);
+        setLoading(false);
+        return;
       }
 
       toast.success('Welcome to Versa! 🔥');
