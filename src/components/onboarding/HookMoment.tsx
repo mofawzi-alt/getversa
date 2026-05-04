@@ -12,8 +12,7 @@ export default function HookMoment({ onJoin }: HookMomentProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-8"
-      style={{ backgroundColor: '#111111' }}
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-8 bg-background"
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -21,11 +20,11 @@ export default function HookMoment({ onJoin }: HookMomentProps) {
         transition={{ delay: 0.2, duration: 0.6 }}
         className="flex flex-col items-center gap-4 max-w-sm text-center"
       >
-        <h1 className="text-4xl font-display font-bold text-white">
+        <h1 className="text-4xl font-display font-bold text-foreground">
           You get it 🔥
         </h1>
 
-        <p className="text-sm leading-relaxed" style={{ color: '#888' }}>
+        <p className="text-sm leading-relaxed text-muted-foreground">
           Sign up free to vote on what actually matters
         </p>
 
@@ -36,7 +35,7 @@ export default function HookMoment({ onJoin }: HookMomentProps) {
           Join Versa — it's free
         </Button>
 
-        <p className="text-xs" style={{ color: '#555' }}>
+        <p className="text-xs text-muted-foreground/60">
           Takes 30 seconds
         </p>
       </motion.div>
