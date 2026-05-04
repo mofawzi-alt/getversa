@@ -138,13 +138,16 @@ export default function PersonalityRevealScreen({ onComplete }: PersonalityRevea
               transition={{ delay: 0.5 }}
             >
               <p className="text-sm font-medium text-primary uppercase tracking-widest mb-2">
-                You are
+                Your personality type is
               </p>
-              <h1 className="text-3xl font-display font-bold text-foreground mb-3">
+              <h1 className="text-3xl font-display font-bold text-foreground mb-2">
                 {personality.name}
               </h1>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              <p className="text-sm text-muted-foreground leading-relaxed mb-2">
                 {personality.description}
+              </p>
+              <p className="text-xs text-muted-foreground/70 leading-relaxed">
+                Keep voting to refine your type — it evolves with every choice you make.
               </p>
             </motion.div>
 
