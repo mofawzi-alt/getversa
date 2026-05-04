@@ -1,43 +1,40 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-const TRENDING_THRESHOLD = 100; // votes in the last 2 hours
+const TRENDING_THRESHOLD = 100;
 const WINDOW_MS = 2 * 60 * 60 * 1000;
 
 /**
  * Returns a Set of poll IDs that have received >100 votes in the last 2 hours.
- * Used by both the Trending badge and Closing Soon strip.
+ * Only checks the first 20 poll IDs to keep the query lightweight.
  */
 export function useTrendingPolls(pollIds: string[]) {
-  const idsKey = pollIds.slice().sort().join('|');
+  // Only check the first 20 polls for trending status
+  const checkIds = pollIds.slice(0, 20);
+  const idsKey = checkIds.join('|');
 
   return useQuery({
     queryKey: ['trending-pollIds', idsKey],
     queryFn: async () => {
-      if (pollIds.length === 0) return new Set<string>();
+      if (checkIds.length === 0) return new Set<string>();
       const since = new Date(Date.now() - WINDOW_MS).toISOString();
-      const { data, error } = await supabase
-        .from('votes')
-        .select('poll_id')
-        .in('poll_id', pollIds)
-        .gte('created_at', since)
-        .limit(10000);
-      if (error) {
-        console.error('useTrendingPolls error:', error);
-        return new Set<string>();
-      }
-      const counts = new Map<string, number>();
-      data?.forEach((v: any) => {
-        counts.set(v.poll_id, (counts.get(v.poll_id) || 0) + 1);
-      });
+
+      // Check each poll individually with count query (much lighter than fetching rows)
       const trending = new Set<string>();
-      counts.forEach((count, id) => {
-        if (count >= TRENDING_THRESHOLD) trending.add(id);
+      const checks = checkIds.map(async (pollId) => {
+        const { count } = await supabase
+          .from('votes')
+          .select('*', { count: 'exact', head: true })
+          .eq('poll_id', pollId)
+          .gte('created_at', since);
+        if ((count || 0) >= TRENDING_THRESHOLD) trending.add(pollId);
       });
+
+      await Promise.all(checks);
       return trending;
     },
-    enabled: pollIds.length > 0,
-    staleTime: 1000 * 60 * 2, // recompute every 2 min
-    refetchInterval: 1000 * 60 * 2,
+    enabled: checkIds.length > 0,
+    staleTime: 1000 * 60 * 5,
+    refetchInterval: 1000 * 60 * 5,
   });
 }
