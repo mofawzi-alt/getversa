@@ -158,10 +158,24 @@ export default function Auth() {
   // biometrics to be initiated by an explicit user action — the user must
   // tap the "Unlock with Face ID" button below (handleBiometricUnlock).
 
-  // Redirect authenticated users once any in-progress email signup save has
-  // finished. OAuth users may still need demographics; Home shows that modal.
+  // Redirect authenticated users once any pending email-confirmation profile
+  // save has finished. OAuth users may still need demographics; Home shows that modal.
   useEffect(() => {
-    if (user && !loading) navigate('/home', { replace: true });
+    if (!user || loading) return;
+    let cancelled = false;
+    (async () => {
+      const pendingProfile = getPendingSignupProfile(user.email || '');
+      if (pendingProfile) {
+        try {
+          await applyProfileForUser(user, pendingProfile);
+          clearPendingSignupProfile();
+        } catch (profileError) {
+          console.error('Pending profile save failed:', profileError);
+        }
+      }
+      if (!cancelled) navigate('/home', { replace: true });
+    })();
+    return () => { cancelled = true; };
   }, [user, loading, navigate]);
 
   // Reset city when country changes
