@@ -660,7 +660,7 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['user-vote-choices', user.id] });
     queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
-  }, [user, profile, queryClient]);
+  }, [user, profile, queryClient, navigate]);
 
   // Card height = viewport - app header (3.5rem + safe top + 0.5rem padding) - bottom nav (4rem + safe bottom)
   const cardHeight = 'calc(100dvh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 0.5rem - 4rem - env(safe-area-inset-bottom))';
