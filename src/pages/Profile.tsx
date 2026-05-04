@@ -204,8 +204,8 @@ export default function Profile() {
         {/* Recent vote history grid */}
         {user && <VoteHistoryGrid userId={user.id} />}
 
-        {/* Your Dimensions (with quiz inside) */}
-        <ProfileDimensionsSection />
+        {/* Your Dimensions — visible at 50+ votes */}
+        {(stats?.votes ?? 0) >= 50 && <ProfileDimensionsSection />}
 
         {/* Voting Insights */}
         <VotingInsights />
