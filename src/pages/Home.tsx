@@ -769,15 +769,15 @@ export default function Home() {
     }
   }, [loading, profileComplete, user]);
 
-  // Show first-time welcome tour for authenticated users who haven't seen it
+  // Auto-mark welcome tour as done for all authenticated users (no multi-screen tour)
   useEffect(() => {
     if (loading || !user || !profile) return;
-    if (isWelcomeTourDone()) return;
-    if (profile.has_seen_welcome_tour) {
+    if (!isWelcomeTourDone()) {
       localStorage.setItem('versa_welcome_tour_done', 'true');
-      return;
+      if (!profile.has_seen_welcome_tour) {
+        supabase.from('users').update({ has_seen_welcome_tour: true } as any).eq('id', user.id);
+      }
     }
-    setShowWelcomeTour(true);
   }, [loading, user, profile]);
 
   // Realtime subscription: invalidate vote-related queries on new votes AND new polls
