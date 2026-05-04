@@ -668,12 +668,14 @@ function ImmersivePollCard({
             </div>
             <div className="flex flex-col items-center gap-0.5 flex-1">
               <span className="text-foreground/30 text-xs">swipe to choose</span>
-              <button
-                onClick={(e) => { e.stopPropagation(); onSkip(poll.id); }}
-                className="text-[9px] text-muted-foreground/50 mt-1 hover:text-muted-foreground/70 transition-colors active:scale-95"
-              >
-                Skip this one ↑
-              </button>
+              {!isOnboarding && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onSkip(poll.id); }}
+                  className="text-[9px] text-muted-foreground/50 mt-1 hover:text-muted-foreground/70 transition-colors active:scale-95"
+                >
+                  Skip this one ↑
+                </button>
+              )}
             </div>
             <div className="flex flex-col items-center gap-0.5 flex-1">
               <span className="text-option-b font-display font-bold text-lg">B</span>
