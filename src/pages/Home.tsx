@@ -1353,9 +1353,7 @@ export default function Home() {
 
   // (auto-rotate removed — static horizontal scroll)
 
-  if (showWelcomeTour && user) {
-    return <FirstTimeWelcomeTour userId={user.id} onComplete={() => setShowWelcomeTour(false)} />;
-  }
+  // Welcome tour removed — authenticated users go straight to feed
 
   if (showWelcome) {
     return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); }} />;
