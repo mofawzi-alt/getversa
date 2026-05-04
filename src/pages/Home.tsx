@@ -1184,6 +1184,9 @@ export default function Home() {
   const hasUnseen = (unseenCount || 0) > 0;
   const allNewPolls = useMemo(() => {
     const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id));
+    if (isOnboardingFeed) {
+      return unvoted;
+    }
     // For authenticated users with daily queue: STRICTLY cap to queue polls only.
     // This enforces first_day_limit / daily_limit so users don't see all 99 active polls at once.
     if (user && queuePollIds.length > 0) {
@@ -1201,7 +1204,7 @@ export default function Home() {
       return [...freshUnqueuedPolls, ...queuePolls];
     }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
-  }, [allPolls, votedPollIds, profile?.age_range, user, queuePollIds]);
+  }, [allPolls, votedPollIds, profile?.age_range, user, queuePollIds, isOnboardingFeed]);
   const newPolls = useMemo(() => {
     if (!categoryFilter) return allNewPolls;
     return allNewPolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter);
