@@ -114,6 +114,7 @@ type PollCard = {
 };
 
 const EXPLORE_THRESHOLD = 5;
+const ONBOARDING_VOTE_TARGET = 10;
 
 const withQueryTimeout = async <T,>(
   operation: () => Promise<T>,
@@ -996,12 +997,54 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [user]);
 
+  const isOnboardingFeed = voteCount < ONBOARDING_VOTE_TARGET;
+
   const { data: polls, isLoading } = useQuery({
-    queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, queuePollIds.join('|')],
+    queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, queuePollIds.join('|'), isOnboardingFeed, Array.from(votedPollIds || []).join('|')],
     queryFn: async () => {
       return withQueryTimeout(async () => {
         const now = new Date().toISOString();
         const pollSelect = 'id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries, option_a_tag, option_b_tag, tags, is_hot_take';
+
+        if (isOnboardingFeed) {
+          const { data: onboardingRows, error: onboardingError } = await supabase
+            .from('onboarding_polls')
+            .select('poll_id, display_order')
+            .order('display_order', { ascending: true })
+            .limit(ONBOARDING_VOTE_TARGET);
+
+          if (onboardingError) throw onboardingError;
+
+          const onboardingPollIds = (onboardingRows || []).map(row => row.poll_id).filter(id => !votedPollIds?.has(id));
+          if (onboardingPollIds.length === 0) return [];
+
+          const { data: onboardingPolls, error: onboardingPollsError } = await supabase
+            .from('polls')
+            .select(pollSelect)
+            .in('id', onboardingPollIds)
+            .eq('is_active', true)
+            .or(`starts_at.is.null,starts_at.lte.${now}`);
+
+          if (onboardingPollsError) throw onboardingPollsError;
+
+          const pollOrder = new Map(onboardingPollIds.map((id, index) => [id, index]));
+          const selectedPolls = (onboardingPolls || []).sort((a, b) => (pollOrder.get(a.id) ?? 999) - (pollOrder.get(b.id) ?? 999));
+          const pollIds = selectedPolls.map(p => p.id);
+          if (pollIds.length === 0) return [];
+
+          const { data: results, error: resultsError } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
+          if (resultsError) throw resultsError;
+          const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
+
+          return selectedPolls.map(p => {
+            const r = resultsMap.get(p.id) as any;
+            const total = (r?.total_votes as number) || 0;
+            const votesA = (r?.votes_a as number) || 0;
+            const votesB = (r?.votes_b as number) || 0;
+            const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
+            return { ...p, totalVotes: total, percentA: pctA, percentB: 100 - pctA, votesA, votesB, recentVotes: 0, _recentVoterIds: [] };
+          });
+        }
 
         const { data: rawPolls, error: rawPollsError } = await supabase
           .from('polls')
@@ -1141,6 +1184,9 @@ export default function Home() {
   const hasUnseen = (unseenCount || 0) > 0;
   const allNewPolls = useMemo(() => {
     const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id));
+    if (isOnboardingFeed) {
+      return unvoted;
+    }
     // For authenticated users with daily queue: STRICTLY cap to queue polls only.
     // This enforces first_day_limit / daily_limit so users don't see all 99 active polls at once.
     if (user && queuePollIds.length > 0) {
@@ -1158,7 +1204,7 @@ export default function Home() {
       return [...freshUnqueuedPolls, ...queuePolls];
     }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
-  }, [allPolls, votedPollIds, profile?.age_range, user, queuePollIds]);
+  }, [allPolls, votedPollIds, profile?.age_range, user, queuePollIds, isOnboardingFeed]);
   const newPolls = useMemo(() => {
     if (!categoryFilter) return allNewPolls;
     return allNewPolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter);
