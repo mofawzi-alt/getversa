@@ -1,7 +1,8 @@
 const PASSWORD_RECOVERY_INTENT_KEY = 'versa.password_recovery_intent.v1';
+const PASSWORD_RECOVERY_TARGET_KEY = 'versa.password_recovery_target.v1';
 const RECOVERY_INTENT_MAX_AGE_MS = 15 * 60 * 1000;
 
-const isResetPasswordPath = () => window.location.pathname === '/reset-password';
+const isAuthCallbackLikePath = () => window.location.pathname === '/' || window.location.pathname === '/auth' || window.location.pathname === '/reset-password';
 
 const hasPasswordRecoveryParams = () => {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
@@ -17,12 +18,18 @@ const hasPasswordRecoveryParams = () => {
 };
 
 export const capturePasswordRecoveryIntent = () => {
-  if (!isResetPasswordPath() || !hasPasswordRecoveryParams()) return;
+  if (!isAuthCallbackLikePath() || !hasPasswordRecoveryParams()) return;
 
   try {
     sessionStorage.setItem(PASSWORD_RECOVERY_INTENT_KEY, String(Date.now()));
+    sessionStorage.setItem(PASSWORD_RECOVERY_TARGET_KEY, '/reset-password');
   } catch {
     // Best-effort only; the reset page still checks the live auth session.
+  }
+
+  if (window.location.pathname !== '/reset-password') {
+    const target = `/reset-password${window.location.search}${window.location.hash}`;
+    window.history.replaceState(window.history.state, '', target);
   }
 };
 
@@ -39,6 +46,7 @@ export const hasRecentPasswordRecoveryIntent = () => {
 export const clearPasswordRecoveryIntent = () => {
   try {
     sessionStorage.removeItem(PASSWORD_RECOVERY_INTENT_KEY);
+    sessionStorage.removeItem(PASSWORD_RECOVERY_TARGET_KEY);
   } catch {
     // Storage cleanup is best-effort.
   }

@@ -12,7 +12,7 @@ import { clearPasswordRecoveryIntent, hasRecentPasswordRecoveryIntent } from '@/
 const hasRecoveryParams = () => {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   const query = new URLSearchParams(window.location.search);
-  return hash.get('type') === 'recovery' || query.get('type') === 'recovery' || query.has('code');
+  return hash.get('type') === 'recovery' || query.get('type') === 'recovery' || hash.has('access_token') || hash.has('refresh_token') || query.has('code');
 };
 
 /**
@@ -36,7 +36,7 @@ export default function ResetPassword() {
 
     // Listen for PASSWORD_RECOVERY before checking session, so we don't miss the event
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && hasRecentPasswordRecoveryIntent())) {
         setRecoverySession(true);
         setReady(true);
       }
@@ -52,8 +52,12 @@ export default function ResetPassword() {
       }
 
       const { data } = await supabase.auth.getSession();
+      if (!data.session && startedFromRecoveryLink) {
+        await new Promise((resolve) => window.setTimeout(resolve, 350));
+      }
+      const { data: settledData } = data.session ? { data } : await supabase.auth.getSession();
       if (cancelled) return;
-      setRecoverySession(Boolean(data.session && startedFromRecoveryLink));
+      setRecoverySession(Boolean(settledData.session && startedFromRecoveryLink));
       setReady(true);
     })();
 

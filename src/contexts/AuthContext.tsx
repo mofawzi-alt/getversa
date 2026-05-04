@@ -12,6 +12,7 @@ import {
   clearNativeLoggedOut,
 } from '@/lib/nativeSession';
 import { clearBiometricUnlocked } from '@/lib/biometric';
+import { hasRecentPasswordRecoveryIntent } from '@/lib/authRedirectCapture';
 
 const LOGOUT_GUARD_KEY = 'versa.force_logged_out.guard';
 const EXTERNAL_SIGN_IN_INTENT_KEY = 'versa.external_sign_in.intent';
@@ -270,13 +271,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, undefined, 1200);
       }
 
-      const forcedNativeLogout = isExplicitSignIn
+      const recoveringPassword = isPasswordRecovery || hasRecentPasswordRecoveryIntent();
+      const forcedNativeLogout = (isExplicitSignIn || recoveringPassword)
         ? false
         : await withTimeout(() => isNativeLoggedOut(), false, 800);
 
       if (cancelled) return;
 
-      if (hasLogoutGuard() || forcedNativeLogout) {
+      if ((hasLogoutGuard() && !recoveringPassword) || forcedNativeLogout) {
         deliberateSignInRef.current = false;
         clearAuthState();
         finishBoot();
