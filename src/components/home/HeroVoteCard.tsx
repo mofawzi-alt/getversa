@@ -406,6 +406,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     if (result || isVoting) return;
     setIsDragging(true);
     isDraggingRef.current = true;
+    dragDirectionRef.current = 'none';
     startX.current = clientX;
     startY.current = clientY;
     currentDragX.current = 0;
