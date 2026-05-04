@@ -8,8 +8,8 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-import SplashScreen, { isSplashSeen, markSplashSeen } from "@/components/SplashScreen";
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/components/onboarding/SwipeOverlay";
+import { markSplashSeen } from "@/components/SplashScreen";
 import { AnimatePresence } from "framer-motion";
 
 // Eagerly loaded — landing + most-visited routes
