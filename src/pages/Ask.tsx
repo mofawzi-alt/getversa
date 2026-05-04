@@ -63,6 +63,7 @@ export default function Ask() {
   const { profile } = useAuth();
   const qc = useQueryClient();
   const { data: askCredits = 0 } = useAskCredits();
+  const { totalVotes, askLevel, levelLabel } = useUserVoteCount();
   const [mode, setMode] = useState<Mode>('decide');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
