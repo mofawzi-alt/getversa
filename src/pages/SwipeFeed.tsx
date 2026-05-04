@@ -945,12 +945,11 @@ export default function SwipeFeed() {
               if (missingPolls) allPolls.push(...missingPolls);
             }
             
-            // Move unvoted onboarding polls to the front in order
-            const onboardingFirst = unvotedOnboarding
+            // Show ONLY onboarding polls until all are voted
+            const onboardingOnly = unvotedOnboarding
               .map(id => allPolls.find(p => p.id === id))
               .filter(Boolean) as typeof allPolls;
-            const rest = allPolls.filter(p => !unvotedOnboarding.includes(p.id));
-            allPolls = [...onboardingFirst, ...rest];
+            allPolls = onboardingOnly;
           }
         }
       }
