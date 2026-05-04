@@ -1,7 +1,7 @@
 type PollImageSide = 'A' | 'B';
 
 const POLL_IMAGE_BASE_PATH = '/polls';
-const POLL_IMAGE_CACHE_VERSION = 'genz-v2-20260425-v7';
+// Cache version removed — browser caching now relies on natural HTTP cache headers
 
 export function getPublicPollImageUrl(fileName: string) {
   return `${POLL_IMAGE_BASE_PATH}/${encodeURIComponent(fileName.toLowerCase())}`;
