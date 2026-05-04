@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAskCredits } from '@/hooks/useAskCredits';
+import { useUserVoteCount } from '@/hooks/useUserVoteCount';
+import { Progress } from '@/components/ui/progress';
 import SuggestionChips from '@/components/ask/SuggestionChips';
 import AskThread, { type AskTurn, type Mode } from '@/components/ask/AskThread';
 import CreditBalance from '@/components/ask/CreditBalance';
