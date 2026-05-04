@@ -93,7 +93,7 @@ function determineArchetype(tagCounts: Map<string, number>): Archetype {
 }
 
 function getTopTraits(tagCounts: Map<string, number>, count: number): string[] {
-  return [...tagCounts.entries()]
+  return Array.from(tagCounts.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, count)
     .map(([tag]) => tag);
