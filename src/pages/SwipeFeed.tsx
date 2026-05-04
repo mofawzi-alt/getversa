@@ -1461,6 +1461,7 @@ export default function SwipeFeed() {
                   rareEvent={rareEvent}
                   userCountry={profile?.country}
                   sessionVoteCount={sessionVoteCount}
+                  isOnboarding={isNewUser}
                 />
                 {/* Swipe hint on very first card only */}
                 {idx === 0 && showSwipeHint && !result && <SwipeHint />}
