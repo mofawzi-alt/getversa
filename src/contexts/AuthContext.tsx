@@ -33,18 +33,22 @@ const hasLogoutGuard = () => {
 const setLogoutGuard = () => {
   try {
     sessionStorage.setItem(LOGOUT_GUARD_KEY, 'true');
-  } catch {}
+  } catch {
+    // sessionStorage can be unavailable in restricted browsers.
+  }
 };
 
 const clearLogoutGuard = () => {
   try {
     sessionStorage.removeItem(LOGOUT_GUARD_KEY);
     localStorage.removeItem(LOGOUT_GUARD_KEY); // legacy cleanup
-  } catch {}
+  } catch {
+    // Storage cleanup is best-effort.
+  }
 };
 
 const markExternalSignInIntent = () => {
-  try { sessionStorage.setItem(EXTERNAL_SIGN_IN_INTENT_KEY, 'true'); } catch {}
+  try { sessionStorage.setItem(EXTERNAL_SIGN_IN_INTENT_KEY, 'true'); } catch { /* best-effort */ }
 };
 
 const hasExternalSignInIntent = () => {
@@ -52,7 +56,7 @@ const hasExternalSignInIntent = () => {
 };
 
 const clearExternalSignInIntent = () => {
-  try { sessionStorage.removeItem(EXTERNAL_SIGN_IN_INTENT_KEY); } catch {}
+  try { sessionStorage.removeItem(EXTERNAL_SIGN_IN_INTENT_KEY); } catch { /* best-effort */ }
 };
 
 const withTimeout = async <T,>(
