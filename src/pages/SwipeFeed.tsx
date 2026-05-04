@@ -923,8 +923,8 @@ export default function SwipeFeed() {
         }
       }
 
-      // For new users (< 10 votes): prepend onboarding polls in order
-      if (user && votedPollSet.size < 10 && !categoryFilter && !searchFilter && !targetPollId) {
+      // For new users / guests (< 10 votes): show ONLY onboarding polls first
+      if (votedPollSet.size < 10 && !categoryFilter && !searchFilter && !targetPollId) {
         const { data: onboardingRows } = await supabase
           .from('onboarding_polls')
           .select('poll_id, display_order')
