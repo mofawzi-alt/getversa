@@ -480,7 +480,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       preservedBiometricEnabled = localStorage.getItem(BIO_ENABLED_KEY);
       preservedBiometricEmail = localStorage.getItem(BIO_EMAIL_KEY);
-    } catch {}
+    } catch {
+      // Preserving biometric preferences is best-effort.
+    }
 
     setLogoutGuard();
     deliberateSignInRef.current = false;
@@ -508,12 +510,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (preservedBiometricEmail) {
         localStorage.setItem(BIO_EMAIL_KEY, preservedBiometricEmail);
       }
-    } catch {}
+    } catch {
+      // Local token cleanup is best-effort across browser modes.
+    }
 
     // Fire-and-forget all native + network teardown so the UI never hangs
     // on a stalled WKWebView fetch or Capacitor bridge call.
     void withTimeout(async () => { await markNativeLoggedOut(); }, undefined, 1500);
-    try { clearBiometricUnlocked(); } catch {}
+    try { clearBiometricUnlocked(); } catch { /* best-effort */ }
     void withTimeout(async () => { await clearNativeSession(); }, undefined, 1500);
     void withTimeout(async () => { await supabase.auth.signOut({ scope: 'global' }); }, undefined, 3000);
     void withTimeout(async () => { await supabase.auth.signOut({ scope: 'local' }); }, undefined, 1500);
