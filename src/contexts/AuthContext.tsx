@@ -94,7 +94,11 @@ interface AuthContextType {
   profile: UserProfile | null;
   isAdmin: boolean;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    metadata?: Record<string, string>
+  ) => Promise<{ error: Error | null; user: User | null; session: Session | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -318,21 +322,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, metadata?: Record<string, string>) => {
     // On native (iOS/Android Capacitor) window.location.origin resolves to
     // capacitor:// or localhost — Supabase rejects those redirects. Always
     // route email-confirmation links to the production web URL on native.
     const redirectUrl = getAuthRedirectUrl();
 
-    const { error } = await supabase.auth.signUp({
+    deliberateSignInRef.current = true;
+    clearLogoutGuard();
+    void withTimeout(async () => {
+      await clearNativeLoggedOut();
+    }, undefined, 1200);
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
+        data: metadata,
       },
     });
 
-    return { error };
+    if (error) {
+      deliberateSignInRef.current = false;
+      return { error, user: null, session: null };
+    }
+
+    const nextSession = data.session ?? await getSessionWithTimeout(1500);
+    if (nextSession) {
+      setSession(nextSession);
+      setUser(nextSession.user ?? null);
+      void withTimeout(async () => {
+        await persistSessionNative({
+          access_token: nextSession.access_token,
+          refresh_token: nextSession.refresh_token,
+        });
+      }, undefined, 1200);
+      if (nextSession.user) {
+        void fetchProfile(nextSession.user.id);
+      }
+    } else {
+      deliberateSignInRef.current = false;
+    }
+
+    return { error: null, user: data.user ?? nextSession?.user ?? null, session: nextSession };
   };
 
   const signIn = async (email: string, password: string) => {
