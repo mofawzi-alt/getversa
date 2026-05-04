@@ -122,12 +122,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!profileData) {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (authUser) {
-        const { data: newProfile } = await supabase
+        // Generate a unique username — append random suffix to avoid collisions
+        const baseUsername = (authUser.email?.split('@')[0] || 'user').replace(/[^a-z0-9_]/gi, '').toLowerCase();
+        const uniqueUsername = `${baseUsername}_${Math.random().toString(36).slice(2, 6)}`;
+        
+        const { data: newProfile, error: insertError } = await supabase
           .from('users')
           .insert({
             id: authUser.id,
             email: authUser.email || '',
-            username: authUser.email?.split('@')[0] || null,
+            username: uniqueUsername,
             points: 0,
             current_streak: 0,
             longest_streak: 0,
@@ -135,7 +139,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           })
           .select()
           .single();
-        profileData = newProfile;
+        
+        if (insertError) {
+          console.error('Failed to auto-create user profile:', insertError.message);
+          // Retry with a more unique username
+          const fallbackUsername = `user_${Date.now().toString(36)}`;
+          const { data: retryProfile } = await supabase
+            .from('users')
+            .insert({
+              id: authUser.id,
+              email: authUser.email || '',
+              username: fallbackUsername,
+              points: 0,
+              current_streak: 0,
+              longest_streak: 0,
+              total_days_active: 0,
+            })
+            .select()
+            .single();
+          profileData = retryProfile;
+        } else {
+          profileData = newProfile;
+        }
       }
     }
     
