@@ -750,7 +750,7 @@ export default function Home() {
     const prevType = html.style.scrollSnapType;
     const prevPadTop = html.style.scrollPaddingTop;
     const prevPadBottom = html.style.scrollPaddingBottom;
-    html.style.scrollSnapType = 'y mandatory';
+    html.style.scrollSnapType = 'y proximity';
     // Header = 3.5rem + safe-area top inset (matches AppLayout)
     html.style.scrollPaddingTop = 'calc(3.5rem + max(env(safe-area-inset-top), 1.75rem))';
     // Bottom nav = 4rem + safe-area bottom inset
