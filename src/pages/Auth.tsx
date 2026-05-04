@@ -112,10 +112,11 @@ export default function Auth() {
   // biometrics to be initiated by an explicit user action — the user must
   // tap the "Unlock with Face ID" button below (handleBiometricUnlock).
 
-  // Redirect authenticated users to home
+  // Redirect authenticated users once any in-progress email signup save has
+  // finished. OAuth users may still need demographics; Home shows that modal.
   useEffect(() => {
-    if (user) navigate('/home', { replace: true });
-  }, [user, navigate]);
+    if (user && !loading) navigate('/home', { replace: true });
+  }, [user, loading, navigate]);
 
   // Reset city when country changes
   useEffect(() => { setCity(''); }, [country]);
@@ -194,7 +195,17 @@ export default function Auth() {
 
     setLoading(true);
     try {
-      const { error } = await signUp(email, password);
+      const signupMetadata = {
+        name: name.trim(),
+        username: name.trim(),
+        age_range: ageRange,
+        gender,
+        country,
+        city,
+        nationality: country,
+        city_of_residence: city,
+      };
+      const { error, user: createdUser, session: createdSession } = await signUp(email, password, signupMetadata);
       if (error) {
         if (error.message.includes('already registered')) {
           toast.error('This email is already registered. Please sign in instead.');
@@ -205,20 +216,25 @@ export default function Auth() {
         return;
       }
 
-      // Wait briefly for auth to settle, then save profile
-      // The AuthContext auto-creates the user row; we just update it
-      const { data: { user: newUser } } = await supabase.auth.getUser();
+      // Save the completed profile against the exact user returned by signup.
+      // Do not rely on getUser() immediately after signup because the local
+      // session can lag on iOS/Safari and make the app think signup failed.
+      const newUser = createdUser || createdSession?.user || session?.user || null;
       if (newUser) {
+        const safeUsernameBase = name.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20) || 'user';
+        const safeUsername = `${safeUsernameBase}_${newUser.id.replace(/-/g, '').slice(0, 6)}`;
         const { error: profileError } = await supabase
           .from('users')
           .upsert({
             id: newUser.id,
-            email: newUser.email || '',
-            username: name.trim(),
+            email: newUser.email || email,
+            username: safeUsername,
             age_range: ageRange,
             gender,
             country,
             city,
+            nationality: country,
+            city_of_residence: city,
           }, { onConflict: 'id' });
 
         if (profileError) {
@@ -227,6 +243,13 @@ export default function Auth() {
 
         await supabase.from('automation_settings').upsert({ user_id: newUser.id }, { onConflict: 'user_id' });
         await refreshProfile();
+      }
+
+      if (!createdSession) {
+        toast.success('Check your email to finish joining Versa.');
+        setIsLogin(true);
+        setLoading(false);
+        return;
       }
 
       toast.success('Welcome to Versa! 🔥');
