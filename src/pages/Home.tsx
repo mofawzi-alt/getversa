@@ -750,7 +750,7 @@ export default function Home() {
     const prevType = html.style.scrollSnapType;
     const prevPadTop = html.style.scrollPaddingTop;
     const prevPadBottom = html.style.scrollPaddingBottom;
-    html.style.scrollSnapType = 'y mandatory';
+    html.style.scrollSnapType = 'y proximity';
     // Header = 3.5rem + safe-area top inset (matches AppLayout)
     html.style.scrollPaddingTop = 'calc(3.5rem + max(env(safe-area-inset-top), 1.75rem))';
     // Bottom nav = 4rem + safe-area bottom inset
@@ -1190,7 +1190,13 @@ export default function Home() {
   const allPolls = polls || [];
   const hasUnseen = (unseenCount || 0) > 0;
   const allNewPolls = useMemo(() => {
-    const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id));
+    let guestSkipped = new Set<string>();
+    if (!user) {
+      try {
+        guestSkipped = new Set(JSON.parse(localStorage.getItem('versa_guest_skipped_polls') || '[]'));
+      } catch {}
+    }
+    const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id) && !guestSkipped.has(p.id));
     if (isOnboardingFeed) {
       return unvoted;
     }
@@ -1539,7 +1545,14 @@ export default function Home() {
           <HeroVoteCard
             poll={newPolls[heroPollIndex] || null}
             unseenCount={user ? remainingToday : newPolls.length}
-            onVoteComplete={() => {
+            onVoteComplete={(action, pollId) => {
+              if (action === 'skip') {
+                setHeroPollIndex((current) => {
+                  const activeIndex = newPolls.findIndex((poll) => poll.id === pollId);
+                  const nextIndex = activeIndex >= 0 ? activeIndex + 1 : current + 1;
+                  return nextIndex < newPolls.length ? nextIndex : 0;
+                });
+              }
               queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
               queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
               queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
