@@ -1545,7 +1545,14 @@ export default function Home() {
           <HeroVoteCard
             poll={newPolls[heroPollIndex] || null}
             unseenCount={user ? remainingToday : newPolls.length}
-            onVoteComplete={() => {
+            onVoteComplete={(action, pollId) => {
+              if (action === 'skip') {
+                setHeroPollIndex((current) => {
+                  const activeIndex = newPolls.findIndex((poll) => poll.id === pollId);
+                  const nextIndex = activeIndex >= 0 ? activeIndex + 1 : current + 1;
+                  return nextIndex < newPolls.length ? nextIndex : 0;
+                });
+              }
               queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
               queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
               queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
