@@ -100,6 +100,7 @@ export function useGenderSplitTeaser(
 
       return { text: `👀 ${best.percent}% of ${best.gender} chose ${best.option}` };
     },
-    staleTime: 30_000,
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
   });
 }
