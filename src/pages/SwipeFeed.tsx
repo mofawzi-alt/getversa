@@ -923,8 +923,8 @@ export default function SwipeFeed() {
         }
       }
 
-      // For new users (< 10 votes): prepend onboarding polls in order
-      if (user && votedPollSet.size < 10 && !categoryFilter && !searchFilter && !targetPollId) {
+      // For new users / guests (< 10 votes): show ONLY onboarding polls first
+      if (votedPollSet.size < 10 && !categoryFilter && !searchFilter && !targetPollId) {
         const { data: onboardingRows } = await supabase
           .from('onboarding_polls')
           .select('poll_id, display_order')
@@ -945,12 +945,11 @@ export default function SwipeFeed() {
               if (missingPolls) allPolls.push(...missingPolls);
             }
             
-            // Move unvoted onboarding polls to the front in order
-            const onboardingFirst = unvotedOnboarding
+            // Show ONLY onboarding polls until all are voted
+            const onboardingOnly = unvotedOnboarding
               .map(id => allPolls.find(p => p.id === id))
               .filter(Boolean) as typeof allPolls;
-            const rest = allPolls.filter(p => !unvotedOnboarding.includes(p.id));
-            allPolls = [...onboardingFirst, ...rest];
+            allPolls = onboardingOnly;
           }
         }
       }
