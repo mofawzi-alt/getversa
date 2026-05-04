@@ -11,14 +11,15 @@ import { motion } from 'framer-motion';
 function getWeekRange() {
   const now = new Date();
   const day = now.getDay();
-  const diffToMonday = day === 0 ? 6 : day - 1;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - diffToMonday);
-  monday.setHours(0, 0, 0, 0);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
-  return { start: monday, end: sunday };
+  const diffToSunday = day; // Sunday = 0, so diff is just the day number
+  const sunday = new Date(now);
+  sunday.setDate(now.getDate() - diffToSunday);
+  sunday.setHours(0, 0, 0, 0);
+  const saturday = new Date(sunday);
+  saturday.setDate(sunday.getDate() + 6);
+  saturday.setHours(23, 59, 59, 999);
+  return { start: sunday, end: saturday };
+}
 }
 
 function formatDate(d: Date) {
