@@ -24,7 +24,7 @@ import {
 import { hapticSuccess, hapticError } from '@/lib/haptics';
 import SocialAuthButtons from '@/components/auth/SocialAuthButtons';
 
-const AGE_RANGES = ['Under 18', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
+const AGE_RANGES = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDERS = ['Male', 'Female'];
 const COUNTRIES = [
   'Egypt', 'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
