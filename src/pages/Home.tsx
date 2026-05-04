@@ -177,6 +177,7 @@ function HomeLiveDebateCard({
   chosenOptionLabel,
   isTrending = false,
   friendsOnPoll = [],
+  enableGenderTeaser = false,
   onCardClick,
   onVoteInline,
 }: {
@@ -186,6 +187,7 @@ function HomeLiveDebateCard({
   chosenOptionLabel: string | null;
   isTrending?: boolean;
   friendsOnPoll?: FriendOnPoll[];
+  enableGenderTeaser?: boolean;
   onCardClick: () => void;
   onVoteInline: (choice: 'A' | 'B') => void;
 }) {
@@ -198,7 +200,7 @@ function HomeLiveDebateCard({
     onVoteInline(choice);
   };
   const { data: genderTeaser } = useGenderSplitTeaser(
-    hasVoted ? poll.id : '',
+    hasVoted && enableGenderTeaser ? poll.id : '',
     poll.option_a,
     poll.option_b,
     poll.percentA,
