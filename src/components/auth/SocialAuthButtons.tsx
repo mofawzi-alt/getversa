@@ -3,7 +3,7 @@ import { lovable } from '@/integrations/lovable';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { getAuthRedirectUrl } from '@/lib/nativeSession';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Apple HIG-compliant Sign in with Apple button + Google button.
@@ -13,11 +13,12 @@ import { useNavigate } from 'react-router-dom';
  */
 export default function SocialAuthButtons({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const [busy, setBusy] = useState<'apple' | 'google' | null>(null);
-  const navigate = useNavigate();
+  const { prepareForExternalSignIn } = useAuth();
 
   const handleOAuth = async (provider: 'apple' | 'google') => {
     setBusy(provider);
     try {
+      await prepareForExternalSignIn();
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: getAuthRedirectUrl(),
       });
