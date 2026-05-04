@@ -57,6 +57,11 @@ import TrendingBadge from '@/components/poll/TrendingBadge';
 import ClosingSoonStrip from '@/components/home/ClosingSoonStrip';
 import LiveVoterCount from '@/components/home/LiveVoterCount';
 
+const isAuthSessionError = (error: { code?: string; message?: string } | null) => {
+  const message = error?.message?.toLowerCase() || '';
+  return error?.code === '42501' || message.includes('row-level security') || message.includes('jwt') || message.includes('auth');
+};
+
 // Category display name mapping (canonical 8 categories)
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {};
 
@@ -639,7 +644,12 @@ function LiveDebatesList({
     const { error } = await supabase.from('votes').insert(votePayload);
     if (error && error.code !== '23505') {
       const { toast } = await import('sonner');
-      toast.error('Vote failed');
+      if (isAuthSessionError(error)) {
+        toast.error('Please sign in again to save your vote');
+        navigate('/auth');
+      } else {
+        toast.error('Vote failed');
+      }
       return;
     }
     try {
