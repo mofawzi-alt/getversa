@@ -253,6 +253,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, 3500);
 
     const processAuthStateChange = async (event: string, nextSession: Session | null) => {
+      const onNative = isNative();
+
+      // Fast path: no session on web → finish boot immediately, skip native checks
+      if (!nextSession && !onNative && event === 'INITIAL_SESSION') {
+        clearAuthState();
+        finishBoot();
+        return;
+      }
+
       // Accept SIGNED_IN, INITIAL_SESSION, and TOKEN_REFRESHED as "deliberate"
       // when our ref is set — Supabase can emit any of these after a native
       // session restore on iOS cold-start.
@@ -275,7 +284,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const recoveringPassword = isPasswordRecovery || hasRecentPasswordRecoveryIntent();
       const forcedNativeLogout = (isExplicitSignIn || recoveringPassword)
         ? false
-        : await withTimeout(() => isNativeLoggedOut(), false, 800);
+        : onNative ? await withTimeout(() => isNativeLoggedOut(), false, 800) : false;
 
       if (cancelled) return;
 
