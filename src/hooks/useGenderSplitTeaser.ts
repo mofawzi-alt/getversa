@@ -25,7 +25,7 @@ export function useGenderSplitTeaser(
       Math.round(overallPercentA),
       Math.round(overallPercentB),
     ],
-    enabled: !!pollId,
+    enabled: !!pollId && pollId.length > 10,
     queryFn: async () => {
       const { data: votes, error } = await supabase
         .from('votes')
