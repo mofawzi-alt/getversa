@@ -172,7 +172,7 @@ export default function PersonalityRevealScreen({ onComplete }: PersonalityRevea
               animate={{ opacity: 1 }}
               transition={{ delay: 1.2 }}
               onClick={onComplete}
-              className="mt-6 w-full py-4 rounded-2xl bg-gradient-primary text-primary-foreground font-display font-bold text-base shadow-lg"
+              className="mt-4 w-full py-4 rounded-2xl bg-gradient-primary text-primary-foreground font-display font-bold text-base shadow-lg"
             >
               Start Voting
             </motion.button>
