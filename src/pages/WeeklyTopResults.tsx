@@ -20,7 +20,6 @@ function getWeekRange() {
   saturday.setHours(23, 59, 59, 999);
   return { start: sunday, end: saturday };
 }
-}
 
 function formatDate(d: Date) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
