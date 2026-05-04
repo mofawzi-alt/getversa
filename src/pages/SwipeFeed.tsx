@@ -197,8 +197,8 @@ function ImmersivePollCard({
   const handleEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    if (dragY < -THRESHOLD) {
-      // Swipe up = skip
+    if (dragY < -THRESHOLD && !isOnboarding) {
+      // Swipe up = skip (disabled during onboarding)
       setFlyDirection('up');
       triggerHaptic('light');
       setTimeout(() => onSkip(poll.id), 300);
