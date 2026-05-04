@@ -59,7 +59,7 @@ export default function PersonalityRevealScreen({ onComplete }: PersonalityRevea
         .select('poll_id, choice')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(15);
 
       if (!votes?.length) { setPersonalityCode('ENFP'); return; }
 
