@@ -328,7 +328,26 @@ export default function Ask() {
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pt-4 pb-4 space-y-4 w-full max-w-lg mx-auto min-w-0 max-w-[100vw]">
-        {empty && (
+        {empty && askLevel === 0 && (
+          <div className="text-center pt-8 pb-4 w-full min-w-0 px-4">
+            <div className="inline-flex h-14 w-14 rounded-full bg-muted items-center justify-center mb-4">
+              <Lock className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="text-base font-bold text-foreground mb-2">Vote on 15 polls to unlock Ask Versa</p>
+            <div className="max-w-[200px] mx-auto mb-2">
+              <Progress value={(totalVotes / 15) * 100} className="h-2" />
+            </div>
+            <p className="text-xs text-muted-foreground">{totalVotes} of 15 polls voted</p>
+            <button
+              onClick={() => navigate('/home')}
+              className="mt-4 h-10 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-95 transition"
+            >
+              Start voting
+            </button>
+          </div>
+        )}
+
+        {empty && askLevel > 0 && (
           <>
             <div className="text-center pt-4 pb-2 w-full min-w-0">
               <div className="inline-flex h-12 w-12 rounded-full bg-primary/10 items-center justify-center mb-3">
@@ -338,7 +357,7 @@ export default function Ask() {
                 {mode === 'decide' ? 'Get a clear pick backed by real votes' : 'Get a research brief from Egypt\'s pulse'}
               </p>
               <p className="text-xs text-muted-foreground mt-1 break-words">
-                Unlock insights using your votes. You earn credits by voting.
+                {levelLabel}
               </p>
               <p className="text-[11px] text-muted-foreground/70 mt-0.5 break-words">
                 You have {askCredits} credit{askCredits === 1 ? '' : 's'} ready to use
