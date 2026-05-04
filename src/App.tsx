@@ -8,8 +8,8 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-import SplashScreen, { isSplashSeen, markSplashSeen } from "@/components/SplashScreen";
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/components/onboarding/SwipeOverlay";
+import { markSplashSeen } from "@/components/SplashScreen";
 import { AnimatePresence } from "framer-motion";
 
 // Eagerly loaded — landing + most-visited routes
@@ -67,53 +67,33 @@ import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeF
 
 const queryClient = new QueryClient();
 
-// Smart landing: Splash → Swipe Overlay → Home (vote on real polls)
-type LandingPhase = 'splash' | 'onboarding' | 'done';
-
+// Smart landing: single welcome screen → Home
 function SmartLanding() {
   const { user } = useAuth();
-  const [phase, setPhase] = useState<LandingPhase>('done');
+  const [showOverlay, setShowOverlay] = useState(false);
 
   useEffect(() => {
     if (user) return;
-
-    if (!isSplashSeen()) {
-      setPhase('splash');
-      const timer = setTimeout(() => {
-        markSplashSeen();
-        if (isSwipeOverlayDone()) {
-          setPhase('done');
-        } else {
-          setPhase('onboarding');
-        }
-      }, 1500);
-      return () => clearTimeout(timer);
-    } else if (!isSwipeOverlayDone()) {
-      setPhase('onboarding');
-    } else {
-      setPhase('done');
+    if (!isSwipeOverlayDone()) {
+      setShowOverlay(true);
     }
   }, [user]);
 
-  if (user || phase === 'done') {
+  if (user || (!showOverlay)) {
     return <Navigate to="/home" replace />;
   }
 
   return (
     <AnimatePresence mode="wait">
-      {phase === 'splash' && (
-        <SplashScreen key="splash" />
-      )}
-      {phase === 'onboarding' && (
-        <SwipeOverlay
-          key="onboarding"
-          onDismiss={() => {
-            markSwipeOverlayDone();
-            markWelcomeDone();
-            setPhase('done');
-          }}
-        />
-      )}
+      <SwipeOverlay
+        key="onboarding"
+        onDismiss={() => {
+          markSwipeOverlayDone();
+          markSplashSeen();
+          markWelcomeDone();
+          setShowOverlay(false);
+        }}
+      />
     </AnimatePresence>
   );
 }
