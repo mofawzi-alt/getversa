@@ -42,7 +42,7 @@ export function useFriendsOnPolls(pollIds: string[] | undefined) {
         .from('votes')
         .select('user_id, poll_id, choice, created_at')
         .in('user_id', friendIds)
-        .in('poll_id', pollIds)
+        .in('poll_id', limitedPollIds)
         .order('created_at', { ascending: false });
       if (!votes?.length) return {};
 
