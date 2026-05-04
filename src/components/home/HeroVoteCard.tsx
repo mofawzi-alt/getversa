@@ -565,7 +565,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           !result && !isVoting ? 'cursor-pointer' : ''
         }`}
         style={{
-          touchAction: result || isVoting ? 'auto' : 'manipulation',
+          touchAction: result || isVoting ? 'auto' : 'pan-y',
           transform: result || isVoting
             ? 'none'
             : `translateX(${visualDragX}px) translateY(${Math.min(visualDragY, 0)}px) rotate(${rotation}deg)`,
@@ -573,9 +573,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           willChange: isDragging ? 'transform' : 'auto',
         }}
         onTouchStart={(e) => handleStart(e.touches[0].clientX, e.touches[0].clientY)}
-        onTouchMove={(e) => {
-          handleMove(e.touches[0].clientX, e.touches[0].clientY);
-        }}
+        onTouchMove={(e) => handleMove(e.touches[0].clientX, e.touches[0].clientY)}
         onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
         onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX, e.clientY); }}
         onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
