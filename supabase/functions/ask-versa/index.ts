@@ -149,10 +149,11 @@ serve(async (req) => {
     } = body as {
       question?: string;
       mode?: "decide" | "research";
-      viewer?: { age_range?: string; city?: string; gender?: string };
+      viewer?: { age_range?: string; city?: string; gender?: string; ask_level?: number };
       history?: Array<{ role: "user" | "assistant"; content: string }>;
       stage?: "preview" | "confirm";
     };
+    const askLevel = viewer?.ask_level ?? 4; // default to full access if not provided
 
     if (!question || typeof question !== "string" || question.trim().length < 3) {
       return new Response(JSON.stringify({ error: "Please ask a fuller question." }), {
