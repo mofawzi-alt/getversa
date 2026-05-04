@@ -1190,7 +1190,13 @@ export default function Home() {
   const allPolls = polls || [];
   const hasUnseen = (unseenCount || 0) > 0;
   const allNewPolls = useMemo(() => {
-    const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id));
+    let guestSkipped = new Set<string>();
+    if (!user) {
+      try {
+        guestSkipped = new Set(JSON.parse(localStorage.getItem('versa_guest_skipped_polls') || '[]'));
+      } catch {}
+    }
+    const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id) && !guestSkipped.has(p.id));
     if (isOnboardingFeed) {
       return unvoted;
     }
