@@ -979,11 +979,11 @@ export default function SwipeFeed() {
         }
       }
 
-      // First-day cap: after onboarding (10 votes), show only 10 more polls
-      // Users with < 20 total votes are still in their first day
+      // First-day cap: after onboarding (15 votes), show only 10 more polls
+      // Users with < 25 total votes are still in their first day
       const FIRST_DAY_CAP = 10;
-      const FIRST_DAY_TOTAL = 20; // 10 onboarding + 10 first-day
-      if (votedPollSet.size >= 10 && votedPollSet.size < FIRST_DAY_TOTAL && !categoryFilter && !searchFilter && !targetPollId) {
+      const FIRST_DAY_TOTAL = 25; // 15 onboarding + 10 first-day
+      if (votedPollSet.size >= ONBOARDING_POLL_COUNT && votedPollSet.size < FIRST_DAY_TOTAL && !categoryFilter && !searchFilter && !targetPollId) {
         const unvotedPolls = allPolls.filter(p => !votedPollSet.has(p.id));
         const votedPolls = allPolls.filter(p => votedPollSet.has(p.id));
         allPolls = [...unvotedPolls.slice(0, FIRST_DAY_CAP), ...votedPolls];
