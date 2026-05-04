@@ -250,13 +250,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Accept SIGNED_IN, INITIAL_SESSION, and TOKEN_REFRESHED as "deliberate"
       // when our ref is set — Supabase can emit any of these after a native
       // session restore on iOS cold-start.
+      const externalSignInIntent = hasExternalSignInIntent();
       const isExplicitSignIn =
         !!nextSession &&
-        deliberateSignInRef.current &&
+        (deliberateSignInRef.current || externalSignInIntent) &&
         (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED');
 
       if (isExplicitSignIn) {
         deliberateSignInRef.current = false;
+        clearExternalSignInIntent();
         clearLogoutGuard();
         void withTimeout(async () => {
           await clearNativeLoggedOut();
@@ -346,6 +348,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession((prev) => prev ?? webSession);
       setUser((prev) => prev ?? (webSession?.user ?? null));
       if (webSession?.user) {
+        clearExternalSignInIntent();
         clearLogoutGuard();
         void fetchProfile(webSession.user.id);
       }
@@ -529,6 +532,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signOut,
         refreshProfile,
+        prepareForExternalSignIn,
       }}
     >
       {children}
