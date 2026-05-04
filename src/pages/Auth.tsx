@@ -112,8 +112,6 @@ export default function Auth() {
   // biometrics to be initiated by an explicit user action — the user must
   // tap the "Unlock with Face ID" button below (handleBiometricUnlock).
 
-  const profileComplete = !!(profile?.username && profile?.age_range && profile?.gender && profile?.country && profile?.city);
-
   // Redirect authenticated users once any in-progress email signup save has
   // finished. OAuth users may still need demographics; Home shows that modal.
   useEffect(() => {
