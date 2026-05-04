@@ -7,6 +7,7 @@ import {
   restoreSessionNative,
   clearNativeSession,
   getAuthRedirectUrl,
+  isNative,
   isNativeLoggedOut,
   markNativeLoggedOut,
   clearNativeLoggedOut,
