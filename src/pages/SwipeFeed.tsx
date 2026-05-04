@@ -1100,18 +1100,18 @@ export default function SwipeFeed() {
       const newCount = sessionVoteCount + 1;
       setSessionVoteCount(newCount);
 
-      // Onboarding micro-feedback at polls 3, 6, 9 and personality reveal at 10
+      // Onboarding micro-feedback at polls 5, 10, 14 and personality reveal at 15
       if (isNewUser && user) {
         const obCount = onboardingVoteCount + 1;
         setOnboardingVoteCount(obCount);
-        if (obCount === 3) {
-          setTimeout(() => { setOnboardingFeedback("You're starting to form a pattern…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
-        } else if (obCount === 6) {
-          setTimeout(() => { setOnboardingFeedback("Your style is taking shape…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
-        } else if (obCount === 9) {
-          setTimeout(() => { setOnboardingFeedback("We're getting close…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 2000);
-        } else if (obCount >= 10) {
-          setTimeout(() => setShowPersonalityReveal(true), 2200);
+        if (obCount === 5) {
+          setTimeout(() => { setOnboardingFeedback("You're starting to form a pattern…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 800);
+        } else if (obCount === 10) {
+          setTimeout(() => { setOnboardingFeedback("Your style is taking shape…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 800);
+        } else if (obCount === 14) {
+          setTimeout(() => { setOnboardingFeedback("Almost there — one more…"); setTimeout(() => setOnboardingFeedback(null), 3000); }, 800);
+        } else if (obCount >= ONBOARDING_POLL_COUNT) {
+          setTimeout(() => setShowPersonalityReveal(true), 1000);
         }
       }
 
