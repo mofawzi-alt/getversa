@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.c889c415dd2249d6b1128e85df955085',
+  appId: 'com.Versa.app',
   appName: 'Versa',
   webDir: 'dist',
   server: {
