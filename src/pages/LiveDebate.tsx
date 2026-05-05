@@ -84,8 +84,17 @@ export default function LiveDebate() {
     votedToday: (profile as any).last_vote_date === new Date().toISOString().split('T')[0],
   } : null;
 
-  // Fetch ALL live polls (not filtered by voted status)
-  const { data: livePolls, isLoading } = useQuery({
+  const PAGE_SIZE = 50;
+
+  // Accumulated polls & vote choices across pages
+  const [allPolls, setAllPolls] = useState<Poll[]>([]);
+  const [allVotedChoices, setAllVotedChoices] = useState<Map<string, string>>(new Map());
+  const [page, setPage] = useState(0);
+  const [hasMorePages, setHasMorePages] = useState(true);
+  const loadingMoreRef = useRef(false);
+
+  // Initial load
+  const { isLoading } = useQuery({
     queryKey: ['live-debate-polls', user?.id],
     queryFn: async () => {
       const now = new Date().toISOString();
@@ -95,9 +104,9 @@ export default function LiveDebate() {
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .or(`ends_at.is.null,ends_at.gt.${now}`)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(PAGE_SIZE);
 
-      let allPolls = (polls || []) as Poll[];
+      let fetched = (polls || []) as Poll[];
       let votedChoices = new Map<string, string>();
 
       if (user) {
@@ -105,19 +114,17 @@ export default function LiveDebate() {
         votedChoices = new Map(votes?.map(v => [v.poll_id, v.choice]) || []);
       }
 
-      // Sort: unvoted first, then voted — but keep all visible
-      const unvoted = allPolls.filter(p => !votedChoices.has(p.id));
-      const voted = allPolls.filter(p => votedChoices.has(p.id));
-
-      // Move target poll to front if specified
+      // Sort: unvoted first, then voted
+      const unvoted = fetched.filter(p => !votedChoices.has(p.id));
+      const voted = fetched.filter(p => votedChoices.has(p.id));
       let sorted = [...unvoted, ...voted];
+
       if (startPollId) {
         const idx = sorted.findIndex(p => p.id === startPollId);
         if (idx > 0) {
           const [t] = sorted.splice(idx, 1);
           sorted.unshift(t);
         } else if (idx === -1) {
-          // Target poll not in initial batch — fetch it directly
           const { data: targetPoll } = await supabase
             .from('polls')
             .select('id, question, option_a, option_b, category, image_a_url, image_b_url, starts_at, ends_at')
@@ -126,7 +133,6 @@ export default function LiveDebate() {
             .single();
           if (targetPoll) {
             sorted.unshift(targetPoll as Poll);
-            // Check if user already voted on it
             if (user) {
               const { data: existingVote } = await supabase.from('votes').select('choice').eq('poll_id', startPollId).eq('user_id', user.id).maybeSingle();
               if (existingVote) votedChoices.set(startPollId, existingVote.choice);
@@ -135,14 +141,76 @@ export default function LiveDebate() {
         }
       }
 
-      return { polls: sorted, votedChoices };
+      setAllPolls(sorted);
+      setAllVotedChoices(votedChoices);
+      setPage(0);
+      setHasMorePages(fetched.length >= PAGE_SIZE);
+      return sorted;
     },
   });
 
-  const polls = livePolls?.polls || [];
-  const votedChoices = livePolls?.votedChoices || new Map<string, string>();
+  // Load more polls when approaching the end
+  const loadMorePolls = useCallback(async () => {
+    if (loadingMoreRef.current || !hasMorePages) return;
+    loadingMoreRef.current = true;
+    try {
+      const nextPage = page + 1;
+      const now = new Date().toISOString();
+      const { data: polls } = await supabase.from('polls')
+        .select('id, question, option_a, option_b, category, image_a_url, image_b_url, starts_at, ends_at')
+        .eq('is_active', true)
+        .or(`starts_at.is.null,starts_at.lte.${now}`)
+        .or(`ends_at.is.null,ends_at.gt.${now}`)
+        .order('created_at', { ascending: false })
+        .range(nextPage * PAGE_SIZE, (nextPage + 1) * PAGE_SIZE - 1);
+
+      const fetched = (polls || []) as Poll[];
+      if (fetched.length === 0) {
+        setHasMorePages(false);
+        return;
+      }
+
+      // Deduplicate against already-loaded polls
+      const existingIds = new Set(allPolls.map(p => p.id));
+      const newPolls = fetched.filter(p => !existingIds.has(p.id));
+
+      if (newPolls.length > 0) {
+        setAllPolls(prev => [...prev, ...newPolls]);
+
+        // Check vote status for new polls
+        if (user) {
+          const { data: votes } = await supabase.from('votes')
+            .select('poll_id, choice')
+            .eq('user_id', user.id)
+            .in('poll_id', newPolls.map(p => p.id));
+          if (votes && votes.length > 0) {
+            setAllVotedChoices(prev => {
+              const next = new Map(prev);
+              votes.forEach(v => next.set(v.poll_id, v.choice));
+              return next;
+            });
+          }
+        }
+      }
+
+      setPage(nextPage);
+      if (fetched.length < PAGE_SIZE) setHasMorePages(false);
+    } finally {
+      loadingMoreRef.current = false;
+    }
+  }, [page, hasMorePages, allPolls, user]);
+
+  // Trigger load-more when within 5 polls of the end
+  useEffect(() => {
+    if (allPolls.length > 0 && currentIndex >= allPolls.length - 5 && hasMorePages) {
+      void loadMorePolls();
+    }
+  }, [currentIndex, allPolls.length, hasMorePages, loadMorePolls]);
+
+  const polls = allPolls;
+  const votedChoices = allVotedChoices;
   const currentPoll = polls[currentIndex];
-  const hasMore = currentIndex < polls.length - 1;
+  const hasMore = currentIndex < polls.length - 1 || hasMorePages;
   const currentLocalResult = currentPoll ? localResults.get(currentPoll.id) ?? null : null;
   const currentPollChoice = currentLocalResult?.choice ?? (currentPoll ? votedChoices.get(currentPoll.id) : undefined);
   const currentPollIsVoted = Boolean(currentPollChoice);
