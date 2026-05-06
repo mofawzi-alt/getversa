@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Capacitor native projects are generated locally with `cap sync`.
+# Keeping them untracked prevents Git from scanning a large local iOS folder.
+ios/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
