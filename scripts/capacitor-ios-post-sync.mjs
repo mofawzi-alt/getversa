@@ -28,22 +28,44 @@ const iconDefinitions = [
   { size: 1024, scale: 1, idiom: 'ios-marketing' },
 ];
 
-function ensureFaceIdUsageDescription() {
+function ensureInfoPlistKeys() {
   if (!fs.existsSync(infoPlistPath)) {
-    console.log('[cap-sync] Info.plist not found, skipping Face ID patch');
+    console.log('[cap-sync] Info.plist not found, skipping plist patches');
     return;
   }
 
-  const plist = fs.readFileSync(infoPlistPath, 'utf8');
-  if (plist.includes('<key>NSFaceIDUsageDescription</key>')) {
-    console.log('[cap-sync] Face ID usage description already present');
-    return;
+  let plist = fs.readFileSync(infoPlistPath, 'utf8');
+  let changed = false;
+
+  const requiredKeys = [
+    {
+      key: 'NSFaceIDUsageDescription',
+      value: 'Use Face ID to sign in to Versa faster and more securely.',
+    },
+    {
+      key: 'NSCameraUsageDescription',
+      value: 'Versa needs access to your camera to take a profile photo.',
+    },
+    {
+      key: 'NSPhotoLibraryUsageDescription',
+      value: 'Versa needs access to your photo library to choose a profile picture.',
+    },
+  ];
+
+  for (const { key, value } of requiredKeys) {
+    if (!plist.includes(`<key>${key}</key>`)) {
+      const insertion = `\n\t<key>${key}</key>\n\t<string>${value}</string>`;
+      plist = plist.replace('</dict>', `${insertion}\n</dict>`);
+      changed = true;
+      console.log(`[cap-sync] Added ${key} to Info.plist`);
+    } else {
+      console.log(`[cap-sync] ${key} already present`);
+    }
   }
 
-  const insertion = `\n\t<key>NSFaceIDUsageDescription</key>\n\t<string>Use Face ID to sign in to Versa faster and more securely.</string>`;
-  const updated = plist.replace('</dict>', `${insertion}\n</dict>`);
-  fs.writeFileSync(infoPlistPath, updated, 'utf8');
-  console.log('[cap-sync] Added NSFaceIDUsageDescription to Info.plist');
+  if (changed) {
+    fs.writeFileSync(infoPlistPath, plist, 'utf8');
+  }
 }
 
 async function generateIcons() {
