@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,9 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Save, Camera, Loader2, Lock } from 'lucide-react';
+import { ArrowLeft, Save, Camera as CameraIcon, Loader2, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Capacitor } from '@capacitor/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Switch } from '@/components/ui/switch';
 
 const AGE_RANGES = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
