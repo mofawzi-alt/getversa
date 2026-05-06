@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,9 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Save, Camera, Loader2, Lock } from 'lucide-react';
+import { ArrowLeft, Save, Camera as CameraIcon, Loader2, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Capacitor } from '@capacitor/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Switch } from '@/components/ui/switch';
 
 const AGE_RANGES = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
@@ -99,6 +101,66 @@ export default function EditProfile() {
     }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarTap = async () => {
+    if (uploading || !profile) return;
+
+    // Use Capacitor Camera on native platforms
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const photo = await Camera.getPhoto({
+          quality: 80,
+          allowEditing: true,
+          resultType: CameraResultType.Base64,
+          source: CameraSource.Prompt, // lets user choose camera or gallery
+          width: 512,
+          height: 512,
+        });
+
+        if (!photo.base64String) return;
+
+        setUploading(true);
+        const ext = photo.format || 'jpg';
+        const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
+        const byteString = atob(photo.base64String);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: `image/${ext}` });
+
+        const { error: upErr } = await supabase.storage
+          .from('avatars')
+          .upload(path, blob, { upsert: true, contentType: `image/${ext}` });
+        if (upErr) throw upErr;
+
+        const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+        const { error: updErr } = await supabase
+          .from('users')
+          .update({ avatar_url: publicUrl })
+          .eq('id', profile.id);
+        if (updErr) throw updErr;
+
+        setAvatarUrl(publicUrl);
+        await refreshProfile();
+        toast.success('Profile picture updated!');
+      } catch (err: any) {
+        // User cancelled
+        if (err?.message?.includes('cancelled') || err?.message?.includes('canceled')) return;
+        console.error('Camera error:', err);
+        toast.error('Failed to take photo');
+      } finally {
+        setUploading(false);
+      }
+      return;
+    }
+
+    // Web fallback: trigger file input
+    fileInputRef.current?.click();
+  };
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
@@ -178,7 +240,7 @@ export default function EditProfile() {
         <div className="glass rounded-2xl p-6 space-y-6">
           {/* Avatar */}
           <div className="flex flex-col items-center gap-3">
-            <label className="relative cursor-pointer group">
+            <div className="relative cursor-pointer group" onClick={handleAvatarTap}>
               <Avatar className="h-24 w-24 ring-2 ring-border">
                 {avatarUrl && <AvatarImage src={avatarUrl} alt="Profile" />}
                 <AvatarFallback className="text-2xl font-display font-bold bg-gradient-primary text-primary-foreground">
@@ -189,17 +251,18 @@ export default function EditProfile() {
                 {uploading ? (
                   <Loader2 className="h-6 w-6 text-white animate-spin" />
                 ) : (
-                  <Camera className="h-6 w-6 text-white" />
+                  <CameraIcon className="h-6 w-6 text-white" />
                 )}
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarUpload}
-                disabled={uploading}
-              />
-            </label>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarUpload}
+              disabled={uploading}
+            />
             <p className="text-xs text-muted-foreground">Tap to change photo</p>
           </div>
 
