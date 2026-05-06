@@ -240,7 +240,7 @@ export default function EditProfile() {
         <div className="glass rounded-2xl p-6 space-y-6">
           {/* Avatar */}
           <div className="flex flex-col items-center gap-3">
-            <label className="relative cursor-pointer group">
+            <div className="relative cursor-pointer group" onClick={handleAvatarTap}>
               <Avatar className="h-24 w-24 ring-2 ring-border">
                 {avatarUrl && <AvatarImage src={avatarUrl} alt="Profile" />}
                 <AvatarFallback className="text-2xl font-display font-bold bg-gradient-primary text-primary-foreground">
@@ -251,17 +251,18 @@ export default function EditProfile() {
                 {uploading ? (
                   <Loader2 className="h-6 w-6 text-white animate-spin" />
                 ) : (
-                  <Camera className="h-6 w-6 text-white" />
+                  <CameraIcon className="h-6 w-6 text-white" />
                 )}
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarUpload}
-                disabled={uploading}
-              />
-            </label>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarUpload}
+              disabled={uploading}
+            />
             <p className="text-xs text-muted-foreground">Tap to change photo</p>
           </div>
 
