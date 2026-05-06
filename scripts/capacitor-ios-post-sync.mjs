@@ -63,6 +63,26 @@ function ensureInfoPlistKeys() {
     }
   }
 
+  // Ensure CFBundleURLTypes includes the custom URL scheme for OAuth callbacks.
+  // SFSafariViewController redirects to com.Versa.app://auth-callback after OAuth.
+  if (!plist.includes('<string>com.Versa.app</string>')) {
+    const urlSchemeBlock = `
+\t<key>CFBundleURLTypes</key>
+\t<array>
+\t\t<dict>
+\t\t\t<key>CFBundleURLSchemes</key>
+\t\t\t<array>
+\t\t\t\t<string>com.Versa.app</string>
+\t\t\t</array>
+\t\t\t<key>CFBundleURLName</key>
+\t\t\t<string>com.Versa.app</string>
+\t\t</dict>
+\t</array>`;
+    plist = plist.replace('</dict>', `${urlSchemeBlock}\n</dict>`);
+    changed = true;
+    console.log('[cap-sync] Added CFBundleURLTypes for OAuth callback scheme');
+  }
+
   if (changed) {
     fs.writeFileSync(infoPlistPath, plist, 'utf8');
   }
