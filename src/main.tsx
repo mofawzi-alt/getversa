@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import "./lib/nativeOAuthBridge"; // Must run before anything else
 import "./lib/authRedirectCapture";
 import App from "./App.tsx";
 import "./index.css";
