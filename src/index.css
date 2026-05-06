@@ -7,6 +7,13 @@
 /* Fix iOS Safari 300ms tap delay */
 * {
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* GPU-accelerate the main scrolling layer for smooth iOS scroll */
+html, body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 @layer base {
