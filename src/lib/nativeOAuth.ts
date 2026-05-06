@@ -6,9 +6,9 @@
  * plain WKWebView. On native Capacitor we:
  *   1. Ask Supabase for the OAuth URL (skipBrowserRedirect: true)
  *   2. Open it in SFSafariViewController via @capacitor/browser
- *   3. Listen for the custom-scheme callback via @capacitor/app
- *   4. Parse tokens from the URL hash, set the Supabase session
- *   5. Close the browser overlay
+ *   3. After auth, Supabase redirects to https://getversa.app/?native_oauth=1#tokens
+ *   4. The page detects the marker and bridges tokens to the custom URL scheme
+ *   5. @capacitor/app catches the deep link, we parse tokens and set session
  *
  * On web the module is a no-op — the standard lovable managed OAuth runs.
  */
@@ -18,7 +18,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 /** Custom URL scheme registered by Capacitor for this app ID */
 const CALLBACK_SCHEME = 'com.Versa.app';
-const CALLBACK_URL = `${CALLBACK_SCHEME}://auth-callback`;
 
 /**
  * Attempt OAuth via SFSafariViewController on native.
@@ -35,12 +34,17 @@ export async function startNativeOAuth(
     import('@capacitor/app'),
   ]);
 
+  // Use the live site URL with a marker so the landing page can bridge
+  // tokens back to the native app via the custom URL scheme.
+  // This avoids needing to add a custom scheme to Supabase redirect allowlist.
+  const redirectTo = 'https://getversa.app/?native_oauth=1';
+
   // 1. Get the OAuth URL without navigating
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
       skipBrowserRedirect: true,
-      redirectTo: CALLBACK_URL,
+      redirectTo,
     },
   });
 
@@ -60,7 +64,7 @@ export async function startNativeOAuth(
       resolve(value);
     };
 
-    // Listen for the custom-scheme redirect
+    // Listen for the custom-scheme redirect (bridged by the landing page)
     const urlListener = App.addListener('appUrlOpen', async ({ url }) => {
       if (!url.startsWith(`${CALLBACK_SCHEME}://auth-callback`)) return;
 
