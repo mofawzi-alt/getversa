@@ -124,4 +124,4 @@ async function generateIcons() {
 }
 
 await generateIcons();
-ensureFaceIdUsageDescription();
+ensureInfoPlistKeys();
