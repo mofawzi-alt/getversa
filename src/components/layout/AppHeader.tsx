@@ -15,8 +15,7 @@ export default function AppHeader() {
     <>
       <header
         className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background"
-        style={{ paddingTop: safeTopInset, willChange: 'transform', transform: 'translateZ(0)' }}
-        style={{ paddingTop: safeTopInset }}
+        style={{ paddingTop: safeTopInset, transform: 'translateZ(0)' }}
       >
         <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
           {/* Logo */}
