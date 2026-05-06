@@ -101,6 +101,66 @@ export default function EditProfile() {
     }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarTap = async () => {
+    if (uploading || !profile) return;
+
+    // Use Capacitor Camera on native platforms
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const photo = await Camera.getPhoto({
+          quality: 80,
+          allowEditing: true,
+          resultType: CameraResultType.Base64,
+          source: CameraSource.Prompt, // lets user choose camera or gallery
+          width: 512,
+          height: 512,
+        });
+
+        if (!photo.base64String) return;
+
+        setUploading(true);
+        const ext = photo.format || 'jpg';
+        const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
+        const byteString = atob(photo.base64String);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: `image/${ext}` });
+
+        const { error: upErr } = await supabase.storage
+          .from('avatars')
+          .upload(path, blob, { upsert: true, contentType: `image/${ext}` });
+        if (upErr) throw upErr;
+
+        const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+        const { error: updErr } = await supabase
+          .from('users')
+          .update({ avatar_url: publicUrl })
+          .eq('id', profile.id);
+        if (updErr) throw updErr;
+
+        setAvatarUrl(publicUrl);
+        await refreshProfile();
+        toast.success('Profile picture updated!');
+      } catch (err: any) {
+        // User cancelled
+        if (err?.message?.includes('cancelled') || err?.message?.includes('canceled')) return;
+        console.error('Camera error:', err);
+        toast.error('Failed to take photo');
+      } finally {
+        setUploading(false);
+      }
+      return;
+    }
+
+    // Web fallback: trigger file input
+    fileInputRef.current?.click();
+  };
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
