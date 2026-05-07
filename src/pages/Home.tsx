@@ -779,6 +779,7 @@ export default function Home() {
       html.style.scrollSnapType = prevType;
       html.style.scrollPaddingTop = prevPadTop;
       html.style.scrollPaddingBottom = prevPadBottom;
+      html.style.scrollBehavior = '';
     };
   }, []);
 
