@@ -300,7 +300,7 @@ export default function Ask() {
           history,
         };
 
-        if (balance >= cost) {
+        if (pendingAutoSubmit || balance >= cost) {
           // Auto-deduct — no modal, just go
           await autoConfirm(previewState);
         } else {
