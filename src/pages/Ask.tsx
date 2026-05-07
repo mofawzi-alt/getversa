@@ -84,15 +84,29 @@ export default function Ask() {
   useEffect(() => { setTimeout(focusInputIfDesktop, 200); }, []);
   useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
 
+  // Auto-submit flag for prefill from daily question / nudge
+  const autoSubmitRef = useRef<string | null>(null);
+
   // Prefill from navigation state (post-vote nudge, daily question)
   useEffect(() => {
     const state = location.state as AskLocationState | null;
     if (state?.prefill && !turns.length) {
       setQuery(state.prefill);
+      autoSubmitRef.current = state.prefill;
       // Clear the state so refresh doesn't re-prefill
       window.history.replaceState({ ...window.history.state, usr: { ...state, prefill: undefined } }, '');
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-submit the prefilled question after a short delay
+  useEffect(() => {
+    if (autoSubmitRef.current && !loading && !turns.length) {
+      const q = autoSubmitRef.current;
+      autoSubmitRef.current = null;
+      const timer = setTimeout(() => runPreview(q), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track visual viewport so the input form follows the keyboard on iOS/Capacitor
   useEffect(() => {
