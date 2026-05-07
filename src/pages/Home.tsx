@@ -201,6 +201,7 @@ function HomeLiveDebateCard({
   const handleInlineVote = (choice: 'A' | 'B') => {
     if (hasVoted || isVoting) return;
     setIsVoting(true);
+    setShowAskNudge(true);
     onVoteInline(choice);
   };
   const { data: genderTeaser } = useGenderSplitTeaser(
