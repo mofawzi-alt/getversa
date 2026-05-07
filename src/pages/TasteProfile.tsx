@@ -192,6 +192,8 @@ function getMostActiveTime(votes: { created_at: string }[]): string {
 // ── Main page ──
 export default function TasteProfile() {
   const { user, profile } = useAuth();
+  const [showReveal, setShowReveal] = useState(() => !hasTasteBeenRevealed());
+  const { data: rarityData } = useTasteRarity();
 
   const { data: allVotes, isLoading: loadingVotes } = useQuery({
     queryKey: ['taste-all-votes', profile?.id],
