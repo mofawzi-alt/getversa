@@ -14,18 +14,18 @@ import CreditBalance from '@/components/ask/CreditBalance';
 import UnlockModal from '@/components/ask/UnlockModal';
 
 const DECIDE_SUGGESTIONS = [
-  'Costa or Cilantro for studying?',
-  'iPhone or Samsung — which lasts longer?',
-  'Should I order Talabat or Elmenus tonight?',
-  'Vodafone or Orange for university?',
+  { text: 'Costa or Cilantro for studying?', tag: 'Trending', icon: 'flame' as const },
+  { text: 'iPhone or Samsung — which lasts longer?', tag: '2.4K voted', icon: 'users' as const },
+  { text: 'Should I order Talabat or Elmenus tonight?', tag: 'Hot', icon: 'zap' as const },
+  { text: 'Vodafone or Orange for university?', tag: '50/50 split', icon: 'trending' as const },
 ];
 
 const RESEARCH_SUGGESTIONS = [
-  'How do students feel about online learning?',
-  'What do people think about marriage age in Egypt?',
-  'Cairo vs Alexandria lifestyle differences',
-  'Which fast food brand wins with 18–24?',
-  'How divided are Egyptians on Ahly vs Zamalek?',
+  { text: 'How do students feel about online learning?', tag: 'Popular', icon: 'flame' as const },
+  { text: 'What do people think about marriage age in Egypt?', tag: 'Divisive', icon: 'trending' as const },
+  { text: 'Cairo vs Alexandria lifestyle differences', tag: '1.8K votes', icon: 'users' as const },
+  { text: 'Which fast food brand wins with 18–24?', tag: 'Hot', icon: 'zap' as const },
+  { text: 'How divided are Egyptians on Ahly vs Zamalek?', tag: '50/50', icon: 'flame' as const },
 ];
 
 function buildHistoryFromTurns(turns: AskTurn[]) {
