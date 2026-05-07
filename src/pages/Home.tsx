@@ -767,6 +767,7 @@ export default function Home() {
     const prevPadTop = html.style.scrollPaddingTop;
     const prevPadBottom = html.style.scrollPaddingBottom;
     html.style.scrollSnapType = 'y proximity';
+    html.style.scrollBehavior = 'smooth';
     // Header = 3.5rem + safe-area top inset (matches AppLayout)
     html.style.scrollPaddingTop = 'calc(3.5rem + max(env(safe-area-inset-top), 1.75rem))';
     // Bottom nav = 4rem + safe-area bottom inset
