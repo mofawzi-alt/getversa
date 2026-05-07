@@ -1,9 +1,50 @@
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const args = new Set(process.argv.slice(2));
 const root = process.cwd();
+
+function assertVersaNativePreflight() {
+  const requiredFiles = [
+    'package.json',
+    'src',
+    'capacitor.config.ts',
+    'scripts/capacitor-ios-post-sync.mjs',
+    'public/app-icon-1024.png',
+  ];
+  const missingFiles = requiredFiles.filter((relativePath) => !existsSync(path.join(root, relativePath)));
+  const capConfigPath = path.join(root, 'capacitor.config.ts');
+  const postSyncPath = path.join(root, 'scripts', 'capacitor-ios-post-sync.mjs');
+  const capConfig = existsSync(capConfigPath) ? readFileSync(capConfigPath, 'utf8') : '';
+  const postSync = existsSync(postSyncPath) ? readFileSync(postSyncPath, 'utf8') : '';
+  const requiredKeys = [
+    'NSCameraUsageDescription',
+    'NSPhotoLibraryUsageDescription',
+    'NSPhotoLibraryAddUsageDescription',
+    'NSFaceIDUsageDescription',
+  ];
+  const missingPermissionKeys = requiredKeys.filter((key) => !postSync.includes(key));
+  const identityMatches = capConfig.includes("appId: 'com.Versa.app'") && capConfig.includes("appName: 'Versa'");
+
+  if (missingFiles.length > 0 || missingPermissionKeys.length > 0 || !identityMatches) {
+    console.error('\n❌ Refusing to sync iOS from this folder.');
+    if (missingFiles.length > 0) console.error(`Missing required files: ${missingFiles.join(', ')}`);
+    if (!identityMatches) console.error('Native app identity does not match Versa.');
+    if (missingPermissionKeys.length > 0) console.error(`Missing Apple permission keys: ${missingPermissionKeys.join(', ')}`);
+    console.error('This prevents stale/wrong folders from overwriting the Apple fixes.');
+    process.exit(1);
+  }
+
+  console.log('✅ Versa native preflight passed');
+}
+
+assertVersaNativePreflight();
+
+if (args.has('--check-only')) {
+  console.log('✅ iOS sync command is safe to run from this folder.');
+  process.exit(0);
+}
 
 const steps = [
   ...(args.has('--install') ? [{ label: 'Installing dependencies', command: 'npm', args: ['install'] }] : []),
@@ -49,11 +90,6 @@ function runStep({ label, command, args }) {
       }
     });
   });
-}
-
-if (!existsSync(path.join(root, 'capacitor.config.ts'))) {
-  console.error('Run this command from the getversa project folder.');
-  process.exit(1);
 }
 
 for (const step of steps) {
