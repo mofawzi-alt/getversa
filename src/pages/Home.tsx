@@ -1698,6 +1698,7 @@ export default function Home() {
           imageB={modalPoll ? getPollDisplayImageSrc({ imageUrl: modalPoll.image_b_url, option: modalPoll.option_b, question: modalPoll.question, side: 'B' }) : ''}
         />
       </div>
+      <FloatingAskButton />
     </AppLayout>
   );
 }
