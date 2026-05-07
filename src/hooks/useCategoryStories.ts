@@ -79,7 +79,13 @@ export function useCategoryStories() {
         const ranked = catPolls
           .map((p: any) => ({ poll: p, t: tally.get(p.id) || { a: 0, b: 0, total: 0 } }))
           .filter((x: any) => x.t.total > 0)
-          .sort((a: any, b: any) => b.t.total - a.t.total);
+          .sort((a: any, b: any) => {
+            // Prefer polls with images so stories aren't blank
+            const aHasImg = a.poll.image_a_url || a.poll.image_b_url ? 1 : 0;
+            const bHasImg = b.poll.image_a_url || b.poll.image_b_url ? 1 : 0;
+            if (bHasImg !== aHasImg) return bHasImg - aHasImg;
+            return b.t.total - a.t.total;
+          });
 
         if (ranked.length === 0) continue;
 
