@@ -312,6 +312,14 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
           <>
             <div className="absolute inset-0" style={{ background: theme.gradient }} />
             <div className="absolute inset-0" style={{ background: theme.glow }} />
+            {theme.secondaryGlow && (
+              <div className="absolute inset-0" style={{ background: theme.secondaryGlow }} />
+            )}
+            {/* Decorative floating orbs */}
+            <div
+              className="absolute w-48 h-48 rounded-full blur-[60px] opacity-30"
+              style={{ background: theme.accent, top: '10%', right: '-10%' }}
+            />
             {/* Animated emoji icon */}
             <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: '35%' }}>
               <motion.span
