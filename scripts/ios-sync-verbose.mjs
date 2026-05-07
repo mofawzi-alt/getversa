@@ -22,6 +22,7 @@ function runStep({ label, command, args }) {
     console.log(`\n[${stamp()}] ▶ ${label}`);
     console.log(`$ ${command} ${args.join(' ')}`);
 
+    const timeoutMs = label === 'Opening Xcode' ? 30_000 : 10 * 60_000;
     const child = spawn(command, args, {
       cwd: root,
       env: process.env,
@@ -29,8 +30,14 @@ function runStep({ label, command, args }) {
       stdio: 'inherit',
     });
 
+    const timeout = setTimeout(() => {
+      child.kill('SIGTERM');
+      reject(new Error(`${label} timed out after ${Math.round(timeoutMs / 1000)} seconds`));
+    }, timeoutMs);
+
     child.on('error', reject);
     child.on('close', (code) => {
+      clearTimeout(timeout);
       if (code === 0) {
         console.log(`[${stamp()}] ✓ ${label} complete`);
         resolve();
