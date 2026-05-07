@@ -10,6 +10,7 @@ const steps = [
   { label: 'Repairing native build dependency', command: 'npm', args: ['rebuild', 'esbuild'] },
   { label: 'Building web app', command: 'npm', args: ['run', 'build'] },
   { label: 'Syncing iOS project', command: 'npx', args: ['cap', 'sync', 'ios'] },
+  { label: 'Patching iOS permissions & app icon', command: 'node', args: ['scripts/patch-ios-plist.mjs'] },
   { label: 'Clearing stale Xcode package cache', command: 'node', args: ['scripts/repair-ios-spm.mjs'] },
 ];
 
