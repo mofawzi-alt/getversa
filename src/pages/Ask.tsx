@@ -372,10 +372,9 @@ export default function Ask() {
                 {mode === 'decide' ? 'Get a clear pick backed by real votes' : 'Get a research brief from Egypt\'s pulse'}
               </p>
               <p className="text-xs text-muted-foreground mt-1 break-words">
-                {levelLabel}
-              </p>
-              <p className="text-[11px] text-muted-foreground/70 mt-0.5 break-words">
-                You have {askCredits} credit{askCredits === 1 ? '' : 's'} ready to use
+                {askCredits <= 10
+                  ? `${askCredits} credit${askCredits === 1 ? '' : 's'} left — vote to earn more`
+                  : mode === 'decide' ? 'Ask anything, credits auto-deduct' : 'Ask anything, credits auto-deduct'}
               </p>
             </div>
             <SuggestionChips label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'} suggestions={promptSuggestions} onPick={runPreview} />
