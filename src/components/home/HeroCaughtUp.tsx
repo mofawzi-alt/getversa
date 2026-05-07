@@ -93,7 +93,7 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
           className="flex flex-col items-center justify-center gap-1 px-2 py-2.5 rounded-xl bg-[hsl(145_40%_90%)] border border-[hsl(145_40%_78%)] text-center group"
         >
           <MessageCircleQuestion className="h-4.5 w-4.5 text-[hsl(145_55%_30%)]" />
-          <span className="text-[11px] font-bold text-[hsl(145_40%_20%)] leading-tight">Ask AI</span>
+          <span className="text-[11px] font-bold text-[hsl(145_40%_20%)] leading-tight">{askLabel}</span>
         </button>
 
         <button
