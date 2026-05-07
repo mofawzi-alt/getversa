@@ -12,8 +12,8 @@ declare global {
 }
 
 if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
-  throw new Error("Versa native OAuth bridge handled this page before app boot.");
-}
+  console.info("[Versa] Native OAuth bridge handled callback before app boot.");
+} else {
 
 // Native iOS: make the WebView extend under the status bar so our
 // safe-area CSS (env(safe-area-inset-top)) is the single source of truth
@@ -62,3 +62,4 @@ if (isPreviewHost || isInIframe || isNativeApp) {
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
+}
