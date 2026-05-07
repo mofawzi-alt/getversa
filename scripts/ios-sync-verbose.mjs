@@ -7,6 +7,7 @@ const root = process.cwd();
 
 const steps = [
   ...(args.has('--install') ? [{ label: 'Installing dependencies', command: 'npm', args: ['install'] }] : []),
+  { label: 'Repairing native build dependency', command: 'npm', args: ['rebuild', 'esbuild'] },
   { label: 'Building web app', command: 'npm', args: ['run', 'build'] },
   { label: 'Syncing iOS project', command: 'npx', args: ['cap', 'sync', 'ios'] },
 ];
