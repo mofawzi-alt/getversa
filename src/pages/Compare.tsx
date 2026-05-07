@@ -14,6 +14,7 @@ import {
   ArrowLeft, Search, Heart, Users, Loader2,
   ChevronRight, BarChart3, Trophy
 } from 'lucide-react';
+import ShareCompatibilityImage from '@/components/compare/ShareCompatibilityImage';
 
 interface CategoryMatch {
   category: string;
