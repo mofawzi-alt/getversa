@@ -12,7 +12,7 @@ import { clearPasswordRecoveryIntent, hasRecentPasswordRecoveryIntent } from '@/
 const hasRecoveryParams = () => {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   const query = new URLSearchParams(window.location.search);
-  return hash.get('type') === 'recovery' || query.get('type') === 'recovery' || hash.has('access_token') || hash.has('refresh_token') || query.has('code');
+  return hash.get('type') === 'recovery' || query.get('type') === 'recovery';
 };
 
 /**
