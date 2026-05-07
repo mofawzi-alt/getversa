@@ -8,12 +8,13 @@ const hasPasswordRecoveryParams = () => {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   const query = new URLSearchParams(window.location.search);
 
+  // Only treat as password recovery when `type=recovery` is explicitly present.
+  // Do NOT match on bare `access_token` / `refresh_token` / `code` — those are
+  // also present in OAuth sign-in callbacks (Apple, Google) and would incorrectly
+  // redirect users to the reset-password page after social sign-in.
   return (
     hash.get('type') === 'recovery' ||
-    query.get('type') === 'recovery' ||
-    hash.has('access_token') ||
-    hash.has('refresh_token') ||
-    query.has('code')
+    query.get('type') === 'recovery'
   );
 };
 
