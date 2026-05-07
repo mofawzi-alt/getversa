@@ -17,6 +17,17 @@
  */
 
 const CALLBACK_SCHEME = 'com.Versa.app';
+const getNativeCallbackUrl = () => `${CALLBACK_SCHEME}://auth-callback${window.location.search}${window.location.hash}`;
+
+const openNativeApp = () => {
+  const callbackUrl = getNativeCallbackUrl();
+
+  try {
+    window.location.href = callbackUrl;
+  } catch {
+    // Keep the holding screen visible if iOS blocks automatic scheme navigation.
+  }
+};
 
 const renderNativeOAuthHoldingScreen = () => {
   const render = () => {
@@ -26,11 +37,15 @@ const renderNativeOAuthHoldingScreen = () => {
         <div style="max-width:320px;">
           <div style="width:28px;height:28px;margin:0 auto 18px;border:3px solid #e5e7eb;border-top-color:#E8392A;border-radius:999px;animation:versa-spin .8s linear infinite;"></div>
           <h1 style="font-size:22px;line-height:1.2;margin:0 0 8px;font-weight:800;">Completing sign in</h1>
-          <p style="font-size:15px;line-height:1.45;margin:0;color:#6b7280;">Return to Versa to continue.</p>
+          <p style="font-size:15px;line-height:1.45;margin:0 0 18px;color:#6b7280;">Return to Versa to continue.</p>
+          <button id="versa-open-app" type="button" style="appearance:none;border:0;border-radius:999px;background:#E8392A;color:#fff;font-size:16px;font-weight:700;padding:13px 22px;min-width:180px;box-shadow:0 10px 24px rgba(232,57,42,.22);">Open Versa</button>
+          <p style="font-size:13px;line-height:1.45;margin:14px 0 0;color:#9ca3af;">If this does not return automatically, tap Open Versa.</p>
         </div>
         <style>@keyframes versa-spin{to{transform:rotate(360deg)}}</style>
       </div>
     `;
+
+    document.getElementById('versa-open-app')?.addEventListener('click', openNativeApp);
   };
 
   if (document.readyState === 'loading') {
@@ -53,8 +68,11 @@ try {
 
     if (hash.includes('access_token=') || params.has('code')) {
       // Redirect to custom URL scheme — iOS will route this to the native app.
-      // SFSafariViewController will show a brief confirmation prompt.
-      window.location.replace(`${CALLBACK_SCHEME}://auth-callback${window.location.search}${hash}`);
+      // Some iOS/Safari builds block automatic scheme navigation after an OAuth
+      // redirect, so keep a visible one-tap fallback on the holding screen.
+      openNativeApp();
+      window.setTimeout(openNativeApp, 250);
+      window.setTimeout(openNativeApp, 1200);
     }
   }
 } catch {
