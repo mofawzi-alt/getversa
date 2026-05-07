@@ -423,7 +423,7 @@ export default function Ask() {
         teaser={preview?.teaser ?? ''}
         route={preview?.route ?? 'simple'}
         loading={confirming}
-        onConfirm={confirmAndAnswer}
+        onConfirm={() => preview && autoConfirm(preview)}
         onCancel={() => setPreview(null)}
         onEarn={() => { setPreview(null); navigate('/browse'); }}
       />
