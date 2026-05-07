@@ -262,18 +262,26 @@ export default function Compare() {
                 : `Based on ${sharedVotes.length} shared poll${sharedVotes.length !== 1 ? 's' : ''}`}
           </p>
           {overallScore !== null && (
-            <div className="mt-4 flex justify-center">
-              <ShareToStoryButton
-                storyType="duel_result"
-                content={{
-                  opponent: selectedFriend?.friend_username || 'Friend',
-                  won: overallScore >= 70,
-                  tied: overallScore >= 40 && overallScore < 70,
-                  score: `${overallScore}% compatible`,
-                  match_rate: overallScore,
-                }}
-                variant="compact"
+            <div className="mt-4 space-y-2">
+              <ShareCompatibilityImage
+                userAName={(myProfile as any)?.username || 'you'}
+                userBName={selectedFriend?.friend_username || 'friend'}
+                score={overallScore}
+                categoryMatches={categoryBreakdown.slice(0, 3)}
               />
+              <div className="flex justify-center">
+                <ShareToStoryButton
+                  storyType="duel_result"
+                  content={{
+                    opponent: selectedFriend?.friend_username || 'Friend',
+                    won: overallScore >= 70,
+                    tied: overallScore >= 40 && overallScore < 70,
+                    score: `${overallScore}% compatible`,
+                    match_rate: overallScore,
+                  }}
+                  variant="compact"
+                />
+              </div>
             </div>
           )}
         </div>
