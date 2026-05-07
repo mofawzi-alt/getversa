@@ -10,6 +10,14 @@
  * scheme (com.Versa.app://auth-callback#tokens), which hands control
  * back to the native Capacitor app.
  *
+ * CRITICAL: This module runs BEFORE the Supabase client is imported.
+ * When we detect a native OAuth callback, we must strip auth params from
+ * the URL immediately so the Supabase GoTrueClient (which auto-detects
+ * session params in the URL) doesn't try to consume the one-time auth
+ * code. SFSafariViewController doesn't have the PKCE code_verifier (it
+ * lives in the WKWebView), so the exchange would fail — but the server
+ * may still invalidate the code, breaking the native app's exchange.
+ *
  * This script is a no-op when:
  * - Running inside the Capacitor WKWebView (Capacitor.isNativePlatform)
  * - No ?native_oauth=1 param is present
@@ -17,7 +25,13 @@
  */
 
 const CALLBACK_SCHEME = 'com.Versa.app';
-const getNativeCallbackUrl = () => `${CALLBACK_SCHEME}://auth-callback${window.location.search}${window.location.hash}`;
+
+/** Saved auth params (stripped from URL before Supabase client boots) */
+let savedSearch = '';
+let savedHash = '';
+
+const getNativeCallbackUrl = () =>
+  `${CALLBACK_SCHEME}://auth-callback${savedSearch}${savedHash}`;
 
 const openNativeApp = () => {
   const callbackUrl = getNativeCallbackUrl();
@@ -60,16 +74,34 @@ try {
   const hash = window.location.hash;
 
   if (params.get('native_oauth') === '1') {
+    // Save the original search + hash before stripping them.
+    // The native app needs these to exchange the code / set the session.
+    savedSearch = window.location.search;
+    savedHash = hash;
+
+    // ── CRITICAL: Strip auth params from the URL immediately ──
+    // The Supabase GoTrueClient will auto-initialize when its module is
+    // imported (static import chain: main.tsx → App.tsx → AuthContext →
+    // supabase/client). If it finds `code` or `access_token` in the URL,
+    // it will attempt to consume them. We must remove them before that
+    // import chain executes. Since this module is imported FIRST in
+    // main.tsx, cleaning the URL here prevents the race condition.
+    try {
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.search = '';
+      cleanUrl.hash = '';
+      window.history.replaceState(null, '', cleanUrl.pathname);
+    } catch {
+      // If history.replaceState fails, continue anyway — the holding
+      // screen + scheme redirect still has the best chance of working.
+    }
+
     // Prevent the full React app from booting inside SFSafariViewController.
-    // OAuth callback pages should only hand control back to the native app;
-    // loading Home/Auth here can crash independently of the actual signed-in app.
     (window as Window & { __VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__?: boolean }).__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__ = true;
     renderNativeOAuthHoldingScreen();
 
     if (hash.includes('access_token=') || params.has('code')) {
       // Redirect to custom URL scheme — iOS will route this to the native app.
-      // Some iOS/Safari builds block automatic scheme navigation after an OAuth
-      // redirect, so keep a visible one-tap fallback on the holding screen.
       openNativeApp();
       window.setTimeout(openNativeApp, 250);
       window.setTimeout(openNativeApp, 1200);
