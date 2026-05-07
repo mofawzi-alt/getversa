@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "ios:update": "npm install && npm run build && npx cap sync ios && npx cap open ios",
-    "ios:sync": "npm run build && npx cap sync ios && npx cap open ios",
+    "ios:update": "node scripts/ios-sync-verbose.mjs --install --open",
+    "ios:sync": "node scripts/ios-sync-verbose.mjs --open",
     "lint": "eslint .",
     "preview": "vite preview"
   },
