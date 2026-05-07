@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen } from 'lucide-react';
+import { CirclePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUserStories, type UserStoryType } from '@/hooks/useUserStories';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,7 +43,7 @@ export default function ShareToStoryButton({
         disabled
         className={`gap-1.5 text-primary ${className}`}
       >
-        <BookOpen className="w-4 h-4" />
+        <CirclePlus className="w-4 h-4" />
         {variant !== 'icon' && 'Shared ✓'}
       </Button>
     );
@@ -58,7 +58,7 @@ export default function ShareToStoryButton({
         disabled={postingStory}
         className={`h-8 w-8 rounded-full ${className}`}
       >
-        <BookOpen className="w-4 h-4" />
+        <CirclePlus className="w-4 h-4" />
       </Button>
     );
   }
@@ -71,8 +71,8 @@ export default function ShareToStoryButton({
       disabled={postingStory}
       className={`gap-1.5 h-9 px-3 text-foreground border-border ${className}`}
     >
-      <BookOpen className="w-4 h-4" />
-      {variant === 'compact' ? 'Story' : 'Share to Story'}
+      <CirclePlus className="w-4 h-4" />
+      {variant === 'compact' ? 'Add to Story' : 'Add to Story'}
     </Button>
   );
 }
