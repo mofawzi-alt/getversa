@@ -54,8 +54,17 @@ if (fs.existsSync(syncScript)) {
   }
 }
 
-console.log(ok
-  ? '\n✅ This looks like the right Versa folder. Safe to continue here.'
-  : '\n❌ This does NOT look like the right/latest Versa folder. Do not delete anything here.');
+if (ok) {
+  console.log('\n✅ This looks like the right Versa folder. Safe to continue here.');
+  console.log('\nNext baby steps:');
+  console.log('1. Close Xcode.');
+  console.log('2. In Finder, delete ONLY these folders inside this folder if they exist: ios, dist, node_modules');
+  console.log('3. Come back to Terminal.');
+  console.log('4. Copy/paste this one line: npm run ios:update');
+  console.log('5. Wait. Do not press Control+C unless it shows an error for more than 10 minutes.');
+} else {
+  console.log('\n❌ This does NOT look like the right/latest Versa folder. Do not delete anything here.');
+  console.log('\nTry another Desktop folder, then run: npm run folder:check');
+}
 
 process.exit(ok ? 0 : 1);
