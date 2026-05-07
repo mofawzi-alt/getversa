@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
-import { clearPasswordRecoveryIntent, hasRecentPasswordRecoveryIntent } from '@/lib/authRedirectCapture';
+import { clearPasswordRecoveryIntent } from '@/lib/authRedirectCapture';
 
 const hasRecoveryParams = () => {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
