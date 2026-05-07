@@ -7,12 +7,24 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
-import { clearPasswordRecoveryIntent, hasRecentPasswordRecoveryIntent } from '@/lib/authRedirectCapture';
+import { clearPasswordRecoveryIntent } from '@/lib/authRedirectCapture';
 
 const hasRecoveryParams = () => {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   const query = new URLSearchParams(window.location.search);
   return hash.get('type') === 'recovery' || query.get('type') === 'recovery';
+};
+
+const hasOauthCallbackParams = () => {
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const query = new URLSearchParams(window.location.search);
+  return (
+    query.has('code') ||
+    query.get('native_oauth') === '1' ||
+    hash.has('access_token') ||
+    hash.has('refresh_token') ||
+    hash.has('provider_token')
+  );
 };
 
 /**
@@ -32,11 +44,16 @@ export default function ResetPassword() {
 
   useEffect(() => {
     let cancelled = false;
-    const startedFromRecoveryLink = hasRecoveryParams() || hasRecentPasswordRecoveryIntent();
+    const explicitRecoveryLink = hasRecoveryParams();
+    const startedFromRecoveryLink = explicitRecoveryLink && !hasOauthCallbackParams();
+
+    if (!startedFromRecoveryLink) {
+      clearPasswordRecoveryIntent();
+    }
 
     // Listen for PASSWORD_RECOVERY before checking session, so we don't miss the event
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && hasRecentPasswordRecoveryIntent())) {
+      if (event === 'PASSWORD_RECOVERY' && startedFromRecoveryLink) {
         setRecoverySession(true);
         setReady(true);
       }
@@ -46,12 +63,17 @@ export default function ResetPassword() {
       const query = new URLSearchParams(window.location.search);
       const code = query.get('code');
 
-      if (code) {
+      if (code && startedFromRecoveryLink) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) console.error('Password recovery exchange failed:', error.message);
       }
 
       const { data } = await supabase.auth.getSession();
+      if (data.session && !startedFromRecoveryLink) {
+        clearPasswordRecoveryIntent();
+        navigate('/home', { replace: true });
+        return;
+      }
       if (!data.session && startedFromRecoveryLink) {
         await new Promise((resolve) => window.setTimeout(resolve, 350));
       }
@@ -65,7 +87,7 @@ export default function ResetPassword() {
       cancelled = true;
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
