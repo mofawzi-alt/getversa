@@ -85,12 +85,10 @@ if (fs.existsSync(postSyncScript)) {
 
 if (ok) {
   console.log('\n✅ This looks like the right Versa folder. Safe to continue here.');
-  console.log('\nNext baby steps:');
-  console.log('1. Close Xcode.');
-  console.log('2. In Finder, delete ONLY these folders inside this folder if they exist: ios, dist, node_modules');
-  console.log('3. Come back to Terminal.');
-  console.log('4. Copy/paste this one line: npm run ios:update');
-  console.log('5. Wait. Do not press Control+C unless it shows an error for more than 10 minutes.');
+  console.log('\nDo NOT delete the whole project.');
+  console.log('Do NOT delete src, public, package.json, capacitor.config.ts, or supabase.');
+  console.log('\nSafest next step: run npm run ios:update from this folder only.');
+  console.log('That command now checks the folder first and refuses to run if the Apple fixes are missing.');
 } else {
   console.log('\n❌ This does NOT look like the right/latest Versa folder. Do not delete anything here.');
   console.log('\nTry another Desktop folder, then run: npm run folder:check');
