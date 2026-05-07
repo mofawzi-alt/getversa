@@ -10,7 +10,8 @@
     "ios:update": "node scripts/ios-sync-verbose.mjs --install --open",
     "ios:sync": "node scripts/ios-sync-verbose.mjs --open",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "git:doctor": "node scripts/git-doctor.mjs"
   },
   "capacitor": {
     "hooks": {
