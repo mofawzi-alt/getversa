@@ -337,16 +337,47 @@ export default function StoryViewer({
               />
               )
             ) : (
-              /* Themed gradient fallback only when no image */
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: `linear-gradient(135deg, ${theme.from} 0%, ${theme.via} 55%, ${theme.to} 100%)`,
-                }}
-              />
+              /* Rich themed gradient fallback with decorative elements */
+              <>
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `linear-gradient(135deg, ${theme.from} 0%, ${theme.via} 55%, ${theme.to} 100%)`,
+                  }}
+                />
+                {/* Glowing orbs for depth */}
+                <div
+                  className="absolute rounded-full blur-[80px] opacity-40"
+                  style={{
+                    width: '60%', height: '40%', top: '15%', left: '20%',
+                    background: `radial-gradient(circle, ${theme.accent}88 0%, transparent 70%)`,
+                  }}
+                />
+                <div
+                  className="absolute rounded-full blur-[60px] opacity-25"
+                  style={{
+                    width: '40%', height: '30%', bottom: '30%', right: '-5%',
+                    background: `radial-gradient(circle, ${theme.from}cc 0%, transparent 70%)`,
+                  }}
+                />
+                {/* Large category emoji watermark */}
+                {card.categoryEmoji && (
+                  <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: '30%' }}>
+                    <span className="text-[120px] opacity-20 select-none">{card.categoryEmoji}</span>
+                  </div>
+                )}
+                {/* Subtle grid pattern */}
+                <div
+                  className="absolute inset-0 opacity-[0.04]"
+                  style={{
+                    backgroundImage: `linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)`,
+                    backgroundSize: '40px 40px',
+                  }}
+                />
+              </>
             )}
             {/* Bottom darken for legibility */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/90" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/85" />
 
             {card.label && (
               <div className="absolute top-12 left-0 right-0 text-center px-5 pointer-events-none">
