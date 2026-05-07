@@ -5,6 +5,16 @@ import App from "./App.tsx";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";
 
+declare global {
+  interface Window {
+    __VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__?: boolean;
+  }
+}
+
+if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
+  throw new Error("Versa native OAuth bridge handled this page before app boot.");
+}
+
 // Native iOS: make the WebView extend under the status bar so our
 // safe-area CSS (env(safe-area-inset-top)) is the single source of truth
 // for the header offset. Without this, iOS leaves a white bar AND our
