@@ -2,7 +2,17 @@ import { spawnSync } from 'node:child_process';
 
 const run = (label, command, args) => {
   console.log(`\n▶ ${label}`);
-  const result = spawnSync(command, args, { stdio: 'inherit', shell: process.platform === 'win32' });
+  const result = spawnSync(command, args, {
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+    timeout: 30_000,
+  });
+  if (result.error?.code === 'ETIMEDOUT') {
+    console.error(`\n❌ ${label} timed out after 30 seconds.`);
+    console.error('Git is hanging before the app update can start.');
+    console.error('Stop here and use the Lovable History/GitHub download route instead of deleting project files.');
+    process.exit(1);
+  }
   if (result.status !== 0) process.exit(result.status ?? 1);
 };
 
