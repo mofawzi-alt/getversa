@@ -1,33 +1,19 @@
 # Versa iOS local recovery
 
-Do **not** delete the whole project.
+Do **not** delete anything.
 
-Do **not** delete these:
+Use the recovery ZIP instead.
 
-- `src`
-- `public`
-- `package.json`
-- `capacitor.config.ts`
-- `supabase`
-- `scripts`
+Open `Versa-iOS-Recovery.command` from the ZIP.
 
-Safe order:
+It only updates the iOS helper files inside `Desktop/getversa-fresh`.
 
-1. Use the `getversa-fresh` folder.
-2. Update it from GitHub.
-3. Run the safe preflight check.
-4. Only if preflight passes, run the iOS update.
+It does **not** delete your app.
 
-The iOS update now refuses to continue if:
+It does **not** reset Git.
 
-- the folder is not Versa
-- the native app identity is wrong
-- the Apple camera/photo permission fixes are missing
-- the app icon source is missing
+It does **not** touch `src`, `public`, `supabase`, or your app code.
 
-The Apple permission keys that must be present are:
+After it finishes, it prints the one next command.
 
-- `NSCameraUsageDescription`
-- `NSPhotoLibraryUsageDescription`
-- `NSPhotoLibraryAddUsageDescription`
-- `NSFaceIDUsageDescription`
+If it says `STOP`, stop there.
