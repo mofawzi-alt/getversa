@@ -87,7 +87,7 @@ export default function ResetPassword() {
       cancelled = true;
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
