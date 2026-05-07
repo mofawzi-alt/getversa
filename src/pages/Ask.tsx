@@ -135,6 +135,50 @@ export default function Ask() {
     ask_level: askLevel,
   } : undefined;
 
+  const autoConfirm = async (previewData: PreviewState) => {
+    setConfirming(true);
+    const turnId = crypto.randomUUID();
+    const placeholder: AskTurn = { id: turnId, question: previewData.question, mode: previewData.mode, loading: true };
+    setTurns((prev) => [...prev, placeholder]);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('ask-versa', {
+        body: { question: previewData.question, mode: previewData.mode, viewer, history: previewData.history, stage: 'confirm' },
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(data.error);
+        setTurns((prev) => prev.filter((t) => t.id !== turnId));
+        return;
+      }
+      setTurns((prev) => prev.map((t) => t.id === turnId ? {
+        ...t,
+        loading: false,
+        summary: data.summary || null,
+        verdict: data.verdict || null,
+        polls: data.polls || [],
+        creditsCharged: data.credits_charged,
+        creditsBalance: data.credits_balance,
+        insightParts: data.insight_parts || null,
+      } as AskTurn : t));
+      qc.invalidateQueries({ queryKey: ['ask-credits'] });
+
+      // Show low-credit nudge after answer if balance is low
+      const remaining = data.credits_balance ?? 0;
+      if (remaining <= 10 && remaining > 0) {
+        toast(`You have ${remaining} credit${remaining === 1 ? '' : 's'} left — vote on more polls to earn more!`, { icon: '💡' });
+      } else if (remaining <= 0) {
+        toast('You\'re out of credits! Vote on polls to earn more.', { icon: '🗳️' });
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || 'Failed');
+      setTurns((prev) => prev.filter((t) => t.id !== turnId));
+    } finally {
+      setConfirming(false);
+    }
+  };
+
   const runPreview = async (q?: string) => {
     const question = (q ?? query).trim();
     if (question.length < 3) { toast.error('Type a fuller question'); return; }
@@ -216,16 +260,26 @@ export default function Ask() {
         return;
       }
 
-      // Preview: show modal
+      // Preview stage: auto-confirm if user has credits, show earn modal if empty
       if (data.stage === 'preview') {
-        setPreview({
+        const balance = data.credits_balance ?? askCredits;
+        const cost = data.cost ?? 1;
+        const previewState: PreviewState = {
           question, mode,
           route: data.route,
-          cost: data.cost,
-          balance: data.credits_balance,
+          cost,
+          balance,
           teaser: data.teaser,
           history,
-        });
+        };
+
+        if (balance >= cost) {
+          // Auto-deduct — no modal, just go
+          await autoConfirm(previewState);
+        } else {
+          // No credits — show earn prompt
+          setPreview(previewState);
+        }
       }
     } catch (e: any) {
       console.error(e);
@@ -233,45 +287,6 @@ export default function Ask() {
     } finally {
       setLoading(false);
       setTimeout(focusInputIfDesktop, 50);
-    }
-  };
-
-  const confirmAndAnswer = async () => {
-    if (!preview) return;
-    setConfirming(true);
-    const turnId = crypto.randomUUID();
-    const placeholder: AskTurn = { id: turnId, question: preview.question, mode: preview.mode, loading: true };
-    setTurns((prev) => [...prev, placeholder]);
-    setPreview(null);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('ask-versa', {
-        body: { question: preview.question, mode: preview.mode, viewer, history: preview.history, stage: 'confirm' },
-      });
-      if (error) throw error;
-      if (data?.error) {
-        toast.error(data.error);
-        setTurns((prev) => prev.filter((t) => t.id !== turnId));
-        return;
-      }
-      setTurns((prev) => prev.map((t) => t.id === turnId ? {
-        ...t,
-        loading: false,
-        summary: data.summary || null,
-        verdict: data.verdict || null,
-        polls: data.polls || [],
-        creditsCharged: data.credits_charged,
-        creditsBalance: data.credits_balance,
-        insightParts: data.insight_parts || null,
-      } as AskTurn : t));
-      // Refresh balance pill
-      qc.invalidateQueries({ queryKey: ['ask-credits'] });
-    } catch (e: any) {
-      console.error(e);
-      toast.error(e?.message || 'Failed');
-      setTurns((prev) => prev.filter((t) => t.id !== turnId));
-    } finally {
-      setConfirming(false);
     }
   };
 
@@ -357,10 +372,9 @@ export default function Ask() {
                 {mode === 'decide' ? 'Get a clear pick backed by real votes' : 'Get a research brief from Egypt\'s pulse'}
               </p>
               <p className="text-xs text-muted-foreground mt-1 break-words">
-                {levelLabel}
-              </p>
-              <p className="text-[11px] text-muted-foreground/70 mt-0.5 break-words">
-                You have {askCredits} credit{askCredits === 1 ? '' : 's'} ready to use
+                {askCredits <= 10
+                  ? `${askCredits} credit${askCredits === 1 ? '' : 's'} left — vote to earn more`
+                  : mode === 'decide' ? 'Ask anything, credits auto-deduct' : 'Ask anything, credits auto-deduct'}
               </p>
             </div>
             <SuggestionChips label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'} suggestions={promptSuggestions} onPick={runPreview} />
@@ -408,7 +422,7 @@ export default function Ask() {
         teaser={preview?.teaser ?? ''}
         route={preview?.route ?? 'simple'}
         loading={confirming}
-        onConfirm={confirmAndAnswer}
+        onConfirm={() => preview && autoConfirm(preview)}
         onCancel={() => setPreview(null)}
         onEarn={() => { setPreview(null); navigate('/browse'); }}
       />
