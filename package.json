@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "ios:update": "node scripts/ios-sync-verbose.mjs --install --open",
     "ios:sync": "node scripts/ios-sync-verbose.mjs --open",
+    "ios:preflight": "node scripts/ios-sync-verbose.mjs --check-only",
     "folder:check": "node scripts/check-local-folder.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
