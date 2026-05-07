@@ -1,14 +1,17 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import ShareableTasteCard from '@/components/taste/ShareableTasteCard';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
-import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye, Clock, ShieldCheck } from 'lucide-react';
+import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye, Clock, ShieldCheck, Diamond } from 'lucide-react';
 import TasteEvolutionTimeline from '@/components/taste/TasteEvolutionTimeline';
 import { motion } from 'framer-motion';
 import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 import { computePersonalityType } from '@/lib/personalityType';
+import TasteRevealCinematic, { hasTasteBeenRevealed } from '@/components/taste/TasteRevealCinematic';
+import { useTasteRarity } from '@/hooks/useTasteRarity';
 
 // ── Archetype engine ──
 interface TraitEntry { tag: string; vote_count: number }
@@ -189,6 +192,8 @@ function getMostActiveTime(votes: { created_at: string }[]): string {
 // ── Main page ──
 export default function TasteProfile() {
   const { user, profile } = useAuth();
+  const [showReveal, setShowReveal] = useState(() => !hasTasteBeenRevealed());
+  const { data: rarityData } = useTasteRarity();
 
   const { data: allVotes, isLoading: loadingVotes } = useQuery({
     queryKey: ['taste-all-votes', profile?.id],
@@ -340,6 +345,17 @@ export default function TasteProfile() {
 
   return (
     <AppLayout>
+      {/* Cinematic reveal on first visit */}
+      {showReveal && totalVotes >= 20 && (
+        <TasteRevealCinematic
+          archetype={archetype}
+          rarityPct={rarityData?.rarityPct ?? null}
+          personalityCode={personality.ready ? personality.code : undefined}
+          personalityName={personality.ready ? personality.name : undefined}
+          onComplete={() => setShowReveal(false)}
+        />
+      )}
+
       <motion.div
         variants={stagger}
         initial="hidden"
@@ -354,6 +370,21 @@ export default function TasteProfile() {
           </div>
           <h1 className="text-3xl font-display font-black text-foreground">{archetype.emoji} {archetype.name}</h1>
           <p className="text-muted-foreground text-sm mt-1">{dynamicDescription}</p>
+          
+          {/* Rarity badge */}
+          {rarityData && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: 'spring' }}
+              className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-full bg-foreground text-background"
+            >
+              <Diamond className="h-3.5 w-3.5" />
+              <span className="text-xs font-bold">
+                {rarityData.label} — rarer than {rarityData.rarityPct}% of users
+              </span>
+            </motion.div>
+          )}
         </motion.header>
 
         {/* ── TASTE IDENTITY ── */}

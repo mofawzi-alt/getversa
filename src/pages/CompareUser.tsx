@@ -51,7 +51,7 @@ export default function CompareUser() {
     );
   }
 
-  // Not logged in — prompt to sign up
+  // Not logged in — viral signup prompt
   if (!user) {
     return (
       <AppLayout>
@@ -63,20 +63,31 @@ export default function CompareUser() {
             <h1 className="text-xl font-display font-bold">Compatibility</h1>
           </div>
 
-          <div className="glass rounded-3xl p-8 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-              <span className="text-2xl font-bold text-primary">
+          <div className="glass rounded-3xl p-8 text-center space-y-5">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <span className="text-3xl font-bold text-primary">
                 {targetUser.username?.[0]?.toUpperCase() || '?'}
               </span>
             </div>
-            <h2 className="text-lg font-bold">@{targetUser.username}</h2>
-            <p className="text-sm text-muted-foreground">
-              Join Versa to see how compatible you are with @{targetUser.username}!
-            </p>
-            <Button onClick={() => navigate('/auth')} className="w-full h-12">
+            <div>
+              <h2 className="text-xl font-bold">@{targetUser.username}</h2>
+              <p className="text-sm text-muted-foreground mt-1">wants to know your compatibility</p>
+            </div>
+            
+            {/* Teaser score */}
+            <div className="py-4">
+              <div className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-foreground/5 border border-border">
+                <span className="text-4xl font-black text-foreground">??%</span>
+                <span className="text-sm text-muted-foreground">compatible</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">Sign up & vote on 5 polls to reveal</p>
+            </div>
+
+            <Button onClick={() => navigate('/auth?mode=signup&reason=compare')} className="w-full h-12 text-base font-bold">
               <LogIn className="h-4 w-4 mr-2" />
-              Join to Compare
+              Sign Up to Compare
             </Button>
+            <p className="text-[11px] text-muted-foreground">Takes 30 seconds · 100% free</p>
           </div>
         </div>
       </AppLayout>
