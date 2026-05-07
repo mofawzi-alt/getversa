@@ -596,6 +596,18 @@ function HomeLiveDebateCard({
           )}
         </div>
       )}
+      {/* Post-vote Ask Versa nudge */}
+      {hasVoted && user && (
+        <PostVoteAskNudge
+          question={poll.question}
+          optionA={poll.option_a}
+          optionB={poll.option_b}
+          percentA={poll.percentA}
+          percentB={poll.percentB}
+          visible={showAskNudge}
+          onDismiss={() => setShowAskNudge(false)}
+        />
+      )}
       <SharePollToFriendSheet
         pollId={poll.id}
         pollQuestion={poll.question}
