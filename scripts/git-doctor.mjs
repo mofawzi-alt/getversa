@@ -21,4 +21,4 @@ run('Checking repository integrity', 'git', ['fsck', '--no-dangling']);
 run('Refreshing Git index', 'git', ['update-index', '--refresh']);
 run('Fetching latest main', 'git', ['fetch', 'origin', 'main', '--prune']);
 
-console.log('\n✅ Git can read this repo. If pull is still stuck, stop it and run: git reset --hard origin/main');
+console.log('\n✅ Git can read this repo. Do not delete or reset project files from this script.');
