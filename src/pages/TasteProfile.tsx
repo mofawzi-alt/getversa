@@ -1,14 +1,17 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import ShareableTasteCard from '@/components/taste/ShareableTasteCard';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
-import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye, Clock, ShieldCheck } from 'lucide-react';
+import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye, Clock, ShieldCheck, Diamond } from 'lucide-react';
 import TasteEvolutionTimeline from '@/components/taste/TasteEvolutionTimeline';
 import { motion } from 'framer-motion';
 import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 import { computePersonalityType } from '@/lib/personalityType';
+import TasteRevealCinematic, { hasTasteBeenRevealed } from '@/components/taste/TasteRevealCinematic';
+import { useTasteRarity } from '@/hooks/useTasteRarity';
 
 // ── Archetype engine ──
 interface TraitEntry { tag: string; vote_count: number }
