@@ -11,6 +11,7 @@
     "ios:sync": "node scripts/ios-sync-verbose.mjs --open",
     "ios:preflight": "node scripts/ios-sync-verbose.mjs --check-only",
     "folder:check": "node scripts/check-local-folder.mjs",
+    "local:doctor": "node scripts/git-doctor.mjs && node scripts/ios-sync-verbose.mjs --check-only",
     "lint": "eslint .",
     "preview": "vite preview",
     "git:doctor": "node scripts/git-doctor.mjs"
