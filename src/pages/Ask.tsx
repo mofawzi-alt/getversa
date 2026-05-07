@@ -404,7 +404,7 @@ export default function Ask() {
                   : mode === 'decide' ? 'Ask anything, credits auto-deduct' : 'Ask anything, credits auto-deduct'}
               </p>
             </div>
-            <SuggestionChips label={mode === 'decide' ? 'Stuck on a choice?' : 'Try a research question'} suggestions={promptSuggestions} onPick={runPreview} />
+            <SuggestionChips label={mode === 'decide' ? '🔥 Everyone\'s asking right now' : '📊 Trending research questions'} suggestions={promptSuggestions} onPick={runPreview} />
           </>
         )}
 
