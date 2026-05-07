@@ -77,10 +77,24 @@ export async function startNativeOAuth(
       // Tokens arrive in the URL fragment: #access_token=…&refresh_token=…
       const hash = url.includes('#') ? url.split('#')[1] : '';
       const params = new URLSearchParams(hash);
+      const queryString = (() => {
+        const queryStart = url.indexOf('?');
+        if (queryStart === -1) return '';
+        const hashStart = url.indexOf('#', queryStart);
+        return url.slice(queryStart + 1, hashStart === -1 ? undefined : hashStart);
+      })();
+      const query = new URLSearchParams(queryString);
+      const code = query.get('code');
       const access_token = params.get('access_token');
       const refresh_token = params.get('refresh_token');
 
-      if (access_token && refresh_token) {
+      if (code) {
+        try {
+          await supabase.auth.exchangeCodeForSession(code);
+        } catch (e) {
+          console.error('[nativeOAuth] exchangeCodeForSession failed', e);
+        }
+      } else if (access_token && refresh_token) {
         try {
           await supabase.auth.setSession({ access_token, refresh_token });
         } catch (e) {
