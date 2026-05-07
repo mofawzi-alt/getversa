@@ -43,6 +43,17 @@ if (pkg?.scripts?.['ios:sync'] === 'node scripts/ios-sync-verbose.mjs --open') {
   console.log('❌ iOS sync helper is missing/outdated');
 }
 
+const capConfigPath = path.join(root, 'capacitor.config.ts');
+if (fs.existsSync(capConfigPath)) {
+  const capConfig = fs.readFileSync(capConfigPath, 'utf8');
+  if (capConfig.includes("appId: 'com.Versa.app'") && capConfig.includes("appName: 'Versa'")) {
+    console.log('✅ Native app identity matches Versa');
+  } else {
+    ok = false;
+    console.log('❌ Native app identity does not match Versa');
+  }
+}
+
 const syncScript = path.join(root, 'scripts', 'ios-sync-verbose.mjs');
 if (fs.existsSync(syncScript)) {
   const syncText = fs.readFileSync(syncScript, 'utf8');
@@ -51,6 +62,24 @@ if (fs.existsSync(syncScript)) {
   } else {
     ok = false;
     console.log('❌ Camera + icon patch is NOT included in sync');
+  }
+}
+
+const postSyncScript = path.join(root, 'scripts', 'capacitor-ios-post-sync.mjs');
+if (fs.existsSync(postSyncScript)) {
+  const postSyncText = fs.readFileSync(postSyncScript, 'utf8');
+  const requiredIosKeys = [
+    'NSCameraUsageDescription',
+    'NSPhotoLibraryUsageDescription',
+    'NSPhotoLibraryAddUsageDescription',
+    'NSFaceIDUsageDescription',
+  ];
+  const missingKeys = requiredIosKeys.filter((key) => !postSyncText.includes(key));
+  if (missingKeys.length === 0) {
+    console.log('✅ Apple camera/photo permission keys are included');
+  } else {
+    ok = false;
+    console.log(`❌ Missing Apple permission keys: ${missingKeys.join(', ')}`);
   }
 }
 
