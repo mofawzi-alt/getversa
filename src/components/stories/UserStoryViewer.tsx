@@ -135,6 +135,7 @@ const STORY_THEMES: Record<string, {
   glow: string;
   accent: string;
   icon: typeof Flame;
+  secondaryGlow?: string;
 }> = {
   poll_result: {
     gradient: 'linear-gradient(160deg, #0a1628 0%, #0f2440 30%, #1a3a5f 60%, #2563eb 100%)',
@@ -143,9 +144,10 @@ const STORY_THEMES: Record<string, {
     icon: TrendingUp,
   },
   taste_profile: {
-    gradient: 'linear-gradient(160deg, #0a0f2c 0%, #111b4d 30%, #1a2980 60%, #26348a 100%)',
-    glow: 'radial-gradient(ellipse at 50% 30%, rgba(99,102,241,0.4) 0%, transparent 70%)',
-    accent: '#818cf8',
+    gradient: 'linear-gradient(160deg, #0f0524 0%, #1a0a3e 20%, #2d1b69 40%, #6d28d9 70%, #a855f7 100%)',
+    glow: 'radial-gradient(ellipse at 40% 25%, rgba(168,85,247,0.5) 0%, transparent 60%)',
+    secondaryGlow: 'radial-gradient(ellipse at 70% 60%, rgba(236,72,153,0.35) 0%, transparent 55%)',
+    accent: '#c084fc',
     icon: Zap,
   },
   achievement: {
@@ -310,6 +312,14 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
           <>
             <div className="absolute inset-0" style={{ background: theme.gradient }} />
             <div className="absolute inset-0" style={{ background: theme.glow }} />
+            {theme.secondaryGlow && (
+              <div className="absolute inset-0" style={{ background: theme.secondaryGlow }} />
+            )}
+            {/* Decorative floating orbs */}
+            <div
+              className="absolute w-48 h-48 rounded-full blur-[60px] opacity-30"
+              style={{ background: theme.accent, top: '10%', right: '-10%' }}
+            />
             {/* Animated emoji icon */}
             <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: '35%' }}>
               <motion.span
