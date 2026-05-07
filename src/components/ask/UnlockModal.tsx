@@ -1,4 +1,4 @@
-import { Coins, Sparkles, Lock, X } from 'lucide-react';
+import { Coins, Sparkles, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 interface Props {
@@ -13,14 +13,8 @@ interface Props {
   onEarn: () => void;
 }
 
-const ROUTE_LABEL: Record<string, string> = {
-  simple: 'Quick fact',
-  medium: 'Insight',
-  complex: 'Deep analysis',
-};
-
 export default function UnlockModal({
-  open, cost, balance, teaser, route, loading, onConfirm, onCancel, onEarn,
+  open, cost, balance, teaser, route: _route, loading, onConfirm, onCancel, onEarn,
 }: Props) {
   if (!open) return null;
   const canAfford = balance >= cost;
@@ -41,26 +35,26 @@ export default function UnlockModal({
         </div>
 
         <div className="space-y-1">
-          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{ROUTE_LABEL[route]}</p>
-          <h3 className="text-lg font-bold">Unlock this insight?</h3>
+          <h3 className="text-lg font-bold">
+            {canAfford ? 'Ready to ask?' : 'You need more credits'}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {canAfford
+              ? 'This will use credits from your balance.'
+              : 'Vote on polls to earn credits — then come back and ask anything.'}
+          </p>
         </div>
 
-        {/* Teaser */}
-        <div className="rounded-2xl bg-muted/50 p-3.5 relative overflow-hidden">
-          <p className="text-sm text-foreground/80 italic leading-relaxed line-clamp-2">"{teaser}"</p>
-          <div className="absolute inset-0 flex items-end justify-center pb-1 bg-gradient-to-t from-muted/50 via-muted/30 to-transparent">
-            <Lock className="h-4 w-4 text-muted-foreground/60" />
-          </div>
-        </div>
-
-        {/* Cost vs balance */}
+        {/* Balance */}
         <div className="flex items-center justify-between rounded-xl border border-border p-3">
           <div className="flex items-center gap-2">
             <Coins className="h-4 w-4 text-primary" />
-            <span className="text-sm font-bold text-foreground">{cost} credit{cost === 1 ? '' : 's'}</span>
+            <span className="text-sm font-bold text-foreground">
+              {balance} credit{balance === 1 ? '' : 's'} left
+            </span>
           </div>
-          <span className={`text-xs font-semibold ${canAfford ? 'text-muted-foreground' : 'text-destructive'}`}>
-            Balance: {balance}
+          <span className="text-xs font-semibold text-muted-foreground">
+            Need {cost}
           </span>
         </div>
 
@@ -70,7 +64,7 @@ export default function UnlockModal({
             disabled={loading}
             className="w-full h-12 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-[0.98] transition disabled:opacity-60"
           >
-            {loading ? 'Unlocking…' : `Unlock with ${cost} vote${cost === 1 ? '' : 's'} earned`}
+            {loading ? 'Getting answer…' : 'Ask now'}
           </button>
         ) : (
           <div className="space-y-2">
@@ -78,10 +72,10 @@ export default function UnlockModal({
               onClick={onEarn}
               className="w-full h-12 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-[0.98] transition"
             >
-              Vote to unlock insights
+              Vote to earn credits
             </button>
             <p className="text-[11px] text-center text-muted-foreground">
-              {cost - balance} more vote{cost - balance === 1 ? '' : 's'} to go. You earn credits by voting — unlimited polls in Browse.
+              You need {cost - balance} more credit{cost - balance === 1 ? '' : 's'}. Every vote earns credits.
             </p>
           </div>
         )}
