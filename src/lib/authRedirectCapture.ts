@@ -8,6 +8,16 @@ const hasPasswordRecoveryParams = () => {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   const query = new URLSearchParams(window.location.search);
 
+  if (
+    query.has('code') ||
+    query.get('native_oauth') === '1' ||
+    hash.has('access_token') ||
+    hash.has('refresh_token') ||
+    hash.has('provider_token')
+  ) {
+    return false;
+  }
+
   // Only treat as password recovery when `type=recovery` is explicitly present.
   // Do NOT match on bare `access_token` / `refresh_token` / `code` — those are
   // also present in OAuth sign-in callbacks (Apple, Google) and would incorrectly
