@@ -11,6 +11,7 @@
     "ios:sync": "node scripts/ios-sync-verbose.mjs --open",
     "ios:preflight": "node scripts/ios-sync-verbose.mjs --check-only",
     "ios:help": "node scripts/one-command-ios-help.mjs",
+    "ios:apple-ready": "node scripts/apple-release-ready.mjs",
     "folder:check": "node scripts/check-local-folder.mjs",
     "local:doctor": "node scripts/git-doctor.mjs && node scripts/ios-sync-verbose.mjs --check-only",
     "lint": "eslint .",

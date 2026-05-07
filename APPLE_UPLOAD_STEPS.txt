@@ -1,0 +1,19 @@
+DO THIS ON YOUR MAC:
+
+1. Download the ZIP called versa-apple-upload-source.zip.
+2. Open the ZIP.
+3. Open the folder it creates.
+4. Double-click START-HERE-MAC.command.
+5. Wait until Xcode opens.
+6. In Xcode, click Product, then Archive.
+
+DO NOT delete anything.
+DO NOT use git pull.
+DO NOT use the old getversa-fresh folder.
+
+This ZIP contains the current project code plus:
+- camera crash permission fix
+- photo library permission fix
+- Face ID permission fix
+- app icon generation fix
+- automatic Apple build number bump
