@@ -55,6 +55,7 @@ interface PreviewState {
 interface AskLocationState {
   fromLiveDebate?: boolean;
   fallbackTo?: string;
+  prefill?: string;
 }
 
 export default function Ask() {
@@ -82,6 +83,16 @@ export default function Ask() {
 
   useEffect(() => { setTimeout(focusInputIfDesktop, 200); }, []);
   useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
+
+  // Prefill from navigation state (post-vote nudge, daily question)
+  useEffect(() => {
+    const state = location.state as AskLocationState | null;
+    if (state?.prefill && !turns.length) {
+      setQuery(state.prefill);
+      // Clear the state so refresh doesn't re-prefill
+      window.history.replaceState({ ...window.history.state, usr: { ...state, prefill: undefined } }, '');
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track visual viewport so the input form follows the keyboard on iOS/Capacitor
   useEffect(() => {

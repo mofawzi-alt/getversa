@@ -56,6 +56,9 @@ import CountdownTimer from '@/components/poll/CountdownTimer';
 import TrendingBadge from '@/components/poll/TrendingBadge';
 import ClosingSoonStrip from '@/components/home/ClosingSoonStrip';
 import LiveVoterCount from '@/components/home/LiveVoterCount';
+import FloatingAskButton from '@/components/ask/FloatingAskButton';
+import PostVoteAskNudge from '@/components/ask/PostVoteAskNudge';
+import DailyFeaturedQuestion from '@/components/home/DailyFeaturedQuestion';
 
 const isAuthSessionError = (error: { code?: string; message?: string } | null) => {
   const message = error?.message?.toLowerCase() || '';
@@ -194,9 +197,11 @@ function HomeLiveDebateCard({
   const { user } = useAuth();
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
+  const [showAskNudge, setShowAskNudge] = useState(false);
   const handleInlineVote = (choice: 'A' | 'B') => {
     if (hasVoted || isVoting) return;
     setIsVoting(true);
+    setShowAskNudge(true);
     onVoteInline(choice);
   };
   const { data: genderTeaser } = useGenderSplitTeaser(
@@ -590,6 +595,18 @@ function HomeLiveDebateCard({
             </button>
           )}
         </div>
+      )}
+      {/* Post-vote Ask Versa nudge */}
+      {hasVoted && user && (
+        <PostVoteAskNudge
+          question={poll.question}
+          optionA={poll.option_a}
+          optionB={poll.option_b}
+          percentA={poll.percentA}
+          percentB={poll.percentB}
+          visible={showAskNudge}
+          onDismiss={() => setShowAskNudge(false)}
+        />
       )}
       <SharePollToFriendSheet
         pollId={poll.id}
@@ -1574,6 +1591,13 @@ export default function Home() {
           </button>
         </div>
 
+        {/* Daily featured Ask Versa question */}
+        {user && (
+          <div className="px-3 mb-2">
+            <DailyFeaturedQuestion />
+          </div>
+        )}
+
         <PulseStoriesRow />
 
         {/* Live voter count strip — "X people voted in the last hour" */}
@@ -1696,6 +1720,7 @@ export default function Home() {
           imageB={modalPoll ? getPollDisplayImageSrc({ imageUrl: modalPoll.image_b_url, option: modalPoll.option_b, question: modalPoll.question, side: 'B' }) : ''}
         />
       </div>
+      <FloatingAskButton />
     </AppLayout>
   );
 }
