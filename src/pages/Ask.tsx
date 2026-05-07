@@ -101,9 +101,11 @@ export default function Ask() {
   useEffect(() => {
     if (pendingAutoSubmit && !loading && !confirming) {
       const q = pendingAutoSubmit;
-      setPendingAutoSubmit(null);
       // Small delay so UI renders the question first
-      const timer = setTimeout(() => runPreview(q), 600);
+      const timer = setTimeout(() => {
+        setPendingAutoSubmit(null);
+        runPreview(q);
+      }, 600);
       return () => clearTimeout(timer);
     }
   }, [pendingAutoSubmit]); // eslint-disable-line react-hooks/exhaustive-deps
