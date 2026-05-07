@@ -246,11 +246,9 @@ function HomeLiveDebateCard({
       className={`relative h-full flex flex-col rounded-3xl overflow-hidden border bg-card shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
     >
       {!hasVoted && (
-        <motion.div
+        <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-3xl ring-2 ring-primary/50 z-40"
-          animate={{ opacity: [0.35, 0.9, 0.35] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          className="pointer-events-none absolute inset-0 rounded-3xl ring-2 ring-primary/50 z-40 opacity-60"
         />
       )}
 
