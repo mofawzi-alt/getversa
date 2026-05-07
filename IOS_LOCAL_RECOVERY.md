@@ -1,19 +1,28 @@
 # Versa iOS local recovery
 
-Do **not** delete anything.
+DO THIS:
 
-Use the recovery ZIP instead.
+1. Download `versa-ios-recovery-v3.zip`.
+2. Open the downloaded ZIP.
+3. Double-click `Versa-iOS-Recovery.command`.
+4. Wait until it says `DONE` or `STOP`.
 
-Open `Versa-iOS-Recovery.command` from the ZIP.
+DO NOT:
 
-It only updates the iOS helper files inside `Desktop/getversa-fresh`.
+- Do not delete anything.
+- Do not reset Git.
+- Do not delete `src`.
+- Do not delete `public`.
+- Do not delete `supabase`.
+- Do not delete the whole project.
 
-It does **not** delete your app.
+WHAT THE FILE DOES:
 
-It does **not** reset Git.
+- It looks for `Desktop/getversa-fresh`.
+- It checks that it is the Versa project.
+- It copies only the iOS helper fixes.
+- It confirms the Apple camera/photo/icon fixes.
 
-It does **not** touch `src`, `public`, `supabase`, or your app code.
+If Mac says it cannot open it:
 
-After it finishes, it prints the one next command.
-
-If it says `STOP`, stop there.
+Right-click `Versa-iOS-Recovery.command`, then click `Open`.
