@@ -50,6 +50,10 @@ function ensureInfoPlistKeys() {
       key: 'NSPhotoLibraryUsageDescription',
       value: 'Versa needs access to your photo library to choose a profile picture.',
     },
+    {
+      key: 'NSPhotoLibraryAddUsageDescription',
+      value: 'Versa needs access to save updated profile pictures to your photo library.',
+    },
   ];
 
   for (const { key, value } of requiredKeys) {
