@@ -345,6 +345,17 @@ export default function TasteProfile() {
 
   return (
     <AppLayout>
+      {/* Cinematic reveal on first visit */}
+      {showReveal && totalVotes >= 20 && (
+        <TasteRevealCinematic
+          archetype={archetype}
+          rarityPct={rarityData?.rarityPct ?? null}
+          personalityCode={personality.ready ? personality.code : undefined}
+          personalityName={personality.ready ? personality.name : undefined}
+          onComplete={() => setShowReveal(false)}
+        />
+      )}
+
       <motion.div
         variants={stagger}
         initial="hidden"
@@ -359,6 +370,21 @@ export default function TasteProfile() {
           </div>
           <h1 className="text-3xl font-display font-black text-foreground">{archetype.emoji} {archetype.name}</h1>
           <p className="text-muted-foreground text-sm mt-1">{dynamicDescription}</p>
+          
+          {/* Rarity badge */}
+          {rarityData && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: 'spring' }}
+              className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-full bg-foreground text-background"
+            >
+              <Diamond className="h-3.5 w-3.5" />
+              <span className="text-xs font-bold">
+                {rarityData.label} — rarer than {rarityData.rarityPct}% of users
+              </span>
+            </motion.div>
+          )}
         </motion.header>
 
         {/* ── TASTE IDENTITY ── */}
