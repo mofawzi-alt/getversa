@@ -196,6 +196,7 @@ function HomeLiveDebateCard({
   const { user } = useAuth();
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
+  const [showAskNudge, setShowAskNudge] = useState(false);
   const handleInlineVote = (choice: 'A' | 'B') => {
     if (hasVoted || isVoting) return;
     setIsVoting(true);
