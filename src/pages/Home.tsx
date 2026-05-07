@@ -242,16 +242,13 @@ function HomeLiveDebateCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.025, 0.15), duration: 0.25 }}
-      whileTap={{ scale: 0.99 }}
       onClick={hasVoted ? onCardClick : undefined}
       className={`relative h-full flex flex-col rounded-3xl overflow-hidden border bg-card shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
     >
       {!hasVoted && (
-        <motion.div
+        <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-3xl ring-2 ring-primary/50 z-40"
-          animate={{ opacity: [0.35, 0.9, 0.35] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          className="pointer-events-none absolute inset-0 rounded-3xl ring-2 ring-primary/50 z-40 opacity-60"
         />
       )}
 
@@ -690,7 +687,7 @@ function LiveDebatesList({
   const cardHeight = 'calc(100dvh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 0.5rem - 4rem - env(safe-area-inset-bottom))';
 
   return (
-    <div className="px-1.5">
+    <div className="px-1.5" style={{ willChange: 'transform' }}>
       {livePolls.map((poll, i) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
@@ -701,8 +698,8 @@ function LiveDebatesList({
         return (
           <div
             key={poll.id}
-            className="snap-start snap-always py-1.5"
-            style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always', height: cardHeight }}
+            className="py-1.5"
+            style={{ scrollSnapAlign: 'start', height: cardHeight }}
           >
             <HomeLiveDebateCard
               poll={poll}
@@ -768,6 +765,7 @@ export default function Home() {
     const prevPadTop = html.style.scrollPaddingTop;
     const prevPadBottom = html.style.scrollPaddingBottom;
     html.style.scrollSnapType = 'y proximity';
+    html.style.scrollBehavior = 'smooth';
     // Header = 3.5rem + safe-area top inset (matches AppLayout)
     html.style.scrollPaddingTop = 'calc(3.5rem + max(env(safe-area-inset-top), 1.75rem))';
     // Bottom nav = 4rem + safe-area bottom inset
@@ -779,6 +777,7 @@ export default function Home() {
       html.style.scrollSnapType = prevType;
       html.style.scrollPaddingTop = prevPadTop;
       html.style.scrollPaddingBottom = prevPadBottom;
+      html.style.scrollBehavior = '';
     };
   }, []);
 
