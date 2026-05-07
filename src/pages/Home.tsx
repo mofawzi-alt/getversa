@@ -58,6 +58,7 @@ import ClosingSoonStrip from '@/components/home/ClosingSoonStrip';
 import LiveVoterCount from '@/components/home/LiveVoterCount';
 import FloatingAskButton from '@/components/ask/FloatingAskButton';
 import PostVoteAskNudge from '@/components/ask/PostVoteAskNudge';
+import DailyFeaturedQuestion from '@/components/home/DailyFeaturedQuestion';
 
 const isAuthSessionError = (error: { code?: string; message?: string } | null) => {
   const message = error?.message?.toLowerCase() || '';
