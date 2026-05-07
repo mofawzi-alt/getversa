@@ -55,6 +55,7 @@ interface PreviewState {
 interface AskLocationState {
   fromLiveDebate?: boolean;
   fallbackTo?: string;
+  prefill?: string;
 }
 
 export default function Ask() {
