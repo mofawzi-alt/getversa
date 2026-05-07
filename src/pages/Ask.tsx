@@ -84,29 +84,29 @@ export default function Ask() {
   useEffect(() => { setTimeout(focusInputIfDesktop, 200); }, []);
   useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns]);
 
-  // Auto-submit flag for prefill from daily question / nudge
-  const autoSubmitRef = useRef<string | null>(null);
+  // Prefill + auto-submit from navigation state (daily question / nudge)
+  const [pendingAutoSubmit, setPendingAutoSubmit] = useState<string | null>(null);
 
-  // Prefill from navigation state (post-vote nudge, daily question)
   useEffect(() => {
     const state = location.state as AskLocationState | null;
     if (state?.prefill && !turns.length) {
       setQuery(state.prefill);
-      autoSubmitRef.current = state.prefill;
+      setPendingAutoSubmit(state.prefill);
       // Clear the state so refresh doesn't re-prefill
       window.history.replaceState({ ...window.history.state, usr: { ...state, prefill: undefined } }, '');
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-submit the prefilled question after a short delay
+  // Fire auto-submit once the prefill value is set
   useEffect(() => {
-    if (autoSubmitRef.current && !loading && !turns.length) {
-      const q = autoSubmitRef.current;
-      autoSubmitRef.current = null;
-      const timer = setTimeout(() => runPreview(q), 400);
+    if (pendingAutoSubmit && !loading && !confirming) {
+      const q = pendingAutoSubmit;
+      setPendingAutoSubmit(null);
+      // Small delay so UI renders the question first
+      const timer = setTimeout(() => runPreview(q), 600);
       return () => clearTimeout(timer);
     }
-  }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pendingAutoSubmit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track visual viewport so the input form follows the keyboard on iOS/Capacitor
   useEffect(() => {
