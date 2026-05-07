@@ -72,43 +72,36 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
       </div>
 
       {/* 3 action cards side by side */}
+      {/* 3 compact action chips */}
       <div className="grid grid-cols-3 gap-2">
-        {/* Taste Profile */}
         <button
           onClick={() => navigate('/taste-profile')}
-          className="flex flex-col items-center gap-2 px-2 py-4 rounded-2xl bg-[hsl(270_50%_92%)] border border-[hsl(270_50%_82%)] text-center group"
+          className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-[hsl(270_50%_92%)] border border-[hsl(270_50%_82%)] text-left group"
         >
           {dimensionInfo ? (
-            <Lock className="h-6 w-6 text-[hsl(270_60%_42%)]" />
+            <Lock className="h-4 w-4 text-[hsl(270_60%_42%)] shrink-0" />
           ) : (
-            <Eye className="h-6 w-6 text-[hsl(270_60%_42%)]" />
+            <Eye className="h-4 w-4 text-[hsl(270_60%_42%)] shrink-0" />
           )}
-          <p className="text-xs font-extrabold text-[hsl(270_50%_25%)] leading-tight">Taste Profile</p>
-          <p className="text-[10px] font-medium text-[hsl(270_30%_45%)] leading-tight">
-            {dimensionInfo
-              ? `${dimensionInfo.remaining} to unlock`
-              : 'View profile'}
-          </p>
+          <span className="text-[10px] font-bold text-[hsl(270_50%_25%)] leading-tight truncate">
+            {dimensionInfo ? `${dimensionInfo.remaining} to unlock` : 'Taste'}
+          </span>
         </button>
 
-        {/* Ask */}
         <button
           onClick={() => navigate('/ask')}
-          className="flex flex-col items-center gap-2 px-2 py-4 rounded-2xl bg-[hsl(145_40%_90%)] border border-[hsl(145_40%_78%)] text-center group"
+          className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-[hsl(145_40%_90%)] border border-[hsl(145_40%_78%)] text-left group"
         >
-          <MessageCircleQuestion className="h-6 w-6 text-[hsl(145_55%_30%)]" />
-          <p className="text-xs font-extrabold text-[hsl(145_40%_20%)] leading-tight">{askLabel}</p>
-          <p className="text-[10px] font-medium text-[hsl(145_25%_40%)] leading-tight">AI insights</p>
+          <MessageCircleQuestion className="h-4 w-4 text-[hsl(145_55%_30%)] shrink-0" />
+          <span className="text-[10px] font-bold text-[hsl(145_40%_20%)] leading-tight truncate">Ask AI</span>
         </button>
 
-        {/* Challenge */}
         <button
           onClick={() => navigate('/play')}
-          className="flex flex-col items-center gap-2 px-2 py-4 rounded-2xl bg-[hsl(10_70%_92%)] border border-[hsl(10_70%_80%)] text-center group"
+          className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-[hsl(10_70%_92%)] border border-[hsl(10_70%_80%)] text-left group"
         >
-          <Swords className="h-6 w-6 text-[hsl(10_75%_42%)]" />
-          <p className="text-xs font-extrabold text-[hsl(10_60%_25%)] leading-tight">Challenge</p>
-          <p className="text-[10px] font-medium text-[hsl(10_40%_40%)] leading-tight">10-poll duel</p>
+          <Swords className="h-4 w-4 text-[hsl(10_75%_42%)] shrink-0" />
+          <span className="text-[10px] font-bold text-[hsl(10_60%_25%)] leading-tight truncate">Challenge</span>
         </button>
       </div>
     </div>
