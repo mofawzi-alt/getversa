@@ -689,7 +689,7 @@ function LiveDebatesList({
   const cardHeight = 'calc(100dvh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 0.5rem - 4rem - env(safe-area-inset-bottom))';
 
   return (
-    <div className="px-1.5">
+    <div className="px-1.5" style={{ willChange: 'transform' }}>
       {livePolls.map((poll, i) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
