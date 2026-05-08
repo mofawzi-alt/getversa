@@ -143,7 +143,7 @@ function expandEntityVariants(entity: string): string[] {
 
 async function callAI(apiKey: string, model: string, payload: any) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12_000);
+  const timeoutId = setTimeout(() => controller.abort(), 25_000);
   const resp = await fetch(AI_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
