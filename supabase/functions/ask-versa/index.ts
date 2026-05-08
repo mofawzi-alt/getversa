@@ -690,6 +690,13 @@ Rules:
       return requiredEntityVariants.every((variants) => variants.some((v) => haystack.includes(v)));
     };
 
+    // Count how many of the required entities a poll matches (for partial-match ranking)
+    const getPollEntityHitCount = (poll: any) => {
+      if (requiredEntityVariants.length === 0) return 0;
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b].filter(Boolean).join(" "));
+      return requiredEntityVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+    };
+
     const enrichedPollList = polls.map((p) => {
       const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
       const realTotal = rawStats.total;
@@ -709,7 +716,8 @@ Rules:
       const topicalHits = getPollTopicalHitCount(p);
       const strongHits = getPollStrongHitCount(p);
       const entityMatch = pollMatchesAllEntities(p);
-      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _strongHits: strongHits, _entityMatch: entityMatch };
+      const entityHits = getPollEntityHitCount(p);
+      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _strongHits: strongHits, _entityMatch: entityMatch, _entityHits: entityHits };
     });
 
     // VAGUE-QUESTION GUARD (decide mode): no specific A vs B → ask a clarifier instead of guessing.
