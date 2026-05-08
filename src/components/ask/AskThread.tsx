@@ -273,7 +273,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                         </InsightRow>
                       )}
                       {t.insightParts.demographic_split && (
-                        <InsightRow icon={Users} label="Demo Split" color="bg-blue-500">
+                        <InsightRow icon={Users} label="Who Disagrees" color="bg-blue-500">
                           {t.insightParts.demographic_split}
                         </InsightRow>
                       )}
