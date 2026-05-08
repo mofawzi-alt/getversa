@@ -11,6 +11,8 @@ import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
 import { getInsightTier } from '@/lib/streakGating';
 import { useAuth } from '@/contexts/AuthContext';
 import StreakInsightTeaser from './StreakInsightTeaser';
+import { getEgoStatement } from './EgoShareCard';
+import LiveSocialBuzz from './LiveSocialBuzz';
   
 
 
