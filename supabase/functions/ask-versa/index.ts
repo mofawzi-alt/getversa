@@ -1423,7 +1423,7 @@ Rules:
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: `You are Versa's research insight engine.\n${researchLevelInstructions}` + arabicInstruction },
+          { role: "system", content: `You are Versa's public sentiment engine. Your insights are backed by REAL VOTE DATA from real Egyptians — never AI opinions.\n${researchLevelInstructions}` + arabicInstruction },
           { role: "user", content: `User's research question: "${question}"\n\nMatched polls with results:\n${sampleText}` },
         ],
         response_format: { type: "json_object" },
