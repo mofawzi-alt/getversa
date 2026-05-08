@@ -184,10 +184,10 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
   const story = stories[idx];
   const isOwn = user?.id === group?.user_id;
 
-  // Determine if we need poll fallback data
+  // Determine if we need poll fallback data — also fetch when images are missing
   const needsFallback = story?.story_type === 'poll_result' &&
     story?.content?.poll_id &&
-    (story?.content?.pct_a == null || story?.content?.option_a == null);
+    (!story?.content?.image_a_url && !story?.content?.image_b_url && !story?.content?.image_url);
   const { data: fallbackPoll } = usePollFallback(
     story?.content?.poll_id,
     !needsFallback
@@ -332,16 +332,20 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
               className="absolute w-48 h-48 rounded-full blur-[60px] opacity-30"
               style={{ background: theme.accent, top: '10%', right: '-10%' }}
             />
-            {/* Animated emoji icon */}
+            <div
+              className="absolute w-32 h-32 rounded-full blur-[50px] opacity-20"
+              style={{ background: theme.accent, bottom: '30%', left: '10%' }}
+            />
+            {/* Visual icon instead of emoji to avoid pixelated rendering */}
             <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: '35%' }}>
-              <motion.span
-                className="text-[140px] drop-shadow-2xl"
+              <motion.div
+                className="flex items-center justify-center"
                 initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 0.9 }}
+                animate={{ scale: 1, opacity: 0.7 }}
                 transition={{ type: 'spring', damping: 12 }}
               >
-                {content.emoji}
-              </motion.span>
+                <ThemeIcon className="w-24 h-24" style={{ color: theme.accent }} strokeWidth={1} />
+              </motion.div>
             </div>
           </>
         )}
