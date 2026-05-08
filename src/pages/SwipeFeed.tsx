@@ -1511,7 +1511,10 @@ export default function SwipeFeed() {
         ) : (
           <div className="h-full flex flex-col items-center justify-center px-4">
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
-            <div className="mt-4 w-full max-w-sm">
+            <div className="mt-4 w-full max-w-sm space-y-2">
+              <Button onClick={() => navigate('/browse')} className="w-full gap-2 h-12 rounded-xl bg-primary text-primary-foreground">
+                <Flame className="h-4 w-4" /> Keep Exploring — People Are Still Debating
+              </Button>
               <Button onClick={() => navigate('/home')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
                 <Home className="h-4 w-4" /> Back to Home
               </Button>
@@ -1521,8 +1524,11 @@ export default function SwipeFeed() {
 
         {hasPolls && polls.every(p => votedResults.has(p.id)) && (
           <div className="py-6 flex flex-col items-center gap-2">
-            <p className="text-sm font-display font-bold text-foreground/70">You're all caught up! 🎉</p>
-            <p className="text-xs text-muted-foreground">New polls drop daily</p>
+            <p className="text-sm font-display font-bold text-foreground/70">Queue cleared 🔥</p>
+            <p className="text-xs text-muted-foreground">More debates waiting in Explore</p>
+            <Button size="sm" variant="ghost" onClick={() => navigate('/browse')} className="text-primary text-xs mt-1">
+              Keep swiping →
+            </Button>
           </div>
         )}
       </div>
