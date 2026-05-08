@@ -37,6 +37,13 @@ for (const [key, value] of Object.entries(privacyKeys)) {
   }
 }
 
+if (!plist.includes('<string>com.versa.app</string>') || !plist.includes('<string>com.Versa.app</string>')) {
+  const urlSchemeBlock = `\t<key>CFBundleURLTypes</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>CFBundleURLSchemes</key>\n\t\t\t<array>\n\t\t\t\t<string>com.versa.app</string>\n\t\t\t\t<string>com.Versa.app</string>\n\t\t\t</array>\n\t\t\t<key>CFBundleURLName</key>\n\t\t\t<string>com.versa.app</string>\n\t\t</dict>\n\t</array>\n`;
+  plist = plist.replace('</dict>\n</plist>', urlSchemeBlock + '</dict>\n</plist>');
+  console.log('✓ Added OAuth callback URL schemes');
+  patched = true;
+}
+
 if (patched) {
   writeFileSync(plistPath, plist);
   console.log('✓ Info.plist patched');

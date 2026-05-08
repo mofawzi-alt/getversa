@@ -67,24 +67,26 @@ function ensureInfoPlistKeys() {
     }
   }
 
-  // Ensure CFBundleURLTypes includes the custom URL scheme for OAuth callbacks.
-  // SFSafariViewController redirects to com.Versa.app://auth-callback after OAuth.
-  if (!plist.includes('<string>com.Versa.app</string>')) {
+  // Ensure CFBundleURLTypes includes custom URL schemes for OAuth callbacks.
+  // SFSafariViewController redirects to com.versa.app://auth-callback after OAuth.
+  // Include the legacy mixed-case scheme too so older callback URLs still work.
+  if (!plist.includes('<string>com.versa.app</string>') || !plist.includes('<string>com.Versa.app</string>')) {
     const urlSchemeBlock = `
 \t<key>CFBundleURLTypes</key>
 \t<array>
 \t\t<dict>
 \t\t\t<key>CFBundleURLSchemes</key>
 \t\t\t<array>
+\t\t\t\t<string>com.versa.app</string>
 \t\t\t\t<string>com.Versa.app</string>
 \t\t\t</array>
 \t\t\t<key>CFBundleURLName</key>
-\t\t\t<string>com.Versa.app</string>
+\t\t\t<string>com.versa.app</string>
 \t\t</dict>
 \t</array>`;
     plist = plist.replace('</dict>', `${urlSchemeBlock}\n</dict>`);
     changed = true;
-    console.log('[cap-sync] Added CFBundleURLTypes for OAuth callback scheme');
+    console.log('[cap-sync] Added CFBundleURLTypes for OAuth callback schemes');
   }
 
   if (changed) {

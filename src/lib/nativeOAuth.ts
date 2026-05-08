@@ -16,8 +16,8 @@
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 
-/** Custom URL scheme registered by Capacitor for this app ID */
-const CALLBACK_SCHEME = 'com.Versa.app';
+/** Custom URL schemes registered by Capacitor for OAuth callbacks */
+const CALLBACK_SCHEMES = ['com.versa.app', 'com.Versa.app'];
 
 /**
  * Attempt OAuth via SFSafariViewController on native.
@@ -66,7 +66,7 @@ export async function startNativeOAuth(
 
     // Listen for the custom-scheme redirect (bridged by the landing page)
     const urlListener = App.addListener('appUrlOpen', async ({ url }) => {
-      if (!url.startsWith(`${CALLBACK_SCHEME}://auth-callback`)) return;
+      if (!CALLBACK_SCHEMES.some((scheme) => url.startsWith(`${scheme}://auth-callback`))) return;
 
       try {
         await Browser.close();
