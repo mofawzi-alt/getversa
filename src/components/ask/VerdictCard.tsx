@@ -61,7 +61,7 @@ export default function VerdictCard({ verdict }: { verdict: Verdict }) {
             <div className="h-5 w-5 rounded-full bg-primary/15 flex items-center justify-center">
               <Trophy className="h-2.5 w-2.5 text-primary" />
             </div>
-            <span className="text-[10px] uppercase tracking-widest text-primary font-bold">Versa says</span>
+            <span className="text-[10px] uppercase tracking-widest text-primary font-bold">Egypt voted</span>
           </motion.div>
 
           <motion.p
