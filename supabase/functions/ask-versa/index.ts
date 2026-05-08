@@ -50,9 +50,9 @@ const FILTER_TOOL = {
         intent: {
           type: "string",
           description: `Classify the user's intent EXACTLY as one of:
-- "preference": asks which option people prefer / pick / choose / lean toward / love more / vote for. e.g. "iPhone or Samsung?", "Do Egyptians prefer Coke or Pepsi?", "Which fast food brand wins with 18-24?"
-- "factual": asks for a number, fact, definition, news, market data, technical info — anything Versa polls cannot answer. e.g. "iPhone market size?", "Who founded Apple?", "When did Vodafone enter Egypt?"
-- "offscope": rude, harmful, nonsensical, code-help, math homework, personal life advice unrelated to consumer preferences.`,
+- "preference": asks which option people prefer / pick / choose / lean toward / love more / vote for, OR asks for opinions/comparisons between two things. e.g. "iPhone or Samsung?", "Do Egyptians prefer Coke or Pepsi?", "Which fast food brand wins with 18-24?", "AUC or GUC?", "private or public uni?". SHORT QUERIES naming brands/schools/products (even just "AUC", "uni", "GUC or AUC") are ALWAYS "preference" — the user wants Versa opinion data. When in doubt between preference and factual, choose PREFERENCE.
+- "factual": asks for a number, fact, definition, news, market data, technical info — anything Versa polls cannot answer. e.g. "iPhone market size?", "Who founded Apple?", "When did Vodafone enter Egypt?". NEVER classify brand/product/school comparisons or short entity names as factual.
+- "offscope": rude, harmful, nonsensical, code-help, math homework, personal life advice unrelated to consumer preferences. NEVER classify short brand/school/product names as offscope.`,
         },
         keywords: { type: "array", items: { type: "string" }, description: "Key topical terms (lowercase)." },
         entities: { type: "array", items: { type: "string" }, description: "Named brands, products, people, or places explicitly mentioned (canonical form, lowercase). Include common synonyms inline, e.g. 'iphone' not 'apple iphone 15 pro'. For 'iPhone vs Samsung' return ['iphone','samsung']. For 'iPhone market size' return ['iphone']." },
@@ -95,6 +95,20 @@ const ENTITY_SYNONYMS: Record<string, string[]> = {
   zamalek: ["zamalek"],
   apartment: ["apartment", "apt", "flat", "home"],
   apt: ["apartment", "apt", "flat", "home"],
+  // Egyptian universities
+  auc: ["auc", "american university"],
+  guc: ["guc", "german university"],
+  bue: ["bue", "british university"],
+  msa: ["msa"],
+  misr: ["misr university", "misr international"],
+  ain_shams: ["ain shams", "عين شمس"],
+  cairo_uni: ["cairo university", "جامعة القاهرة"],
+  giu: ["giu", "german international"],
+  fut: ["fut", "future university"],
+  uni: ["university", "uni", "college", "جامعة"],
+  // Education
+  private: ["private"],
+  public: ["public"],
 };
 
 function expandEntityVariants(entity: string): string[] {
