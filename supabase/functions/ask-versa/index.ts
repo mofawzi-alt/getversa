@@ -1297,22 +1297,22 @@ Rules:
 - Be direct and factual.`
       : `Reply ONLY with valid JSON, no markdown, no backticks.
 {
-  "verdict": "One punchy sentence (max 18 words) — the headline finding. Lead with the winning % and option name.",
-  ${highlightCount >= 1 ? `"highlight_1": "One surprising demographic finding as a CONVERSATIONAL sentence. Example: 'Cairo women went the other way.' or 'Most men chose the other side.' NEVER use tables, grids, or side-by-side percentages like 'Males: 62%, Females: 48%'. NEVER show a full breakdown. Just one natural, curiosity-driving sentence.",` : ""}
-  ${highlightCount >= 2 ? `"highlight_2": "A second surprising demographic finding, different from highlight_1. Same conversational sentence format. Example: 'Gen Z voted strongest for this at 68%.' NEVER use table format.",` : ""}
-  "cultural_context": "One sentence connecting this preference to Egyptian culture.",
-  "action_line": "One sentence — a direct recommendation. Start with 'Go with...' or 'Pick...' or 'Try...'"
+  "verdict": "One punchy sentence (max 18 words) — the headline finding. Lead with the winning % and option name. Make it feel like a social discovery, not a survey result.",
+  ${highlightCount >= 1 ? `"highlight_1": "One SURPRISING or SOCIALLY REVEALING demographic finding. Frame it as identity tension or social contrast. Examples: 'Cairo and Alexandria completely disagree on this.' or 'Women went the opposite direction from men.' NEVER use tables or side-by-side percentages. One natural sentence that makes the reader think 'wait, really?'",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "A second surprising finding from a DIFFERENT angle (age vs gender vs city). Frame as tribal or identity-based contrast. Example: 'The youngest voters were the most divided on this.' NEVER use table format.",` : ""}
+  "cultural_context": "One sentence connecting this to Egyptian identity, culture, or social dynamics. Make it feel emotionally resonant — not academic.",
+  "action_line": "One sentence — a confident, direct pick. Start with 'Go with...' or 'Pick...' or 'The data says...'"
 }
 
 Rules:
-- Every field must be a single conversational sentence, max 20 words each.
-- Demographic highlights MUST be natural conversational sentences — NEVER tables, grids, or side-by-side percentage comparisons.
-- CORRECT formats: "Cairo women went the other way." / "Most men chose the other side." / "Alexandria disagreed with Cairo."
-- WRONG formats: "Males: 62%, Females: 48%" / "Cairo: 71% vs Alexandria: 54%" / Any table or grid.
-- Highlights should tease the most SURPRISING finding — not the obvious one.
+- This is PUBLIC SENTIMENT INTELLIGENCE, not a survey report. Make every line feel socially alive.
+- Lead with REAL DATA: percentages, vote counts, demographic splits. Never vague.
+- Highlights should surface the most UNEXPECTED or IDENTITY-REVEALING finding — not the obvious one.
+- Frame findings as social contrasts, tribal differences, or generational divides.
+- CORRECT: "72% chose X — but Cairo women strongly disagreed." / "This was a landslide everywhere except Alexandria."
+- WRONG: "Males: 62%, Females: 48%" / Any table or grid format.
 - Use real numbers from the data. Never invent statistics.
-- Never mention 'Gen Z' or generational labels.
-- Be conversational, confident, direct — like a smart Cairo friend who reads data.`;
+- Be conversational, confident — like reading a viral insight, not a spreadsheet.`;
 
     if (mode === "decide") {
       const top = matchedPolls[0];
