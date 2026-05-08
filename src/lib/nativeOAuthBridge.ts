@@ -85,12 +85,16 @@ const renderNativeOAuthHoldingScreen = () => {
           <div style="width:28px;height:28px;margin:0 auto 18px;border:3px solid #e5e7eb;border-top-color:#E8392A;border-radius:999px;animation:versa-spin .8s linear infinite;"></div>
           <h1 style="font-size:22px;line-height:1.2;margin:0 0 8px;font-weight:800;">Completing sign in</h1>
           <p style="font-size:15px;line-height:1.45;margin:0 0 18px;color:#6b7280;">Return to Versa to continue.</p>
-          <a id="versa-open-app" href="${callbackUrl}" style="display:inline-block;text-decoration:none;border-radius:999px;background:#E8392A;color:#fff;font-size:16px;font-weight:700;padding:13px 22px;min-width:180px;box-shadow:0 10px 24px rgba(232,57,42,.22);-webkit-tap-highlight-color:transparent;">Open Versa</a>
+          <a id="versa-open-app" href="${escapeHtmlAttr(callbackUrl)}" style="display:inline-block;text-decoration:none;border-radius:999px;background:#E8392A;color:#fff;font-size:16px;font-weight:700;padding:13px 22px;min-width:180px;box-shadow:0 10px 24px rgba(232,57,42,.22);-webkit-tap-highlight-color:transparent;">Open Versa</a>
           <p style="font-size:13px;line-height:1.45;margin:14px 0 0;color:#9ca3af;">If this does not return automatically, tap Open Versa.</p>
         </div>
         <style>@keyframes versa-spin{to{transform:rotate(360deg)}}</style>
       </div>
     `;
+
+    document.getElementById('versa-open-app')?.addEventListener('click', () => {
+      openNativeApp();
+    });
   };
 
   if (document.readyState === 'loading') {
