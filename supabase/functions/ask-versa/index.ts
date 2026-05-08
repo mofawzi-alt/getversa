@@ -424,7 +424,19 @@ Rules:
     const cost = ROUTE_COSTS[safeRoute];
     const model = ROUTE_MODEL[safeRoute];
 
-    const cleanedEntities: string[] = Array.from(new Set(rawEntities.filter((e) => e.length >= 2 && !STOP_TERMS.has(e))));
+    // Inject known entities from the raw question if the extraction missed them
+    const qWords = question.toLowerCase().split(/[\s,?!.]+/).filter(Boolean);
+    const injectedEntities: string[] = [];
+    for (const [key] of Object.entries(ENTITY_SYNONYMS)) {
+      if (key === "uni" || key === "private" || key === "public") continue; // too generic to auto-inject
+      if (qWords.includes(key) && !rawEntities.includes(key)) {
+        injectedEntities.push(key);
+      }
+    }
+    if (injectedEntities.length > 0) {
+      console.log("Injected missed entities:", injectedEntities);
+    }
+    const cleanedEntities: string[] = Array.from(new Set([...rawEntities, ...injectedEntities].filter((e) => e.length >= 2 && !STOP_TERMS.has(e))));
     const requiredEntityVariants = cleanedEntities.map((e) => expandEntityVariants(e));
     const topicalTerms = Array.from(new Set([...cleanedEntities, ...keywords]
       .map((term: string) => normalizeTerm(String(term || "")))
