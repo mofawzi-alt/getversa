@@ -6,6 +6,7 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import BrandDisclaimer from '@/components/poll/BrandDisclaimer';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
+import LiveSocialBuzz from '@/components/poll/LiveSocialBuzz';
 
 interface Poll {
   id: string;
