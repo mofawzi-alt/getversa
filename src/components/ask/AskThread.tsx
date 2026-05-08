@@ -278,7 +278,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                         </InsightRow>
                       )}
                       {t.insightParts.cultural_context && (
-                        <InsightRow icon={Globe} label="Cultural Context" color="bg-amber-500">
+                        <InsightRow icon={Globe} label="Egypt's Pulse" color="bg-amber-500">
                           {t.insightParts.cultural_context}
                         </InsightRow>
                       )}
