@@ -1369,7 +1369,6 @@ CRITICAL RULES:
       // Build summary with people-like-me and confidence
       let fullSummary = parts.verdict || `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
       if (peopleLikeMeLine) fullSummary += ` ${peopleLikeMeLine}`;
-      fullSummary += `\n\n${confidenceLine}`;
 
       verdict = {
         poll_id: top.id,
