@@ -159,8 +159,9 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                const egoLine = getEgoStatement(userPercent, userPickedWinner, result.totalVotes);
                 const myChoice = result.choice === 'A' ? poll.option_a : poll.option_b;
-                const shareText = `My take today: ${myChoice} (${userPercent}% agree) — ${poll.question}`;
+                const shareText = `${egoLine}\n\nI picked ${myChoice} — ${poll.question}`;
                 const shareUrl = `${window.location.origin}/poll/${poll.id}`;
                 if (typeof navigator !== 'undefined' && (navigator as any).share) {
                   (navigator as any).share({ title: 'My Opinion Today', text: shareText, url: shareUrl }).catch(() => {});
