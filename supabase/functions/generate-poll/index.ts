@@ -258,7 +258,12 @@ NEVER generate:
 - Anything related to alcohol
 
 ## QUESTION FORMAT
-The question MUST be: "Option A vs Option B" (e.g., "Crypto vs Gold", "Gym vs Home workout")
+The question MUST be provocative and identity-revealing. NOT "X vs Y?" but framed as judgment calls:
+- "Which one gives rich energy?" 
+- "Which choice is a red flag?"
+- "Which one says more about your personality?"
+- "Which side are you really on?"
+The format is: "Option A vs Option B" but the OPTIONS themselves carry emotional weight via their meaning descriptors.
 
 ## VISUAL DIRECTION (MANDATORY)
 You MUST also output a visual_direction object for image generation:
