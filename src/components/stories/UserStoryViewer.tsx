@@ -366,7 +366,7 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
             className="flex items-center gap-2"
           >
             <span
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider backdrop-blur-md"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold uppercase tracking-wider backdrop-blur-md"
               style={{
                 backgroundColor: `${theme.accent}30`,
                 color: theme.accent,
@@ -383,7 +383,7 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="text-white text-[26px] font-extrabold leading-[1.15] drop-shadow-lg"
+            className="text-white text-[32px] font-extrabold leading-[1.15] drop-shadow-lg"
           >
             {content.headline}
           </motion.h2>
@@ -394,7 +394,7 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
-              className="text-white/90 text-lg font-semibold"
+              className="text-white/90 text-xl font-semibold"
             >
               {content.primary}
             </motion.p>
@@ -408,13 +408,13 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
               transition={{ delay: 0.35, type: 'spring', damping: 20 }}
               className="w-full"
             >
-              <div className="flex items-center justify-between text-[11px] text-white/70 font-medium mb-1.5">
+              <div className="flex items-center justify-between text-[13px] text-white/70 font-medium mb-1.5">
                 <span>{content.splitA.label}</span>
                 <span>{content.splitB.label}</span>
               </div>
               <div className="w-full rounded-full overflow-hidden h-10 flex bg-white/10 backdrop-blur-md border border-white/10">
                 <motion.div
-                  className="h-full flex items-center justify-center text-sm font-extrabold text-white"
+                  className="h-full flex items-center justify-center text-base font-extrabold text-white"
                   style={{ backgroundColor: `${theme.accent}cc` }}
                   initial={{ width: '50%' }}
                   animate={{ width: `${content.splitA.pct}%` }}
@@ -422,7 +422,7 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
                 >
                   {content.splitA.pct > 15 && `${content.splitA.pct}%`}
                 </motion.div>
-                <div className="h-full flex-1 flex items-center justify-center text-sm font-extrabold text-white/80">
+                <div className="h-full flex-1 flex items-center justify-center text-base font-extrabold text-white/80">
                   {content.splitB.pct > 15 && `${content.splitB.pct}%`}
                 </div>
               </div>
@@ -435,7 +435,7 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="flex items-center gap-2 text-white/60 text-sm"
+              className="flex items-center gap-2 text-white/60 text-base"
             >
               <Users className="w-3.5 h-3.5" />
               <span>{content.secondary}</span>
