@@ -4,6 +4,31 @@
 // 3) Sends admin notifications + triggers the daily batch push
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
+/* ── Auto-hook subtitle generator ── */
+const HOOK_POOLS: Record<string, string[]> = {
+  food: ["Be honest…", "Your taste says everything.", "This exposes your vibe.", "No neutral answers here.", "People will judge this choice.", "This is personal.", "Pick your comfort zone."],
+  lifestyle: ["Be honest…", "This says a lot about you.", "Your choice defines your vibe.", "No middle ground here.", "Pick your side.", "Your answer might be unpopular."],
+  celebrities: ["Nobody's neutral on this.", "This will start arguments.", "The internet can't agree.", "Pick carefully — people are watching.", "This one divides Egypt."],
+  media: ["The ultimate struggle.", "Stop arguing — just vote.", "No one agrees on this.", "This is more controversial than it looks.", "Choose wisely."],
+  brands: ["This exposes your taste.", "Loyalty check.", "Your wallet already voted.", "Brand wars — pick your side.", "This choice is personal."],
+  social: ["Egypt is divided on this.", "Which side of history are you on?", "No one agrees on this.", "Your answer might be unpopular.", "Don't sit this one out."],
+  daily: ["Quick — don't overthink it.", "Your morning dilemma.", "Choose.", "Pick your mission.", "A or B?", "Be honest…"],
+  _default: ["Be honest…", "Pick your side.", "No neutral answers here.", "This says a lot about you.", "Your answer might be unpopular.", "Are you with the majority?"],
+};
+function generateHook(category: string): string {
+  const cat = (category || '').toLowerCase();
+  let pool: string[];
+  if (cat.includes('food') || cat.includes('dining')) pool = HOOK_POOLS.food;
+  else if (cat.includes('lifestyle') || cat.includes('fashion')) pool = HOOK_POOLS.lifestyle;
+  else if (cat.includes('celeb') || cat.includes('entertainment')) pool = HOOK_POOLS.celebrities;
+  else if (cat.includes('media') || cat.includes('streaming')) pool = HOOK_POOLS.media;
+  else if (cat.includes('brand') || cat.includes('tech') || cat.includes('product')) pool = HOOK_POOLS.brands;
+  else if (cat.includes('social') || cat.includes('opinion') || cat.includes('culture')) pool = HOOK_POOLS.social;
+  else if (cat.includes('daily') || cat.includes('morning')) pool = HOOK_POOLS.daily;
+  else pool = HOOK_POOLS._default;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
