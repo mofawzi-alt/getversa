@@ -1369,7 +1369,7 @@ Rules:
       }
 
       // Build confidence line
-      const confidenceLine = `Based on ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real Versa votes.`;
+      const confidenceLine = `📊 ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real votes from ${matchedPolls.length} poll${matchedPolls.length > 1 ? 's' : ''}`;
 
       // Build summary with people-like-me and confidence
       let fullSummary = parts.verdict || `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
