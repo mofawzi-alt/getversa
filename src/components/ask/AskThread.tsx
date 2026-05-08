@@ -283,7 +283,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                         </InsightRow>
                       )}
                       {t.insightParts.action_line && (
-                        <InsightRow icon={Zap} label="Action" color="bg-emerald-500">
+                        <InsightRow icon={Zap} label="The Verdict" color="bg-emerald-500">
                           <span className="font-semibold">{t.insightParts.action_line}</span>
                         </InsightRow>
                       )}
