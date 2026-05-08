@@ -11,6 +11,8 @@ import { usePeopleLikeYou } from '@/hooks/usePeopleLikeYou';
 import { getInsightTier } from '@/lib/streakGating';
 import { useAuth } from '@/contexts/AuthContext';
 import StreakInsightTeaser from './StreakInsightTeaser';
+import { getEgoStatement } from './EgoShareCard';
+import LiveSocialBuzz from './LiveSocialBuzz';
   
 
 
@@ -95,18 +97,21 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
 
         {/* Footer */}
         <div className="text-center space-y-1.5">
-          <p className="text-xs text-muted-foreground">
-            {result.totalVotes.toLocaleString()} votes
-          </p>
-          <p className="text-sm font-medium text-foreground">
-            You voted with {userPercent}% of users
+          <LiveSocialBuzz
+            totalVotes={result.totalVotes}
+            percentA={result.percentA}
+            percentB={result.percentB}
+            category={poll.category}
+          />
+          <p className="text-sm font-bold text-foreground">
+            {getEgoStatement(userPercent, userPickedWinner, result.totalVotes)}
           </p>
           <span className={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${
             userPickedWinner
               ? 'bg-primary/10 text-primary'
-              : 'bg-muted text-muted-foreground'
+              : 'bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-600'
           }`}>
-            {userPickedWinner ? 'Majority' : 'Minority'}
+            {userPickedWinner ? 'Majority' : '🔥 Minority'}
           </span>
           <p className="text-[11px] text-muted-foreground italic mt-1">{microFeedback}</p>
           {celebrityVotes.length > 0 && (
@@ -154,8 +159,9 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                const egoLine = getEgoStatement(userPercent, userPickedWinner, result.totalVotes);
                 const myChoice = result.choice === 'A' ? poll.option_a : poll.option_b;
-                const shareText = `My take today: ${myChoice} (${userPercent}% agree) — ${poll.question}`;
+                const shareText = `${egoLine}\n\nI picked ${myChoice} — ${poll.question}`;
                 const shareUrl = `${window.location.origin}/poll/${poll.id}`;
                 if (typeof navigator !== 'undefined' && (navigator as any).share) {
                   (navigator as any).share({ title: 'My Opinion Today', text: shareText, url: shareUrl }).catch(() => {});

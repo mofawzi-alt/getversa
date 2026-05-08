@@ -6,6 +6,7 @@ import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame, Check } from '
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import ShareImageCard from '@/components/poll/ShareImageCard';
+import PollCardSkeleton from '@/components/poll/PollCardSkeleton';
 
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -1269,8 +1270,9 @@ export default function SwipeFeed() {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background gap-4 px-4">
+        <PollCardSkeleton />
+        <p className="text-xs text-muted-foreground animate-pulse">Loading your debates…</p>
       </div>
     );
   }
@@ -1509,7 +1511,10 @@ export default function SwipeFeed() {
         ) : (
           <div className="h-full flex flex-col items-center justify-center px-4">
             <CaughtUpInsights onRefresh={() => { setVotedResults(new Map()); refetch(); }} />
-            <div className="mt-4 w-full max-w-sm">
+            <div className="mt-4 w-full max-w-sm space-y-2">
+              <Button onClick={() => navigate('/browse')} className="w-full gap-2 h-12 rounded-xl bg-primary text-primary-foreground">
+                <Flame className="h-4 w-4" /> Keep Exploring — People Are Still Debating
+              </Button>
               <Button onClick={() => navigate('/home')} variant="outline" className="w-full gap-2 h-12 rounded-xl border-border">
                 <Home className="h-4 w-4" /> Back to Home
               </Button>
@@ -1519,8 +1524,11 @@ export default function SwipeFeed() {
 
         {hasPolls && polls.every(p => votedResults.has(p.id)) && (
           <div className="py-6 flex flex-col items-center gap-2">
-            <p className="text-sm font-display font-bold text-foreground/70">You're all caught up! 🎉</p>
-            <p className="text-xs text-muted-foreground">New polls drop daily</p>
+            <p className="text-sm font-display font-bold text-foreground/70">Queue cleared 🔥</p>
+            <p className="text-xs text-muted-foreground">More debates waiting in Explore</p>
+            <Button size="sm" variant="ghost" onClick={() => navigate('/browse')} className="text-primary text-xs mt-1">
+              Keep swiping →
+            </Button>
           </div>
         )}
       </div>
