@@ -1290,29 +1290,24 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
 
     // Build level-appropriate prompt instructions
     const levelInstructions = askLevel <= 1
-      ? `Reply with ONLY a JSON object: {"verdict": "One simple sentence stating the result with the winning percentage and option name. Max 15 words."}
-Rules:
-- ONE sentence only. No demographic data. No cultural context. No recommendation.
-- Use real numbers from the data. Never invent statistics.
-- Be direct and factual.`
+      ? `Reply with ONLY a JSON object: {"verdict": "Max 12 words. The % + winner. Example: '68% of Egyptians pick Coke.'"}
+Rules: ONE sentence. Real numbers only. No fluff.`
       : `Reply ONLY with valid JSON, no markdown, no backticks.
 {
-  "verdict": "One punchy sentence (max 18 words) — the headline finding. Lead with the winning % and option name. Make it feel like a social discovery, not a survey result.",
-  ${highlightCount >= 1 ? `"highlight_1": "One SURPRISING or SOCIALLY REVEALING demographic finding. Frame it as identity tension or social contrast. Examples: 'Cairo and Alexandria completely disagree on this.' or 'Women went the opposite direction from men.' NEVER use tables or side-by-side percentages. One natural sentence that makes the reader think 'wait, really?'",` : ""}
-  ${highlightCount >= 2 ? `"highlight_2": "A second surprising finding from a DIFFERENT angle (age vs gender vs city). Frame as tribal or identity-based contrast. Example: 'The youngest voters were the most divided on this.' NEVER use table format.",` : ""}
-  "cultural_context": "One sentence connecting this to Egyptian identity, culture, or social dynamics. Make it feel emotionally resonant — not academic.",
-  "action_line": "One sentence — a confident, direct pick. Start with 'Go with...' or 'Pick...' or 'The data says...'"
+  "verdict": "Max 12 words. The headline number. Example: '72% picked Nike — not even close.'",
+  ${highlightCount >= 1 ? `"highlight_1": "Max 12 words. One 'wait, really?' demographic contrast. Example: 'But Cairo women went the opposite way.'",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "Max 12 words. A second contrast from a DIFFERENT angle. Example: 'Under-25s were the most divided group.'",` : ""}
+  "cultural_context": "Max 12 words. One emotional connection to Egyptian identity. Not academic.",
+  "action_line": "Max 8 words. Direct pick. Example: 'Go with Nike. Egypt agrees.'"
 }
 
-Rules:
-- This is PUBLIC SENTIMENT INTELLIGENCE, not a survey report. Make every line feel socially alive.
-- Lead with REAL DATA: percentages, vote counts, demographic splits. Never vague.
-- Highlights should surface the most UNEXPECTED or IDENTITY-REVEALING finding — not the obvious one.
-- Frame findings as social contrasts, tribal differences, or generational divides.
-- CORRECT: "72% chose X — but Cairo women strongly disagreed." / "This was a landslide everywhere except Alexandria."
-- WRONG: "Males: 62%, Females: 48%" / Any table or grid format.
-- Use real numbers from the data. Never invent statistics.
-- Be conversational, confident — like reading a viral insight, not a spreadsheet.`;
+CRITICAL RULES:
+- EVERY field: MAX 12 WORDS. Shorter is better. This is a mobile screen, not an essay.
+- The goal is "wait, really?" — surprise, contrast, identity tension.
+- Lead with real numbers. Never vague.
+- NEVER tables, lists, or multi-sentence fields.
+- NEVER "In conclusion", "Overall", "Based on analysis". Just the insight.
+- Think viral tweet, not report paragraph.`;
 
     if (mode === "decide") {
       const top = matchedPolls[0];
