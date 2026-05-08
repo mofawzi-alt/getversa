@@ -703,9 +703,18 @@ Rules:
     // VAGUE-QUESTION GUARD (decide mode): no specific A vs B → ask a clarifier instead of guessing.
     // Triggers when the user has 0 entities AND ≤1 generic topical term (e.g. "best place to eat",
     // "what should I wear tonight", "where to go out"). Research mode is more permissive.
+    // BUT: skip if the raw question contains a known entity synonym (e.g. "auc", "guc", "vodafone")
+    const questionContainsKnownEntity = (() => {
+      const qLower = question.toLowerCase();
+      const qWords = qLower.split(/[\s,?!.]+/).filter(Boolean);
+      return Object.entries(ENTITY_SYNONYMS).some(([key]) =>
+        qWords.includes(key) || qLower.includes(key)
+      );
+    })();
     const looksVague = mode === "decide"
       && requiredEntityVariants.length === 0
-      && topicalTerms.length <= 1;
+      && topicalTerms.length <= 1
+      && !questionContainsKnownEntity;
 
     if (looksVague) {
       // Ask Lovable AI for 3 concrete A-vs-B reframings of the user's broad question.
