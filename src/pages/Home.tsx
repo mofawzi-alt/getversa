@@ -687,9 +687,38 @@ function LiveDebatesList({
   // Card height = viewport - app header (3.5rem + safe top + 0.5rem padding) - bottom nav (4rem + safe bottom)
   const cardHeight = 'calc(100dvh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 0.5rem - 4rem - env(safe-area-inset-bottom))';
 
+  // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
+  const [cycles, setCycles] = useState(1);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!sentinelRef.current || livePolls.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setCycles((prev) => prev + 1);
+        }
+      },
+      { rootMargin: '600px' },
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [livePolls.length]);
+
+  const repeatedPolls = useMemo(() => {
+    if (livePolls.length === 0) return [];
+    const result: Array<{ poll: PollCard; loopIndex: number }> = [];
+    for (let c = 0; c < cycles; c++) {
+      for (let i = 0; i < livePolls.length; i++) {
+        result.push({ poll: livePolls[i], loopIndex: c * livePolls.length + i });
+      }
+    }
+    return result;
+  }, [livePolls, cycles]);
+
   return (
     <div className="px-1.5" style={{ willChange: 'transform' }}>
-      {livePolls.map((poll, i) => {
+      {repeatedPolls.map(({ poll, loopIndex }) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
         const userChoice = voteData?.choice;
@@ -698,18 +727,18 @@ function LiveDebatesList({
 
         return (
           <div
-            key={poll.id}
+            key={`${poll.id}-${loopIndex}`}
             className="py-1.5"
             style={{ height: cardHeight }}
           >
             <HomeLiveDebateCard
               poll={poll}
-              index={i}
+              index={loopIndex}
               hasVoted={hasVoted}
               chosenOptionLabel={chosenOptionLabel}
               isTrending={trendingIdSet?.has(poll.id) || false}
               friendsOnPoll={friendsOnPoll}
-              enableGenderTeaser={i < 3}
+              enableGenderTeaser={loopIndex < 3}
               onVoteInline={(choice) => handleInlineVote(poll, choice)}
               onCardClick={() => {
                 if (hasVoted) {
@@ -728,6 +757,8 @@ function LiveDebatesList({
           </div>
         );
       })}
+      {/* Sentinel for infinite scroll — loads more when scrolled near */}
+      <div ref={sentinelRef} className="h-1" />
     </div>
   );
 }
