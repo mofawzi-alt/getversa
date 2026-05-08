@@ -870,9 +870,9 @@ Examples:
     }
 
     if (controversial) {
-      matchedPolls = matchedPolls.filter((p: any) => p._stats.total >= 5).sort((a: any, b: any) => (b._topicalHits - a._topicalHits) || (b._controversyScore - a._controversyScore));
+      matchedPolls = matchedPolls.filter((p: any) => p._stats.total >= 5).sort((a: any, b: any) => (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._controversyScore - a._controversyScore));
     } else {
-      matchedPolls.sort((a: any, b: any) => (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
+      matchedPolls.sort((a: any, b: any) => (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
     }
 
     matchedPolls = matchedPolls.slice(0, mode === "decide" ? 3 : 12);
