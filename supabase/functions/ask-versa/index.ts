@@ -343,7 +343,7 @@ Rules:
       }
     }
     const normalizeTerm = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s&+-]/g, " ").replace(/\s+/g, " ").trim();
-    const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and"]);
+    const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and", "should", "would", "could", "from", "about", "that", "this", "they", "them", "their", "have", "like", "just", "really", "very", "much", "most", "some", "other", "each", "every", "between", "into", "over", "under", "after", "before", "during", "through"]);
     const normalizeList = (value: unknown, minLength = 2): string[] => {
       const rawItems = Array.isArray(value)
         ? value
