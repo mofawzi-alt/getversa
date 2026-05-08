@@ -664,8 +664,9 @@ Rules:
       const split = s.total > 0 ? s.a / s.total : 0.5;
       const controversyScore = 1 - Math.abs(split - 0.5) * 2;
       const topicalHits = getPollTopicalHitCount(p);
+      const strongHits = getPollStrongHitCount(p);
       const entityMatch = pollMatchesAllEntities(p);
-      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _entityMatch: entityMatch };
+      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _strongHits: strongHits, _entityMatch: entityMatch };
     });
 
     // VAGUE-QUESTION GUARD (decide mode): no specific A vs B → ask a clarifier instead of guessing.
