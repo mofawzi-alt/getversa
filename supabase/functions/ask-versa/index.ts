@@ -1407,16 +1407,19 @@ Rules:
 Rules: Use real numbers only. One factual summary paragraph.`
         : `Reply ONLY with valid JSON, no markdown, no backticks.
 {
-  "verdict": "2-3 sentence research-style summary. Lead with the strongest concrete number.",
-  ${highlightCount >= 1 ? `"highlight_1": "One surprising demographic finding as a CONVERSATIONAL sentence. NEVER use tables or side-by-side percentages.",` : ""}
-  ${highlightCount >= 2 ? `"highlight_2": "A second surprising finding, different angle. Same conversational format.",` : ""}
-  "cultural_context": "One sentence connecting patterns to Egyptian market dynamics.",
-  "action_line": "One sentence — a strategic takeaway."
+  "verdict": "2-3 sentence research-style summary. Lead with the strongest concrete number. Frame as public sentiment intelligence — what real Egyptians actually chose.",
+  ${highlightCount >= 1 ? `"highlight_1": "One SURPRISING or SOCIALLY REVEALING demographic split. Frame as identity tension: 'Men and women completely split on this.' NEVER tables.",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "A second unexpected finding from a different demographic angle. Frame as tribal contrast or generational divide.",` : ""}
+  "cultural_context": "One sentence connecting these patterns to Egyptian social dynamics or cultural identity.",
+  "action_line": "One sentence — the key strategic takeaway from real public opinion."
 }
 Rules:
-- Demographic highlights MUST be natural conversational sentences — NEVER tables, grids, or comparisons like "Males: X%, Females: Y%".
+- This is PUBLIC SENTIMENT INTELLIGENCE. Every line should feel like discovering what Egypt actually thinks.
+- Lead with real data: percentages, vote counts, demographic contrasts.
+- Highlights should surface UNEXPECTED splits — the findings that make someone stop and think.
+- NEVER tables, grids, or side-by-side comparisons like "Males: X%, Females: Y%".
 - Use real numbers from the data. Never invent statistics.
-- Be analytical but accessible.`;
+- Be analytical but make it feel socially alive, not academic.`;
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
