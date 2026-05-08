@@ -184,10 +184,10 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
   const story = stories[idx];
   const isOwn = user?.id === group?.user_id;
 
-  // Determine if we need poll fallback data
+  // Determine if we need poll fallback data — also fetch when images are missing
   const needsFallback = story?.story_type === 'poll_result' &&
     story?.content?.poll_id &&
-    (story?.content?.pct_a == null || story?.content?.option_a == null);
+    (!story?.content?.image_a_url && !story?.content?.image_b_url && !story?.content?.image_url);
   const { data: fallbackPoll } = usePollFallback(
     story?.content?.poll_id,
     !needsFallback
