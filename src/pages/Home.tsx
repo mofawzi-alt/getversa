@@ -46,6 +46,7 @@ import { isWelcomeTourDone } from '@/components/onboarding/FirstTimeWelcomeTour'
 
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import PollCardSkeleton from '@/components/poll/PollCardSkeleton';
 import { useDailyQueue } from '@/hooks/useDailyQueue';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import { useTrendingPolls } from '@/hooks/useTrendingPolls';
