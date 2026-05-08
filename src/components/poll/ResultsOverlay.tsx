@@ -150,6 +150,23 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
               imageUrl={isWinnerA ? poll.image_a_url : poll.image_b_url}
               variant="icon"
             />
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                const myChoice = result.choice === 'A' ? poll.option_a : poll.option_b;
+                const shareText = `My take today: ${myChoice} (${userPercent}% agree) — ${poll.question}`;
+                const shareUrl = `${window.location.origin}/poll/${poll.id}`;
+                if (typeof navigator !== 'undefined' && (navigator as any).share) {
+                  (navigator as any).share({ title: 'My Opinion Today', text: shareText, url: shareUrl }).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(`${shareText}\n${shareUrl}`).catch(() => {});
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold active:scale-95 transition-transform"
+            >
+              💬 Share My Take
+            </button>
             <ChallengeButton pollId={poll.id} pollQuestion={poll.question} userChoice={result.choice} />
           </div>
           <CliffhangerSeries currentPollId={poll.id} onPollTap={() => onContinue()} />
