@@ -24,35 +24,45 @@
  * - No access_token in the hash fragment and no OAuth code in the query
  */
 
-const CALLBACK_SCHEME = 'com.Versa.app';
+const CALLBACK_SCHEMES = ['com.versa.app', 'com.Versa.app'];
 
 /** Saved auth params (stripped from URL before Supabase client boots) */
 let savedSearch = '';
 let savedHash = '';
 
-const getNativeCallbackUrl = () =>
-  `${CALLBACK_SCHEME}://auth-callback${savedSearch}${savedHash}`;
+const getNativeCallbackUrl = (scheme = CALLBACK_SCHEMES[0]) =>
+  `${scheme}://auth-callback${savedSearch}${savedHash}`;
+
+const escapeHtmlAttr = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
 const openNativeApp = () => {
-  const callbackUrl = getNativeCallbackUrl();
+  const callbackUrls = CALLBACK_SCHEMES.map((scheme) => getNativeCallbackUrl(scheme));
 
   // Try multiple methods — SFSafariViewController on iPad can block
   // programmatic window.location.href for custom schemes.
   try {
-    // Method 1: Create a temporary <a> tag and click it.
+    // Method 1: Create temporary <a> tags and click them.
     // iOS treats user-gesture-initiated anchor clicks more favourably
     // than programmatic location changes for custom URL schemes.
-    const a = document.createElement('a');
-    a.href = callbackUrl;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    // Clean up after a tick
-    setTimeout(() => a.remove(), 100);
+    callbackUrls.forEach((callbackUrl, index) => {
+      window.setTimeout(() => {
+        const a = document.createElement('a');
+        a.href = callbackUrl;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => a.remove(), 100);
+      }, index * 350);
+    });
   } catch {
     // Fallback: direct location assignment
     try {
-      window.location.href = callbackUrl;
+      window.location.href = callbackUrls[0];
     } catch {
       // Keep the holding screen visible
     }
