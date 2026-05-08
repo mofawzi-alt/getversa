@@ -699,7 +699,7 @@ function LiveDebatesList({
           <div
             key={poll.id}
             className="py-1.5"
-            style={{ scrollSnapAlign: 'start', height: cardHeight }}
+            style={{ height: cardHeight }}
           >
             <HomeLiveDebateCard
               poll={poll}
@@ -756,30 +756,6 @@ export default function Home() {
     }
   }, [loading, user]);
 
-  // Enable scroll-snap on the page scroller so live debate cards snap as you scroll the whole page.
-  // scroll-padding-top offsets the fixed app header so snap-start aligns BELOW the header
-  // (not under it), making each card fill the area between header and bottom nav.
-  useEffect(() => {
-    const html = document.documentElement;
-    const prevType = html.style.scrollSnapType;
-    const prevPadTop = html.style.scrollPaddingTop;
-    const prevPadBottom = html.style.scrollPaddingBottom;
-    html.style.scrollSnapType = 'y proximity';
-    html.style.scrollBehavior = 'smooth';
-    // Header = 3.5rem + safe-area top inset (matches AppLayout)
-    html.style.scrollPaddingTop = 'calc(3.5rem + max(env(safe-area-inset-top), 1.75rem))';
-    // Bottom nav = 4rem + safe-area bottom inset
-    html.style.scrollPaddingBottom = 'calc(4rem + env(safe-area-inset-bottom))';
-    // Smoother momentum on iOS
-    (html.style as any).webkitOverflowScrolling = 'touch';
-    (document.body.style as any).webkitOverflowScrolling = 'touch';
-    return () => {
-      html.style.scrollSnapType = prevType;
-      html.style.scrollPaddingTop = prevPadTop;
-      html.style.scrollPaddingBottom = prevPadBottom;
-      html.style.scrollBehavior = '';
-    };
-  }, []);
 
 
   // Only show welcome after auth loading finishes and we know the user's state
@@ -1511,7 +1487,7 @@ export default function Home() {
           />
         )}
 
-        <section className="snap-start" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'normal' }}>
+        <section>
         {/* What's New release announcement */}
         {user && <WhatsNewBanner />}
 
@@ -1740,7 +1716,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
       transition={{ delay: index * 0.04 }}
       whileTap={{ scale: 0.96 }}
       onClick={() => onTap(poll)}
-      className="shrink-0 rounded-xl overflow-hidden cursor-pointer snap-start group shadow-card"
+      className="shrink-0 rounded-xl overflow-hidden cursor-pointer group shadow-card"
       style={{ width: 'calc((100vw - 36px) / 1.8)' }}
     >
       <div className="flex relative" style={{ aspectRatio: '4/5' }}>
