@@ -105,13 +105,13 @@ function TypingBubble({ mode }: { mode: Mode }) {
 /* ── Insight section row ── */
 function InsightRow({ icon: Icon, label, color, children }: { icon: any; label: string; color: string; children: React.ReactNode }) {
   return (
-    <motion.div variants={fadeUpChild} className="flex items-start gap-2.5 px-4 py-3">
-      <div className={`h-7 w-7 rounded-lg ${color} flex items-center justify-center shrink-0 mt-0.5`}>
-        <Icon className="h-3.5 w-3.5 text-white" />
+    <motion.div variants={fadeUpChild} className="flex items-start gap-2.5 px-3.5 py-2.5">
+      <div className={`h-6 w-6 rounded-md ${color} flex items-center justify-center shrink-0 mt-0.5`}>
+        <Icon className="h-3 w-3 text-white" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-[10px] uppercase tracking-wider font-bold mb-0.5`} style={{ color: 'var(--color, inherit)' }}>{label}</p>
-        <p className="text-sm text-foreground leading-relaxed">{children}</p>
+        <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground mb-0.5">{label}</p>
+        <p className="text-[13px] text-foreground leading-snug font-medium">{children}</p>
       </div>
     </motion.div>
   );
@@ -259,13 +259,29 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     </motion.div>
                   )}
 
-                  {/* 5-part insight breakdown */}
+                  {/* Data provenance badge */}
+                  {!t.loading && !t.lowData && !t.variant && t.verdict && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50 w-fit"
+                    >
+                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-semibold text-muted-foreground">
+                        {t.verdict.total_votes.toLocaleString()} real votes
+                        {t.verdict.real_votes && t.verdict.real_votes !== t.verdict.total_votes ? ` · ${t.verdict.real_votes.toLocaleString()} organic` : ''}
+                      </span>
+                    </motion.div>
+                  )}
+
+                  {/* Insight breakdown */}
                   {!t.loading && !t.lowData && !t.variant && t.insightParts && (
                     <motion.div
                       variants={staggerContainer}
                       initial="initial"
                       animate="animate"
-                      className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden divide-y divide-border/50"
+                      className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden divide-y divide-border/30"
                     >
                       {t.insightParts.why && (
                         <InsightRow icon={Brain} label="Social Insight" color="bg-primary">
@@ -284,7 +300,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                       )}
                       {t.insightParts.action_line && (
                         <InsightRow icon={Zap} label="The Verdict" color="bg-emerald-500">
-                          <span className="font-semibold">{t.insightParts.action_line}</span>
+                          <span className="font-bold">{t.insightParts.action_line}</span>
                         </InsightRow>
                       )}
                     </motion.div>
