@@ -758,6 +758,9 @@ Examples:
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Check if we have any non-weak topical terms
+    const hasStrongTerms = topicalTerms.some((_, i) => !topicalTermIsWeak[i]);
+
     let matchedPolls = enrichedPollList.filter((p: any) => {
       if (!p._entityMatch) return false;
       // Without entities, require at least one topical hit OR a category match.
@@ -765,7 +768,11 @@ Examples:
         if (categoryBuckets.length === 0) return false;
         return categoryBuckets.includes(p.category);
       }
-      return p._topicalHits >= 1;
+      if (p._topicalHits < 1) return false;
+      // If the question has strong (non-weak) terms, require at least one strong hit.
+      // This prevents "private university" from matching "Private Moments" (only weak "private" hit).
+      if (hasStrongTerms && p._strongHits < 1) return false;
+      return true;
     });
 
     // Soft relax: if entity gate killed everything but topical terms find polls,
