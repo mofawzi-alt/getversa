@@ -1,4 +1,4 @@
-import { Sparkles, User, Brain, Users, Globe, Zap } from 'lucide-react';
+import { Sparkles, User, Brain, Users, Globe, Zap, BarChart3, Target, TrendingUp, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import VerdictCard, { type Verdict } from './VerdictCard';
@@ -56,11 +56,18 @@ const RESEARCH_FOLLOWUPS = [
   'Show a related question',
 ];
 
-/* ── Animation variants ── */
-const bubbleIn = {
-  initial: { opacity: 0, y: 12, scale: 0.95 },
+/* ── DECIDE animation variants — fast, spring-loaded, punchy ── */
+const decideBubbleIn = {
+  initial: { opacity: 0, y: 20, scale: 0.9 },
   animate: { opacity: 1, y: 0, scale: 1 },
-  transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+  transition: { duration: 0.25, type: 'spring' as const, damping: 15, stiffness: 300 },
+};
+
+/* ── RESEARCH animation variants — smooth, deliberate, analytical ── */
+const researchBubbleIn = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] },
 };
 
 const staggerContainer = {
@@ -72,46 +79,86 @@ const fadeUpChild = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.35 } },
 };
 
-/* ── Typing indicator ── */
-function TypingBubble({ mode }: { mode: Mode }) {
+/* ── Decide typing indicator — fast pulse ── */
+function DecideTypingBubble() {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex items-center gap-1.5 px-4 py-3 rounded-2xl rounded-tl-md bg-card border border-border shadow-sm max-w-[200px]"
+      transition={{ type: 'spring', damping: 12 }}
+      className="flex items-center gap-2 px-4 py-3 rounded-2xl rounded-tl-md bg-primary/5 border border-primary/20 shadow-sm max-w-[200px]"
     >
       <div className="flex items-center gap-1">
         {[0, 1, 2].map((i) => (
           <motion.span
             key={i}
-            className="block h-2 w-2 rounded-full bg-primary/60"
-            animate={{ y: [0, -6, 0] }}
+            className="block h-2.5 w-2.5 rounded-full bg-primary"
+            animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
             transition={{
-              duration: 0.6,
+              duration: 0.5,
               repeat: Infinity,
-              delay: i * 0.15,
+              delay: i * 0.12,
               ease: 'easeInOut',
             }}
           />
         ))}
       </div>
-      <span className="text-[11px] text-muted-foreground font-medium ml-1">
-        {mode === 'decide' ? 'Checking real votes…' : 'Analyzing public opinion…'}
+      <span className="text-[11px] text-primary font-bold ml-0.5">
+        Checking votes…
       </span>
     </motion.div>
   );
 }
 
-/* ── Insight section row ── */
-function InsightRow({ icon: Icon, label, color, children }: { icon: any; label: string; color: string; children: React.ReactNode }) {
+/* ── Research typing indicator — calm, analytical ── */
+function ResearchTypingBubble() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="flex items-center gap-2 px-4 py-3 rounded-2xl rounded-tl-md bg-card border border-border shadow-sm max-w-[240px]"
+    >
+      <BarChart3 className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+      <div className="flex items-center gap-1">
+        <motion.div
+          className="h-1 rounded-full bg-blue-400"
+          animate={{ width: ['12px', '28px', '20px', '36px'] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      </div>
+      <span className="text-[11px] text-muted-foreground font-medium">
+        Analyzing data…
+      </span>
+    </motion.div>
+  );
+}
+
+/* ── Decide insight row — punchy, bold ── */
+function DecideInsightRow({ icon: Icon, label, color, children }: { icon: any; label: string; color: string; children: React.ReactNode }) {
   return (
     <motion.div variants={fadeUpChild} className="flex items-start gap-2.5 px-3.5 py-2.5">
-      <div className={`h-6 w-6 rounded-md ${color} flex items-center justify-center shrink-0 mt-0.5`}>
+      <div className={`h-6 w-6 rounded-full ${color} flex items-center justify-center shrink-0 mt-0.5`}>
         <Icon className="h-3 w-3 text-white" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground mb-0.5">{label}</p>
-        <p className="text-[13px] text-foreground leading-snug font-medium">{children}</p>
+        <p className="text-[14px] text-foreground leading-snug font-bold">{children}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── Research insight row — structured, analytical ── */
+function ResearchInsightRow({ icon: Icon, label, color, children }: { icon: any; label: string; color: string; children: React.ReactNode }) {
+  return (
+    <motion.div variants={fadeUpChild} className="flex items-start gap-3 px-4 py-3">
+      <div className={`h-7 w-7 rounded-lg ${color} flex items-center justify-center shrink-0 mt-0.5`}>
+        <Icon className="h-3.5 w-3.5 text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1">{label}</p>
+        <p className="text-[13px] text-foreground leading-relaxed font-medium">{children}</p>
       </div>
     </motion.div>
   );
@@ -123,9 +170,11 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
       <AnimatePresence mode="popLayout">
         {turns.map((t, idx) => {
           const isLast = idx === turns.length - 1;
-          const followups = t.mode === 'decide' ? DECIDE_FOLLOWUPS : RESEARCH_FOLLOWUPS;
+          const isDecide = t.mode === 'decide';
+          const followups = isDecide ? DECIDE_FOLLOWUPS : RESEARCH_FOLLOWUPS;
           const showFollowups = isLast && !t.loading && !t.lowData &&
             (t.verdict || (t.polls && t.polls.length > 0));
+          const bubble = isDecide ? decideBubbleIn : researchBubbleIn;
 
           return (
             <motion.div
@@ -134,26 +183,37 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
               className="space-y-3 w-full min-w-0"
             >
               {/* ── User question bubble ── */}
-              <motion.div {...bubbleIn} className="flex items-end gap-2 justify-end w-full min-w-0">
-                <div className="max-w-[80%] rounded-2xl rounded-br-md bg-primary text-primary-foreground px-4 py-3 text-[15px] font-medium leading-snug break-words shadow-sm">
+              <motion.div {...bubble} className="flex items-end gap-2 justify-end w-full min-w-0">
+                <div className={`max-w-[80%] rounded-2xl rounded-br-md px-4 py-3 text-[15px] font-medium leading-snug break-words shadow-sm ${
+                  isDecide
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-foreground/90 text-background'
+                }`}>
                   {t.question}
                 </div>
               </motion.div>
 
               {/* ── Versa response ── */}
-              <motion.div {...bubbleIn} transition={{ ...bubbleIn.transition, delay: 0.1 }} className="flex items-start gap-2.5 w-full min-w-0">
+              <motion.div {...bubble} transition={{ ...bubble.transition, delay: 0.1 }} className="flex items-start gap-2.5 w-full min-w-0">
                 {/* Avatar */}
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0 mt-0.5 ring-2 ring-primary/10">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ring-2 ${
+                  isDecide
+                    ? 'bg-gradient-to-br from-primary/30 to-primary/10 ring-primary/15'
+                    : 'bg-gradient-to-br from-blue-500/20 to-blue-500/5 ring-blue-500/10'
+                }`}>
+                  {isDecide
+                    ? <Sparkles className="h-4 w-4 text-primary" />
+                    : <BarChart3 className="h-4 w-4 text-blue-500" />
+                  }
                 </div>
 
                 <div className="flex-1 min-w-0 space-y-3">
                   {/* Loading / typing */}
-                  {t.loading && <TypingBubble mode={t.mode} />}
+                  {t.loading && (isDecide ? <DecideTypingBubble /> : <ResearchTypingBubble />)}
 
                   {/* Off-scope */}
                   {!t.loading && t.variant === 'offscope' && t.summary && (
-                    <motion.div {...bubbleIn}>
+                    <motion.div {...bubble}>
                       <div className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-2.5">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm">🤔</span>
@@ -170,7 +230,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
 
                   {/* Clarify */}
                   {!t.loading && t.variant === 'clarify' && t.summary && (
-                    <motion.div {...bubbleIn} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-3">
+                    <motion.div {...bubble} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-3">
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm">💡</span>
                         <p className="text-[10px] uppercase tracking-wider font-bold text-primary">Be more specific</p>
@@ -199,7 +259,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
 
                   {/* Factual */}
                   {!t.loading && t.variant === 'factual' && t.summary && (
-                    <motion.div {...bubbleIn} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-2.5">
+                    <motion.div {...bubble} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-2.5">
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm">📚</span>
                         <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground break-words">
@@ -211,9 +271,9 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     </motion.div>
                   )}
 
-                  {/* Smart answer — no direct poll data, honest fallback */}
+                  {/* Smart answer */}
                   {!t.loading && t.variant === 'smart_answer' && t.summary && (
-                    <motion.div {...bubbleIn}>
+                    <motion.div {...bubble}>
                       <div className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-3">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm">🔍</span>
@@ -240,89 +300,154 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
 
                   {/* Guardrail / low data */}
                   {!t.loading && !t.variant && t.lowData && t.summary && (
-                    <motion.div {...bubbleIn}>
+                    <motion.div {...bubble}>
                       <GuardrailCard summary={t.summary} polls={t.guardrailPolls || []} question={t.question} askQueryId={t.askQueryId} />
                     </motion.div>
                   )}
 
-                  {/* Verdict (decide mode) */}
-                  {!t.loading && !t.lowData && !t.variant && t.mode === 'decide' && t.verdict && (
-                    <motion.div {...bubbleIn}>
+                  {/* ════════════════════════════════════════════ */}
+                  {/* DECIDE MODE — Verdict card (punchy, fast)   */}
+                  {/* ════════════════════════════════════════════ */}
+                  {!t.loading && !t.lowData && !t.variant && isDecide && t.verdict && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.85, y: 24 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ type: 'spring', damping: 14, stiffness: 200 }}
+                    >
                       <VerdictCard verdict={t.verdict} />
                     </motion.div>
                   )}
 
-                  {/* Plain summary (decide, no verdict) */}
-                  {!t.loading && !t.lowData && !t.variant && t.mode === 'decide' && !t.verdict && t.summary && (
-                    <motion.div {...bubbleIn} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4">
-                      <p className="text-sm text-foreground break-words leading-relaxed">{t.summary}</p>
+                  {/* Decide plain summary (no verdict) */}
+                  {!t.loading && !t.lowData && !t.variant && isDecide && !t.verdict && t.summary && (
+                    <motion.div {...decideBubbleIn} className="rounded-2xl rounded-tl-md bg-primary/5 border border-primary/20 shadow-sm p-4">
+                      <p className="text-sm text-foreground break-words leading-relaxed font-semibold">{t.summary}</p>
                     </motion.div>
                   )}
 
-                  {/* Data provenance badge */}
-                  {!t.loading && !t.lowData && !t.variant && t.verdict && (
+                  {/* DECIDE — Data provenance badge (pulse, fast) */}
+                  {!t.loading && !t.lowData && !t.variant && isDecide && t.verdict && (
                     <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50 w-fit"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.3, type: 'spring', damping: 12 }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/15 w-fit"
                     >
-                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[10px] font-semibold text-muted-foreground">
+                      <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                      <span className="text-[10px] font-bold text-primary">
                         {t.verdict.total_votes.toLocaleString()} real votes
                         {t.verdict.real_votes && t.verdict.real_votes !== t.verdict.total_votes ? ` · ${t.verdict.real_votes.toLocaleString()} organic` : ''}
                       </span>
                     </motion.div>
                   )}
 
-                  {/* Insight breakdown */}
-                  {!t.loading && !t.lowData && !t.variant && t.insightParts && (
+                  {/* DECIDE — Insight breakdown (max 2 rows, punchy) */}
+                  {!t.loading && !t.lowData && !t.variant && isDecide && t.insightParts && (
                     <motion.div
                       variants={staggerContainer}
                       initial="initial"
                       animate="animate"
-                      className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden divide-y divide-border/30"
+                      className="rounded-2xl bg-card border border-primary/10 shadow-sm overflow-hidden divide-y divide-border/20"
                     >
                       {t.insightParts.why && (
-                        <InsightRow icon={Brain} label="Social Insight" color="bg-primary">
+                        <DecideInsightRow icon={Zap} label="The vibe" color="bg-primary">
                           {t.insightParts.why}
-                        </InsightRow>
+                        </DecideInsightRow>
                       )}
                       {t.insightParts.demographic_split && (
-                        <InsightRow icon={Users} label="Who Disagrees" color="bg-blue-500">
+                        <DecideInsightRow icon={Users} label="Plot twist" color="bg-amber-500">
                           {t.insightParts.demographic_split}
-                        </InsightRow>
-                      )}
-                      {t.insightParts.cultural_context && (
-                        <InsightRow icon={Globe} label="Egypt's Pulse" color="bg-amber-500">
-                          {t.insightParts.cultural_context}
-                        </InsightRow>
-                      )}
-                      {t.insightParts.action_line && (
-                        <InsightRow icon={Zap} label="The Verdict" color="bg-emerald-500">
-                          <span className="font-bold">{t.insightParts.action_line}</span>
-                        </InsightRow>
+                        </DecideInsightRow>
                       )}
                     </motion.div>
                   )}
 
-                  {/* Research brief */}
-                  {!t.loading && !t.lowData && !t.variant && t.mode === 'research' && t.summary && t.polls && t.polls.length > 0 && (
-                    <motion.div {...bubbleIn}>
+                  {/* ════════════════════════════════════════════════ */}
+                  {/* RESEARCH MODE — Structured brief (analytical)   */}
+                  {/* ════════════════════════════════════════════════ */}
+                  {!t.loading && !t.lowData && !t.variant && !isDecide && t.verdict && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                    >
+                      <VerdictCard verdict={t.verdict} variant="research" />
+                    </motion.div>
+                  )}
+
+                  {/* RESEARCH — Data provenance (clean, trustworthy) */}
+                  {!t.loading && !t.lowData && !t.variant && !isDecide && t.verdict && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 w-fit"
+                    >
+                      <BarChart3 className="h-3 w-3 text-blue-500" />
+                      <span className="text-[10px] font-semibold text-blue-600">
+                        Based on {t.verdict.total_votes.toLocaleString()} verified votes
+                      </span>
+                    </motion.div>
+                  )}
+
+                  {/* RESEARCH — Full insight breakdown (all sections) */}
+                  {!t.loading && !t.lowData && !t.variant && !isDecide && t.insightParts && (
+                    <motion.div
+                      variants={staggerContainer}
+                      initial="initial"
+                      animate="animate"
+                      className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden"
+                    >
+                      {/* Section header */}
+                      <div className="px-4 py-2.5 bg-muted/30 border-b border-border">
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Analysis Breakdown</p>
+                      </div>
+                      <div className="divide-y divide-border/30">
+                        {t.insightParts.why && (
+                          <ResearchInsightRow icon={Target} label="Main Finding" color="bg-blue-500">
+                            {t.insightParts.why}
+                          </ResearchInsightRow>
+                        )}
+                        {t.insightParts.demographic_split && (
+                          <ResearchInsightRow icon={Users} label="Demographic Insight" color="bg-violet-500">
+                            {t.insightParts.demographic_split}
+                          </ResearchInsightRow>
+                        )}
+                        {t.insightParts.cultural_context && (
+                          <ResearchInsightRow icon={Globe} label="Cultural Context" color="bg-emerald-500">
+                            {t.insightParts.cultural_context}
+                          </ResearchInsightRow>
+                        )}
+                        {t.insightParts.action_line && (
+                          <ResearchInsightRow icon={TrendingUp} label="Strategic Takeaway" color="bg-amber-500">
+                            {t.insightParts.action_line}
+                          </ResearchInsightRow>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Research brief (polls data) */}
+                  {!t.loading && !t.lowData && !t.variant && !isDecide && t.summary && t.polls && t.polls.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.3 }}
+                    >
                       <ResearchBrief question={t.question} summary={t.summary} polls={t.polls} />
                     </motion.div>
                   )}
 
                   {/* Research plain summary */}
-                  {!t.loading && !t.lowData && !t.variant && t.mode === 'research' && t.summary && (!t.polls || t.polls.length === 0) && (
-                    <motion.div {...bubbleIn} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4">
+                  {!t.loading && !t.lowData && !t.variant && !isDecide && t.summary && (!t.polls || t.polls.length === 0) && !t.verdict && (
+                    <motion.div {...researchBubbleIn} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4">
                       <p className="text-sm text-foreground break-words leading-relaxed">{t.summary}</p>
                     </motion.div>
                   )}
 
                   {/* Share button */}
                   {!t.loading && !t.lowData && !t.variant && (t.verdict || t.summary) && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: isDecide ? 0.4 : 0.7 }}>
                       <ShareToStoryButton
                         storyType="poll_result"
                         content={{
@@ -356,7 +481,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 }}
+                      transition={{ delay: isDecide ? 0.5 : 0.8 }}
                       className="flex flex-wrap gap-1.5 pt-1"
                     >
                       {followups.map((f, fi) => (
@@ -364,9 +489,13 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                           key={f}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.7 + fi * 0.08 }}
+                          transition={{ delay: (isDecide ? 0.6 : 0.9) + fi * 0.08 }}
                           onClick={() => onPickSuggestion(f)}
-                          className="h-8 px-3.5 rounded-full bg-card border border-border hover:border-primary/30 hover:bg-primary/[0.03] text-[12px] font-semibold text-foreground active:scale-95 transition-all shadow-sm"
+                          className={`h-8 px-3.5 rounded-full text-[12px] font-semibold active:scale-95 transition-all shadow-sm ${
+                            isDecide
+                              ? 'bg-primary/5 border border-primary/20 hover:bg-primary/10 text-foreground'
+                              : 'bg-card border border-border hover:border-blue-200 hover:bg-blue-50/50 text-foreground'
+                          }`}
                         >
                           {f}
                         </motion.button>

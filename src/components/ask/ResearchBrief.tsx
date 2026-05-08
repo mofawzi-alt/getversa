@@ -1,4 +1,5 @@
-import { Sparkles, Users, MapPin, UserCircle2 } from 'lucide-react';
+import { Sparkles, Users, MapPin, UserCircle2, BarChart3, FileText } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import ExportButtons from './ExportButtons';
@@ -10,89 +11,116 @@ interface Props {
   polls: ResearchPoll[];
 }
 
+const fadeUp = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
+};
+
 export default function ResearchBrief({ question, summary, polls }: Props) {
   const totalVotes = polls.reduce((acc, p) => acc + p.total_votes, 0);
 
   return (
-    <div className="space-y-4">
-      {/* Headline summary */}
-      <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 p-4 space-y-3">
-        <div className="flex items-start gap-2">
-          <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-          <p className="text-sm leading-relaxed text-foreground font-medium">{summary}</p>
+    <div className="space-y-3">
+      {/* Summary card — clean research header */}
+      <motion.div
+        {...fadeUp}
+        transition={{ duration: 0.5 }}
+        className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden"
+      >
+        <div className="px-4 py-2.5 bg-muted/30 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <FileText className="h-3 w-3 text-muted-foreground" />
+            <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Research Summary</span>
+          </div>
+          <span className="text-[10px] font-semibold text-muted-foreground tabular-nums">{polls.length} polls · {totalVotes.toLocaleString()} votes</span>
         </div>
-        <div className="flex items-center justify-between text-[11px] uppercase tracking-wider font-semibold text-muted-foreground border-t border-primary/10 pt-2">
-          <span>{polls.length} polls · {totalVotes.toLocaleString()} votes</span>
-          <span>Versa data</span>
+        <div className="p-4">
+          <p className="text-[13px] leading-relaxed text-foreground font-medium">{summary}</p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Export */}
       <ExportButtons payload={{ question, summary, polls }} />
 
       {/* Source polls */}
-      <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold px-1 pt-1">
-        Source polls
-      </p>
-      <div className="space-y-2.5">
-        {polls.map((p, idx) => (
-          <div
-            key={p.id}
-            className="w-full text-left rounded-2xl bg-card border border-border p-3.5 space-y-2.5"
-          >
-            <div className="flex items-start gap-2">
-              <span className="text-[11px] font-bold text-muted-foreground mt-0.5">#{idx + 1}</span>
-              <div className="flex-1 min-w-0 space-y-1.5">
-                {p.category && (
-                  <CategoryBadge category={mapToVersaCategory(p.category)} size="xs" />
-                )}
-                <p className="text-sm font-semibold leading-snug">{p.question}</p>
+      <div className="pt-1">
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold px-1 mb-2 flex items-center gap-1.5">
+          <BarChart3 className="h-3 w-3" />
+          Source Data ({polls.length} polls)
+        </p>
+        <div className="space-y-2">
+          {polls.map((p, idx) => (
+            <motion.div
+              key={p.id}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * idx, duration: 0.4 }}
+              className="w-full text-left rounded-xl bg-card border border-border p-3.5 space-y-2.5"
+            >
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] font-bold text-muted-foreground/50 mt-0.5 tabular-nums">#{idx + 1}</span>
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  {p.category && (
+                    <CategoryBadge category={mapToVersaCategory(p.category)} size="xs" />
+                  )}
+                  <p className="text-[13px] font-semibold leading-snug">{p.question}</p>
+                </div>
               </div>
-            </div>
 
-            {/* Bar */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-[11px] font-semibold">
-                <span className="truncate max-w-[45%]">{p.option_a}</span>
-                <span className="text-muted-foreground">vs</span>
-                <span className="truncate max-w-[45%] text-right">{p.option_b}</span>
+              {/* Horizontal comparison bars */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-semibold">
+                  <span className="truncate max-w-[45%]">{p.option_a}</span>
+                  <span className="text-muted-foreground/40">vs</span>
+                  <span className="truncate max-w-[45%] text-right">{p.option_b}</span>
+                </div>
+                <div className="flex h-2.5 rounded-full overflow-hidden bg-muted">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${p.percent_a}%` }}
+                    transition={{ delay: 0.3 + idx * 0.1, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="bg-blue-500 rounded-l-full"
+                  />
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${p.percent_b}%` }}
+                    transition={{ delay: 0.4 + idx * 0.1, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="bg-foreground/60"
+                  />
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-bold tabular-nums">{p.percent_a}%</span>
+                  <span className="text-muted-foreground font-medium tabular-nums">n={p.total_votes.toLocaleString()}</span>
+                  <span className="font-bold tabular-nums">{p.percent_b}%</span>
+                </div>
               </div>
-              <div className="flex h-2 rounded-full overflow-hidden bg-muted">
-                <div className="bg-primary" style={{ width: `${p.percent_a}%` }} />
-                <div className="bg-foreground/70" style={{ width: `${p.percent_b}%` }} />
-              </div>
-              <div className="flex items-center justify-between text-[11px] font-bold">
-                <span>{p.percent_a}%</span>
-                <span className="text-muted-foreground font-normal">n={p.total_votes}</span>
-                <span>{p.percent_b}%</span>
-              </div>
-            </div>
 
-            {/* Personal lines */}
-            {(p.viewer_age_line || p.viewer_city_line || p.gender_teaser) && (
-              <div className="space-y-1 pt-1 border-t border-border/60">
-                {p.viewer_age_line && (
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <Users className="h-3 w-3" />
-                    {p.viewer_age_line}
-                  </div>
-                )}
-                {p.viewer_city_line && (
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
-                    {p.viewer_city_line}
-                  </div>
-                )}
-                {p.gender_teaser && (
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <UserCircle2 className="h-3 w-3" />
-                    {p.gender_teaser}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+              {/* Demographic lines */}
+              {(p.viewer_age_line || p.viewer_city_line || p.gender_teaser) && (
+                <div className="space-y-1 pt-1.5 border-t border-border/40">
+                  {p.viewer_age_line && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <Users className="h-3 w-3 shrink-0" />
+                      <span>{p.viewer_age_line}</span>
+                    </div>
+                  )}
+                  {p.viewer_city_line && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      <span>{p.viewer_city_line}</span>
+                    </div>
+                  )}
+                  {p.gender_teaser && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <UserCircle2 className="h-3 w-3 shrink-0" />
+                      <span>{p.gender_teaser}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );

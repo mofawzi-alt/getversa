@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Loader2, Scale, FlaskConical, ArrowUp, RotateCcw, Lock } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -373,11 +374,11 @@ export default function Ask() {
 
         <div className="px-3 pb-2 w-full min-w-0 max-w-lg mx-auto overflow-hidden">
           <div className="grid grid-cols-2 gap-1 p-1 rounded-full bg-muted w-full min-w-0">
-            <button onClick={() => switchMode('decide')} className={`h-7 rounded-full text-[11px] font-bold flex items-center justify-center gap-1 transition min-w-0 ${mode === 'decide' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}>
-              <Scale className="h-3 w-3 shrink-0" /> <span className="truncate">Decide</span>
+            <button onClick={() => switchMode('decide')} className={`h-8 rounded-full text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all min-w-0 ${mode === 'decide' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'}`}>
+              <Scale className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Decide</span>
             </button>
-            <button onClick={() => switchMode('research')} className={`h-7 rounded-full text-[11px] font-bold flex items-center justify-center gap-1 transition min-w-0 ${mode === 'research' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}>
-              <FlaskConical className="h-3 w-3 shrink-0" /> <span className="truncate">Research</span>
+            <button onClick={() => switchMode('research')} className={`h-8 rounded-full text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all min-w-0 ${mode === 'research' ? 'bg-foreground/90 text-background shadow-md' : 'text-muted-foreground hover:text-foreground'}`}>
+              <FlaskConical className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Research</span>
             </button>
           </div>
         </div>
@@ -403,20 +404,47 @@ export default function Ask() {
           </div>
         )}
 
-        {empty && askLevel > 0 && (
+        {empty && askLevel > 0 && mode === 'decide' && (
           <>
             <div className="text-center pt-4 pb-2 w-full min-w-0">
-              <div className="inline-flex h-12 w-12 rounded-full bg-primary/10 items-center justify-center mb-3">
-                <Sparkles className="h-5 w-5 text-primary" />
-              </div>
-              <p className="text-sm font-semibold text-foreground break-words">
-                {mode === 'decide' ? 'See what real Egyptians actually chose' : 'Discover what Egypt really thinks'}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', damping: 10 }}
+                className="inline-flex h-14 w-14 rounded-full bg-primary/10 items-center justify-center mb-3"
+              >
+                <Scale className="h-6 w-6 text-primary" />
+              </motion.div>
+              <p className="text-base font-black text-foreground break-words">
+                Can't decide? Egypt already did.
               </p>
               <p className="text-xs text-muted-foreground mt-1 break-words">
-                Every answer backed by real votes from real people
+                Quick answers from real public votes
               </p>
             </div>
-            <SuggestionChips label={mode === 'decide' ? '🔥 Everyone\'s asking right now' : '📊 Trending research questions'} suggestions={promptSuggestions} onPick={runPreview} />
+            <SuggestionChips label="🔥 Everyone's asking right now" suggestions={promptSuggestions} onPick={runPreview} />
+          </>
+        )}
+
+        {empty && askLevel > 0 && mode === 'research' && (
+          <>
+            <div className="text-center pt-4 pb-2 w-full min-w-0">
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex h-14 w-14 rounded-xl bg-foreground/5 items-center justify-center mb-3"
+              >
+                <FlaskConical className="h-6 w-6 text-foreground/60" />
+              </motion.div>
+              <p className="text-base font-semibold text-foreground break-words">
+                Understand what Egypt really thinks
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 break-words">
+                Deep sentiment analysis from real voter data
+              </p>
+            </div>
+            <SuggestionChips label="📊 Trending research questions" suggestions={promptSuggestions} onPick={runPreview} />
           </>
         )}
 
