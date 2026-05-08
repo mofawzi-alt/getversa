@@ -36,30 +36,51 @@ const getNativeCallbackUrl = () =>
 const openNativeApp = () => {
   const callbackUrl = getNativeCallbackUrl();
 
+  // Try multiple methods — SFSafariViewController on iPad can block
+  // programmatic window.location.href for custom schemes.
   try {
-    window.location.href = callbackUrl;
+    // Method 1: Create a temporary <a> tag and click it.
+    // iOS treats user-gesture-initiated anchor clicks more favourably
+    // than programmatic location changes for custom URL schemes.
+    const a = document.createElement('a');
+    a.href = callbackUrl;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    // Clean up after a tick
+    setTimeout(() => a.remove(), 100);
   } catch {
-    // Keep the holding screen visible if iOS blocks automatic scheme navigation.
+    // Fallback: direct location assignment
+    try {
+      window.location.href = callbackUrl;
+    } catch {
+      // Keep the holding screen visible
+    }
   }
 };
 
 const renderNativeOAuthHoldingScreen = () => {
   const render = () => {
     if (!document.body) return;
+
+    // Build the callback URL now so we can use it as an <a href>.
+    // Using a real anchor tag is critical — SFSafariViewController on iPad
+    // blocks programmatic window.location.href for custom URL schemes,
+    // but honours user-tap on <a href="customscheme://...">.
+    const callbackUrl = getNativeCallbackUrl();
+
     document.body.innerHTML = `
       <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;color:#111827;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px;text-align:center;">
         <div style="max-width:320px;">
           <div style="width:28px;height:28px;margin:0 auto 18px;border:3px solid #e5e7eb;border-top-color:#E8392A;border-radius:999px;animation:versa-spin .8s linear infinite;"></div>
           <h1 style="font-size:22px;line-height:1.2;margin:0 0 8px;font-weight:800;">Completing sign in</h1>
           <p style="font-size:15px;line-height:1.45;margin:0 0 18px;color:#6b7280;">Return to Versa to continue.</p>
-          <button id="versa-open-app" type="button" style="appearance:none;border:0;border-radius:999px;background:#E8392A;color:#fff;font-size:16px;font-weight:700;padding:13px 22px;min-width:180px;box-shadow:0 10px 24px rgba(232,57,42,.22);">Open Versa</button>
+          <a id="versa-open-app" href="${callbackUrl}" style="display:inline-block;text-decoration:none;border-radius:999px;background:#E8392A;color:#fff;font-size:16px;font-weight:700;padding:13px 22px;min-width:180px;box-shadow:0 10px 24px rgba(232,57,42,.22);-webkit-tap-highlight-color:transparent;">Open Versa</a>
           <p style="font-size:13px;line-height:1.45;margin:14px 0 0;color:#9ca3af;">If this does not return automatically, tap Open Versa.</p>
         </div>
         <style>@keyframes versa-spin{to{transform:rotate(360deg)}}</style>
       </div>
     `;
-
-    document.getElementById('versa-open-app')?.addEventListener('click', openNativeApp);
   };
 
   if (document.readyState === 'loading') {
