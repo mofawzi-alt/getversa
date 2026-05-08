@@ -50,9 +50,9 @@ const FILTER_TOOL = {
         intent: {
           type: "string",
           description: `Classify the user's intent EXACTLY as one of:
-- "preference": asks which option people prefer / pick / choose / lean toward / love more / vote for. e.g. "iPhone or Samsung?", "Do Egyptians prefer Coke or Pepsi?", "Which fast food brand wins with 18-24?"
-- "factual": asks for a number, fact, definition, news, market data, technical info — anything Versa polls cannot answer. e.g. "iPhone market size?", "Who founded Apple?", "When did Vodafone enter Egypt?"
-- "offscope": rude, harmful, nonsensical, code-help, math homework, personal life advice unrelated to consumer preferences.`,
+- "preference": asks which option people prefer / pick / choose / lean toward / love more / vote for, OR asks for opinions/comparisons between two things. e.g. "iPhone or Samsung?", "Do Egyptians prefer Coke or Pepsi?", "Which fast food brand wins with 18-24?", "AUC or GUC?", "private or public uni?". SHORT QUERIES naming brands/schools/products (even just "AUC", "uni", "GUC or AUC") are ALWAYS "preference" — the user wants Versa opinion data. When in doubt between preference and factual, choose PREFERENCE.
+- "factual": asks for a number, fact, definition, news, market data, technical info — anything Versa polls cannot answer. e.g. "iPhone market size?", "Who founded Apple?", "When did Vodafone enter Egypt?". NEVER classify brand/product/school comparisons or short entity names as factual.
+- "offscope": rude, harmful, nonsensical, code-help, math homework, personal life advice unrelated to consumer preferences. NEVER classify short brand/school/product names as offscope.`,
         },
         keywords: { type: "array", items: { type: "string" }, description: "Key topical terms (lowercase)." },
         entities: { type: "array", items: { type: "string" }, description: "Named brands, products, people, or places explicitly mentioned (canonical form, lowercase). Include common synonyms inline, e.g. 'iphone' not 'apple iphone 15 pro'. For 'iPhone vs Samsung' return ['iphone','samsung']. For 'iPhone market size' return ['iphone']." },
@@ -95,6 +95,20 @@ const ENTITY_SYNONYMS: Record<string, string[]> = {
   zamalek: ["zamalek"],
   apartment: ["apartment", "apt", "flat", "home"],
   apt: ["apartment", "apt", "flat", "home"],
+  // Egyptian universities
+  auc: ["auc", "american university"],
+  guc: ["guc", "german university"],
+  bue: ["bue", "british university"],
+  msa: ["msa"],
+  misr: ["misr university", "misr international"],
+  ain_shams: ["ain shams", "عين شمس"],
+  cairo_uni: ["cairo university", "جامعة القاهرة"],
+  giu: ["giu", "german international"],
+  fut: ["fut", "future university"],
+  uni: ["university", "uni", "college", "جامعة"],
+  // Education
+  private: ["private"],
+  public: ["public"],
 };
 
 function expandEntityVariants(entity: string): string[] {
@@ -378,6 +392,23 @@ Rules:
       ? rawIntent
       : "preference") as "preference" | "factual" | "offscope";
 
+    // Short-query safety net: if ≤4 words and contains a known entity synonym, force preference.
+    // This catches "AUC", "uni", "GUC or AUC", "Vodafone or Orange" etc.
+    {
+      const wordCount = question.trim().split(/\s+/).length;
+      if (wordCount <= 5 && intent !== "preference") {
+        const qLower = question.toLowerCase();
+        const hasKnownEntity = Object.entries(ENTITY_SYNONYMS).some(([, synonyms]) =>
+          synonyms.some((s) => qLower.includes(s))
+        );
+        const hasComparison = /\b(or|vs|versus|ولا|و)\b/i.test(qLower) || /\?/.test(qLower);
+        if (hasKnownEntity || hasComparison) {
+          console.log(`Short-query override: "${question}" from ${intent} → preference`);
+          intent = "preference";
+        }
+      }
+    }
+
     // Research-mode override: in research mode, opinion/comparison/lifestyle/attitude questions
     // are exactly what Versa polls answer ("Cairo vs Alexandria lifestyle", "How do students feel about X").
     // Only treat as factual when the question is clearly a hard lookup (year/date/market size/who-founded).
@@ -393,7 +424,19 @@ Rules:
     const cost = ROUTE_COSTS[safeRoute];
     const model = ROUTE_MODEL[safeRoute];
 
-    const cleanedEntities: string[] = Array.from(new Set(rawEntities.filter((e) => e.length >= 2 && !STOP_TERMS.has(e))));
+    // Inject known entities from the raw question if the extraction missed them
+    const qWords = question.toLowerCase().split(/[\s,?!.]+/).filter(Boolean);
+    const injectedEntities: string[] = [];
+    for (const [key] of Object.entries(ENTITY_SYNONYMS)) {
+      if (key === "uni" || key === "private" || key === "public") continue; // too generic to auto-inject
+      if (qWords.includes(key) && !rawEntities.includes(key)) {
+        injectedEntities.push(key);
+      }
+    }
+    if (injectedEntities.length > 0) {
+      console.log("Injected missed entities:", injectedEntities);
+    }
+    const cleanedEntities: string[] = Array.from(new Set([...rawEntities, ...injectedEntities].filter((e) => e.length >= 2 && !STOP_TERMS.has(e))));
     const requiredEntityVariants = cleanedEntities.map((e) => expandEntityVariants(e));
     const topicalTerms = Array.from(new Set([...cleanedEntities, ...keywords]
       .map((term: string) => normalizeTerm(String(term || "")))
@@ -672,9 +715,18 @@ Rules:
     // VAGUE-QUESTION GUARD (decide mode): no specific A vs B → ask a clarifier instead of guessing.
     // Triggers when the user has 0 entities AND ≤1 generic topical term (e.g. "best place to eat",
     // "what should I wear tonight", "where to go out"). Research mode is more permissive.
+    // BUT: skip if the raw question contains a known entity synonym (e.g. "auc", "guc", "vodafone")
+    const questionContainsKnownEntity = (() => {
+      const qLower = question.toLowerCase();
+      const qWords = qLower.split(/[\s,?!.]+/).filter(Boolean);
+      return Object.entries(ENTITY_SYNONYMS).some(([key]) =>
+        qWords.includes(key) || qLower.includes(key)
+      );
+    })();
     const looksVague = mode === "decide"
       && requiredEntityVariants.length === 0
-      && topicalTerms.length <= 1;
+      && topicalTerms.length <= 1
+      && !questionContainsKnownEntity;
 
     if (looksVague) {
       // Ask Lovable AI for 3 concrete A-vs-B reframings of the user's broad question.
