@@ -6,6 +6,7 @@ import { Loader2, Home, Users, TrendingUp as TrendUp, Zap, Flame, Check } from '
 import CaughtUpInsights from '@/components/feed/CaughtUpInsights';
 import VoteFeedbackOverlay, { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import ShareImageCard from '@/components/poll/ShareImageCard';
+import PollCardSkeleton from '@/components/poll/PollCardSkeleton';
 
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
