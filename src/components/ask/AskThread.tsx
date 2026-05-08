@@ -105,13 +105,13 @@ function TypingBubble({ mode }: { mode: Mode }) {
 /* ── Insight section row ── */
 function InsightRow({ icon: Icon, label, color, children }: { icon: any; label: string; color: string; children: React.ReactNode }) {
   return (
-    <motion.div variants={fadeUpChild} className="flex items-start gap-2.5 px-4 py-3">
-      <div className={`h-7 w-7 rounded-lg ${color} flex items-center justify-center shrink-0 mt-0.5`}>
-        <Icon className="h-3.5 w-3.5 text-white" />
+    <motion.div variants={fadeUpChild} className="flex items-start gap-2.5 px-3.5 py-2.5">
+      <div className={`h-6 w-6 rounded-md ${color} flex items-center justify-center shrink-0 mt-0.5`}>
+        <Icon className="h-3 w-3 text-white" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-[10px] uppercase tracking-wider font-bold mb-0.5`} style={{ color: 'var(--color, inherit)' }}>{label}</p>
-        <p className="text-sm text-foreground leading-relaxed">{children}</p>
+        <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground mb-0.5">{label}</p>
+        <p className="text-[13px] text-foreground leading-snug font-medium">{children}</p>
       </div>
     </motion.div>
   );
