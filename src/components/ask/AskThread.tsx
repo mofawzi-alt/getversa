@@ -28,7 +28,7 @@ export interface AskTurn {
   verdict?: Verdict | null;
   polls?: ResearchPoll[];
   lowData?: boolean;
-  variant?: 'offscope' | 'factual' | 'clarify' | null;
+  variant?: 'offscope' | 'factual' | 'clarify' | 'smart_answer' | null;
   notice?: string | null;
   suggestions?: string[];
   clarifications?: Array<{ label: string; question: string }>;
