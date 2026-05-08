@@ -69,6 +69,9 @@ Deno.serve(async (req) => {
 
     if (approved && approved.length > 0) {
       for (const row of approved) {
+        // Auto-generate hook subtitle if not manually set
+        const subtitle = row.subtitle || generateHook(row.category || '');
+
         const { data: poll, error: pErr } = await supabase
           .from("polls")
           .insert({
@@ -86,6 +89,7 @@ Deno.serve(async (req) => {
             expiry_type: "evergreen",
             created_by: row.created_by,
             starts_at: new Date().toISOString(),
+            subtitle,
           })
           .select("id")
           .single();
