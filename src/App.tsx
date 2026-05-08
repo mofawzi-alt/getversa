@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { preloadFeedImages } from "@/lib/preloadFeedImages";
 
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/components/onboarding/SwipeOverlay";
 import { markSplashSeen } from "@/components/SplashScreen";
@@ -120,6 +121,12 @@ function RouteFallback() {
 function AppInner() {
   const { loading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
+
+  // Warm the image cache for the first few feed polls during the splash.
+  // Fire-and-forget — never blocks UI or breaks if offline.
+  useEffect(() => {
+    preloadFeedImages(6);
+  }, []);
 
   useEffect(() => {
     const minTimer = setTimeout(() => {
