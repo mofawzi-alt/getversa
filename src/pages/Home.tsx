@@ -1716,7 +1716,7 @@ function TrendingPollCard({ poll, index, hasVoted, onTap, badge, hot, onCategory
       transition={{ delay: index * 0.04 }}
       whileTap={{ scale: 0.96 }}
       onClick={() => onTap(poll)}
-      className="shrink-0 rounded-xl overflow-hidden cursor-pointer snap-start group shadow-card"
+      className="shrink-0 rounded-xl overflow-hidden cursor-pointer group shadow-card"
       style={{ width: 'calc((100vw - 36px) / 1.8)' }}
     >
       <div className="flex relative" style={{ aspectRatio: '4/5' }}>
