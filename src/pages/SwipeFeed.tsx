@@ -1269,8 +1269,9 @@ export default function SwipeFeed() {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background gap-4 px-4">
+        <PollCardSkeleton />
+        <p className="text-xs text-muted-foreground animate-pulse">Loading your debates…</p>
       </div>
     );
   }
