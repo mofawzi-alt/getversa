@@ -259,13 +259,29 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     </motion.div>
                   )}
 
-                  {/* 5-part insight breakdown */}
+                  {/* Data provenance badge */}
+                  {!t.loading && !t.lowData && !t.variant && t.verdict && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50 w-fit"
+                    >
+                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-semibold text-muted-foreground">
+                        {t.verdict.total_votes.toLocaleString()} real votes
+                        {t.verdict.real_votes && t.verdict.real_votes !== t.verdict.total_votes ? ` · ${t.verdict.real_votes.toLocaleString()} organic` : ''}
+                      </span>
+                    </motion.div>
+                  )}
+
+                  {/* Insight breakdown */}
                   {!t.loading && !t.lowData && !t.variant && t.insightParts && (
                     <motion.div
                       variants={staggerContainer}
                       initial="initial"
                       animate="animate"
-                      className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden divide-y divide-border/50"
+                      className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden divide-y divide-border/30"
                     >
                       {t.insightParts.why && (
                         <InsightRow icon={Brain} label="Social Insight" color="bg-primary">
@@ -284,7 +300,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                       )}
                       {t.insightParts.action_line && (
                         <InsightRow icon={Zap} label="The Verdict" color="bg-emerald-500">
-                          <span className="font-semibold">{t.insightParts.action_line}</span>
+                          <span className="font-bold">{t.insightParts.action_line}</span>
                         </InsightRow>
                       )}
                     </motion.div>
