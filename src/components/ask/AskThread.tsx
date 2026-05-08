@@ -268,7 +268,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                       className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden divide-y divide-border/50"
                     >
                       {t.insightParts.why && (
-                        <InsightRow icon={Brain} label="Why" color="bg-primary">
+                        <InsightRow icon={Brain} label="Social Insight" color="bg-primary">
                           {t.insightParts.why}
                         </InsightRow>
                       )}
