@@ -60,22 +60,43 @@ export default function MorningPulseTrigger() {
     if (!pulse) return [];
     const list: StoryCardData[] = [];
 
-    // Card 1 — The Big Result
+    // Card 1 — Today's First Battle (the hook — identity-defining morning choice)
+    if (pulse.cards.today_first) {
+      const tf = pulse.cards.today_first;
+      list.push({
+        backgroundImage: tf.image_a_url || tf.image_b_url,
+        label: "Your morning dilemma",
+        headline: tf.question,
+        primaryText: `${tf.option_a}  vs  ${tf.option_b}`,
+        secondaryText: 'Which one are you today?',
+        cta: {
+          label: 'Vote Now →',
+          onClick: () => {
+            markSeenLocally(TOPIC);
+            setOpen(false);
+            navigate('/home');
+          },
+        },
+      });
+    }
+
+    // Card 2 — The Big Result ("Your team won/lost" framing)
     if (pulse.cards.big_result) {
       const c = pulse.cards.big_result;
+      const majorityWon = c.winning_pct >= 60;
       list.push({
         backgroundImage: c.winning_image,
-        label: 'While you were sleeping…',
+        label: majorityWon ? `${c.winning_option} dominated` : 'It was tight…',
         headline: c.question,
         primaryText: `${c.winning_option} wins ${c.winning_pct}%`,
-        secondaryText: `${c.total_votes.toLocaleString()} votes`,
+        secondaryText: `${c.total_votes.toLocaleString()} votes · Were you on the winning side?`,
         splitA: { label: c.option_a, pct: c.pct_a },
         splitB: { label: c.option_b, pct: c.pct_b },
         votePollId: c.poll_id,
       });
     }
 
-    // Card 2 — The Closest Battle
+    // Card 3 — The Closest Battle
     if (pulse.cards.closest_battle) {
       const c = pulse.cards.closest_battle;
       list.push({
@@ -83,14 +104,14 @@ export default function MorningPulseTrigger() {
         label: 'Too close to call',
         headline: c.question,
         primaryText: `${c.pct_a}% vs ${c.pct_b}%`,
-        secondaryText: `${c.total_votes.toLocaleString()} votes`,
+        secondaryText: `${c.total_votes.toLocaleString()} votes · Egypt is divided`,
         splitA: { label: c.option_a, pct: c.pct_a },
         splitB: { label: c.option_b, pct: c.pct_b },
         votePollId: c.poll_id,
       });
     }
 
-    // Card 3 — The Surprise (skip if missing)
+    // Card 4 — The Surprise (skip if missing)
     if (pulse.cards.surprise) {
       const c = pulse.cards.surprise;
       list.push({
@@ -105,7 +126,7 @@ export default function MorningPulseTrigger() {
       });
     }
 
-    // Card 4 — Your Standing (signed-in only)
+    // Card 5 — Your Standing (signed-in only)
     if (user && yourStanding) {
       list.push({
         label: 'Your standing',
@@ -113,26 +134,6 @@ export default function MorningPulseTrigger() {
         primaryText: `Top ${yourStanding.percentile}% of Versa users`,
         secondaryText: yourStanding.streak > 0 ? `🔥 ${yourStanding.streak}-day streak` : undefined,
         shareable: true,
-      });
-    }
-
-    // Card 5 — Today's First Battle
-    if (pulse.cards.today_first) {
-      const tf = pulse.cards.today_first;
-      list.push({
-        backgroundImage: tf.image_a_url || tf.image_b_url,
-        label: "Today's first battle",
-        headline: tf.question,
-        primaryText: `${tf.option_a}  vs  ${tf.option_b}`,
-        secondaryText: 'Be the first to vote',
-        cta: {
-          label: 'Vote Now →',
-          onClick: () => {
-            markSeenLocally(TOPIC);
-            setOpen(false);
-            navigate('/home');
-          },
-        },
       });
     }
 
