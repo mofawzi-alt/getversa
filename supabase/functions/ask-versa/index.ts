@@ -1340,7 +1340,7 @@ Rules:
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: `You are Versa's insight engine. Produce a structured JSON response.\n${levelInstructions}` + arabicInstruction },
+          { role: "system", content: `You are Versa's public sentiment engine. Your answers are driven by REAL VOTE DATA from real Egyptians — never AI opinions. Produce a structured JSON response.\n${levelInstructions}` + arabicInstruction },
           { role: "user", content: `User asked: "${question}"\n\nPoll data:\n${pollDataText}\n\nTop result: ${winnerLabel} wins with ${winnerPct}% (n=${s.total})` },
         ],
         response_format: { type: "json_object" },
