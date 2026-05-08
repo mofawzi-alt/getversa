@@ -1449,7 +1449,7 @@ Rules:
         }
       }
 
-      const confidenceLine = `Based on ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real Versa votes.`;
+      const confidenceLine = `📊 ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real votes across ${matchedPolls.length} poll${matchedPolls.length > 1 ? 's' : ''}`;
       let fullSummary = parts.verdict || summary;
       if (peopleLikeMeLine) fullSummary += ` ${peopleLikeMeLine}`;
       fullSummary += `\n\n${confidenceLine}`;
