@@ -33,11 +33,19 @@ serve(async (req: Request): Promise<Response> => {
       .eq("is_active", true);
 
     const polls = freshCount ?? 0;
-    const title = "☀️ New polls are live";
-    const body =
-      polls > 0
-        ? `${polls} fresh debate${polls === 1 ? "" : "s"} waiting for you. Start your morning vote.`
-        : "Your daily polls are ready. Tap in and shape today's results.";
+
+    // Provocative, culturally-relevant morning push templates
+    const morningCopy = [
+      { title: "Egypt has spoken… but they're wrong 👀", body: "New debates just dropped. Go prove the majority wrong." },
+      { title: "Be honest — you already have an opinion", body: `${polls} fresh polls waiting. Swipe your truth.` },
+      { title: "The street is divided this morning", body: "Your vote could flip the results. Don't just watch." },
+      { title: "☀️ Your morning dilemma is here", body: "One swipe. Define your day. Egypt's watching." },
+      { title: "You're either with the 70% or the bold 30%", body: `${polls} new debate${polls === 1 ? '' : 's'}. Which side are you on?` },
+      { title: "This one's going to start arguments 🔥", body: "New polls live. Get your opinion in before your friends do." },
+    ];
+    const pick = morningCopy[Math.floor(Math.random() * morningCopy.length)];
+    const title = pick.title;
+    const body = pick.body;
 
     console.log(`Daily poll batch notify — ${polls} fresh polls`);
 
