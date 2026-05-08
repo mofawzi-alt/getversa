@@ -17,12 +17,30 @@ const CATEGORY_MAP: Record<string, string[]> = {
   "the pulse": ["The Pulse"],
   "beauty": ["Beauty & Personal Care"],
   "food & drinks": ["FMCG & Food", "Food Delivery & Dining"],
+  "food": ["FMCG & Food", "Food Delivery & Dining"],
+  "restaurant": ["Food Delivery & Dining", "FMCG & Food"],
+  "restaurants": ["Food Delivery & Dining", "FMCG & Food"],
+  "dining": ["Food Delivery & Dining"],
+  "cafe": ["Food Delivery & Dining", "FMCG & Food"],
+  "coffee": ["Food Delivery & Dining", "FMCG & Food"],
+  "delivery": ["Food Delivery & Dining"],
   "lifestyle": ["Lifestyle & Society"],
   "personality": ["Lifestyle & Society"],
   "relationships": ["Lifestyle & Society"],
+  "fashion": ["Beauty & Personal Care", "Lifestyle & Society"],
+  "clothing": ["Beauty & Personal Care", "Lifestyle & Society"],
   "telecom": ["Telco & Tech"],
   "tech": ["Telco & Tech"],
   "technology": ["Telco & Tech"],
+  "phones": ["Telco & Tech"],
+  "mobile": ["Telco & Tech"],
+  "cars": ["Lifestyle & Society"],
+  "travel": ["Lifestyle & Society"],
+  "education": ["Lifestyle & Society"],
+  "university": ["Lifestyle & Society"],
+  "money": ["Financial Services"],
+  "banking": ["Financial Services"],
+  "investing": ["Financial Services"],
 };
 const KNOWN_CATEGORIES = Object.keys(CATEGORY_MAP);
 
@@ -109,6 +127,22 @@ const ENTITY_SYNONYMS: Record<string, string[]> = {
   // Education
   private: ["private"],
   public: ["public"],
+  // Restaurants / dining
+  restaurant: ["restaurant", "dining", "eat", "food"],
+  mcdonalds: ["mcdonalds", "mcdonald", "ماكدونالدز"],
+  kfc: ["kfc", "kentucky"],
+  hardees: ["hardees", "هارديز"],
+  buffalo: ["buffalo burger", "بافلو"],
+  shawarma: ["shawarma", "شاورما"],
+  koshary: ["koshary", "koshari", "كشري"],
+  // More brands
+  noon: ["noon"],
+  amazon: ["amazon", "أمازون"],
+  jumia: ["jumia", "جوميا"],
+  ikea: ["ikea", "ايكيا"],
+  zara: ["zara", "زارا"],
+  nike: ["nike", "نايك"],
+  adidas: ["adidas", "أديداس"],
 };
 
 function expandEntityVariants(entity: string): string[] {
@@ -125,7 +159,7 @@ function expandEntityVariants(entity: string): string[] {
 
 async function callAI(apiKey: string, model: string, payload: any) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12_000);
+  const timeoutId = setTimeout(() => controller.abort(), 25_000);
   const resp = await fetch(AI_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -876,6 +910,126 @@ Examples:
     }
 
     matchedPolls = matchedPolls.slice(0, mode === "decide" ? 3 : 12);
+
+    // ---- 3b. Relevance validation ----
+    // Check if matched polls ACTUALLY answer the user's question.
+    // E.g. "best restaurant in cairo" matching "Cairo vs Sahel" is NOT relevant.
+    // We do a quick AI check on the top poll to verify semantic relevance.
+    let relevanceOverride = false;
+    if (matchedPolls.length > 0 && cleanedEntities.length === 0) {
+      // No specific entities extracted — high risk of false matches.
+      // Check if the top poll's question/options have any semantic overlap with the user's intent.
+      const topPoll = matchedPolls[0];
+      const pollText = `${topPoll.question} | ${topPoll.option_a} vs ${topPoll.option_b}`;
+      
+      try {
+        const relResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
+          messages: [
+            {
+              role: "system",
+              content: `You check if a poll result can meaningfully answer a user's question. Reply with ONLY "yes" or "no".
+"yes" = the poll directly addresses what the user is asking about (same topic, same entities, same comparison).
+"no" = the poll is about a different topic, even if they share a word (e.g. user asks about restaurants, poll asks about Cairo vs Sahel travel).
+Be strict. If in doubt, say "no".`,
+            },
+            { role: "user", content: `User's question: "${question}"\nTop matched poll: "${pollText}"` },
+          ],
+        });
+        if (relResp.ok) {
+          const rd = await readJsonSafely(relResp) || {};
+          const answer = (rd.choices?.[0]?.message?.content || "").trim().toLowerCase();
+          if (answer.startsWith("no")) {
+            console.log(`Relevance check FAILED: "${question}" vs "${pollText}" — switching to smart fallback`);
+            relevanceOverride = true;
+          }
+        }
+      } catch (e) {
+        console.error("Relevance check failed:", e);
+        // On error, continue with matched polls (don't block the answer)
+      }
+    }
+
+    // If relevance check failed, provide a smart AI-powered answer instead of forcing irrelevant poll data
+    if (relevanceOverride) {
+      let smartAnswer = "";
+      try {
+        const smartResp = await callAI(LOVABLE_API_KEY, MODEL_SMART, {
+          messages: [
+            {
+              role: "system",
+              content: `You are Versa, Egypt's opinion engine. The user asked a question but Versa doesn't have specific poll data that directly answers it.
+
+Your job: Give a genuinely USEFUL, conversational answer drawing on your knowledge of Egyptian culture, brands, and preferences. Be specific — name actual places, brands, or options. Don't be vague.
+
+Format:
+- Start with a direct answer to their question (2-3 sentences max)
+- If relevant, mention what Versa DOES have data on that's related
+- End with a suggestion to ask a more specific A-vs-B question
+
+Tone: Like a smart Cairo friend who knows the city well. Confident, direct, helpful.
+${isArabic ? "\nReply in Egyptian Arabic (عامية مصرية). Keep brand/place names in their original form." : ""}
+Do NOT say "I don't have data" as your opening line. Lead with value.`,
+            },
+            ...historyMessages,
+            { role: "user", content: question },
+          ],
+        });
+        if (smartResp.ok) {
+          const sd = await readJsonSafely(smartResp) || {};
+          smartAnswer = sd.choices?.[0]?.message?.content?.trim() || "";
+        }
+      } catch (e) {
+        console.error("Smart answer generation failed:", e);
+      }
+
+      if (!smartAnswer) {
+        smartAnswer = isArabic
+          ? "ڤيرسا معندهاش بول مباشر على الموضوع ده بالظبط. جرب سؤال مقارنة زي \"طلبات ولا المنيوز؟\" أو \"مكدونالدز ولا هارديز؟\" — هقولك الناس بتختار إيه."
+          : "Versa doesn't have a direct poll on this exact topic yet. Try a comparison question like \"Talabat or Elmenus?\" or \"McDonald's or Hardees?\" — I'll tell you what Egypt picks.";
+      }
+
+      // Suggest related polls the user can vote on
+      let suggestedPolls: any[] = [];
+      let votedIds = new Set<string>();
+      if (userId) {
+        const { data: votedRows } = await supabase.from("votes").select("poll_id").eq("user_id", userId);
+        votedIds = new Set((votedRows || []).map((v: any) => v.poll_id));
+      }
+
+      // Use the matched polls but clearly label them as "related" not "answers"
+      suggestedPolls = matchedPolls
+        .filter((p: any) => !votedIds.has(p.id))
+        .slice(0, 3)
+        .map((p: any) => ({
+          id: p.id, question: p.question,
+          option_a: p.option_a, option_b: p.option_b,
+          image_a_url: p.image_a_url, image_b_url: p.image_b_url,
+          category: p.category,
+        }));
+
+      let queryId: string | null = null;
+      if (userId) {
+        const { data: inserted } = await supabase.from("ask_versa_queries").insert({
+          user_id: userId, question, mode, route: safeRoute,
+          credits_charged: 0, answered: true, low_data: true,
+          model_used: MODEL_SMART, total_votes_considered: totalVotes,
+          matched_poll_count: matchedPolls.length,
+          category_hint: category && category !== "any" ? category : null,
+        }).select("id").maybeSingle();
+        queryId = inserted?.id ?? null;
+      }
+
+      return new Response(JSON.stringify({
+        stage: "smart_answer",
+        summary: smartAnswer,
+        suggested_polls: suggestedPolls,
+        credits_balance: userBalance,
+        route: safeRoute,
+        mode,
+        query_id: queryId,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const totalVotes = matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.total || 0), 0);
     const totalRealVotes = matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.realTotal || 0), 0);
     const anyBaselineActive = matchedPolls.some((p: any) => p._stats?.baselineActive);

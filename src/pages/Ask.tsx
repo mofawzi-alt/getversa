@@ -273,6 +273,20 @@ export default function Ask() {
         return;
       }
 
+      // Smart answer: AI-powered helpful answer when no relevant polls exist (no charge)
+      if (data.stage === 'smart_answer') {
+        const turnId = crypto.randomUUID();
+        setTurns((prev) => [...prev, {
+          id: turnId, question, mode,
+          loading: false,
+          summary: data.summary,
+          guardrailPolls: data.suggested_polls || [],
+          variant: 'smart_answer',
+          askQueryId: data.query_id || null,
+        } as AskTurn]);
+        return;
+      }
+
       // Guardrail: render directly as a turn, no charge
       if (data.stage === 'guardrail') {
         const turnId = crypto.randomUUID();

@@ -28,7 +28,7 @@ export interface AskTurn {
   verdict?: Verdict | null;
   polls?: ResearchPoll[];
   lowData?: boolean;
-  variant?: 'offscope' | 'factual' | 'clarify' | null;
+  variant?: 'offscope' | 'factual' | 'clarify' | 'smart_answer' | null;
   notice?: string | null;
   suggestions?: string[];
   clarifications?: Array<{ label: string; question: string }>;
@@ -208,6 +208,30 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                       </div>
                       <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
                       <p className="text-[11px] text-muted-foreground/70">No credits charged.</p>
+                    </motion.div>
+                  )}
+
+                  {/* Smart answer — useful AI response when no relevant polls match */}
+                  {!t.loading && t.variant === 'smart_answer' && t.summary && (
+                    <motion.div {...bubbleIn}>
+                      <div className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm">💡</span>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-primary">Versa's Take</p>
+                        </div>
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words">{t.summary}</p>
+                        {t.guardrailPolls && t.guardrailPolls.length > 0 && (
+                          <div className="pt-2 border-t border-border space-y-2">
+                            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Related polls to vote on</p>
+                            {t.guardrailPolls.map((p) => (
+                              <button key={p.id} onClick={() => onPickSuggestion?.(p.question)} className="w-full text-left p-2.5 rounded-xl bg-muted/50 hover:bg-muted transition text-xs font-medium text-foreground break-words">
+                                {p.question}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-[11px] text-muted-foreground/70">No credits charged.</p>
+                      </div>
                     </motion.div>
                   )}
 
