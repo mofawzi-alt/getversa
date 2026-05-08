@@ -36,10 +36,26 @@ const getNativeCallbackUrl = () =>
 const openNativeApp = () => {
   const callbackUrl = getNativeCallbackUrl();
 
+  // Try multiple methods — SFSafariViewController on iPad can block
+  // programmatic window.location.href for custom schemes.
   try {
-    window.location.href = callbackUrl;
+    // Method 1: Create a temporary <a> tag and click it.
+    // iOS treats user-gesture-initiated anchor clicks more favourably
+    // than programmatic location changes for custom URL schemes.
+    const a = document.createElement('a');
+    a.href = callbackUrl;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    // Clean up after a tick
+    setTimeout(() => a.remove(), 100);
   } catch {
-    // Keep the holding screen visible if iOS blocks automatic scheme navigation.
+    // Fallback: direct location assignment
+    try {
+      window.location.href = callbackUrl;
+    } catch {
+      // Keep the holding screen visible
+    }
   }
 };
 
