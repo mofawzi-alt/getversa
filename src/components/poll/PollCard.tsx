@@ -241,13 +241,13 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
             )}
           </div>
 
-          {/* Live social energy */}
-          {!hasResult && (
+          {/* Live social energy — show after voting */}
+          {hasResult && result!.totalVotes > 20 && (
             <div className="mt-1.5">
               <LiveSocialBuzz
-                totalVotes={result?.totalVotes ?? 0}
-                percentA={result?.percentA ?? 50}
-                percentB={result?.percentB ?? 50}
+                totalVotes={result!.totalVotes}
+                percentA={result!.percentA}
+                percentB={result!.percentB}
                 category={poll.category}
                 isLive={isLive}
               />
