@@ -63,8 +63,8 @@ export default function PersonalitySnapshot() {
                 <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Your Personality</p>
               </div>
               <p className="text-lg font-display font-extrabold text-white leading-tight">{result.name}</p>
-              {result.summary && (
-                <p className="text-xs text-white/80 mt-1 leading-snug line-clamp-2">{result.summary}</p>
+              {result.description && (
+                <p className="text-xs text-white/80 mt-1 leading-snug line-clamp-2">{result.description}</p>
               )}
             </div>
             <ChevronRight className="h-5 w-5 text-white/60 shrink-0" />
