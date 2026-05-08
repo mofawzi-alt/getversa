@@ -11,6 +11,8 @@ Updated: now
 - Demographics strictly restricted to admin/brands.
 - High-quality images required for active polls; deactivate if missing.
 - Safe-area insets and React Portals at document body used for all overlays/popups.
+- No alcohol imagery ever — no wine, cocktails, beer, champagne in any visuals.
+- Ask Versa = public sentiment intelligence, NOT AI chatbot. Data-first, honest when no polls exist.
 
 ## Memories
 - [Project Context](mem://project/identity) — Versa application context and Gen Z target audience
@@ -103,7 +105,8 @@ Updated: now
 - [Compatibility Link](mem://features/compatibility-link) — Shareable /compare/u/:userId link + QR code with blended vote/dimension/personality scoring
 - [Friend Messaging](mem://features/friend-messaging) — IG-style 1-on-1 DMs between accepted friends with text + poll sharing, realtime, unread badges
 - [FOMO Phase 1](mem://features/fomo-phase-1) — Live countdowns, voter count strip, auto Trending badge, Closing Soon scroll, First Voter badge
-- [Notification Governance Phase 2](mem://features/notification-governance-phase-2) — user_notification_preferences + notification_log tables, can_send_notification gate (3/day cap, 11pm–8am Cairo quiet hours, streak displaces lowest), single send-governed-notification edge function, profile prefs UI, admin analytics
-- [Daily Pulse](mem://features/daily-pulse) — Morning Pulse (6–11am), Evening Verdict (8pm–12am, 9pm Cairo push), and Stories Row on Home with Egypt Today (admin pin), Cairo, top categories, real Updates diff, Friends. Cached in daily_pulse table, admin toggles in pulse_settings via Admin → Pulse tab.
-- [Campaign Visibility Modes](mem://features/campaign-visibility-modes) — `poll_campaigns.visibility_mode` (mixed/bundle_only/hero_only) controls whether campaign polls appear in Hero queue, Brand banner, or both. Set per-campaign via Admin → Brand Campaigns dropdown.
+- [Notification Governance Phase 2](mem://features/notification-governance-phase-2) — user_notification_preferences + notification_log tables, can_send_notification gate
+- [Daily Pulse](mem://features/daily-pulse) — Morning Pulse, Evening Verdict, Stories Row on Home
+- [Campaign Visibility Modes](mem://features/campaign-visibility-modes) — poll_campaigns.visibility_mode controls hero/bundle/mixed
 - [Auto-Hook Subtitles](mem://features/auto-hook-subtitles) — Category-based provocative subtitle generation on poll creation
+- [Ask Versa Identity](mem://features/ask-versa-identity) — Public sentiment intelligence principles: data-first, honest, socially insightful

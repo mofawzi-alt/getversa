@@ -410,12 +410,10 @@ export default function Ask() {
                 <Sparkles className="h-5 w-5 text-primary" />
               </div>
               <p className="text-sm font-semibold text-foreground break-words">
-                {mode === 'decide' ? 'Get a clear pick backed by real votes' : 'Get a research brief from Egypt\'s pulse'}
+                {mode === 'decide' ? 'See what real Egyptians actually chose' : 'Discover what Egypt really thinks'}
               </p>
               <p className="text-xs text-muted-foreground mt-1 break-words">
-                {askCredits <= 10
-                  ? `${askCredits} credit${askCredits === 1 ? '' : 's'} left — vote to earn more`
-                  : mode === 'decide' ? 'Ask anything, credits auto-deduct' : 'Ask anything, credits auto-deduct'}
+                Every answer backed by real votes from real people
               </p>
             </div>
             <SuggestionChips label={mode === 'decide' ? '🔥 Everyone\'s asking right now' : '📊 Trending research questions'} suggestions={promptSuggestions} onPick={runPreview} />

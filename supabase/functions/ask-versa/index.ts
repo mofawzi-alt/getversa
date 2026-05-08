@@ -957,18 +957,18 @@ Be strict. If in doubt, say "no".`,
           messages: [
             {
               role: "system",
-              content: `You are Versa, Egypt's opinion engine. The user asked a question but Versa doesn't have specific poll data that directly answers it.
+              content: `You are Versa, Egypt's public sentiment engine. The user asked a question but Versa doesn't have direct poll data on this exact topic.
 
-Your job: Give a genuinely USEFUL, conversational answer drawing on your knowledge of Egyptian culture, brands, and preferences. Be specific — name actual places, brands, or options. Don't be vague.
+CRITICAL: Be honest. Do NOT pretend you have data when you don't. Versa's value is REAL poll results from REAL people — never fake it.
 
-Format:
-- Start with a direct answer to their question (2-3 sentences max)
-- If relevant, mention what Versa DOES have data on that's related
-- End with a suggestion to ask a more specific A-vs-B question
+Your job:
+1. Clearly state that Versa doesn't have direct poll data on this specific topic yet (1 sentence).
+2. If there are related topics Versa DOES have data on, briefly mention them and suggest a specific A-vs-B question the user could ask instead.
+3. Keep it to 2-3 sentences max. No generic AI advice or opinions.
 
-Tone: Like a smart Cairo friend who knows the city well. Confident, direct, helpful.
+Tone: Honest, direct, helpful — never preachy or generic.
 ${isArabic ? "\nReply in Egyptian Arabic (عامية مصرية). Keep brand/place names in their original form." : ""}
-Do NOT say "I don't have data" as your opening line. Lead with value.`,
+Do NOT give your own opinion or advice. Only point users toward real vote data.`,
             },
             ...historyMessages,
             { role: "user", content: question },
@@ -1297,22 +1297,22 @@ Rules:
 - Be direct and factual.`
       : `Reply ONLY with valid JSON, no markdown, no backticks.
 {
-  "verdict": "One punchy sentence (max 18 words) — the headline finding. Lead with the winning % and option name.",
-  ${highlightCount >= 1 ? `"highlight_1": "One surprising demographic finding as a CONVERSATIONAL sentence. Example: 'Cairo women went the other way.' or 'Most men chose the other side.' NEVER use tables, grids, or side-by-side percentages like 'Males: 62%, Females: 48%'. NEVER show a full breakdown. Just one natural, curiosity-driving sentence.",` : ""}
-  ${highlightCount >= 2 ? `"highlight_2": "A second surprising demographic finding, different from highlight_1. Same conversational sentence format. Example: 'Gen Z voted strongest for this at 68%.' NEVER use table format.",` : ""}
-  "cultural_context": "One sentence connecting this preference to Egyptian culture.",
-  "action_line": "One sentence — a direct recommendation. Start with 'Go with...' or 'Pick...' or 'Try...'"
+  "verdict": "One punchy sentence (max 18 words) — the headline finding. Lead with the winning % and option name. Make it feel like a social discovery, not a survey result.",
+  ${highlightCount >= 1 ? `"highlight_1": "One SURPRISING or SOCIALLY REVEALING demographic finding. Frame it as identity tension or social contrast. Examples: 'Cairo and Alexandria completely disagree on this.' or 'Women went the opposite direction from men.' NEVER use tables or side-by-side percentages. One natural sentence that makes the reader think 'wait, really?'",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "A second surprising finding from a DIFFERENT angle (age vs gender vs city). Frame as tribal or identity-based contrast. Example: 'The youngest voters were the most divided on this.' NEVER use table format.",` : ""}
+  "cultural_context": "One sentence connecting this to Egyptian identity, culture, or social dynamics. Make it feel emotionally resonant — not academic.",
+  "action_line": "One sentence — a confident, direct pick. Start with 'Go with...' or 'Pick...' or 'The data says...'"
 }
 
 Rules:
-- Every field must be a single conversational sentence, max 20 words each.
-- Demographic highlights MUST be natural conversational sentences — NEVER tables, grids, or side-by-side percentage comparisons.
-- CORRECT formats: "Cairo women went the other way." / "Most men chose the other side." / "Alexandria disagreed with Cairo."
-- WRONG formats: "Males: 62%, Females: 48%" / "Cairo: 71% vs Alexandria: 54%" / Any table or grid.
-- Highlights should tease the most SURPRISING finding — not the obvious one.
+- This is PUBLIC SENTIMENT INTELLIGENCE, not a survey report. Make every line feel socially alive.
+- Lead with REAL DATA: percentages, vote counts, demographic splits. Never vague.
+- Highlights should surface the most UNEXPECTED or IDENTITY-REVEALING finding — not the obvious one.
+- Frame findings as social contrasts, tribal differences, or generational divides.
+- CORRECT: "72% chose X — but Cairo women strongly disagreed." / "This was a landslide everywhere except Alexandria."
+- WRONG: "Males: 62%, Females: 48%" / Any table or grid format.
 - Use real numbers from the data. Never invent statistics.
-- Never mention 'Gen Z' or generational labels.
-- Be conversational, confident, direct — like a smart Cairo friend who reads data.`;
+- Be conversational, confident — like reading a viral insight, not a spreadsheet.`;
 
     if (mode === "decide") {
       const top = matchedPolls[0];
@@ -1340,7 +1340,7 @@ Rules:
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: `You are Versa's insight engine. Produce a structured JSON response.\n${levelInstructions}` + arabicInstruction },
+          { role: "system", content: `You are Versa's public sentiment engine. Your answers are driven by REAL VOTE DATA from real Egyptians — never AI opinions. Produce a structured JSON response.\n${levelInstructions}` + arabicInstruction },
           { role: "user", content: `User asked: "${question}"\n\nPoll data:\n${pollDataText}\n\nTop result: ${winnerLabel} wins with ${winnerPct}% (n=${s.total})` },
         ],
         response_format: { type: "json_object" },
@@ -1369,7 +1369,7 @@ Rules:
       }
 
       // Build confidence line
-      const confidenceLine = `Based on ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real Versa votes.`;
+      const confidenceLine = `📊 ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real votes from ${matchedPolls.length} poll${matchedPolls.length > 1 ? 's' : ''}`;
 
       // Build summary with people-like-me and confidence
       let fullSummary = parts.verdict || `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
@@ -1407,20 +1407,23 @@ Rules:
 Rules: Use real numbers only. One factual summary paragraph.`
         : `Reply ONLY with valid JSON, no markdown, no backticks.
 {
-  "verdict": "2-3 sentence research-style summary. Lead with the strongest concrete number.",
-  ${highlightCount >= 1 ? `"highlight_1": "One surprising demographic finding as a CONVERSATIONAL sentence. NEVER use tables or side-by-side percentages.",` : ""}
-  ${highlightCount >= 2 ? `"highlight_2": "A second surprising finding, different angle. Same conversational format.",` : ""}
-  "cultural_context": "One sentence connecting patterns to Egyptian market dynamics.",
-  "action_line": "One sentence — a strategic takeaway."
+  "verdict": "2-3 sentence research-style summary. Lead with the strongest concrete number. Frame as public sentiment intelligence — what real Egyptians actually chose.",
+  ${highlightCount >= 1 ? `"highlight_1": "One SURPRISING or SOCIALLY REVEALING demographic split. Frame as identity tension: 'Men and women completely split on this.' NEVER tables.",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "A second unexpected finding from a different demographic angle. Frame as tribal contrast or generational divide.",` : ""}
+  "cultural_context": "One sentence connecting these patterns to Egyptian social dynamics or cultural identity.",
+  "action_line": "One sentence — the key strategic takeaway from real public opinion."
 }
 Rules:
-- Demographic highlights MUST be natural conversational sentences — NEVER tables, grids, or comparisons like "Males: X%, Females: Y%".
+- This is PUBLIC SENTIMENT INTELLIGENCE. Every line should feel like discovering what Egypt actually thinks.
+- Lead with real data: percentages, vote counts, demographic contrasts.
+- Highlights should surface UNEXPECTED splits — the findings that make someone stop and think.
+- NEVER tables, grids, or side-by-side comparisons like "Males: X%, Females: Y%".
 - Use real numbers from the data. Never invent statistics.
-- Be analytical but accessible.`;
+- Be analytical but make it feel socially alive, not academic.`;
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: `You are Versa's research insight engine.\n${researchLevelInstructions}` + arabicInstruction },
+          { role: "system", content: `You are Versa's public sentiment engine. Your insights are backed by REAL VOTE DATA from real Egyptians — never AI opinions.\n${researchLevelInstructions}` + arabicInstruction },
           { role: "user", content: `User's research question: "${question}"\n\nMatched polls with results:\n${sampleText}` },
         ],
         response_format: { type: "json_object" },
@@ -1446,7 +1449,7 @@ Rules:
         }
       }
 
-      const confidenceLine = `Based on ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real Versa votes.`;
+      const confidenceLine = `📊 ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real votes across ${matchedPolls.length} poll${matchedPolls.length > 1 ? 's' : ''}`;
       let fullSummary = parts.verdict || summary;
       if (peopleLikeMeLine) fullSummary += ` ${peopleLikeMeLine}`;
       fullSummary += `\n\n${confidenceLine}`;

@@ -96,7 +96,7 @@ function TypingBubble({ mode }: { mode: Mode }) {
         ))}
       </div>
       <span className="text-[11px] text-muted-foreground font-medium ml-1">
-        {mode === 'decide' ? 'Reading the pulse…' : 'Building your brief…'}
+        {mode === 'decide' ? 'Checking real votes…' : 'Analyzing public opinion…'}
       </span>
     </motion.div>
   );
@@ -211,18 +211,18 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     </motion.div>
                   )}
 
-                  {/* Smart answer — useful AI response when no relevant polls match */}
+                  {/* Smart answer — no direct poll data, honest fallback */}
                   {!t.loading && t.variant === 'smart_answer' && t.summary && (
                     <motion.div {...bubbleIn}>
                       <div className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-3">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-sm">💡</span>
-                          <p className="text-[10px] uppercase tracking-wider font-bold text-primary">Versa's Take</p>
+                          <span className="text-sm">🔍</span>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">No direct poll data yet</p>
                         </div>
                         <p className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words">{t.summary}</p>
                         {t.guardrailPolls && t.guardrailPolls.length > 0 && (
                           <div className="pt-2 border-t border-border space-y-2">
-                            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Related polls to vote on</p>
+                            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Vote on related polls to build this data</p>
                             {t.guardrailPolls.map((p) => (
                               <button key={p.id} onClick={() => onPickSuggestion?.(p.question)} className="w-full text-left p-2.5 rounded-xl bg-muted/50 hover:bg-muted transition text-xs font-medium text-foreground break-words">
                                 {p.question}
@@ -231,6 +231,9 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                           </div>
                         )}
                         <p className="text-[11px] text-muted-foreground/70">No credits charged.</p>
+                      </div>
+                      <div className="mt-2">
+                        <SuggestPollButton question={t.question} askQueryId={t.askQueryId} />
                       </div>
                     </motion.div>
                   )}
@@ -265,22 +268,22 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                       className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden divide-y divide-border/50"
                     >
                       {t.insightParts.why && (
-                        <InsightRow icon={Brain} label="Why" color="bg-primary">
+                        <InsightRow icon={Brain} label="Social Insight" color="bg-primary">
                           {t.insightParts.why}
                         </InsightRow>
                       )}
                       {t.insightParts.demographic_split && (
-                        <InsightRow icon={Users} label="Demo Split" color="bg-blue-500">
+                        <InsightRow icon={Users} label="Who Disagrees" color="bg-blue-500">
                           {t.insightParts.demographic_split}
                         </InsightRow>
                       )}
                       {t.insightParts.cultural_context && (
-                        <InsightRow icon={Globe} label="Cultural Context" color="bg-amber-500">
+                        <InsightRow icon={Globe} label="Egypt's Pulse" color="bg-amber-500">
                           {t.insightParts.cultural_context}
                         </InsightRow>
                       )}
                       {t.insightParts.action_line && (
-                        <InsightRow icon={Zap} label="Action" color="bg-emerald-500">
+                        <InsightRow icon={Zap} label="The Verdict" color="bg-emerald-500">
                           <span className="font-semibold">{t.insightParts.action_line}</span>
                         </InsightRow>
                       )}
