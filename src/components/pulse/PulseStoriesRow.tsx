@@ -610,7 +610,33 @@ export default function PulseStoriesRow() {
       }
     }
 
-    return list;
+    // ── Deduplicate: remove cards whose poll already appeared in a higher-priority circle ──
+    // Sort by priority first so higher-priority circles claim polls first
+    list.sort((a, b) => a.priority - b.priority);
+    const usedPollIds = new Set<string>();
+    for (const circle of list) {
+      circle.cards = circle.cards.filter((card) => {
+        const pid = card.votePollId;
+        if (!pid) return true; // no poll = keep (text-only cards)
+        if (usedPollIds.has(pid)) return false; // duplicate — drop
+        usedPollIds.add(pid);
+        return true;
+      });
+    }
+    // Remove circles that lost all their cards after dedup
+    const deduped = list.filter((c) => c.cards.length > 0);
+
+    // ── Filter out cards with no background image (except text-only cards like "New This Week" intro) ──
+    for (const circle of deduped) {
+      if (circle.topic === 'new_this_week' || circle.topic === 'predict') continue; // these have intro cards without images
+      circle.cards = circle.cards.filter((card) => {
+        // Keep if it has a background image OR if it's a non-poll text card
+        return !!card.backgroundImage || !card.votePollId;
+      });
+    }
+    const final = deduped.filter((c) => c.cards.length > 0);
+
+    return final;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pulse, settings, battleData, updatesData, friendsData, categoryStories, hiddenCats, predictData, closingData, weeklyData, newPollsData, breakdownData, user, bump]);
 
