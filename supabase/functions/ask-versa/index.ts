@@ -1398,23 +1398,22 @@ CRITICAL RULES:
       }).join("\n");
 
       const researchLevelInstructions = askLevel <= 1
-        ? `Reply with ONLY a JSON object: {"verdict": "2-3 sentence research summary with concrete numbers. No demographic data."}
-Rules: Use real numbers only. One factual summary paragraph.`
+        ? `Reply with ONLY a JSON object: {"verdict": "1-2 sentences max. Lead with the strongest number."}
+Rules: Real numbers only. No fluff. Max 25 words total.`
         : `Reply ONLY with valid JSON, no markdown, no backticks.
 {
-  "verdict": "2-3 sentence research-style summary. Lead with the strongest concrete number. Frame as public sentiment intelligence — what real Egyptians actually chose.",
-  ${highlightCount >= 1 ? `"highlight_1": "One SURPRISING or SOCIALLY REVEALING demographic split. Frame as identity tension: 'Men and women completely split on this.' NEVER tables.",` : ""}
-  ${highlightCount >= 2 ? `"highlight_2": "A second unexpected finding from a different demographic angle. Frame as tribal contrast or generational divide.",` : ""}
-  "cultural_context": "One sentence connecting these patterns to Egyptian social dynamics or cultural identity.",
-  "action_line": "One sentence — the key strategic takeaway from real public opinion."
+  "verdict": "1-2 punchy sentences max. Lead with the strongest concrete number. Max 25 words.",
+  ${highlightCount >= 1 ? `"highlight_1": "Max 12 words. The most unexpected demographic split. 'Wait, really?' energy.",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "Max 12 words. Second contrast from a different angle.",` : ""}
+  "cultural_context": "Max 12 words. One emotional link to Egyptian social reality.",
+  "action_line": "Max 10 words. The strategic takeaway."
 }
-Rules:
-- This is PUBLIC SENTIMENT INTELLIGENCE. Every line should feel like discovering what Egypt actually thinks.
-- Lead with real data: percentages, vote counts, demographic contrasts.
-- Highlights should surface UNEXPECTED splits — the findings that make someone stop and think.
-- NEVER tables, grids, or side-by-side comparisons like "Males: X%, Females: Y%".
-- Use real numbers from the data. Never invent statistics.
-- Be analytical but make it feel socially alive, not academic.`;
+
+CRITICAL RULES:
+- BREVITY IS EVERYTHING. Max 12 words per field. This is mobile, not a PDF.
+- Surface the most surprising finding first.
+- NEVER tables, lists, multi-sentence fields, or "In summary" / "Overall" language.
+- Think viral tweet with real data, not research paper.`;
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
