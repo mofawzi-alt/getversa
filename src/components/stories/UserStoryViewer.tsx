@@ -67,6 +67,18 @@ function storyContent(story: UserStory, fallbackPoll?: any) {
       const bg = c.image_url || imgA || imgB;
 
       const hasResults = pctA != null && pctB != null;
+      const gap = hasResults ? Math.abs(Number(pctA) - Number(pctB)) : 0;
+
+      // Dynamic label based on vote state
+      let dynamicLabel = 'Live Result';
+      if (hasResults) {
+        if (gap <= 5) dynamicLabel = 'Close Match 🔥';
+        else if (gap >= 40) dynamicLabel = 'Landslide';
+        else if (totalVotes >= 500) dynamicLabel = 'Viral Pick';
+        else if (totalVotes >= 100) dynamicLabel = 'Community Pick';
+        else dynamicLabel = 'Live Result';
+      }
+
       return {
         headline: c.question || p?.question || 'Poll Result',
         primary: hasResults
@@ -79,7 +91,7 @@ function storyContent(story: UserStory, fallbackPoll?: any) {
         splitA: optA && pctA != null ? { label: optA, pct: Number(pctA) } : undefined,
         splitB: optB && pctB != null ? { label: optB, pct: Number(pctB) } : undefined,
         emoji: '📊',
-        label: 'Poll Result',
+        label: dynamicLabel,
         pollId: c.poll_id,
         totalVotes,
         type: 'poll_result' as const,
