@@ -354,6 +354,8 @@ Respond with a VALID JSON object only.`;
       const startsAt = new Date();
       const endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
+      const autoSubtitle = generateHook(pollData.category || category || 'General', pollData.question);
+
       const { data: poll, error: insertError } = await supabase
         .from('polls')
         .insert({
@@ -371,6 +373,7 @@ Respond with a VALID JSON object only.`;
           target_gender: targetGender || null,
           target_country: targetCountry || null,
           weight_score: 500,
+          subtitle: autoSubtitle,
         })
         .select()
         .single();
