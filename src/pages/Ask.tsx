@@ -17,7 +17,7 @@ const DECIDE_SUGGESTIONS = [
   { text: 'Costa or Cilantro for studying?', tag: 'Trending', icon: 'flame' as const },
   { text: 'iPhone or Samsung — which lasts longer?', tag: '2.4K voted', icon: 'users' as const },
   { text: 'Should I order Talabat or Elmenus tonight?', tag: 'Hot', icon: 'zap' as const },
-  { text: 'Vodafone or Orange for university?', tag: '50/50 split', icon: 'trending' as const },
+  { text: 'Nike or Adidas for everyday wear?', tag: '50/50 split', icon: 'trending' as const },
 ];
 
 const RESEARCH_SUGGESTIONS = [

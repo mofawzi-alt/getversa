@@ -343,7 +343,7 @@ Rules:
       }
     }
     const normalizeTerm = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s&+-]/g, " ").replace(/\s+/g, " ").trim();
-    const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and"]);
+    const STOP_TERMS = new Set(["which", "what", "who", "last", "longer", "better", "best", "more", "less", "with", "without", "than", "vs", "or", "and", "should", "would", "could", "from", "about", "that", "this", "they", "them", "their", "have", "like", "just", "really", "very", "much", "most", "some", "other", "each", "every", "between", "into", "over", "under", "after", "before", "during", "through"]);
     const normalizeList = (value: unknown, minLength = 2): string[] => {
       const rawItems = Array.isArray(value)
         ? value
@@ -615,12 +615,27 @@ Rules:
       return Array.from(variants);
     };
 
+    // Weak adjective terms: common in questions but too generic to match polls on their own.
+    // A poll must match at least one NON-weak term to count as relevant.
+    const WEAK_TERMS = new Set(["private", "public", "best", "good", "bad", "big", "small", "new", "old", "first", "top", "real", "free", "cheap", "expensive", "fast", "slow", "hot", "cold", "long", "short", "high", "low", "early", "late", "open", "close", "full", "half", "online", "offline", "local", "global", "modern", "classic", "daily", "weekly"]);
+
     const topicalTermVariants = topicalTerms.map((t) => expandStemVariants(t));
+    const topicalTermIsWeak = topicalTerms.map((t) => WEAK_TERMS.has(t));
 
     const getPollTopicalHitCount = (poll: any) => {
       if (topicalTermVariants.length === 0) return 0;
       const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
       return topicalTermVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+    };
+
+    // Count only non-weak topical hits — used to filter out false positives
+    const getPollStrongHitCount = (poll: any) => {
+      if (topicalTermVariants.length === 0) return 0;
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
+      return topicalTermVariants.reduce((count, variants, idx) => {
+        if (topicalTermIsWeak[idx]) return count;
+        return count + (variants.some((v) => haystack.includes(v)) ? 1 : 0);
+      }, 0);
     };
 
     // Entity gate: with 2+ entities require all (e.g. "iphone vs samsung" → both must appear).
@@ -649,8 +664,9 @@ Rules:
       const split = s.total > 0 ? s.a / s.total : 0.5;
       const controversyScore = 1 - Math.abs(split - 0.5) * 2;
       const topicalHits = getPollTopicalHitCount(p);
+      const strongHits = getPollStrongHitCount(p);
       const entityMatch = pollMatchesAllEntities(p);
-      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _entityMatch: entityMatch };
+      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _strongHits: strongHits, _entityMatch: entityMatch };
     });
 
     // VAGUE-QUESTION GUARD (decide mode): no specific A vs B → ask a clarifier instead of guessing.
@@ -742,6 +758,9 @@ Examples:
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Check if we have any non-weak topical terms
+    const hasStrongTerms = topicalTerms.some((_, i) => !topicalTermIsWeak[i]);
+
     let matchedPolls = enrichedPollList.filter((p: any) => {
       if (!p._entityMatch) return false;
       // Without entities, require at least one topical hit OR a category match.
@@ -749,7 +768,11 @@ Examples:
         if (categoryBuckets.length === 0) return false;
         return categoryBuckets.includes(p.category);
       }
-      return p._topicalHits >= 1;
+      if (p._topicalHits < 1) return false;
+      // If the question has strong (non-weak) terms, require at least one strong hit.
+      // This prevents "private university" from matching "Private Moments" (only weak "private" hit).
+      if (hasStrongTerms && p._strongHits < 1) return false;
+      return true;
     });
 
     // Soft relax: if entity gate killed everything but topical terms find polls,
