@@ -96,7 +96,7 @@ function TypingBubble({ mode }: { mode: Mode }) {
         ))}
       </div>
       <span className="text-[11px] text-muted-foreground font-medium ml-1">
-        {mode === 'decide' ? 'Reading the pulse…' : 'Building your brief…'}
+        {mode === 'decide' ? 'Checking real votes…' : 'Analyzing public opinion…'}
       </span>
     </motion.div>
   );
