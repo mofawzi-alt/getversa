@@ -344,12 +344,11 @@ export default function Ask() {
         {/* Mode toggle */}
         <div className="px-3 pb-2 w-full min-w-0 max-w-lg mx-auto overflow-hidden">
           <div className="relative grid grid-cols-2 gap-1 p-1 rounded-full bg-muted/60 w-full min-w-0">
-            {/* Sliding indicator */}
+            {/* Sliding indicator — uses left percentage for reliability */}
             <motion.div
-              layout
               className={`absolute top-1 bottom-1 rounded-full shadow-lg ${isDecide ? 'bg-primary' : 'bg-foreground/90'}`}
               style={{ width: 'calc(50% - 4px)' }}
-              animate={{ x: isDecide ? 0 : 'calc(100% + 8px)' }}
+              animate={{ left: isDecide ? '4px' : 'calc(50% + 0px)' }}
               transition={{ type: 'spring', damping: 20, stiffness: 250 }}
             />
             <button

@@ -1012,7 +1012,7 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
         const { data: inserted } = await supabase.from("ask_versa_queries").insert({
           user_id: userId, question, mode, route: safeRoute,
           credits_charged: 0, answered: true, low_data: true,
-          model_used: MODEL_SMART, total_votes_considered: totalVotes,
+          model_used: MODEL_SMART, total_votes_considered: matchedPolls.reduce((acc: number, p: any) => acc + (p._stats?.total || 0), 0),
           matched_poll_count: matchedPolls.length,
           category_hint: category && category !== "any" ? category : null,
         }).select("id").maybeSingle();
