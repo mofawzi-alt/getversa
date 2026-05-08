@@ -241,6 +241,19 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
             )}
           </div>
 
+          {/* Live social energy */}
+          {!hasResult && (
+            <div className="mt-1.5">
+              <LiveSocialBuzz
+                totalVotes={result?.totalVotes ?? 0}
+                percentA={result?.percentA ?? 50}
+                percentB={result?.percentB ?? 50}
+                category={poll.category}
+                isLive={isLive}
+              />
+            </div>
+          )}
+
           {/* Result bars — match reference */}
           {hasResult && (
             <div className="mt-3 space-y-2 animate-fade-in">
