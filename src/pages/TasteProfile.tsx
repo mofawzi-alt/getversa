@@ -5,9 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import ShareableTasteCard from '@/components/taste/ShareableTasteCard';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
-import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye, Clock, ShieldCheck, Diamond } from 'lucide-react';
+import { Loader2, Flame, BarChart3, Sparkles, TrendingUp, Eye, Clock, ShieldCheck, Diamond, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import TasteEvolutionTimeline from '@/components/taste/TasteEvolutionTimeline';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 import { computePersonalityType } from '@/lib/personalityType';
 import TasteRevealCinematic, { hasTasteBeenRevealed } from '@/components/taste/TasteRevealCinematic';
@@ -103,12 +103,12 @@ const DIMENSION_GRADIENTS: Record<string, string> = {
   'Health vs Indulgence': 'from-rose-500 to-pink-400',
 };
 
-const DIMENSION_COLORS: Record<string, { bg: string; bar: string; text: string }> = {
-  'Tradition vs Innovation': { bg: 'bg-amber-50', bar: 'bg-amber-500', text: 'text-amber-700' },
-  'Budget vs Premium': { bg: 'bg-emerald-50', bar: 'bg-emerald-500', text: 'text-emerald-700' },
-  'Local vs Global': { bg: 'bg-blue-50', bar: 'bg-blue-500', text: 'text-blue-700' },
-  'Practicality vs Experience': { bg: 'bg-violet-50', bar: 'bg-violet-500', text: 'text-violet-700' },
-  'Health vs Indulgence': { bg: 'bg-rose-50', bar: 'bg-rose-500', text: 'text-rose-700' },
+const DIMENSION_COLORS: Record<string, { bg: string; bar: string; text: string; accent: string }> = {
+  'Tradition vs Innovation': { bg: 'bg-amber-50', bar: 'bg-amber-500', text: 'text-amber-700', accent: 'border-amber-200' },
+  'Budget vs Premium': { bg: 'bg-emerald-50', bar: 'bg-emerald-500', text: 'text-emerald-700', accent: 'border-emerald-200' },
+  'Local vs Global': { bg: 'bg-blue-50', bar: 'bg-blue-500', text: 'text-blue-700', accent: 'border-blue-200' },
+  'Practicality vs Experience': { bg: 'bg-violet-50', bar: 'bg-violet-500', text: 'text-violet-700', accent: 'border-violet-200' },
+  'Health vs Indulgence': { bg: 'bg-rose-50', bar: 'bg-rose-500', text: 'text-rose-700', accent: 'border-rose-200' },
 };
 
 const DIMENSION_POLES: Record<string, [string, string]> = {
@@ -140,7 +140,7 @@ function SpectrumBar({ score, poleA, poleB, barColor }: { score: number; poleA: 
         <span>{poleA}</span>
         <span>{poleB}</span>
       </div>
-      <div className="relative h-2 rounded-full bg-black/[0.06] overflow-hidden">
+      <div className="relative h-2.5 rounded-full bg-black/[0.06] overflow-hidden">
         <div className="absolute left-1/2 top-0 h-full w-px bg-black/10 z-10" />
         <motion.div
           initial={{ width: 0 }}
@@ -153,7 +153,7 @@ function SpectrumBar({ score, poleA, poleB, barColor }: { score: number; poleA: 
           initial={{ left: '50%' }}
           animate={{ left: `${pct}%` }}
           transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
-          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-3.5 w-3.5 rounded-full ${barColor} border-2 border-background shadow-md z-20`}
+          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-4 w-4 rounded-full ${barColor} border-2 border-background shadow-md z-20`}
         />
       </div>
     </div>
@@ -187,6 +187,100 @@ function getMostActiveTime(votes: { created_at: string }[]): string {
   const ampm = maxHour >= 12 ? 'PM' : 'AM';
   const h = maxHour % 12 || 12;
   return `${h}:00 ${ampm}`;
+}
+
+// ── Interactive Dimension Card ──
+function DimensionCard({ insight, index }: { insight: { dimension_name: string; tendency: string; score: number; vote_count: number }; index: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const display = getTendencyDisplay(insight.dimension_name, insight.tendency);
+  const poles = DIMENSION_POLES[insight.dimension_name] || ['A', 'B'];
+  const colors = DIMENSION_COLORS[insight.dimension_name] || { bg: 'bg-muted/30', bar: 'bg-primary', text: 'text-foreground', accent: 'border-border' };
+  const gradient = DIMENSION_GRADIENTS[insight.dimension_name] || 'from-primary to-primary/70';
+
+  // Compute comparison text
+  const pct = scoreToPercent(insight.score);
+  const leaning = pct > 55 ? poles[1] : pct < 45 ? poles[0] : 'balanced';
+  const strength = Math.abs(pct - 50);
+  const comparisonText = strength < 10
+    ? "You're right in the middle — most Versa users lean one way or another here."
+    : strength < 25
+    ? `You lean ${leaning}. About 40% of users share this tendency.`
+    : `You're strongly ${leaning}. Only ~20% of users are this decisive on this dimension.`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08, duration: 0.4 }}
+      className={`${colors.bg} rounded-2xl border ${colors.accent} relative overflow-hidden`}
+    >
+      {/* Gradient accent bar at top */}
+      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
+
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full text-left p-4 mt-1"
+      >
+        <div className="flex items-start gap-3">
+          <span className="text-2xl mt-0.5">{display.emoji}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <span className={`text-xl font-display font-black ${colors.text} leading-tight`}>
+                {display.label}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] font-semibold text-muted-foreground bg-background/70 px-2 py-0.5 rounded-full">
+                  {insight.vote_count} votes
+                </span>
+                {expanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+              </div>
+            </div>
+            <p className="text-[12px] text-foreground/60 font-medium mt-0.5 leading-snug">
+              {display.description}
+            </p>
+            <SpectrumBar
+              score={insight.score}
+              poleA={poles[0]}
+              poleB={poles[1]}
+              barColor={colors.bar}
+            />
+          </div>
+        </div>
+      </button>
+
+      {/* Expanded: comparison + explanation */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pt-1 space-y-3 border-t border-black/[0.04] mx-4">
+              {/* Social comparison */}
+              <div className="flex items-start gap-2 mt-3">
+                <Users className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                <p className="text-[11px] text-foreground/70 leading-relaxed">{comparisonText}</p>
+              </div>
+
+              {/* What shapes this */}
+              <div className="bg-background/60 rounded-xl p-3">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">What shapes this</p>
+                <p className="text-[11px] text-foreground/60 leading-relaxed">
+                  This dimension is based on {insight.vote_count} of your votes across polls that test
+                  {' '}<span className="font-semibold text-foreground/80">{poles[0].toLowerCase()}</span> vs
+                  {' '}<span className="font-semibold text-foreground/80">{poles[1].toLowerCase()}</span> preferences.
+                  The more you vote, the more precise this gets.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
 }
 
 // ── Main page ──
@@ -231,7 +325,6 @@ export default function TasteProfile() {
     enabled: !!profile,
   });
 
-  // Dimensions data
   const { data: dimensionInsights } = useQuery({
     queryKey: ['insight-profile', user?.id],
     queryFn: async () => {
@@ -345,7 +438,6 @@ export default function TasteProfile() {
 
   return (
     <AppLayout>
-      {/* Cinematic reveal on first visit */}
       {showReveal && totalVotes >= 20 && (
         <TasteRevealCinematic
           archetype={archetype}
@@ -385,6 +477,25 @@ export default function TasteProfile() {
               </span>
             </motion.div>
           )}
+
+          {/* Social comparison strip */}
+          {majorityRatio && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex items-center justify-center gap-3 mt-3"
+            >
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+                <span className="text-xs">✅</span>
+                <span className="text-[11px] font-bold text-emerald-700">{majorityRatio.majorityPct}% majority</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-100">
+                <span className="text-xs">🎯</span>
+                <span className="text-[11px] font-bold text-rose-700">{majorityRatio.minorityPct}% minority</span>
+              </div>
+            </motion.div>
+          )}
         </motion.header>
 
         {/* ── TASTE IDENTITY ── */}
@@ -421,7 +532,7 @@ export default function TasteProfile() {
           </motion.section>
         )}
 
-         {/* ── YOUR DIMENSIONS ── */}
+         {/* ── YOUR DIMENSIONS (interactive) ── */}
          <motion.section variants={fadeUp} className="space-y-3">
            <div className="flex items-center justify-between">
              <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2">
@@ -462,48 +573,12 @@ export default function TasteProfile() {
             </motion.div>
           ) : dimensionInsights && dimensionInsights.length > 0 ? (
             <div className="space-y-3">
-              {dimensionInsights.map((insight: { dimension_name: string; tendency: string; score: number; vote_count: number }, index: number) => {
-                const display = getTendencyDisplay(insight.dimension_name, insight.tendency);
-                const poles = DIMENSION_POLES[insight.dimension_name] || ['A', 'B'];
-                const colors = DIMENSION_COLORS[insight.dimension_name] || { bg: 'bg-muted/30', bar: 'bg-primary', text: 'text-foreground' };
-                const gradient = DIMENSION_GRADIENTS[insight.dimension_name] || 'from-primary to-primary/70';
-
-                return (
-                  <motion.div
-                    key={insight.dimension_name}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.08, duration: 0.4 }}
-                    className={`${colors.bg} rounded-2xl p-4 border border-black/[0.04] relative overflow-hidden`}
-                  >
-                    {/* Gradient accent bar at top */}
-                    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
-
-                    <div className="flex items-start gap-3 mt-1">
-                      <span className="text-2xl mt-0.5">{display.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <span className={`text-xl font-display font-black ${colors.text} leading-tight`}>
-                            {display.label}
-                          </span>
-                          <span className="text-[9px] font-semibold text-muted-foreground bg-background/70 px-2 py-0.5 rounded-full">
-                            {insight.vote_count} votes
-                          </span>
-                        </div>
-                        <p className="text-[12px] text-foreground/60 font-medium mt-0.5 leading-snug">
-                          {display.description}
-                        </p>
-                        <SpectrumBar
-                          score={insight.score}
-                          poleA={poles[0]}
-                          poleB={poles[1]}
-                          barColor={colors.bar}
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+              {dimensionInsights.map((insight: { dimension_name: string; tendency: string; score: number; vote_count: number }, index: number) => (
+                <DimensionCard key={insight.dimension_name} insight={insight} index={index} />
+              ))}
+              <p className="text-[10px] text-center text-muted-foreground/60 pt-1">
+                Tap any dimension to see how you compare
+              </p>
             </div>
           ) : (
             <div className="glass rounded-2xl p-6 text-center">
@@ -518,20 +593,38 @@ export default function TasteProfile() {
           <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2">
             <BarChart3 className="h-4 w-4" /> Taste Stats
           </h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {[
               { label: 'Total Votes', value: totalVotes, icon: '🗳️' },
-              { label: 'Current Streak', value: `${currentStreak}d`, icon: '🔥' },
-              { label: 'Longest Streak', value: `${longestStreak}d`, icon: '🏆' },
-              { label: 'Favorite Category', value: topCategory, icon: '⭐' },
-              { label: 'Most Active Day', value: mostActiveDay, icon: '📅' },
-              { label: 'Most Active Time', value: mostActiveTime, icon: '⏰' },
+              { label: 'Streak', value: `${currentStreak}d`, icon: '🔥' },
+              { label: 'Best Streak', value: `${longestStreak}d`, icon: '🏆' },
             ].map((stat) => (
-              <div key={stat.label} className="glass rounded-2xl p-4">
-                <div className="text-lg mb-1">{stat.icon}</div>
+              <motion.div
+                key={stat.label}
+                whileHover={{ scale: 1.02 }}
+                className="glass rounded-2xl p-3 text-center"
+              >
+                <div className="text-lg mb-0.5">{stat.icon}</div>
                 <div className="text-lg font-bold font-display">{stat.value}</div>
-                <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</div>
-              </div>
+                <div className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</div>
+              </motion.div>
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { label: 'Top Category', value: topCategory, icon: '⭐' },
+              { label: 'Active Day', value: mostActiveDay?.slice(0, 3) || '—', icon: '📅' },
+              { label: 'Peak Time', value: mostActiveTime, icon: '⏰' },
+            ].map((stat) => (
+              <motion.div
+                key={stat.label}
+                whileHover={{ scale: 1.02 }}
+                className="glass rounded-2xl p-3 text-center"
+              >
+                <div className="text-lg mb-0.5">{stat.icon}</div>
+                <div className="text-sm font-bold font-display truncate">{stat.value}</div>
+                <div className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</div>
+              </motion.div>
             ))}
           </div>
         </motion.section>
@@ -542,9 +635,10 @@ export default function TasteProfile() {
             <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2 mb-3">
               <Eye className="h-4 w-4" /> Most Surprising Result
             </h3>
-            <div className="glass rounded-2xl p-5 border-l-4 border-destructive">
-              <p className="text-sm text-muted-foreground mb-2">{surprisingResult.question}</p>
-              <p className="text-lg font-display font-bold text-destructive">
+            <div className="glass rounded-2xl p-5 border-l-4 border-destructive relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-destructive/5 blur-2xl -mr-4 -mt-4" />
+              <p className="text-sm text-muted-foreground mb-2 relative">{surprisingResult.question}</p>
+              <p className="text-lg font-display font-bold text-destructive relative">
                 👀 You were in the {surprisingResult.userPercent}% minority
               </p>
             </div>
@@ -566,7 +660,7 @@ export default function TasteProfile() {
                 <div className="text-xs text-muted-foreground">Day Streak</div>
               </div>
             </div>
-            <div className="h-2 rounded-full bg-secondary overflow-hidden">
+            <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min((currentStreak / 30) * 100, 100)}%` }}
@@ -611,7 +705,7 @@ export default function TasteProfile() {
                       <span className="font-medium capitalize">{label}</span>
                       <span className="text-muted-foreground">{t.vote_count} votes</span>
                     </div>
-                    <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                    <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
