@@ -392,6 +392,23 @@ Rules:
       ? rawIntent
       : "preference") as "preference" | "factual" | "offscope";
 
+    // Short-query safety net: if ≤4 words and contains a known entity synonym, force preference.
+    // This catches "AUC", "uni", "GUC or AUC", "Vodafone or Orange" etc.
+    {
+      const wordCount = question.trim().split(/\s+/).length;
+      if (wordCount <= 5 && intent !== "preference") {
+        const qLower = question.toLowerCase();
+        const hasKnownEntity = Object.entries(ENTITY_SYNONYMS).some(([, synonyms]) =>
+          synonyms.some((s) => qLower.includes(s))
+        );
+        const hasComparison = /\b(or|vs|versus|ولا|و)\b/i.test(qLower) || /\?/.test(qLower);
+        if (hasKnownEntity || hasComparison) {
+          console.log(`Short-query override: "${question}" from ${intent} → preference`);
+          intent = "preference";
+        }
+      }
+    }
+
     // Research-mode override: in research mode, opinion/comparison/lifestyle/attitude questions
     // are exactly what Versa polls answer ("Cairo vs Alexandria lifestyle", "How do students feel about X").
     // Only treat as factual when the question is clearly a hard lookup (year/date/market size/who-founded).
