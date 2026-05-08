@@ -127,6 +127,22 @@ const ENTITY_SYNONYMS: Record<string, string[]> = {
   // Education
   private: ["private"],
   public: ["public"],
+  // Restaurants / dining
+  restaurant: ["restaurant", "dining", "eat", "food"],
+  mcdonalds: ["mcdonalds", "mcdonald", "ماكدونالدز"],
+  kfc: ["kfc", "kentucky"],
+  hardees: ["hardees", "هارديز"],
+  buffalo: ["buffalo burger", "بافلو"],
+  shawarma: ["shawarma", "شاورما"],
+  koshary: ["koshary", "koshari", "كشري"],
+  // More brands
+  noon: ["noon"],
+  amazon: ["amazon", "أمازون"],
+  jumia: ["jumia", "جوميا"],
+  ikea: ["ikea", "ايكيا"],
+  zara: ["zara", "زارا"],
+  nike: ["nike", "نايك"],
+  adidas: ["adidas", "أديداس"],
 };
 
 function expandEntityVariants(entity: string): string[] {
