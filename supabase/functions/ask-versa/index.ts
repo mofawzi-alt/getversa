@@ -615,12 +615,27 @@ Rules:
       return Array.from(variants);
     };
 
+    // Weak adjective terms: common in questions but too generic to match polls on their own.
+    // A poll must match at least one NON-weak term to count as relevant.
+    const WEAK_TERMS = new Set(["private", "public", "best", "good", "bad", "big", "small", "new", "old", "first", "top", "real", "free", "cheap", "expensive", "fast", "slow", "hot", "cold", "long", "short", "high", "low", "early", "late", "open", "close", "full", "half", "online", "offline", "local", "global", "modern", "classic", "daily", "weekly"]);
+
     const topicalTermVariants = topicalTerms.map((t) => expandStemVariants(t));
+    const topicalTermIsWeak = topicalTerms.map((t) => WEAK_TERMS.has(t));
 
     const getPollTopicalHitCount = (poll: any) => {
       if (topicalTermVariants.length === 0) return 0;
       const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
       return topicalTermVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+    };
+
+    // Count only non-weak topical hits — used to filter out false positives
+    const getPollStrongHitCount = (poll: any) => {
+      if (topicalTermVariants.length === 0) return 0;
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
+      return topicalTermVariants.reduce((count, variants, idx) => {
+        if (topicalTermIsWeak[idx]) return count;
+        return count + (variants.some((v) => haystack.includes(v)) ? 1 : 0);
+      }, 0);
     };
 
     // Entity gate: with 2+ entities require all (e.g. "iphone vs samsung" → both must appear).
