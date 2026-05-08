@@ -1,4 +1,5 @@
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import SuggestPollButton from './SuggestPollButton';
 
 interface SuggestedPoll {
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function GuardrailCard({ summary, polls, question, askQueryId }: Props) {
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-3">
@@ -40,9 +42,10 @@ export default function GuardrailCard({ summary, polls, question, askQueryId }: 
             Vote on these to build the data
           </p>
           {polls.map((p) => (
-            <div
+            <button
               key={p.id}
-              className="w-full flex items-center gap-3 rounded-2xl bg-card border border-border p-2.5 text-left"
+              onClick={() => navigate(`/poll/${p.id}`)}
+              className="w-full flex items-center gap-3 rounded-2xl bg-card border border-border p-2.5 text-left active:scale-[0.98] transition-transform"
             >
               <div className="flex gap-1 shrink-0">
                 {p.image_a_url && (
@@ -58,9 +61,10 @@ export default function GuardrailCard({ summary, polls, question, askQueryId }: 
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-foreground line-clamp-2">{p.question}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Vote in the feed to build this answer</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Tap to vote on this poll</p>
               </div>
-            </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </button>
           ))}
         </div>
       )}
