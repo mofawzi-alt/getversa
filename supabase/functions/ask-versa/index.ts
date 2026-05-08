@@ -690,6 +690,13 @@ Rules:
       return requiredEntityVariants.every((variants) => variants.some((v) => haystack.includes(v)));
     };
 
+    // Count how many of the required entities a poll matches (for partial-match ranking)
+    const getPollEntityHitCount = (poll: any) => {
+      if (requiredEntityVariants.length === 0) return 0;
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b].filter(Boolean).join(" "));
+      return requiredEntityVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+    };
+
     const enrichedPollList = polls.map((p) => {
       const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
       const realTotal = rawStats.total;
@@ -709,7 +716,8 @@ Rules:
       const topicalHits = getPollTopicalHitCount(p);
       const strongHits = getPollStrongHitCount(p);
       const entityMatch = pollMatchesAllEntities(p);
-      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _strongHits: strongHits, _entityMatch: entityMatch };
+      const entityHits = getPollEntityHitCount(p);
+      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _strongHits: strongHits, _entityMatch: entityMatch, _entityHits: entityHits };
     });
 
     // VAGUE-QUESTION GUARD (decide mode): no specific A vs B → ask a clarifier instead of guessing.
@@ -827,12 +835,27 @@ Examples:
       return true;
     });
 
-    // Soft relax: if entity gate killed everything but topical terms find polls,
-    // accept those (e.g. "rent or buy apt" — the entity 'apt' may not literally appear in poll text).
-    if (matchedPolls.length === 0 && topicalTerms.length > 0) {
+    // Soft relax: if entity gate killed everything, try partial entity matches first,
+    // then fall back to topical-only. This prevents "Costa or Cilantro?" from showing
+    // irrelevant polls like "TikTok or Instagram" just because they have high votes.
+    if (matchedPolls.length === 0 && requiredEntityVariants.length > 0) {
+      // First try: polls matching at least one entity
+      const partialEntityMatches = enrichedPollList.filter((p: any) => p._entityHits > 0 && p._topicalHits >= 1);
+      if (partialEntityMatches.length > 0) {
+        console.log(`Entity gate killed all ${requiredEntityVariants.length} entities — falling back to ${partialEntityMatches.length} partial entity matches`);
+        matchedPolls = partialEntityMatches;
+      } else {
+        // Second try: topical only (no entity match at all)
+        const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1);
+        if (topicalOnly.length > 0) {
+          console.log(`Entity gate killed all ${requiredEntityVariants.length} entities — falling back to ${topicalOnly.length} topical matches`);
+          matchedPolls = topicalOnly;
+        }
+      }
+    } else if (matchedPolls.length === 0 && topicalTerms.length > 0) {
       const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1);
       if (topicalOnly.length > 0) {
-        console.log(`Entity gate killed all ${requiredEntityVariants.length} entities — falling back to ${topicalOnly.length} topical matches`);
+        console.log(`No entity matches — falling back to ${topicalOnly.length} topical matches`);
         matchedPolls = topicalOnly;
       }
     }
@@ -847,9 +870,9 @@ Examples:
     }
 
     if (controversial) {
-      matchedPolls = matchedPolls.filter((p: any) => p._stats.total >= 5).sort((a: any, b: any) => (b._topicalHits - a._topicalHits) || (b._controversyScore - a._controversyScore));
+      matchedPolls = matchedPolls.filter((p: any) => p._stats.total >= 5).sort((a: any, b: any) => (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._controversyScore - a._controversyScore));
     } else {
-      matchedPolls.sort((a: any, b: any) => (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
+      matchedPolls.sort((a: any, b: any) => (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
     }
 
     matchedPolls = matchedPolls.slice(0, mode === "decide" ? 3 : 12);
