@@ -1413,9 +1413,13 @@ export default function Home() {
   if (isLoading) {
     return (
       <AppLayout disablePullToRefresh>
-
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-8">
+          <PollCardSkeleton />
+          <div className="flex gap-2">
+            <div className="h-7 w-16 bg-muted rounded-full animate-pulse" />
+            <div className="h-7 w-20 bg-muted rounded-full animate-pulse" />
+            <div className="h-7 w-14 bg-muted rounded-full animate-pulse" />
+          </div>
         </div>
       </AppLayout>
     );
