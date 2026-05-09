@@ -54,7 +54,7 @@ export default function LiveAskView() {
     const ch = supabase
       .channel(`live-ask-${id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "live_asks", filter: `id=eq.${id}` }, (payload) => {
-        setAsk(payload.new as any);
+        setAsk((prev) => ({ ...(prev as any), ...(payload.new as any) }));
       })
       .subscribe();
 
