@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
+import { extractEntities } from "../_shared/entity-extractor.ts";
 
 /* ── Auto-hook subtitle generator ── */
 const HOOK_POOLS: Record<string, string[]> = {
@@ -438,6 +439,7 @@ Respond with a VALID JSON object only.`;
           target_country: targetCountry || null,
           weight_score: 500,
           subtitle: autoSubtitle,
+          entities: extractEntities([pollData.question, pollData.option_a, pollData.option_b, autoSubtitle, pollData.category || category || ""].join(" ")),
         })
         .select()
         .single();
