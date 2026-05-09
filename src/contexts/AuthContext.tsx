@@ -14,6 +14,7 @@ import {
 } from '@/lib/nativeSession';
 import { clearBiometricUnlocked } from '@/lib/biometric';
 import { hasRecentPasswordRecoveryIntent } from '@/lib/authRedirectCapture';
+import { initOneSignal, logoutOneSignal } from '@/lib/onesignal';
 
 const LOGOUT_GUARD_KEY = 'versa.force_logged_out.guard';
 const EXTERNAL_SIGN_IN_INTENT_KEY = 'versa.external_sign_in.intent';
