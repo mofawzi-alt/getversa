@@ -44,6 +44,40 @@ serve(async (req: Request): Promise<Response> => {
     const payload: NotificationPayload = await req.json();
     console.log("Sending push notification:", payload);
 
+    // Fire-and-forget: also send via OneSignal for native iOS/Android subscribers.
+    const ONESIGNAL_APP_ID = Deno.env.get("ONESIGNAL_APP_ID");
+    const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
+    if (ONESIGNAL_APP_ID && ONESIGNAL_REST_API_KEY && payload.user_ids?.length) {
+      try {
+        const { data: osSubs } = await supabase
+          .from("onesignal_subscriptions")
+          .select("player_id")
+          .in("user_id", payload.user_ids);
+        const playerIds = [...new Set((osSubs ?? []).map((r: any) => r.player_id))].filter(Boolean);
+        if (playerIds.length > 0) {
+          const osRes = await fetch("https://api.onesignal.com/notifications", {
+            method: "POST",
+            headers: {
+              Authorization: `Key ${ONESIGNAL_REST_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              app_id: ONESIGNAL_APP_ID,
+              include_player_ids: playerIds,
+              headings: { en: payload.title },
+              contents: { en: payload.body },
+              data: { url: payload.url ?? "/", poll_id: payload.poll_id },
+              ...(payload.url ? { url: payload.url } : {}),
+            }),
+          });
+          const osJson = await osRes.json();
+          console.log(`OneSignal: ${playerIds.length} player(s),`, osRes.status, osJson);
+        }
+      } catch (osErr) {
+        console.error("OneSignal forward failed:", osErr);
+      }
+    }
+
     // Get push subscriptions
     let query = supabase.from("push_subscriptions").select("*");
 
