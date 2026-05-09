@@ -47,31 +47,47 @@ serve(async (req: Request): Promise<Response> => {
     // Fire-and-forget: also send via OneSignal for native iOS/Android subscribers.
     const ONESIGNAL_APP_ID = Deno.env.get("ONESIGNAL_APP_ID");
     const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
-    if (ONESIGNAL_APP_ID && ONESIGNAL_REST_API_KEY && payload.user_ids?.length) {
+    if (ONESIGNAL_APP_ID && ONESIGNAL_REST_API_KEY) {
       try {
-        const { data: osSubs } = await supabase
-          .from("onesignal_subscriptions")
-          .select("player_id")
-          .in("user_id", payload.user_ids);
-        const playerIds = [...new Set((osSubs ?? []).map((r: any) => r.player_id))].filter(Boolean);
-        if (playerIds.length > 0) {
+        let playerIds: string[] = [];
+        if (payload.user_ids?.length) {
+          const { data: osSubs } = await supabase
+            .from("onesignal_subscriptions")
+            .select("player_id")
+            .in("user_id", payload.user_ids);
+          playerIds = [...new Set((osSubs ?? []).map((r: any) => r.player_id))].filter(Boolean);
+        }
+
+        const osBody: Record<string, unknown> = {
+          app_id: ONESIGNAL_APP_ID,
+          headings: { en: payload.title },
+          contents: { en: payload.body },
+          data: { url: payload.url ?? "/", poll_id: payload.poll_id },
+          ...(payload.url ? { url: payload.url } : {}),
+        };
+
+        if (payload.user_ids?.length) {
+          if (playerIds.length === 0) {
+            console.log("OneSignal: no player_ids matched user_ids, skipping");
+          } else {
+            osBody.include_player_ids = playerIds;
+          }
+        } else {
+          // Broadcast to all subscribed devices
+          osBody.included_segments = ["Subscribed Users"];
+        }
+
+        if (osBody.include_player_ids || osBody.included_segments) {
           const osRes = await fetch("https://api.onesignal.com/notifications", {
             method: "POST",
             headers: {
               Authorization: `Key ${ONESIGNAL_REST_API_KEY}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              app_id: ONESIGNAL_APP_ID,
-              include_player_ids: playerIds,
-              headings: { en: payload.title },
-              contents: { en: payload.body },
-              data: { url: payload.url ?? "/", poll_id: payload.poll_id },
-              ...(payload.url ? { url: payload.url } : {}),
-            }),
+            body: JSON.stringify(osBody),
           });
           const osJson = await osRes.json();
-          console.log(`OneSignal: ${playerIds.length} player(s),`, osRes.status, osJson);
+          console.log(`OneSignal sent (${osBody.included_segments ? "broadcast" : playerIds.length + " players"}):`, osRes.status, osJson);
         }
       } catch (osErr) {
         console.error("OneSignal forward failed:", osErr);
