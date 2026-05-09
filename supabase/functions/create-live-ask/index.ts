@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
             messages: [
               {
                 role: 'system',
-                content: 'You are a content safety classifier for a MENA-region social app where users ask "should I post this / buy this / wear this?". ALLOW: outfits, products, food (no alcohol), interiors, scenery, pets, hands holding objects, mirror selfies showing outfits — including the asker\'s own face. REJECT only if the image clearly contains: nudity or sexual content, alcohol (wine, beer, cocktails, liquor), recognizable celebrity or politician faces, political or hate symbols, graphic violence, or a large prominent third-party brand logo as the MAIN subject. Reply ONLY with JSON: {"safe": boolean, "reasons": string[]}. If safe, reasons must be [].',
+                content: 'You are a content safety classifier for a MENA-region social app. REJECT images containing: NSFW or nudity, alcohol (wine, beer, cocktails, liquor), recognizable human faces (including selfies), political or hate symbols, graphic violence, or visible brand logos. Reply ONLY with JSON: {"safe": boolean, "reasons": string[]}. If safe, reasons must be [].',
               },
               {
                 role: 'user',
