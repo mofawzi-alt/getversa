@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Camera, X } from "lucide-react";
+import PhotoCropper from "@/components/live-ask/PhotoCropper";
 
 export default function NewLiveAsk() {
   const { user } = useAuth();
