@@ -208,7 +208,7 @@ function AppInner() {
             <Route path="/terms" element={<Terms />} />
             <Route path="/support" element={<Support />} />
             <Route path="/live-ask/new" element={<ProtectedRoute><NewLiveAsk /></ProtectedRoute>} />
-            <Route path="/live-ask/:id" element={<LiveAskView />} />
+            <Route path="/live-ask/:id" element={<ProtectedRoute><LiveAskView /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
