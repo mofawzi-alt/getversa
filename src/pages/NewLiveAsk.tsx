@@ -16,6 +16,7 @@ export default function NewLiveAsk() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [rawPhotoSrc, setRawPhotoSrc] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [optionA, setOptionA] = useState("");
   const [optionB, setOptionB] = useState("");
