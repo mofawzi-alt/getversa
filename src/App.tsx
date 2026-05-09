@@ -63,6 +63,8 @@ const Ask = lazy(() => import("./pages/Ask"));
 const Support = lazy(() => import("./pages/Support"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const DecisionIntelligenceReport = lazy(() => import("./pages/DecisionIntelligenceReport"));
+const NewLiveAsk = lazy(() => import("./pages/NewLiveAsk"));
+const LiveAskView = lazy(() => import("./pages/LiveAskView"));
 
 import { isWelcomeDone, markWelcomeDone } from "./components/onboarding/WelcomeFlow";
 
@@ -205,6 +207,8 @@ function AppInner() {
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/support" element={<Support />} />
+            <Route path="/live-ask/new" element={<ProtectedRoute><NewLiveAsk /></ProtectedRoute>} />
+            <Route path="/live-ask/:id" element={<LiveAskView />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

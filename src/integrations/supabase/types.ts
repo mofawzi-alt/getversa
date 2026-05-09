@@ -1075,6 +1075,191 @@ export type Database = {
         }
         Relationships: []
       }
+      live_ask_reports: {
+        Row: {
+          created_at: string
+          id: string
+          live_ask_id: string
+          notes: string | null
+          reason: string
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          live_ask_id: string
+          notes?: string | null
+          reason: string
+          reporter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          live_ask_id?: string
+          notes?: string | null
+          reason?: string
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_ask_reports_live_ask_id_fkey"
+            columns: ["live_ask_id"]
+            isOneToOne: false
+            referencedRelation: "live_asks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_ask_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_ask_votes: {
+        Row: {
+          choice: string
+          created_at: string
+          id: string
+          is_targeted_match: boolean
+          live_ask_id: string
+          personality_type: string | null
+          session_duration_ms: number | null
+          taste_archetype: string | null
+          user_id: string
+          voter_age_range: string | null
+          voter_city: string | null
+          voter_country: string | null
+          voter_gender: string | null
+        }
+        Insert: {
+          choice: string
+          created_at?: string
+          id?: string
+          is_targeted_match?: boolean
+          live_ask_id: string
+          personality_type?: string | null
+          session_duration_ms?: number | null
+          taste_archetype?: string | null
+          user_id: string
+          voter_age_range?: string | null
+          voter_city?: string | null
+          voter_country?: string | null
+          voter_gender?: string | null
+        }
+        Update: {
+          choice?: string
+          created_at?: string
+          id?: string
+          is_targeted_match?: boolean
+          live_ask_id?: string
+          personality_type?: string | null
+          session_duration_ms?: number | null
+          taste_archetype?: string | null
+          user_id?: string
+          voter_age_range?: string | null
+          voter_city?: string | null
+          voter_country?: string | null
+          voter_gender?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_ask_votes_live_ask_id_fkey"
+            columns: ["live_ask_id"]
+            isOneToOne: false
+            referencedRelation: "live_asks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_ask_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_asks: {
+        Row: {
+          asker_id: string
+          created_at: string
+          credits_charged: number
+          finalized_at: string | null
+          id: string
+          is_paid: boolean
+          option_a: string
+          option_b: string
+          photo_url: string
+          question: string
+          reveal_at: string
+          status: string
+          target_age_ranges: string[] | null
+          target_cities: string[] | null
+          target_countries: string[] | null
+          target_gender: string | null
+          updated_at: string
+          vision_check: Json | null
+          vote_count: number
+          votes_a: number
+          votes_b: number
+        }
+        Insert: {
+          asker_id: string
+          created_at?: string
+          credits_charged?: number
+          finalized_at?: string | null
+          id?: string
+          is_paid?: boolean
+          option_a: string
+          option_b: string
+          photo_url: string
+          question: string
+          reveal_at?: string
+          status?: string
+          target_age_ranges?: string[] | null
+          target_cities?: string[] | null
+          target_countries?: string[] | null
+          target_gender?: string | null
+          updated_at?: string
+          vision_check?: Json | null
+          vote_count?: number
+          votes_a?: number
+          votes_b?: number
+        }
+        Update: {
+          asker_id?: string
+          created_at?: string
+          credits_charged?: number
+          finalized_at?: string | null
+          id?: string
+          is_paid?: boolean
+          option_a?: string
+          option_b?: string
+          photo_url?: string
+          question?: string
+          reveal_at?: string
+          status?: string
+          target_age_ranges?: string[] | null
+          target_cities?: string[] | null
+          target_countries?: string[] | null
+          target_gender?: string | null
+          updated_at?: string
+          vision_check?: Json | null
+          vote_count?: number
+          votes_a?: number
+          votes_b?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_asks_asker_id_fkey"
+            columns: ["asker_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string | null
@@ -2987,6 +3172,9 @@ export type Database = {
           is_private: boolean
           last_daily_credit_date: string | null
           last_vote_date: string | null
+          live_ask_unlocked_at: string | null
+          live_ask_week_start: string | null
+          live_asks_used_this_week: number
           longest_streak: number | null
           nationality: string | null
           points: number | null
@@ -3019,6 +3207,9 @@ export type Database = {
           is_private?: boolean
           last_daily_credit_date?: string | null
           last_vote_date?: string | null
+          live_ask_unlocked_at?: string | null
+          live_ask_week_start?: string | null
+          live_asks_used_this_week?: number
           longest_streak?: number | null
           nationality?: string | null
           points?: number | null
@@ -3051,6 +3242,9 @@ export type Database = {
           is_private?: boolean
           last_daily_credit_date?: string | null
           last_vote_date?: string | null
+          live_ask_unlocked_at?: string | null
+          live_ask_week_start?: string | null
+          live_asks_used_this_week?: number
           longest_streak?: number | null
           nationality?: string | null
           points?: number | null
