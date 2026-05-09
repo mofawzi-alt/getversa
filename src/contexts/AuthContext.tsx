@@ -384,7 +384,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, metadata?: Record<string, string>) => {
+  // Initialize OneSignal native push (no-op on web) when user is authenticated.
+  useEffect(() => {
+    if (user?.id) {
+      void initOneSignal(user.id);
+    }
+  }, [user?.id]);
+
     // On native (iOS/Android Capacitor) window.location.origin resolves to
     // capacitor:// or localhost — Supabase rejects those redirects. Always
     // route email-confirmation links to the production web URL on native.
