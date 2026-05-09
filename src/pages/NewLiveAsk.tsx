@@ -108,10 +108,15 @@ export default function NewLiveAsk() {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="aspect-[4/5] w-full rounded-2xl bg-muted flex items-center justify-center overflow-hidden border"
+          className="aspect-[4/5] w-full rounded-2xl bg-muted flex items-center justify-center overflow-hidden border relative"
         >
           {photoPreview ? (
-            <img src={photoPreview} alt="preview" className="w-full h-full object-cover" />
+            <>
+              <img src={photoPreview} alt="preview" className="w-full h-full object-cover" />
+              <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+                Tap to change
+              </span>
+            </>
           ) : (
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
               <Camera className="h-8 w-8" />
@@ -124,8 +129,22 @@ export default function NewLiveAsk() {
           type="file"
           accept="image/png,image/webp,image/jpeg"
           className="hidden"
-          onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+          onChange={(e) => {
+            onPick(e.target.files?.[0] ?? null);
+            e.target.value = "";
+          }}
         />
+
+        {rawPhotoSrc && (
+          <PhotoCropper
+            src={rawPhotoSrc}
+            onCancel={() => {
+              if (rawPhotoSrc) URL.revokeObjectURL(rawPhotoSrc);
+              setRawPhotoSrc(null);
+            }}
+            onConfirm={onCropConfirm}
+          />
+        )}
 
         <div className="space-y-2">
           <Label>Question</Label>
