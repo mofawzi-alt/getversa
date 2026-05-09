@@ -94,6 +94,18 @@ Deno.serve(async (req) => {
             response_format: { type: 'json_object' },
           }),
         });
+        if (visionResp.status === 429) {
+          return json({ error: 'AI is busy, try again in a moment', code: 'AI_RATE_LIMITED' }, 429);
+        }
+        if (visionResp.status === 402) {
+          console.error('[vision] 402 credits exhausted');
+          return json({ error: 'AI credits exhausted — add credits in workspace settings', code: 'AI_NO_CREDITS' }, 402);
+        }
+        if (!visionResp.ok) {
+          const errText = await visionResp.text().catch(() => '');
+          console.error('[vision] non-ok', visionResp.status, errText);
+          return json({ error: 'Photo safety check unavailable', code: 'AI_UNAVAILABLE' }, 503);
+        }
         const visionJson = await visionResp.json();
         rawContent = visionJson?.choices?.[0]?.message?.content ?? '';
         console.log('[vision] status', visionResp.status, 'content:', rawContent);
