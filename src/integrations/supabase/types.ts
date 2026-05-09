@@ -1977,6 +1977,7 @@ export type Database = {
           created_by: string | null
           cultural_context: string | null
           ends_at: string | null
+          entities: string[]
           expiry_type: string
           id: string
           image_a_url: string | null
@@ -2020,6 +2021,7 @@ export type Database = {
           created_by?: string | null
           cultural_context?: string | null
           ends_at?: string | null
+          entities?: string[]
           expiry_type?: string
           id?: string
           image_a_url?: string | null
@@ -2063,6 +2065,7 @@ export type Database = {
           created_by?: string | null
           cultural_context?: string | null
           ends_at?: string | null
+          entities?: string[]
           expiry_type?: string
           id?: string
           image_a_url?: string | null
