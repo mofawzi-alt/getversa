@@ -1,63 +1,144 @@
 
+# Versa Lens — Phase 0 Plan
 
-# App Store Assets: Icon + Splash for Versa
+Goal: validate the *intent* behind Versa Lens (looking up demographic sentiment about a thing) using a **text search bar** — no camera, no barcode, no vision yet. Ship as a new mode inside Ask Versa.
 
-You need a polished app icon and splash screen before Apple or Google will approve Versa. Here's the plan to generate everything from a single master design, plus update the in-app splash to match.
+---
 
-## What the stores require
+## 1. Where it lives in the app
 
-- **Apple**: 1024×1024 master icon (no transparency, no rounded corners — iOS rounds automatically), plus auto-generated sizes (60, 76, 120, 152, 167, 180 px)
-- **Google Play**: 512×512 store listing icon, plus 432×432 adaptive icons (foreground + background layers)
-- **Splash screens**: iOS launch images (1242×2688, 1125×2436, 828×1792) and Android 12+ splash (centered logo on white)
+No new tab in BottomNav. Reuse existing surface.
 
-## Design direction
-
-White background, signature red `#E8392A` mark, no text overlay, edge-to-edge fill. Three options — pick one:
-
-- **A — Monogram "V"**: Bold red "V" letterform on white. Strongest brand tie.
-- **B — Red dot**: Single red circle (the vote dot) on white. Minimal, scales beautifully at small sizes.
-- **C — Split square**: Diagonal half-white / half-red. Represents binary choice. Most conceptual.
-
-## What I'll build
-
-1. Generate master `app-icon-1024.png` (1024×1024) in chosen direction
-2. Generate master `splash-2732.png` (2732×2732, centered logo on white)
-3. Generate adaptive Android icon layers (`icon-foreground.png`, `icon-background.png`)
-4. Replace `public/favicon.png`, `public/apple-touch-icon.png`, `public/icon-192.png`, `public/icon-512.png` so web/PWA icons match the new app icon
-5. Update `index.html` `<link>` tags and PWA `manifest.json` references
-6. Tweak `SplashScreen.tsx` to ensure the in-app splash matches the native launch screen (so handoff feels seamless)
-7. Drop all assets into a `resources/` folder ready for `@capacitor/assets` CLI to consume
-
-## Files created/modified
-
-```text
-public/
-  app-icon-1024.png          (NEW — master)
-  splash-2732.png            (NEW — master)
-  favicon.png                (replaced)
-  apple-touch-icon.png       (replaced)
-  icon-192.png               (replaced)
-  icon-512.png               (replaced)
-  manifest.json              (updated icon refs)
-resources/
-  icon-only.png              (NEW — for capacitor-assets)
-  icon-foreground.png        (NEW — Android adaptive)
-  icon-background.png        (NEW — Android adaptive)
-  splash.png                 (NEW)
-index.html                   (updated favicon links)
-src/components/SplashScreen.tsx  (minor polish for native parity)
+```
+AppHeader (Sparkles icon → /ask)
+   └── Ask page
+        ├── [existing] Ask Versa (chat / questions)
+        └── [NEW] "Lens" mode toggle at top
+              ├── Search input: "Look up a brand, place, or product…"
+              ├── Suggestion chips (recent + trending entities)
+              └── Result card stack
 ```
 
-## What you do later (on your Mac, after Capacitor is added)
+Entry points to Lens:
+- New segmented toggle at top of `/ask`: **Ask | Lens**
+- Optional: long-press the Search icon in `AppHeader` → opens Lens directly (cheap, no new icon)
+- Empty-state of `GlobalPollSearch` gets a "Try Lens →" CTA when query has 0 matches
 
-```text
-npm install @capacitor/assets --save-dev
-npx capacitor-assets generate
-```
+No changes to Home, Browse, Explore, or BottomNav. Keeps the experiment isolated and killable.
 
-This auto-generates all 30+ platform-specific sizes from the masters and drops them into `ios/App/App/Assets.xcassets/` and `android/app/src/main/res/`.
+---
 
-## Decision needed
+## 2. User flow (Phase 0)
 
-Reply with **A**, **B**, or **C** (or describe a different direction) and I'll switch to build mode and execute steps 1–7 in one go.
+1. User types "Vodafone" / "Sahel" / "Cilantro" / "iPhone"
+2. App resolves the string to an **entity** (fuzzy match against `lens_entities` table, or creates a pending one)
+3. Shows a result card:
+   - Entity name + category
+   - **Top 3 related polls** (semantic + keyword match against `polls.question/option_a/option_b`)
+   - Per-poll: vote split + 1 demographic cut (age OR gender, whichever has strongest signal)
+   - Aggregated "Sentiment snapshot" line ("Gen Z leans 64% toward X")
+4. If 0 polls match → CTA: **"No one's voted on this yet — start a poll"**
+   - Calls existing user-suggested-polls flow (already built) prefilled with the entity
+   - Does NOT auto-publish. Goes through normal admin approval.
 
+Hard limit Phase 0: text only, MENA entity seed list (~500 brands/places curated), no vision, no auto-publish.
+
+---
+
+## 3. Schema changes
+
+Three new tables. No changes to `polls` or `votes`.
+
+### `lens_entities`
+Canonical "things" users can look up.
+
+| field | purpose |
+|---|---|
+| name | display name ("Vodafone Egypt") |
+| slug | url-safe id |
+| aliases | text[] — fuzzy match ("vodafone", "vf", "فودافون") |
+| category | brand / place / product / experience / person |
+| country | EG / AE / SA / null |
+| status | approved / pending / rejected |
+| created_by | user_id (nullable — seed entities have null) |
+
+RLS: public read for `approved`. Insert allowed for authenticated users (creates `pending`). Only admins update status.
+
+### `lens_entity_polls`
+Many-to-many link between an entity and the polls that talk about it. Curated + AI-suggested, admin-approved.
+
+| field | purpose |
+|---|---|
+| entity_id | fk |
+| poll_id | fk |
+| relevance | float (0–1) — for ranking |
+| source | manual / ai / keyword |
+
+RLS: public read. Admin write only (Phase 0 — keeps quality high).
+
+### `lens_lookups`
+Telemetry. Validates whether anyone actually uses this.
+
+| field | purpose |
+|---|---|
+| user_id | nullable (guests count) |
+| query | raw string typed |
+| matched_entity_id | nullable |
+| polls_returned | int |
+| converted_to_suggestion | bool — did they hit "start a poll" |
+
+RLS: insert open to all, read admin-only.
+
+### Optional helper
+A Postgres function `search_lens_entities(q text)` that does trigram fuzzy match on `name + aliases` and returns top 5. Cheap, no embeddings yet.
+
+---
+
+## 4. Admin surface
+
+Add one tab in `AdminDashboard`: **Lens**.
+- Pending entities queue (approve / reject / merge duplicates)
+- Entity → polls linker (search polls, attach with relevance score)
+- Lookups feed (see what people are searching for → guides which polls to generate)
+
+---
+
+## 5. What we explicitly do NOT build in Phase 0
+
+- Camera / photo recognition
+- Barcode scanner
+- Auto-poll-generation on lookup (use existing suggestion flow + admin gate instead)
+- Embeddings / semantic search (keyword + trigram is enough to validate)
+- New BottomNav slot
+- Brand-facing Lens dashboard
+
+---
+
+## 6. Success metric to decide Phase 1
+
+After 2 weeks, look at `lens_lookups`:
+- **>15% of weekly actives do at least one lookup** → validate, invest in vision
+- **>30% of lookups return 0 polls AND >10% of those convert to a suggestion** → demand for new content, justify auto-generation
+- Below either → kill or pivot. Don't build the camera.
+
+---
+
+## 7. Conflicts with existing model — resolved
+
+- **Poll image rule** (cinematic lifestyle, no logos/products) stays intact. Lens shows the *entity name* in the result card header, not on the poll image itself. The poll image keeps Versa's visual language.
+- **No alcohol imagery** rule unaffected — entity lookups for alcohol brands return polls only if any exist; we don't generate visuals from the entity.
+- **Demographics privacy** — Lens uses the same admin/brand gating; public users see only aggregated splits already exposed in regular results.
+- **Guest 3-vote limit** — Lens lookups are free for guests (read-only); starting a poll still requires signup.
+
+---
+
+## 8. Build order (when approved)
+
+1. Migration: 3 tables + RLS + trigram index + `search_lens_entities` function
+2. Seed ~500 MENA entities (script, admin-run)
+3. Admin Lens tab (pending queue + entity↔poll linker)
+4. `/ask` page: Ask | Lens toggle + search UI + result card
+5. Wire "start a poll" CTA into existing user-suggested-polls flow
+6. Telemetry write on every lookup
+
+Ship behind a feature flag (`lens_enabled` in profile or env) so we can dark-launch to admins first.
