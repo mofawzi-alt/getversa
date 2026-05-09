@@ -439,6 +439,7 @@ Respond with a VALID JSON object only.`;
           target_country: targetCountry || null,
           weight_score: 500,
           subtitle: autoSubtitle,
+          entities: extractEntities([pollData.question, pollData.option_a, pollData.option_b, autoSubtitle, pollData.category || category || ""].join(" ")),
         })
         .select()
         .single();
