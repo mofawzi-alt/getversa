@@ -14,6 +14,7 @@ import {
 } from '@/lib/nativeSession';
 import { clearBiometricUnlocked } from '@/lib/biometric';
 import { hasRecentPasswordRecoveryIntent } from '@/lib/authRedirectCapture';
+import { initOneSignal, logoutOneSignal } from '@/lib/onesignal';
 
 const LOGOUT_GUARD_KEY = 'versa.force_logged_out.guard';
 const EXTERNAL_SIGN_IN_INTENT_KEY = 'versa.external_sign_in.intent';
@@ -383,6 +384,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Initialize OneSignal native push (no-op on web) when user is authenticated.
+  useEffect(() => {
+    if (user?.id) {
+      void initOneSignal(user.id);
+    }
+  }, [user?.id]);
+
   const signUp = async (email: string, password: string, metadata?: Record<string, string>) => {
     // On native (iOS/Android Capacitor) window.location.origin resolves to
     // capacitor:// or localhost — Supabase rejects those redirects. Always
@@ -488,6 +496,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     if (logoutInFlightRef.current) return;
     logoutInFlightRef.current = true;
+
+    void logoutOneSignal();
 
     let preservedBiometricEnabled: string | null = null;
     let preservedBiometricEmail: string | null = null;
