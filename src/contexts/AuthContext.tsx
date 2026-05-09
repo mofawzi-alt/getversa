@@ -497,6 +497,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (logoutInFlightRef.current) return;
     logoutInFlightRef.current = true;
 
+    void logoutOneSignal();
+
     let preservedBiometricEnabled: string | null = null;
     let preservedBiometricEmail: string | null = null;
 
