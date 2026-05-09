@@ -70,7 +70,8 @@ export default function NewLiveAsk() {
       nav(`/live-ask/${askId}`);
     } catch (e: any) {
       const msg = e?.context?.body ? await tryJson(e.context.body) : null;
-      toast({ title: msg?.error || e?.message || "Failed to post", variant: "destructive" });
+      const reasons = Array.isArray(msg?.reasons) && msg.reasons.length ? ` — ${msg.reasons.join(", ")}` : "";
+      toast({ title: (msg?.error || e?.message || "Failed to post") + reasons, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
