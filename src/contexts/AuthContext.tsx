@@ -391,6 +391,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user?.id]);
 
+  const signUp = async (email: string, password: string, metadata?: Record<string, string>) => {
     // On native (iOS/Android Capacitor) window.location.origin resolves to
     // capacitor:// or localhost — Supabase rejects those redirects. Always
     // route email-confirmation links to the production web URL on native.
