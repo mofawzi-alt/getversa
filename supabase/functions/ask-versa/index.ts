@@ -616,15 +616,39 @@ Rules:
     };
 
     let polls: any[] = [];
-    const attempts: Array<[boolean, boolean]> = mode === "decide"
-      ? [[true, true], [false, true]]
-      : [[true, true], [false, true], [true, false]];
-    for (const [useCat, useKw] of attempts) {
-      const queryBuilder = buildQuery(useCat, useKw);
-      if (!queryBuilder) continue;
-      const { data, error } = await queryBuilder;
-      if (error) throw error;
-      if (data && data.length > 0) { polls = data; break; }
+
+    // ---- 2a. Entity-overlap fast path (EN + AR aware) ----
+    // Extract canonical entity tags from the user's question and any prior turn,
+    // then match polls whose `entities` array overlaps. This catches "Sahel" → polls
+    // tagged ["sahel"], and Arabic spellings like "فودافون" → ["vodafone"], even
+    // when literal substring matching on poll text would miss.
+    const queryEntityKeys = extractEntities(`${effectiveQuestion} ${lastUserTurn?.content ?? ""}`);
+    if (queryEntityKeys.length > 0) {
+      const { data: entityPolls, error: entityErr } = await supabase
+        .from("polls")
+        .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, baseline_votes_a, baseline_votes_b")
+        .eq("is_active", true)
+        .overlaps("entities", queryEntityKeys)
+        .order("created_at", { ascending: false })
+        .limit(80);
+      if (!entityErr && entityPolls && entityPolls.length > 0) {
+        polls = entityPolls;
+        console.log(`Entity match: ${queryEntityKeys.join(",")} → ${entityPolls.length} polls`);
+      }
+    }
+
+    // ---- 2b. Fallback: legacy category + keyword ilike attempts ----
+    if (polls.length === 0) {
+      const attempts: Array<[boolean, boolean]> = mode === "decide"
+        ? [[true, true], [false, true]]
+        : [[true, true], [false, true], [true, false]];
+      for (const [useCat, useKw] of attempts) {
+        const queryBuilder = buildQuery(useCat, useKw);
+        if (!queryBuilder) continue;
+        const { data, error } = await queryBuilder;
+        if (error) throw error;
+        if (data && data.length > 0) { polls = data; break; }
+      }
     }
 
     // ---- Fetch sunset threshold (default 50) ----
