@@ -70,8 +70,16 @@ export default function NewLiveAsk() {
       nav(`/live-ask/${askId}`);
     } catch (e: any) {
       const msg = e?.context?.body ? await tryJson(e.context.body) : null;
-      const reasons = Array.isArray(msg?.reasons) && msg.reasons.length ? ` — ${msg.reasons.join(", ")}` : "";
-      toast({ title: (msg?.error || e?.message || "Failed to post") + reasons, variant: "destructive" });
+      if (msg?.code === "PHOTO_REJECTED") {
+        toast({
+          title: "Try a different photo",
+          description: "We couldn't use this image. Please pick another — avoid faces, alcohol, big brand logos, or anything NSFW.",
+          variant: "destructive",
+        });
+      } else {
+        const reasons = Array.isArray(msg?.reasons) && msg.reasons.length ? ` — ${msg.reasons.join(", ")}` : "";
+        toast({ title: (msg?.error || e?.message || "Failed to post") + reasons, variant: "destructive" });
+      }
     } finally {
       setSubmitting(false);
     }
