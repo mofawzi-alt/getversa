@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
 
     // Fetch Live Ask + voter profile in parallel
     const [askRes, profileRes] = await Promise.all([
-      admin.from('live_asks').select('id, status, asker_id, target_gender, target_age_ranges, target_cities, target_countries').eq('id', live_ask_id).maybeSingle(),
+      admin.from('live_asks').select('id, status, asker_id, reveal_at, target_gender, target_age_ranges, target_cities, target_countries').eq('id', live_ask_id).maybeSingle(),
       admin.from('users').select('id, gender, age_range, city, country').eq('id', userId).maybeSingle(),
     ]);
 
@@ -38,6 +38,9 @@ Deno.serve(async (req) => {
     const prof = profileRes.data;
     if (!ask) return json({ error: 'live ask not found' }, 404);
     if (ask.status !== 'active') return json({ error: 'live ask not active' }, 410);
+    if (ask.reveal_at && new Date(ask.reveal_at).getTime() <= Date.now()) {
+      return json({ error: 'voting window closed' }, 410);
+    }
     if (ask.asker_id === userId) return json({ error: 'cannot vote on your own live ask' }, 403);
     if (!prof) return json({ error: 'profile not found' }, 404);
 
