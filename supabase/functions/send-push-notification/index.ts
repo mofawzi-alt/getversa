@@ -49,13 +49,18 @@ serve(async (req: Request): Promise<Response> => {
     const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
     if (ONESIGNAL_APP_ID && ONESIGNAL_REST_API_KEY) {
       try {
-        let playerIds: string[] = [];
+        let subscriptionIds: string[] = [];
         if (payload.user_ids?.length) {
           const { data: osSubs } = await supabase
             .from("onesignal_subscriptions")
             .select("player_id")
             .in("user_id", payload.user_ids);
-          playerIds = [...new Set((osSubs ?? []).map((r: any) => r.player_id))].filter(Boolean);
+          subscriptionIds = [...new Set((osSubs ?? []).map((r: any) => r.player_id))].filter(Boolean);
+        } else {
+          const { data: osSubs } = await supabase
+            .from("onesignal_subscriptions")
+            .select("player_id");
+          subscriptionIds = [...new Set((osSubs ?? []).map((r: any) => r.player_id))].filter(Boolean);
         }
 
         const osBody: Record<string, unknown> = {
@@ -63,21 +68,17 @@ serve(async (req: Request): Promise<Response> => {
           headings: { en: payload.title },
           contents: { en: payload.body },
           data: { url: payload.url ?? "/", poll_id: payload.poll_id },
+          target_channel: "push",
           ...(payload.url ? { url: payload.url } : {}),
         };
 
-        if (payload.user_ids?.length) {
-          if (playerIds.length === 0) {
-            console.log("OneSignal: no player_ids matched user_ids, skipping");
-          } else {
-            osBody.include_player_ids = playerIds;
-          }
+        if (subscriptionIds.length === 0) {
+          console.log("OneSignal: no native subscription ids found, skipping");
         } else {
-          // Broadcast to all subscribed devices
-          osBody.included_segments = ["Subscribed Users"];
+          osBody.include_subscription_ids = subscriptionIds;
         }
 
-        if (osBody.include_player_ids || osBody.included_segments) {
+        if (osBody.include_subscription_ids) {
           const osRes = await fetch("https://api.onesignal.com/notifications", {
             method: "POST",
             headers: {
@@ -87,7 +88,7 @@ serve(async (req: Request): Promise<Response> => {
             body: JSON.stringify(osBody),
           });
           const osJson = await osRes.json();
-          console.log(`OneSignal sent (${osBody.included_segments ? "broadcast" : playerIds.length + " players"}):`, osRes.status, osJson);
+          console.log(`OneSignal sent (${subscriptionIds.length} native subscriptions):`, osRes.status, osJson);
         }
       } catch (osErr) {
         console.error("OneSignal forward failed:", osErr);
