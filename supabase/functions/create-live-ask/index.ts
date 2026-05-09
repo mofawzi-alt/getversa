@@ -71,6 +71,7 @@ Deno.serve(async (req) => {
     // Gemini Vision safety check
     let visionResult: any = { skipped: !LOVABLE_API_KEY };
     if (LOVABLE_API_KEY) {
+      let rawContent = '';
       try {
         const visionResp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
@@ -80,7 +81,7 @@ Deno.serve(async (req) => {
             messages: [
               {
                 role: 'system',
-                content: 'You are a content safety classifier for a MENA-region social app. Reject images containing: NSFW, nudity, alcohol (wine/beer/cocktails), recognizable human faces, political symbols, hate speech, or visible brand logos. Reply ONLY with JSON: {"safe": boolean, "reasons": string[]}.',
+                content: 'You are a content safety classifier for a MENA-region social app where users ask "should I post this / buy this / wear this?". ALLOW: outfits, products, food (no alcohol), interiors, scenery, pets, hands holding objects, mirror selfies showing outfits — including the asker\'s own face. REJECT only if the image clearly contains: nudity or sexual content, alcohol (wine, beer, cocktails, liquor), recognizable celebrity or politician faces, political or hate symbols, graphic violence, or a large prominent third-party brand logo as the MAIN subject. Reply ONLY with JSON: {"safe": boolean, "reasons": string[]}. If safe, reasons must be [].',
               },
               {
                 role: 'user',
@@ -94,15 +95,28 @@ Deno.serve(async (req) => {
           }),
         });
         const visionJson = await visionResp.json();
-        const content = visionJson?.choices?.[0]?.message?.content ?? '{}';
-        const m = String(content).match(/\{[\s\S]*\}/);
-        visionResult = m ? JSON.parse(m[0]) : { safe: false, reasons: ['parse_failed'] };
+        rawContent = visionJson?.choices?.[0]?.message?.content ?? '';
+        console.log('[vision] status', visionResp.status, 'content:', rawContent);
+        const m = String(rawContent).match(/\{[\s\S]*\}/);
+        const parsed = m ? JSON.parse(m[0]) : null;
+        if (parsed && typeof parsed === 'object') {
+          const safe = parsed.safe === true || parsed.safe === 'true' || parsed.is_safe === true || parsed.approved === true;
+          visionResult = { safe, reasons: Array.isArray(parsed.reasons) ? parsed.reasons : [], raw: rawContent };
+        } else {
+          visionResult = { safe: false, reasons: ['parse_failed'], raw: rawContent };
+        }
       } catch (e) {
         console.error('vision check failed', e);
-        visionResult = { safe: false, reasons: ['vision_error'] };
+        visionResult = { safe: false, reasons: ['vision_error'], raw: rawContent };
       }
       if (!visionResult.safe) {
-        return json({ error: 'Photo failed safety check', reasons: visionResult.reasons || [], code: 'PHOTO_REJECTED' }, 422);
+        console.log('[vision] rejected:', JSON.stringify(visionResult));
+        return json({
+          error: 'Photo failed safety check',
+          reasons: visionResult.reasons?.length ? visionResult.reasons : ['model flagged image without specific reasons — try a different photo (no alcohol, no celebrity faces, no large logos)'],
+          raw: visionResult.raw,
+          code: 'PHOTO_REJECTED',
+        }, 422);
       }
     }
 
