@@ -140,14 +140,14 @@ export default function LiveAskView() {
             label={ask.option_a}
             pct={revealed ? pctA : null}
             selected={voted === "A"}
-            disabled={voting || !!voted || isAsker || ask.status !== "active"}
+            disabled={voting || !!voted || !!isAsker || ask.status !== "active" || (revealed && !voted)}
             onClick={() => vote("A")}
           />
           <VoteButton
             label={ask.option_b}
             pct={revealed ? pctB : null}
             selected={voted === "B"}
-            disabled={voting || !!voted || isAsker || ask.status !== "active"}
+            disabled={voting || !!voted || !!isAsker || ask.status !== "active" || (revealed && !voted)}
             onClick={() => vote("B")}
           />
         </div>
