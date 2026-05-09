@@ -154,7 +154,8 @@ export default function LiveAskView() {
 
         <p className="text-xs text-center text-muted-foreground">
           {ask.vote_count} {ask.vote_count === 1 ? "vote" : "votes"}
-          {!revealed && " — vote to see results"}
+          {!revealed && " — vote to see results, or wait until the 15-min window closes"}
+          {revealed && !voted && !isAsker && " — voting closed"}
         </p>
       </div>
     </div>
