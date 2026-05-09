@@ -36,8 +36,14 @@ export default function LiveAskView() {
     if (!id) return;
     let mounted = true;
     (async () => {
-      const { data } = await supabase.from("live_asks").select("*").eq("id", id).maybeSingle();
+      const { data, error } = await supabase.from("live_asks").select("*").eq("id", id).maybeSingle();
       if (!mounted) return;
+      if (error) {
+        console.error("Failed to load Live Ask", error);
+        toast({ title: "Couldn't open this Live Ask", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
       setAsk(data as any);
       if (user && data) {
         const { data: v } = await supabase
