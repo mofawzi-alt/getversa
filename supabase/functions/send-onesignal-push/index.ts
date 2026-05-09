@@ -45,7 +45,7 @@ serve(async (req: Request) => {
       );
     }
 
-    let playerIds: string[] = payload.player_ids ?? [];
+    let subscriptionIds: string[] = payload.player_ids ?? [];
 
     if (payload.user_ids && payload.user_ids.length > 0) {
       const { data, error } = await admin
@@ -53,12 +53,12 @@ serve(async (req: Request) => {
         .select("player_id")
         .in("user_id", payload.user_ids);
       if (error) throw error;
-      playerIds = playerIds.concat((data ?? []).map((r) => r.player_id));
+      subscriptionIds = subscriptionIds.concat((data ?? []).map((r) => r.player_id));
     }
 
-    playerIds = [...new Set(playerIds)].filter(Boolean);
+    subscriptionIds = [...new Set(subscriptionIds)].filter(Boolean);
 
-    if (playerIds.length === 0) {
+    if (subscriptionIds.length === 0) {
       return new Response(
         JSON.stringify({ success: true, sent: 0, note: "no subscribers" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -67,7 +67,8 @@ serve(async (req: Request) => {
 
     const osBody: Record<string, unknown> = {
       app_id: ONESIGNAL_APP_ID,
-      include_player_ids: playerIds,
+      include_subscription_ids: subscriptionIds,
+      target_channel: "push",
       headings: { en: payload.title },
       contents: { en: payload.body },
       data: { ...(payload.data ?? {}), url: payload.url ?? "/" },
@@ -95,7 +96,7 @@ serve(async (req: Request) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, sent: playerIds.length, result }),
+      JSON.stringify({ success: true, sent: subscriptionIds.length, result }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err: any) {
