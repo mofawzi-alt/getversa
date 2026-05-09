@@ -68,9 +68,12 @@ Deno.serve(async (req) => {
       return json({ error: `Need ${PAID_COST} credits for a 2nd Live Ask this week`, code: 'INSUFFICIENT_CREDITS' }, 402);
     }
 
+    // Admin bypass for vision check (dogfooding)
+    const { data: isAdmin } = await admin.rpc('has_role', { _user_id: userId, _role: 'admin' });
+
     // Gemini Vision safety check
-    let visionResult: any = { skipped: !LOVABLE_API_KEY };
-    if (LOVABLE_API_KEY) {
+    let visionResult: any = { skipped: !LOVABLE_API_KEY || !!isAdmin };
+    if (LOVABLE_API_KEY && !isAdmin) {
       let rawContent = '';
       try {
         const visionResp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
