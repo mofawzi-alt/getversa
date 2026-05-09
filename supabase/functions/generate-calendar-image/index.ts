@@ -127,6 +127,11 @@ Deno.serve(async (req) => {
       const contextLine = resolvedContext ? ` Cultural context: ${resolvedContext}.` : "";
       const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph for a Gen Z polling app. DSLR quality, shallow depth-of-field, warm natural lighting, editorial-grade color grading. Real people in REAL environments. Absolutely NO logos, brand names, text overlays, UI elements, illustrations, icons, abstract art, or graphic design.
 
+LUXURY BASELINE (apply to EVERY image):
+- Premium cinematic quality: warm tones, clean composition, shallow depth of field, magazine-grade.
+- Each image must convey a lifestyle, a feeling, and a status signal — aspirational, polished, elevated.
+- Even gritty or everyday topics (street food, traffic, saving money) must be shot with editorial gloss: golden-hour light, stylish wardrobe, attractive subjects, tasteful framing. Documentary subject, fashion-editorial execution.
+
 CRITICAL RULES — READ CAREFULLY:
 1. The image MUST directly depict the SPECIFIC TOPIC of this poll. If the poll is about Sahel, show a BEACH/RESORT. If about ride-hailing, show someone IN A CAR or hailing a ride on a busy street. If about coffee, show ACTUAL COFFEE. NEVER default to "person sitting at desk with phone" — that is WRONG for 90% of topics.
 2. The subject must be a real, attractive, stylish Gen Z person (18-25 years old) with contemporary fashion. NEVER show middle-aged or older people unless the poll specifically targets them.
