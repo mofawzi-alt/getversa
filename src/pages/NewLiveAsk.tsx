@@ -38,8 +38,15 @@ export default function NewLiveAsk() {
       toast({ title: "Photo must be under 8MB" });
       return;
     }
+    setRawPhotoSrc(URL.createObjectURL(f));
+  };
+
+  const onCropConfirm = (f: File) => {
     setPhotoFile(f);
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
     setPhotoPreview(URL.createObjectURL(f));
+    if (rawPhotoSrc) URL.revokeObjectURL(rawPhotoSrc);
+    setRawPhotoSrc(null);
   };
 
   const submit = async () => {
