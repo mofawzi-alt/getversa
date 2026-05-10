@@ -96,6 +96,7 @@ export default function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger value="daily-limit" className="text-xs px-4 py-2">Daily Limit</TabsTrigger>
           <TabsTrigger value="ask-versa" className="text-xs px-4 py-2">Ask Versa</TabsTrigger>
+          <TabsTrigger value="live-ask" className="text-xs px-4 py-2">Live Ask</TabsTrigger>
           <TabsTrigger value="suggestions" className="text-xs px-4 py-2 relative">
             Suggestions
             {suggestionsPending > 0 && (
