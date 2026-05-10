@@ -223,6 +223,10 @@ export default function AdminDashboard() {
           <AskVersaAnalytics />
         </TabsContent>
 
+        <TabsContent value="live-ask" className="space-y-4">
+          <LiveAskAdmin />
+        </TabsContent>
+
         <TabsContent value="suggestions" className="space-y-4">
           <PollSuggestionsAdmin />
         </TabsContent>
