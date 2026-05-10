@@ -587,6 +587,9 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               LIVE NOW
             </span>
+            {poll.category && (
+              <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
+            )}
             {liveVotes5m >= 5 && (
               <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-medium truncate">
                 <span className="w-1.5 h-1.5 rounded-full bg-success" />
