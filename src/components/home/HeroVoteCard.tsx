@@ -815,9 +815,6 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
             ← Swipe or tap to vote →
           </div>
-          {poll.category && (
-            <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
-          )}
           <button
             onClick={submitSkip}
             className="text-xs font-medium text-muted-foreground/80 hover:text-muted-foreground active:scale-95 transition-all px-3 py-1 rounded-full border border-border/40"
