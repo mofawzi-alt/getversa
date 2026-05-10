@@ -72,7 +72,12 @@ export default function WhatsNewBanner() {
 
   useEffect(() => {
     if (!hasSeenCurrentRelease()) {
-      const t = setTimeout(() => setOpen(true), 600);
+      const t = setTimeout(() => {
+        setOpen(true);
+        // Mark as seen as soon as it's shown so it never appears again for this release,
+        // even if the user doesn't tap dismiss / a feature.
+        markCurrentReleaseSeen();
+      }, 600);
       return () => clearTimeout(t);
     }
   }, []);
