@@ -20,6 +20,7 @@ import AdminRetentionAnalytics from '@/components/admin/AdminRetentionAnalytics'
 import AdminResponseTimeAnalytics from '@/components/admin/AdminResponseTimeAnalytics';
 import AdminAnalyticsExport from '@/components/admin/AdminAnalyticsExport';
 import LiveAskAdmin from '@/components/admin/LiveAskAdmin';
+import LiveAskInsights from '@/components/admin/LiveAskInsights';
 import InsightHighlights from '@/components/admin/InsightHighlights';
 import BrandCampaignBuilder from '@/components/admin/BrandCampaignBuilder';
 import CategoryAnalytics from '@/components/admin/CategoryAnalytics';
@@ -224,7 +225,18 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="live-ask" className="space-y-4">
-          <LiveAskAdmin />
+          <Tabs defaultValue="moderation">
+            <TabsList>
+              <TabsTrigger value="moderation">Moderation</TabsTrigger>
+              <TabsTrigger value="insights">Insights</TabsTrigger>
+            </TabsList>
+            <TabsContent value="moderation" className="mt-4">
+              <LiveAskAdmin />
+            </TabsContent>
+            <TabsContent value="insights" className="mt-4">
+              <LiveAskInsights />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="suggestions" className="space-y-4">
