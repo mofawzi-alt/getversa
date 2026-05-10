@@ -425,8 +425,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     setShowHint(false);
   };
 
-  // Track whether we've committed to a drag direction
-  const dragDirectionRef = useRef<'none' | 'horizontal' | 'vertical-up' | 'scroll'>('none');
+
+
 
   const handleMove = (clientX: number, clientY: number) => {
     if (!isDraggingRef.current || result || isVoting) return;
