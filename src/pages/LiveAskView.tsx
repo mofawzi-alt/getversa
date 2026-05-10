@@ -130,7 +130,9 @@ export default function LiveAskView() {
     <div className="min-h-screen bg-background">
       <header className="flex items-center justify-between p-4">
         <button onClick={() => nav(-1)} className="p-2"><ArrowLeft className="h-5 w-5" /></button>
-        <span className="text-xs uppercase tracking-wide text-primary font-semibold">Live Ask</span>
+        <span className="text-xs uppercase tracking-wide text-primary font-semibold">
+          {isClosed ? "Live Ask · Closed" : "Live Ask"}
+        </span>
         <button onClick={report} className="p-2"><Flag className="h-5 w-5 text-muted-foreground" /></button>
       </header>
 
@@ -151,22 +153,22 @@ export default function LiveAskView() {
             label={ask.option_a}
             pct={revealed ? pctA : null}
             selected={voted === "A"}
-            disabled={voting || !!voted || !!isAsker || ask.status !== "active" || (revealed && !voted)}
+            disabled={voting || !!voted || !!isAsker || isClosed}
             onClick={() => vote("A")}
           />
           <VoteButton
             label={ask.option_b}
             pct={revealed ? pctB : null}
             selected={voted === "B"}
-            disabled={voting || !!voted || !!isAsker || ask.status !== "active" || (revealed && !voted)}
+            disabled={voting || !!voted || !!isAsker || isClosed}
             onClick={() => vote("B")}
           />
         </div>
 
         <p className="text-xs text-center text-muted-foreground">
           {ask.vote_count} {ask.vote_count === 1 ? "vote" : "votes"}
-          {!revealed && " — vote to see results, or wait until the 15-min window closes"}
-          {revealed && !voted && !isAsker && " — voting closed"}
+          {!revealed && !isClosed && " — vote to see results, or wait until the 15-min window closes"}
+          {isClosed && " — voting closed"}
         </p>
       </div>
     </div>
