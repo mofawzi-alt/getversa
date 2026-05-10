@@ -19,6 +19,7 @@ import PollEditDialog from '@/components/admin/PollEditDialog';
 import AdminRetentionAnalytics from '@/components/admin/AdminRetentionAnalytics';
 import AdminResponseTimeAnalytics from '@/components/admin/AdminResponseTimeAnalytics';
 import AdminAnalyticsExport from '@/components/admin/AdminAnalyticsExport';
+import LiveAskAdmin from '@/components/admin/LiveAskAdmin';
 import InsightHighlights from '@/components/admin/InsightHighlights';
 import BrandCampaignBuilder from '@/components/admin/BrandCampaignBuilder';
 import CategoryAnalytics from '@/components/admin/CategoryAnalytics';
@@ -95,6 +96,7 @@ export default function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger value="daily-limit" className="text-xs px-4 py-2">Daily Limit</TabsTrigger>
           <TabsTrigger value="ask-versa" className="text-xs px-4 py-2">Ask Versa</TabsTrigger>
+          <TabsTrigger value="live-ask" className="text-xs px-4 py-2">Live Ask</TabsTrigger>
           <TabsTrigger value="suggestions" className="text-xs px-4 py-2 relative">
             Suggestions
             {suggestionsPending > 0 && (
@@ -219,6 +221,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="ask-versa" className="space-y-4">
           <AskVersaAnalytics />
+        </TabsContent>
+
+        <TabsContent value="live-ask" className="space-y-4">
+          <LiveAskAdmin />
         </TabsContent>
 
         <TabsContent value="suggestions" className="space-y-4">
