@@ -68,12 +68,17 @@ export default function LiveAskView() {
   }, [id, user]);
 
   const isAsker = ask && user && ask.asker_id === user.id;
+  const windowClosed = useMemo(() => {
+    if (!ask) return false;
+    return new Date(ask.reveal_at).getTime() <= Date.now();
+  }, [ask]);
+  const isClosed = !!ask && (ask.status === "finalized" || windowClosed);
   const revealed = useMemo(() => {
     if (!ask) return false;
     if (voted) return true;
     if (isAsker) return true;
-    return new Date(ask.reveal_at).getTime() <= Date.now();
-  }, [ask, voted, isAsker]);
+    return windowClosed;
+  }, [ask, voted, isAsker, windowClosed]);
 
   const pctA = ask && ask.vote_count > 0 ? Math.round((ask.votes_a / ask.vote_count) * 100) : 0;
   const pctB = ask && ask.vote_count > 0 ? 100 - pctA : 0;
