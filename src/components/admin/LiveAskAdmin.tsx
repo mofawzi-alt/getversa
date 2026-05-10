@@ -118,6 +118,8 @@ export default function LiveAskAdmin() {
     switch (status) {
       case 'active':
         return 'bg-green-500/10 text-green-600 border-green-500/20';
+      case 'closed':
+        return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
       case 'finalized':
         return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
       case 'rejected':
