@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.auto_finalize_live_asks() FROM PUBLIC, anon, authenticated;
