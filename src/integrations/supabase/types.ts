@@ -3386,6 +3386,7 @@ export type Database = {
         }
         Returns: number
       }
+      auto_finalize_live_asks: { Args: never; Returns: number }
       can_send_notification: {
         Args: {
           p_notification_type: string

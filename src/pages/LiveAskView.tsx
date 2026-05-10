@@ -68,12 +68,17 @@ export default function LiveAskView() {
   }, [id, user]);
 
   const isAsker = ask && user && ask.asker_id === user.id;
+  const windowClosed = useMemo(() => {
+    if (!ask) return false;
+    return new Date(ask.reveal_at).getTime() <= Date.now();
+  }, [ask]);
+  const isClosed = !!ask && (ask.status === "finalized" || windowClosed);
   const revealed = useMemo(() => {
     if (!ask) return false;
     if (voted) return true;
     if (isAsker) return true;
-    return new Date(ask.reveal_at).getTime() <= Date.now();
-  }, [ask, voted, isAsker]);
+    return windowClosed;
+  }, [ask, voted, isAsker, windowClosed]);
 
   const pctA = ask && ask.vote_count > 0 ? Math.round((ask.votes_a / ask.vote_count) * 100) : 0;
   const pctB = ask && ask.vote_count > 0 ? 100 - pctA : 0;
@@ -125,7 +130,9 @@ export default function LiveAskView() {
     <div className="min-h-screen bg-background">
       <header className="flex items-center justify-between p-4">
         <button onClick={() => nav(-1)} className="p-2"><ArrowLeft className="h-5 w-5" /></button>
-        <span className="text-xs uppercase tracking-wide text-primary font-semibold">Live Ask</span>
+        <span className="text-xs uppercase tracking-wide text-primary font-semibold">
+          {isClosed ? "Live Ask · Closed" : "Live Ask"}
+        </span>
         <button onClick={report} className="p-2"><Flag className="h-5 w-5 text-muted-foreground" /></button>
       </header>
 
@@ -146,22 +153,22 @@ export default function LiveAskView() {
             label={ask.option_a}
             pct={revealed ? pctA : null}
             selected={voted === "A"}
-            disabled={voting || !!voted || !!isAsker || ask.status !== "active" || (revealed && !voted)}
+            disabled={voting || !!voted || !!isAsker || isClosed}
             onClick={() => vote("A")}
           />
           <VoteButton
             label={ask.option_b}
             pct={revealed ? pctB : null}
             selected={voted === "B"}
-            disabled={voting || !!voted || !!isAsker || ask.status !== "active" || (revealed && !voted)}
+            disabled={voting || !!voted || !!isAsker || isClosed}
             onClick={() => vote("B")}
           />
         </div>
 
         <p className="text-xs text-center text-muted-foreground">
           {ask.vote_count} {ask.vote_count === 1 ? "vote" : "votes"}
-          {!revealed && " — vote to see results, or wait until the 15-min window closes"}
-          {revealed && !voted && !isAsker && " — voting closed"}
+          {!revealed && !isClosed && " — vote to see results, or wait until the 15-min window closes"}
+          {isClosed && " — voting closed"}
         </p>
       </div>
     </div>

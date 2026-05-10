@@ -118,6 +118,8 @@ export default function LiveAskAdmin() {
     switch (status) {
       case 'active':
         return 'bg-green-500/10 text-green-600 border-green-500/20';
+      case 'closed':
+        return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
       case 'finalized':
         return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
       case 'rejected':
@@ -183,9 +185,16 @@ export default function LiveAskAdmin() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${statusColor(ask.status)}`}>
-                        {ask.status}
-                      </Badge>
+                      {(() => {
+                        const windowClosed = new Date(ask.reveal_at).getTime() <= Date.now();
+                        const displayStatus =
+                          ask.status === 'active' && windowClosed ? 'closed' : ask.status;
+                        return (
+                          <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${statusColor(displayStatus)}`}>
+                            {displayStatus}
+                          </Badge>
+                        );
+                      })()}
                       {ask.is_paid && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                           Paid ({ask.credits_charged} cr)
