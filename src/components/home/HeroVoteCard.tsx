@@ -154,6 +154,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const hasMoved = useRef(false);
   const isDraggingRef = useRef(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  // Track whether we've committed to a drag direction
+  const dragDirectionRef = useRef<'none' | 'horizontal' | 'vertical-up' | 'scroll'>('none');
 
   useEffect(() => {
     if (!showHint) return;
