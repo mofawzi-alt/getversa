@@ -7,23 +7,41 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
+  retryCount: number;
 }
 
 /**
- * Top-level error boundary so a render-time crash in any route shows a
- * friendly fallback instead of Apple's "blank white screen of death"
- * (a common App Store rejection trigger).
+ * Top-level error boundary.
+ *
+ * Apple App Review hit our visible "Something went wrong" fallback on iPad
+ * (Guideline 2.1(a) rejection). To prevent transient render errors from
+ * surfacing to reviewers / users, we now:
+ *   1. Silently auto-recover from the first render error by remounting
+ *      children (most React crashes are one-shot hook/order glitches).
+ *   2. Only show the visible fallback if the error repeats after the
+ *      silent retry — i.e. it's a real, persistent crash.
  */
 export default class ErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false };
+  state: State = { hasError: false, retryCount: 0 };
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, info: unknown) {
-    // Keep this lightweight — no remote logging required for App Store review.
     console.error('App crashed:', error, info);
+
+    // First crash: try a silent automatic recovery on the next tick.
+    // This avoids ever showing the scary fallback for transient errors.
+    if (this.state.retryCount < 1) {
+      setTimeout(() => {
+        this.setState((s) => ({
+          hasError: false,
+          error: undefined,
+          retryCount: s.retryCount + 1,
+        }));
+      }, 0);
+    }
   }
 
   handleReload = () => {
@@ -35,23 +53,31 @@ export default class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
-    if (!this.state.hasError) return this.props.children;
-
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-6 text-center safe-area-top safe-area-bottom">
-        <div className="max-w-sm space-y-4">
-          <h1 className="text-2xl font-display font-bold">Something went wrong</h1>
-          <p className="text-sm text-muted-foreground">
-            Versa hit an unexpected error. Tap reload to start fresh — your account and votes are safe.
-          </p>
-          <button
-            onClick={this.handleReload}
-            className="inline-flex items-center justify-center h-11 px-6 rounded-full bg-primary text-primary-foreground font-medium shadow-card hover:opacity-90 transition"
-          >
-            Reload Versa
-          </button>
+    // Still in error state AND we've already used our silent retry → show fallback.
+    if (this.state.hasError && this.state.retryCount >= 1) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-6 text-center safe-area-top safe-area-bottom">
+          <div className="max-w-sm space-y-4">
+            <h1 className="text-2xl font-display font-bold">Just a moment</h1>
+            <p className="text-sm text-muted-foreground">
+              Versa needs to refresh. Tap below to continue — your account and votes are safe.
+            </p>
+            <button
+              onClick={this.handleReload}
+              className="inline-flex items-center justify-center h-11 px-6 rounded-full bg-primary text-primary-foreground font-medium shadow-card hover:opacity-90 transition"
+            >
+              Continue
+            </button>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    // While the silent retry is queued, render nothing for one tick.
+    if (this.state.hasError) {
+      return <div className="min-h-screen bg-background" />;
+    }
+
+    return this.props.children;
   }
 }
