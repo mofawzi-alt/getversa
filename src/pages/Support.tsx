@@ -76,30 +76,9 @@ export default function Support() {
             Frequently asked questions
           </h3>
           <div className="space-y-4">
-            <FAQ
-              q="How do I vote on a poll?"
-              a="On the Home screen, tap the left or right image to cast your vote. You can also swipe left or right. Skip a poll by swiping up or tapping Skip."
-            />
-            <FAQ
-              q="What is a Taste Profile?"
-              a="The more you vote, the more Versa learns about your preferences. Your Taste Profile shows your personality archetype (e.g. The Dreamer, The Realist), your top categories, and how your taste compares to the rest of your generation."
-            />
-            <FAQ
-              q="How do I add friends?"
-              a="Go to the Friends tab, search by name, and tap Add. Once they accept, you can compare compatibility and challenge each other to poll duels."
-            />
-            <FAQ
-              q="How do I reset my notifications?"
-              a="Open Profile → Notifications to toggle which alerts you receive (daily polls, friend activity, weekly recap, and more)."
-            />
-            <FAQ
-              q="Is my data private?"
-              a="Your individual votes are never sold or shared. Only fully anonymized, aggregated insights are shared with brand partners. See our Privacy Policy for full details."
-            />
-            <FAQ
-              q="How do I delete my account?"
-              a="Go to Profile → Delete account. You'll be asked to type DELETE to confirm. This permanently removes your account, votes, and all linked data — it cannot be undone."
-            />
+            {FAQ_ITEMS.map((item) => (
+              <FAQ key={item.q} q={item.q} a={item.a} />
+            ))}
           </div>
         </section>
 
