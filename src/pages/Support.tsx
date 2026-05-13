@@ -1,12 +1,41 @@
 import { ArrowLeft, Mail, MessageCircle, Shield, FileText, Trash2, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
+
+const FAQ_ITEMS: { q: string; a: string }[] = [
+  { q: 'How do I vote on a poll?', a: 'On the Home screen, tap the left or right image to cast your vote. You can also swipe left or right. Skip a poll by swiping up or tapping Skip.' },
+  { q: 'What is a Taste Profile?', a: 'The more you vote, the more Versa learns about your preferences. Your Taste Profile shows your personality archetype (e.g. The Dreamer, The Realist), your top categories, and how your taste compares to the rest of your generation.' },
+  { q: 'How do I add friends?', a: 'Go to the Friends tab, search by name, and tap Add. Once they accept, you can compare compatibility and challenge each other to poll duels.' },
+  { q: 'How do I reset my notifications?', a: 'Open Profile → Notifications to toggle which alerts you receive (daily polls, friend activity, weekly recap, and more).' },
+  { q: 'Is my data private?', a: 'Your individual votes are never sold or shared. Only fully anonymized, aggregated insights are shared with brand partners. See our Privacy Policy for full details.' },
+  { q: 'How do I delete my account?', a: "Go to Profile → Delete account. You'll be asked to type DELETE to confirm. This permanently removes your account, votes, and all linked data — it cannot be undone." },
+];
+
+const FAQ_JSONLD = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ_ITEMS.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: { '@type': 'Answer', text: a },
+  })),
+};
 
 export default function Support() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background safe-area-top safe-area-bottom">
+      <Helmet>
+        <title>Support — Versa</title>
+        <meta name="description" content="Get help with Versa: how to vote, manage your Taste Profile, add friends, reset notifications, and contact support." />
+        <link rel="canonical" href="https://getversa.app/support" />
+        <meta property="og:title" content="Support — Versa" />
+        <meta property="og:description" content="Help center and FAQs for the Versa polling app." />
+        <meta property="og:url" content="https://getversa.app/support" />
+        <script type="application/ld+json">{JSON.stringify(FAQ_JSONLD)}</script>
+      </Helmet>
       <header className="sticky top-0 bg-background/80 backdrop-blur-lg border-b border-border/40 z-50">
         <div className="flex items-center h-14 px-4 max-w-2xl mx-auto">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="mr-3">
@@ -47,30 +76,9 @@ export default function Support() {
             Frequently asked questions
           </h3>
           <div className="space-y-4">
-            <FAQ
-              q="How do I vote on a poll?"
-              a="On the Home screen, tap the left or right image to cast your vote. You can also swipe left or right. Skip a poll by swiping up or tapping Skip."
-            />
-            <FAQ
-              q="What is a Taste Profile?"
-              a="The more you vote, the more Versa learns about your preferences. Your Taste Profile shows your personality archetype (e.g. The Dreamer, The Realist), your top categories, and how your taste compares to the rest of your generation."
-            />
-            <FAQ
-              q="How do I add friends?"
-              a="Go to the Friends tab, search by name, and tap Add. Once they accept, you can compare compatibility and challenge each other to poll duels."
-            />
-            <FAQ
-              q="How do I reset my notifications?"
-              a="Open Profile → Notifications to toggle which alerts you receive (daily polls, friend activity, weekly recap, and more)."
-            />
-            <FAQ
-              q="Is my data private?"
-              a="Your individual votes are never sold or shared. Only fully anonymized, aggregated insights are shared with brand partners. See our Privacy Policy for full details."
-            />
-            <FAQ
-              q="How do I delete my account?"
-              a="Go to Profile → Delete account. You'll be asked to type DELETE to confirm. This permanently removes your account, votes, and all linked data — it cannot be undone."
-            />
+            {FAQ_ITEMS.map((item) => (
+              <FAQ key={item.q} q={item.q} a={item.a} />
+            ))}
           </div>
         </section>
 
