@@ -1,0 +1,23 @@
+# Versa
+
+> Versa is where Gen Z decides. Vote on real polls about brands, trends, and culture — see how your taste compares to thousands of others, in real time, across the Middle East.
+
+Versa is a consumer-intelligence platform powered by social polling. Users tap left or right on binary polls (Coke vs Pepsi, going out vs staying in, iPhone vs Samsung) and instantly see how their generation voted, broken down by city, age, and gender. Over time, each user builds a Taste Profile and personality archetype, and can compare compatibility with friends.
+
+## Pages
+
+- [Home](/home): Daily poll feed — vote on what's trending right now.
+- [Explore](/explore): Browse polls by category (food, fashion, tech, lifestyle).
+- [Browse](/browse): Open feed of all active polls with no login required.
+- [Live Debate](/live-debate): Polls currently flipping or trending in real time.
+- [Past Perspectives](/archive): Read-only archive of past poll results.
+- [Ask Versa](/ask): Get a verdict on any decision, backed by real Gen Z votes.
+- [Play](/play): Predict outcomes and challenge friends in poll duels.
+- [Weekly Top Results](/weekly-results): The biggest poll outcomes of the week.
+- [Support](/support): FAQs and how to contact us.
+- [Privacy Policy](/privacy-policy): How we handle your data.
+- [Terms of Service](/terms): Terms for using Versa.
+
+## Optional
+
+- [Sign in / Join](/auth): Create a free account.
