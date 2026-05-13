@@ -36,21 +36,21 @@ export async function startNativeOAuth(
 
   // Use the live site URL with a marker so the landing page can bridge
   // tokens back to the native app via the custom URL scheme.
-  // This avoids needing to add a custom scheme to Supabase redirect allowlist.
   const redirectTo = 'https://getversa.app/?native_oauth=1';
 
-  // 1. Get the OAuth URL without navigating
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  // Build the Lovable Cloud managed OAuth broker URL directly.
+  // (Supabase direct OAuth would require manually configured client secrets;
+  //  the broker uses Lovable's managed Google credentials automatically.)
+  const state = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  const brokerParams = new URLSearchParams({
     provider,
-    options: {
-      skipBrowserRedirect: true,
-      redirectTo,
-    },
+    redirect_uri: redirectTo,
+    state,
   });
-
-  if (error || !data?.url) {
-    throw new Error(error?.message || 'Failed to build OAuth URL');
-  }
+  const oauthUrl = `https://getversa.app/~oauth/initiate?${brokerParams.toString()}`;
+  const data = { url: oauthUrl };
 
   // 2. Wire up listeners BEFORE opening the browser
   return new Promise<boolean>((resolve) => {
