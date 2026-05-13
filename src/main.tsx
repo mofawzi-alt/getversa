@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import "./lib/nativeOAuthBridge"; // Must run before anything else
 import "./lib/authRedirectCapture";
 import App from "./App.tsx";
@@ -61,5 +62,9 @@ if (isPreviewHost || isInIframe || isNativeApp) {
   void clearServiceWorkersAndCaches();
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <HelmetProvider>
+    <App />
+  </HelmetProvider>
+);
 }
