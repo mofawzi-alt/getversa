@@ -101,6 +101,8 @@ export default function LiveAskView() {
       });
       if (error) throw error;
       if ((data as any)?.is_targeted_match) toast({ title: "You matched the asker's audience" });
+      // Auto-return home so the user sees the live card with their result
+      setTimeout(() => nav("/home"), 600);
     } catch (e: any) {
       // Roll back optimistic update
       setVoted(null);
