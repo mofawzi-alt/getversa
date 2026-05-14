@@ -190,7 +190,7 @@ export default function LiveAskView() {
       <div
         ref={scrollerRef}
         onScroll={onScroll}
-        className="flex-1 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth no-scrollbar"
+        className="flex-1 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth scrollbar-hide"
       >
         {asks.map((ask) => (
           <div key={ask.id} className="snap-center shrink-0 w-full overflow-y-auto">
