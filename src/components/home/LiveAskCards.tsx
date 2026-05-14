@@ -7,11 +7,7 @@ interface ActiveAsk {
   id: string;
   photo_url: string;
   question: string;
-  option_a: string;
-  option_b: string;
   vote_count: number;
-  votes_a: number;
-  votes_b: number;
   asker_id: string;
   reveal_at: string;
   target_gender: string | null;
@@ -48,7 +44,7 @@ export default function LiveAskCards() {
   const { user } = useAuth();
   const [asks, setAsks] = useState<ActiveAsk[]>([]);
   const [viewer, setViewer] = useState<ViewerProfile | null>(null);
-  const [votedMap, setVotedMap] = useState<Record<string, 'A' | 'B'>>({});
+  const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) { setViewer(null); return; }
@@ -65,7 +61,7 @@ export default function LiveAskCards() {
     const load = async () => {
       const { data } = await supabase
         .from('live_asks')
-        .select('id,photo_url,question,option_a,option_b,vote_count,votes_a,votes_b,asker_id,reveal_at,target_gender,target_age_ranges,target_cities,target_countries')
+        .select('id,photo_url,question,vote_count,asker_id,reveal_at,target_gender,target_age_ranges,target_cities,target_countries')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(30);
@@ -78,12 +74,10 @@ export default function LiveAskCards() {
       if (user && filtered.length) {
         const { data: votes } = await supabase
           .from('live_ask_votes')
-          .select('live_ask_id,choice')
+          .select('live_ask_id')
           .eq('user_id', user.id)
           .in('live_ask_id', filtered.map((a: any) => a.id));
-        const map: Record<string, 'A' | 'B'> = {};
-        (votes ?? []).forEach((v: any) => { map[v.live_ask_id] = v.choice; });
-        if (mounted) setVotedMap(map);
+        if (mounted) setVotedIds(new Set((votes ?? []).map((v: any) => v.live_ask_id)));
       }
     };
     load();
@@ -99,91 +93,31 @@ export default function LiveAskCards() {
 
   if (asks.length === 0) return null;
 
+  // Show the most relevant: prefer an unvoted ask; otherwise the freshest voted one
+  const next = asks.find((a) => !votedIds.has(a.id)) ?? asks[0];
+  const isVoted = votedIds.has(next.id);
+  const unvotedCount = asks.filter((a) => !votedIds.has(a.id)).length;
+
   return (
-    <div className="px-4 mt-3 space-y-3">
-      {asks.map((a) => {
-        const myChoice = votedMap[a.id];
-        const voted = !!myChoice;
-        const pctA = a.vote_count > 0 ? Math.round((a.votes_a / a.vote_count) * 100) : 0;
-        const pctB = a.vote_count > 0 ? 100 - pctA : 0;
-
-        return (
-          <button
-            key={a.id}
-            onClick={() => nav(`/live-ask/${a.id}`)}
-            className="w-full block text-left rounded-2xl overflow-hidden border border-border/50 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.04)] active:scale-[0.99] transition-transform"
-          >
-            <div className="relative">
-              <img
-                src={a.photo_url}
-                alt=""
-                className="w-full aspect-[4/3] object-cover bg-muted"
-                loading="lazy"
-              />
-              <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/95 backdrop-blur-sm">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8392A] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#E8392A]" />
-                </span>
-                <span className="text-[10px] font-bold text-[#E8392A] tracking-wide">LIVE ASK</span>
-              </div>
-              {voted && (
-                <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-black/70 backdrop-blur-sm">
-                  <span className="text-[10px] font-bold text-white tracking-wide">YOU VOTED</span>
-                </div>
-              )}
-            </div>
-
-            <div className="p-3">
-              <h3 className="text-[15px] font-semibold leading-tight line-clamp-2">{a.question}</h3>
-
-              {voted ? (
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <ResultPill label={a.option_a} pct={pctA} mine={myChoice === 'A'} />
-                  <ResultPill label={a.option_b} pct={pctB} mine={myChoice === 'B'} />
-                </div>
-              ) : (
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <div className="h-9 rounded-xl border border-border/60 flex items-center justify-center text-[13px] font-semibold text-foreground/80">
-                    {a.option_a}
-                  </div>
-                  <div className="h-9 rounded-xl border border-border/60 flex items-center justify-center text-[13px] font-semibold text-foreground/80">
-                    {a.option_b}
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-[11px] text-foreground/60">
-                  {a.vote_count} {a.vote_count === 1 ? 'vote' : 'votes'}
-                </span>
-                <span className="text-[11px] font-bold text-[#E8392A]">
-                  {voted ? 'View →' : 'Tap to vote →'}
-                </span>
-              </div>
-            </div>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function ResultPill({ label, pct, mine }: { label: string; pct: number; mine: boolean }) {
-  return (
-    <div className={`relative h-9 rounded-xl overflow-hidden border ${mine ? 'border-[#E8392A]' : 'border-border/60'}`}>
-      <div
-        className={`absolute inset-y-0 left-0 ${mine ? 'bg-[#E8392A]/15' : 'bg-neutral-100'}`}
-        style={{ width: `${pct}%` }}
-      />
-      <div className="relative flex items-center justify-between h-full px-3">
-        <span className={`text-[12px] font-semibold truncate ${mine ? 'text-[#E8392A]' : 'text-foreground/80'}`}>
-          {label}
-        </span>
-        <span className={`text-[13px] font-bold tabular-nums ${mine ? 'text-[#E8392A]' : 'text-foreground/80'}`}>
-          {pct}%
-        </span>
-      </div>
-    </div>
+    <button
+      onClick={() => nav(`/live-ask/${next.id}`)}
+      className="mx-4 mt-3 mb-1 w-[calc(100%-2rem)] flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[#E8392A]/10 border border-[#E8392A]/30 active:scale-[0.98] transition-transform"
+    >
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8392A] opacity-75" />
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E8392A]" />
+      </span>
+      <span className="text-[13px] font-bold text-[#E8392A]">
+        {isVoted
+          ? `${asks.length} live ask${asks.length === 1 ? '' : 's'}`
+          : `${unvotedCount} live ask${unvotedCount === 1 ? '' : 's'}`}
+      </span>
+      <span className="text-[12px] text-foreground/70 truncate flex-1 text-left">
+        · {next.question}
+      </span>
+      <span className="text-[11px] font-semibold text-[#E8392A]">
+        {isVoted ? 'View →' : 'Vote →'}
+      </span>
+    </button>
   );
 }
