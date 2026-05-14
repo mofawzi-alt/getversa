@@ -25,16 +25,20 @@ interface ViewerProfile {
   nationality: string | null;
 }
 
+const norm = (value: string | null | undefined) => value?.trim().toLowerCase() ?? '';
+
 function matches(ask: ActiveAsk, viewer: ViewerProfile | null): boolean {
-  if (ask.target_gender && viewer?.gender !== ask.target_gender) return false;
-  if (ask.target_age_ranges?.length && (!viewer?.age_range || !ask.target_age_ranges.includes(viewer.age_range))) return false;
+  if (ask.target_gender && norm(viewer?.gender) !== norm(ask.target_gender)) return false;
+  if (ask.target_age_ranges?.length && (!viewer?.age_range || !ask.target_age_ranges.map(norm).includes(norm(viewer.age_range)))) return false;
   if (ask.target_cities?.length) {
-    const cities = [viewer?.city, viewer?.city_of_residence].filter(Boolean) as string[];
-    if (!cities.some((c) => ask.target_cities!.includes(c))) return false;
+    const cities = [viewer?.city, viewer?.city_of_residence].map(norm).filter(Boolean);
+    const targets = ask.target_cities.map(norm);
+    if (!cities.some((c) => targets.includes(c))) return false;
   }
   if (ask.target_countries?.length) {
-    const countries = [viewer?.country, viewer?.nationality].filter(Boolean) as string[];
-    if (!countries.some((c) => ask.target_countries!.includes(c))) return false;
+    const countries = [viewer?.country, viewer?.nationality].map(norm).filter(Boolean);
+    const targets = ask.target_countries.map(norm);
+    if (!countries.some((c) => targets.includes(c))) return false;
   }
   return true;
 }
@@ -68,6 +72,7 @@ export default function LiveAskCards() {
       if (!mounted) return;
       const filtered = (data ?? [])
         .filter((a: any) => !user || a.asker_id !== user.id)
+        .filter((a: any) => new Date(a.reveal_at).getTime() > Date.now())
         .filter((a: any) => matches(a as ActiveAsk, viewer));
       setAsks(filtered as ActiveAsk[]);
 
