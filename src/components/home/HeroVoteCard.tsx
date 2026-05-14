@@ -541,10 +541,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const extraVoters = recentVoters?.extra ?? 0;
 
   return (
-    <section className="px-3 pt-3 pb-2">
+    <section className="px-3 pt-2 pb-2">
       {/* Above-card meta: battles left + live countdown */}
       {(unseenCount > 0 || poll.ends_at) && (
-        <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
+        <div className="flex items-center justify-center gap-2 mb-1.5 flex-wrap">
           {unseenCount > 0 && (
             <motion.span
               initial={{ scale: 0.9, opacity: 0 }}
@@ -583,7 +583,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         onMouseLeave={() => { if (isDraggingRef.current) { isDraggingRef.current = false; setIsDragging(false); setDragX(0); setDragY(0); } }}
       >
         {/* Header strip — LIVE pill, recent vote count, avatars */}
-        <div className="flex items-center justify-between px-3 pt-3 pb-1.5">
+        <div className="flex items-center justify-between px-3 pt-2 pb-1">
           <div className="flex items-center gap-2 min-w-0">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold tracking-wide">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -619,17 +619,17 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         </div>
 
         {/* Question header */}
-        <div className="px-5 pt-1 pb-3 text-center">
+        <div className="px-4 pt-0.5 pb-2 text-center">
           {poll.is_hot_take ? (
-            <p className="text-[11px] font-bold text-destructive mb-1 inline-flex items-center gap-1 justify-center">
+            <p className="text-[10px] font-bold text-destructive mb-0.5 inline-flex items-center gap-1 justify-center">
               🔥 Hot Take
             </p>
           ) : (
-            <p className="text-[11px] font-bold text-destructive mb-1 inline-flex items-center gap-1 justify-center">
+            <p className="text-[10px] font-bold text-destructive mb-0.5 inline-flex items-center gap-1 justify-center">
               🔥 The Pulse
             </p>
           )}
-          <h2 className="font-display font-bold leading-tight text-foreground text-2xl">
+          <h2 className="font-display font-bold leading-tight text-foreground text-xl">
             {qLead}
             {qTail && (
               <>
@@ -640,12 +640,12 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             {!qTail && '?'}
           </h2>
           {poll.subtitle && (
-            <p className="text-sm text-muted-foreground mt-1.5">{poll.subtitle}</p>
+            <p className="text-xs text-muted-foreground mt-1">{poll.subtitle}</p>
           )}
         </div>
 
-        {/* Two-image split — taller for more visual impact */}
-        <div className={`flex h-[58vh] max-h-[520px] min-h-[380px] relative ${poll.is_hot_take ? 'ring-2 ring-[hsl(15,90%,55%)]' : ''}`}>
+        {/* Two-image split — sized to fit iPhone viewport without scrolling */}
+        <div className={`flex h-[44vh] max-h-[400px] min-h-[260px] relative ${poll.is_hot_take ? 'ring-2 ring-[hsl(15,90%,55%)]' : ''}`}>
           <ControversialBadge percentA={poll.percentA} percentB={poll.percentB} totalVotes={poll.totalVotes} />
 
           {/* Option A — left half */}
@@ -779,7 +779,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="px-4 py-3 border-t border-border/60 bg-card"
+              className="px-3 py-2 border-t border-border/60 bg-card"
             >
               <div className="h-2 bg-secondary rounded-full overflow-hidden flex mb-2">
                 <motion.div
@@ -813,7 +813,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
       {/* Below-card meta: swipe hint, category, skip */}
       {!result && !isVoting && (
-        <div className="flex flex-col items-center gap-1.5 mt-3">
+        <div className="flex flex-col items-center gap-1.5 mt-2">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
             ← Swipe or tap to vote →
           </div>
