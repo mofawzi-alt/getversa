@@ -155,6 +155,7 @@ Deno.serve(async (req) => {
         vision_check: visionResult,
         is_paid: isPaid,
         credits_charged: isPaid ? PAID_COST : 0,
+        reveal_at: revealAt,
       })
       .select()
       .single();
