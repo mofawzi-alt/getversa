@@ -619,17 +619,17 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         </div>
 
         {/* Question header */}
-        <div className="px-5 pt-1 pb-3 text-center">
+        <div className="px-4 pt-0.5 pb-2 text-center">
           {poll.is_hot_take ? (
-            <p className="text-[11px] font-bold text-destructive mb-1 inline-flex items-center gap-1 justify-center">
+            <p className="text-[10px] font-bold text-destructive mb-0.5 inline-flex items-center gap-1 justify-center">
               🔥 Hot Take
             </p>
           ) : (
-            <p className="text-[11px] font-bold text-destructive mb-1 inline-flex items-center gap-1 justify-center">
+            <p className="text-[10px] font-bold text-destructive mb-0.5 inline-flex items-center gap-1 justify-center">
               🔥 The Pulse
             </p>
           )}
-          <h2 className="font-display font-bold leading-tight text-foreground text-2xl">
+          <h2 className="font-display font-bold leading-tight text-foreground text-xl">
             {qLead}
             {qTail && (
               <>
@@ -640,7 +640,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             {!qTail && '?'}
           </h2>
           {poll.subtitle && (
-            <p className="text-sm text-muted-foreground mt-1.5">{poll.subtitle}</p>
+            <p className="text-xs text-muted-foreground mt-1">{poll.subtitle}</p>
           )}
         </div>
 
