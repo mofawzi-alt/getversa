@@ -29,6 +29,14 @@ if (Capacitor?.isNativePlatform?.()) {
     } catch (err) {
       console.warn("[StatusBar] setup failed", err);
     }
+    try {
+      const { Keyboard } = await import("@capacitor/keyboard");
+      // Hide the iOS keyboard accessory bar (gray bar with ↑ ↓ ✓)
+      // so inputs look clean like iMessage.
+      await Keyboard.setAccessoryBarVisible({ isVisible: false });
+    } catch (err) {
+      console.warn("[Keyboard] hide accessory bar failed", err);
+    }
   })();
 }
 
