@@ -87,14 +87,29 @@ export default function LiveAskView() {
     if (!user) return nav("/auth");
     if (voting || voted) return;
     setVoting(true);
+    // Optimistic UI: bump local counts immediately
+    setAsk((prev) => prev ? {
+      ...prev,
+      vote_count: prev.vote_count + 1,
+      votes_a: prev.votes_a + (choice === "A" ? 1 : 0),
+      votes_b: prev.votes_b + (choice === "B" ? 1 : 0),
+    } : prev);
+    setVoted(choice);
     try {
       const { data, error } = await supabase.functions.invoke("vote-live-ask", {
         body: { live_ask_id: id, choice, session_duration_ms: Date.now() - startMs },
       });
       if (error) throw error;
-      setVoted(choice);
       if ((data as any)?.is_targeted_match) toast({ title: "You matched the asker's audience" });
     } catch (e: any) {
+      // Roll back optimistic update
+      setVoted(null);
+      setAsk((prev) => prev ? {
+        ...prev,
+        vote_count: Math.max(0, prev.vote_count - 1),
+        votes_a: Math.max(0, prev.votes_a - (choice === "A" ? 1 : 0)),
+        votes_b: Math.max(0, prev.votes_b - (choice === "B" ? 1 : 0)),
+      } : prev);
       toast({ title: e?.message || "Failed to vote", variant: "destructive" });
     } finally {
       setVoting(false);
