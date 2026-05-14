@@ -541,10 +541,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   const extraVoters = recentVoters?.extra ?? 0;
 
   return (
-    <section className="px-3 pt-3 pb-2">
+    <section className="px-3 pt-2 pb-2">
       {/* Above-card meta: battles left + live countdown */}
       {(unseenCount > 0 || poll.ends_at) && (
-        <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
+        <div className="flex items-center justify-center gap-2 mb-1.5 flex-wrap">
           {unseenCount > 0 && (
             <motion.span
               initial={{ scale: 0.9, opacity: 0 }}
