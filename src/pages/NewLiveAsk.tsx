@@ -80,7 +80,7 @@ export default function NewLiveAsk() {
       toast({ title: "Live Ask posted" });
       nav(`/live-ask/${askId}`);
     } catch (e: any) {
-      const msg = e?.context?.body ? await tryJson(e.context.body) : null;
+      const msg = e?.context ? await tryJson(e.context) : null;
       if (msg?.code === "PHOTO_REJECTED") {
         toast({
           title: "Try a different photo",
@@ -223,5 +223,8 @@ export default function NewLiveAsk() {
 }
 
 async function tryJson(s: any) {
-  try { return typeof s === "string" ? JSON.parse(s) : s; } catch { return null; }
+  try {
+    if (typeof Response !== "undefined" && s instanceof Response) return await s.clone().json();
+    return typeof s === "string" ? JSON.parse(s) : s;
+  } catch { return null; }
 }
