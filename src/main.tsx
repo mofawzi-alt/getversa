@@ -24,6 +24,15 @@ if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
 // CSS adds extra padding, causing the logo to overlap the notch.
 if (Capacitor?.isNativePlatform?.()) {
   void initOneSignal(null);
+  // Tell Capgo this bundle booted successfully so it doesn't roll back.
+  void (async () => {
+    try {
+      const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
+      await CapacitorUpdater.notifyAppReady();
+    } catch (err) {
+      console.warn("[CapacitorUpdater] notifyAppReady failed", err);
+    }
+  })();
   void CapacitorApp.getLaunchUrl().then((launch) => {
     const route = getNotificationRoute(launch?.url);
     if (route && route !== "/home") openNotificationRoute(route);
