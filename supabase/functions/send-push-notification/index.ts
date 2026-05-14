@@ -69,6 +69,7 @@ serve(async (req: Request): Promise<Response> => {
           contents: { en: payload.body },
           data: { url: payload.url ?? "/", poll_id: payload.poll_id },
           target_channel: "push",
+          ...(payload.url ? { app_url: `com.versa.app://${String(payload.url).replace(/^\//, '')}` } : {}),
         };
 
         if (subscriptionIds.length === 0) {
