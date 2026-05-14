@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Loader2, Scale, FlaskConical, ArrowUp, RotateCcw, Lock, BarChart3 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -57,6 +57,13 @@ function buildHistoryFromTurns(turns: AskTurn[]) {
     if (assistant) out.push({ role: 'assistant', content: assistant });
   }
   return out;
+}
+
+function createTurnId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `turn-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 interface PreviewState {
@@ -139,9 +146,11 @@ export default function Ask() {
 
   useEffect(() => {
     const vv = (typeof window !== 'undefined' ? window.visualViewport : null);
-    if (!vv) return;
+    if (!vv || typeof vv.addEventListener !== 'function') return;
     const update = () => {
-      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      const height = Number(vv.height) || window.innerHeight;
+      const offsetTop = Number(vv.offsetTop) || 0;
+      const offset = Math.max(0, window.innerHeight - height - offsetTop);
       document.documentElement.style.setProperty('--ask-kb-offset', `${offset}px`);
     };
     update();
@@ -189,7 +198,7 @@ export default function Ask() {
 
   const autoConfirm = async (previewData: PreviewState) => {
     setConfirming(true);
-    const turnId = crypto.randomUUID();
+    const turnId = createTurnId();
     const placeholder: AskTurn = { id: turnId, question: previewData.question, mode: previewData.mode, loading: true };
     setTurns((prev) => [...prev, placeholder]);
 
@@ -247,37 +256,37 @@ export default function Ask() {
       if (data?.error) { toast.error(data.error); return; }
 
       if (data.stage === 'offscope') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, variant: 'offscope' } as AskTurn]);
         return;
       }
 
       if (data.stage === 'vague') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, variant: 'offscope' } as AskTurn]);
         return;
       }
 
       if (data.stage === 'clarify') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, variant: 'clarify', clarifications: data.clarifications || [], askQueryId: data.query_id || null } as AskTurn]);
         return;
       }
 
       if (data.stage === 'factual' || data.stage === 'about') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, notice: data.notice, variant: 'factual' } as AskTurn]);
         return;
       }
 
       if (data.stage === 'smart_answer') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, guardrailPolls: data.suggested_polls || [], variant: 'smart_answer', askQueryId: data.query_id || null } as AskTurn]);
         return;
       }
 
       if (data.stage === 'guardrail') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, lowData: true, guardrailPolls: data.suggested_polls || [], askQueryId: data.query_id || null } as AskTurn]);
         return;
       }
@@ -309,7 +318,7 @@ export default function Ask() {
   return (
     <div
       className="fixed inset-0 bg-background flex flex-col overflow-hidden w-full max-w-full touch-pan-y"
-      style={{ height: '100dvh', width: '100%', maxWidth: '100%' }}
+      style={{ height: '100vh', width: '100%', maxWidth: '100%' }}
     >
       {/* ── Header ── */}
       <div
@@ -391,7 +400,7 @@ export default function Ask() {
 
         {/* ── DECIDE empty state ── */}
         {empty && askLevel > 0 && isDecide && (
-          <AnimatePresence mode="wait">
+          <>
             <motion.div
               key="decide-empty"
               initial={{ opacity: 0 }}
@@ -426,12 +435,12 @@ export default function Ask() {
               </div>
               <SuggestionChips label="🔥 Everyone's asking right now" suggestions={promptSuggestions} onPick={runPreview} variant="decide" />
             </motion.div>
-          </AnimatePresence>
+          </>
         )}
 
         {/* ── RESEARCH empty state ── */}
         {empty && askLevel > 0 && !isDecide && (
-          <AnimatePresence mode="wait">
+          <>
             <motion.div
               key="research-empty"
               initial={{ opacity: 0 }}
@@ -466,7 +475,7 @@ export default function Ask() {
               </div>
               <SuggestionChips label="📊 Trending research questions" suggestions={promptSuggestions} onPick={runPreview} variant="research" />
             </motion.div>
-          </AnimatePresence>
+          </>
         )}
 
         {!empty && <AskThread turns={turns} onPickSuggestion={runPreview} />}
