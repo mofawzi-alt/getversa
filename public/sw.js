@@ -74,17 +74,21 @@ self.addEventListener('notificationclick', (event) => {
 
   const url = event.notification.data?.url || '/';
 
+  const absoluteUrl = new URL(url, self.location.origin).href;
+
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clientList) => {
       for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && 'focus' in client && 'navigate' in client) {
-          client.navigate(url);
-          return client.focus();
+        if (client.url.startsWith(self.location.origin)) {
+          // Tell the SPA to navigate via React Router (works in iOS PWA where client.navigate is flaky)
+          try { client.postMessage({ type: 'NAVIGATE', url }); } catch {}
+          try { if ('navigate' in client) await client.navigate(absoluteUrl); } catch {}
+          if ('focus' in client) return client.focus();
         }
       }
 
       if (self.clients.openWindow) {
-        return self.clients.openWindow(url);
+        return self.clients.openWindow(absoluteUrl);
       }
 
       return undefined;
