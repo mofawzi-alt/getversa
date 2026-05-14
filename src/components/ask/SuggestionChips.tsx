@@ -31,7 +31,7 @@ export default function SuggestionChips({ label, suggestions, onPick, variant = 
         {label}
       </p>
       <div className="space-y-2 w-full min-w-0">
-        {suggestions.map((s, i) => {
+        {suggestions.map((s) => {
           const item: Suggestion = typeof s === 'string' ? { text: s } : s;
           const IconComp = item.icon ? ICON_MAP[item.icon] : null;
 
