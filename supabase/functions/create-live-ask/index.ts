@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
             messages: [
               {
                 role: 'system',
-                content: 'You are a content safety classifier for a MENA-region social app. REJECT images containing: NSFW or nudity, alcohol (wine, beer, cocktails, liquor), recognizable human faces (including selfies), political or hate symbols, graphic violence, or visible brand logos. Reply ONLY with JSON: {"safe": boolean, "reasons": string[]}. If safe, reasons must be [].',
+                content: 'You are a content safety classifier for a MENA-region social app. REJECT images containing: NSFW or nudity, alcohol (wine, beer, cocktails, liquor), visible recognizable human faces (including selfies), political or hate symbols, graphic violence, or visible brand logos. ALLOW hands, arms, clothing, fabric, rooms, products without logos, and body parts when no face is visible. Do not infer a face unless a face is clearly visible in the image. Reply ONLY with JSON: {"safe": boolean, "reasons": string[]}. If safe, reasons must be [].',
               },
               {
                 role: 'user',
@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
         console.log('[vision] rejected:', JSON.stringify(visionResult));
         return json({
           error: 'Photo failed safety check',
-          reasons: visionResult.reasons?.length ? visionResult.reasons : ['model flagged image without specific reasons — try a different photo (no alcohol, no celebrity faces, no large logos)'],
+          reasons: visionResult.reasons?.length ? visionResult.reasons : ['try a different photo — no alcohol, visible faces, large logos, unsafe, or political content'],
           raw: visionResult.raw,
           code: 'PHOTO_REJECTED',
         }, 422);
