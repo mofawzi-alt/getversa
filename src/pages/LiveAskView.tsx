@@ -127,8 +127,8 @@ export default function LiveAskView() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="flex items-center justify-between p-4">
+    <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
+      <header className="flex items-center justify-between px-4 py-2 flex-shrink-0">
         <button onClick={() => nav(-1)} className="p-2"><ArrowLeft className="h-5 w-5" /></button>
         <span className="text-xs uppercase tracking-wide text-primary font-semibold">
           {isClosed ? "Live Ask · Closed" : "Live Ask"}
@@ -136,19 +136,19 @@ export default function LiveAskView() {
         <button onClick={report} className="p-2"><Flag className="h-5 w-5 text-muted-foreground" /></button>
       </header>
 
-      <div className="max-w-md mx-auto p-4 space-y-5">
-        <div className="aspect-[4/5] w-full rounded-2xl overflow-hidden bg-muted">
+      <div className="flex-1 flex flex-col px-4 pb-3 max-w-md w-full mx-auto min-h-0">
+        <div className="flex-1 min-h-0 rounded-2xl overflow-hidden bg-muted">
           <img src={ask.photo_url} alt="" className="w-full h-full object-cover" />
         </div>
 
-        <h2 className="text-xl font-semibold text-center">{ask.question}</h2>
+        <h2 className="text-base font-semibold text-center mt-3 line-clamp-2">{ask.question}</h2>
         {ask.target_gender && (
-          <p className="text-xs text-center text-muted-foreground">
+          <p className="text-[11px] text-center text-muted-foreground mt-0.5">
             Asking {ask.target_gender === "female" ? "women" : "men"} only
           </p>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 mt-3">
           <VoteButton
             label={ask.option_a}
             pct={revealed ? pctA : null}
@@ -165,9 +165,9 @@ export default function LiveAskView() {
           />
         </div>
 
-        <p className="text-xs text-center text-muted-foreground">
+        <p className="text-[11px] text-center text-muted-foreground mt-2">
           {ask.vote_count} {ask.vote_count === 1 ? "vote" : "votes"}
-          {!revealed && !isClosed && " — vote to see results, or wait until the 15-min window closes"}
+          {!revealed && !isClosed && " — vote to reveal"}
           {isClosed && " — voting closed"}
         </p>
       </div>
@@ -182,7 +182,7 @@ function VoteButton({ label, pct, selected, disabled, onClick }: {
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`relative h-28 rounded-2xl border-2 px-4 text-left overflow-hidden transition ${
+      className={`relative h-16 rounded-2xl border-2 px-3 text-left overflow-hidden transition ${
         selected ? "border-primary bg-primary/5" : "border-border bg-background"
       } ${disabled ? "opacity-90" : "active:scale-[0.98]"}`}
     >
@@ -192,9 +192,9 @@ function VoteButton({ label, pct, selected, disabled, onClick }: {
           style={{ width: `${pct}%` }}
         />
       )}
-      <div className="relative flex items-end justify-between h-full">
-        <span className="font-medium">{label}</span>
-        {pct !== null && <span className="text-2xl font-bold">{pct}%</span>}
+      <div className="relative flex items-center justify-between h-full">
+        <span className="font-medium text-sm">{label}</span>
+        {pct !== null && <span className="text-lg font-bold">{pct}%</span>}
       </div>
     </button>
   );
