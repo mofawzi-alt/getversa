@@ -169,6 +169,53 @@ Deno.serve(async (req) => {
     if (isPaid) updates.ask_credits = (profile.ask_credits ?? 0) - PAID_COST;
     await admin.from('users').update(updates).eq('id', userId);
 
+    // Fire-and-forget push to friends/followers + a random eligible sample
+    (async () => {
+      try {
+        const recipientIds = new Set<string>();
+        const [{ data: follows }, { data: friends }, { data: asker }] = await Promise.all([
+          admin.from('follows').select('follower_id').eq('following_id', userId),
+          admin.from('friendships').select('requester_id,recipient_id').eq('status', 'accepted')
+            .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`),
+          admin.from('users').select('username').eq('id', userId).maybeSingle(),
+        ]);
+        (follows ?? []).forEach((r: any) => recipientIds.add(r.follower_id));
+        (friends ?? []).forEach((r: any) => {
+          recipientIds.add(r.requester_id === userId ? r.recipient_id : r.requester_id);
+        });
+
+        let sampleQuery = admin.from('users').select('id').neq('id', userId).limit(200);
+        if (target_gender) sampleQuery = sampleQuery.eq('gender', target_gender);
+        if (Array.isArray(target_age_ranges) && target_age_ranges.length) sampleQuery = sampleQuery.in('age_range', target_age_ranges);
+        if (Array.isArray(target_cities) && target_cities.length) sampleQuery = sampleQuery.in('city', target_cities);
+        if (Array.isArray(target_countries) && target_countries.length) sampleQuery = sampleQuery.in('country', target_countries);
+        const { data: pool } = await sampleQuery;
+        const candidates = (pool ?? []).map((r: any) => r.id).filter((id: string) => !recipientIds.has(id));
+        for (let i = candidates.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
+        candidates.slice(0, 30).forEach((id: string) => recipientIds.add(id));
+
+        if (recipientIds.size > 0) {
+          const askerName = (asker as any)?.username ? `@${(asker as any).username}` : 'Someone';
+          await fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SERVICE_KEY}` },
+            body: JSON.stringify({
+              title: '📸 Quick! Need your opinion',
+              body: `${askerName} is asking the crowd — tap to vote`,
+              url: `/live-ask/${(ask as any).id}`,
+              user_ids: Array.from(recipientIds),
+              notification_type: 'live_ask_new',
+            }),
+          });
+        }
+      } catch (e) {
+        console.error('[live-ask push] failed', e);
+      }
+    })();
+
     return json({ live_ask: ask, charged: isPaid ? PAID_COST : 0 });
   } catch (e) {
     console.error('create-live-ask error', e);
