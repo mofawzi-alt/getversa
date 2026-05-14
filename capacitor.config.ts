@@ -45,6 +45,15 @@ const config: CapacitorConfig = {
       resize: 'native',
       resizeOnFullScreen: true,
     },
+    CapacitorUpdater: {
+      // Auto-download new web bundles in the background.
+      // The new version is applied on the NEXT app launch.
+      autoUpdate: true,
+      // How often the app pings Capgo to check for updates.
+      autoUpdateUrl: 'https://api.capgo.app/updates',
+      // Tell Capgo to reset to the bundled version if a new one fails.
+      resetWhenUpdate: true,
+    },
   },
 };
 
