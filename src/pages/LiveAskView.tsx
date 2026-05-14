@@ -87,14 +87,29 @@ export default function LiveAskView() {
     if (!user) return nav("/auth");
     if (voting || voted) return;
     setVoting(true);
+    // Optimistic UI: bump local counts immediately
+    setAsk((prev) => prev ? {
+      ...prev,
+      vote_count: prev.vote_count + 1,
+      votes_a: prev.votes_a + (choice === "A" ? 1 : 0),
+      votes_b: prev.votes_b + (choice === "B" ? 1 : 0),
+    } : prev);
+    setVoted(choice);
     try {
       const { data, error } = await supabase.functions.invoke("vote-live-ask", {
         body: { live_ask_id: id, choice, session_duration_ms: Date.now() - startMs },
       });
       if (error) throw error;
-      setVoted(choice);
       if ((data as any)?.is_targeted_match) toast({ title: "You matched the asker's audience" });
     } catch (e: any) {
+      // Roll back optimistic update
+      setVoted(null);
+      setAsk((prev) => prev ? {
+        ...prev,
+        vote_count: Math.max(0, prev.vote_count - 1),
+        votes_a: Math.max(0, prev.votes_a - (choice === "A" ? 1 : 0)),
+        votes_b: Math.max(0, prev.votes_b - (choice === "B" ? 1 : 0)),
+      } : prev);
       toast({ title: e?.message || "Failed to vote", variant: "destructive" });
     } finally {
       setVoting(false);
@@ -178,23 +193,44 @@ export default function LiveAskView() {
 function VoteButton({ label, pct, selected, disabled, onClick }: {
   label: string; pct: number | null; selected: boolean; disabled: boolean; onClick: () => void;
 }) {
+  const isWinner = pct !== null && pct >= 50;
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`relative h-16 rounded-2xl border-2 px-3 text-left overflow-hidden transition ${
-        selected ? "border-primary bg-primary/5" : "border-border bg-background"
-      } ${disabled ? "opacity-90" : "active:scale-[0.98]"}`}
+      className={`group relative h-[68px] rounded-2xl px-4 text-left overflow-hidden transition-all duration-300 ${
+        selected
+          ? "shadow-[0_8px_24px_-8px_rgba(232,57,42,0.45)] ring-2 ring-[#E8392A]"
+          : "shadow-[0_2px_8px_rgba(0,0,0,0.04)] ring-1 ring-border/60 hover:ring-foreground/20"
+      } ${disabled ? "" : "active:scale-[0.97]"} bg-gradient-to-br from-white to-neutral-50`}
     >
+      {/* Fill bar with gradient */}
       {pct !== null && (
         <div
-          className={`absolute inset-y-0 left-0 ${selected ? "bg-primary/15" : "bg-muted"}`}
+          className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out ${
+            selected
+              ? "bg-gradient-to-r from-[#E8392A]/20 via-[#E8392A]/12 to-[#E8392A]/5"
+              : isWinner
+                ? "bg-gradient-to-r from-neutral-200/80 to-neutral-100/40"
+                : "bg-gradient-to-r from-neutral-100 to-neutral-50/50"
+          }`}
           style={{ width: `${pct}%` }}
         />
       )}
+      {/* Subtle inner highlight */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+
       <div className="relative flex items-center justify-between h-full">
-        <span className="font-medium text-sm">{label}</span>
-        {pct !== null && <span className="text-lg font-bold">{pct}%</span>}
+        <span className={`font-semibold text-[15px] tracking-tight ${selected ? "text-[#E8392A]" : "text-foreground"}`}>
+          {label}
+        </span>
+        {pct !== null && (
+          <span className={`text-xl font-bold tabular-nums tracking-tight ${
+            selected ? "text-[#E8392A]" : "text-foreground/80"
+          }`}>
+            {pct}<span className="text-xs font-semibold opacity-60">%</span>
+          </span>
+        )}
       </div>
     </button>
   );
