@@ -318,7 +318,7 @@ export default function Ask() {
   return (
     <div
       className="fixed inset-0 bg-background flex flex-col overflow-hidden w-full max-w-full touch-pan-y"
-      style={{ height: '100dvh', width: '100%', maxWidth: '100%' }}
+      style={{ height: '100vh', width: '100%', maxWidth: '100%' }}
     >
       {/* ── Header ── */}
       <div
