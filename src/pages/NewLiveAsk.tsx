@@ -113,7 +113,7 @@ export default function NewLiveAsk() {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="aspect-[4/5] w-full rounded-2xl bg-muted flex items-center justify-center overflow-hidden border relative"
+          className="h-[min(52dvh,420px)] w-full rounded-2xl bg-muted flex items-center justify-center overflow-hidden border relative shadow-card"
         >
           {photoPreview ? (
             <>
