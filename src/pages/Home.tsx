@@ -1568,9 +1568,6 @@ export default function Home() {
         {/* ═══ DAILY PULSE STRIP ═══ */}
         <DailyPulseStrip />
 
-        {/* ═══ ASK THE CROWD (Live Asks) ═══ */}
-        <LiveAskEntry />
-
 
 
         {/* ═══ INFINITE HERO VOTE CARD ═══ */}
