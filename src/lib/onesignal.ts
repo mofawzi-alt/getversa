@@ -16,7 +16,8 @@ function normalizeNotificationRoute(value: unknown): string | null {
       return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/home';
     }
     if (parsed.protocol === 'versa:' || parsed.protocol === 'com.versa.app:' || parsed.protocol === 'com.Versa.app:') {
-      return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/home';
+      const path = `/${[parsed.host, parsed.pathname.replace(/^\//, '')].filter(Boolean).join('/')}`;
+      return `${path}${parsed.search}${parsed.hash}` || '/home';
     }
   } catch {
     return null;
