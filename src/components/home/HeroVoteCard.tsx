@@ -779,7 +779,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="px-4 py-3 border-t border-border/60 bg-card"
+              className="px-3 py-2 border-t border-border/60 bg-card"
             >
               <div className="h-2 bg-secondary rounded-full overflow-hidden flex mb-2">
                 <motion.div
