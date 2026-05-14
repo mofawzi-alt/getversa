@@ -96,7 +96,10 @@ export default function NewLiveAsk() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="flex items-center justify-between p-4 border-b">
+      <header
+        className="flex items-center justify-between px-4 pb-3 border-b"
+        style={{ paddingTop: 'max(env(safe-area-inset-top), 0.75rem)' }}
+      >
         <button onClick={() => nav(-1)} className="p-2"><X className="h-5 w-5" /></button>
         <h1 className="font-semibold">Live Ask</h1>
         <Button size="sm" onClick={submit} disabled={submitting}>
