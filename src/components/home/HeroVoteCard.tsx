@@ -644,8 +644,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           )}
         </div>
 
-        {/* Two-image split — taller for more visual impact */}
-        <div className={`flex h-[58vh] max-h-[520px] min-h-[380px] relative ${poll.is_hot_take ? 'ring-2 ring-[hsl(15,90%,55%)]' : ''}`}>
+        {/* Two-image split — sized to fit iPhone viewport without scrolling */}
+        <div className={`flex h-[44vh] max-h-[400px] min-h-[260px] relative ${poll.is_hot_take ? 'ring-2 ring-[hsl(15,90%,55%)]' : ''}`}>
           <ControversialBadge percentA={poll.percentA} percentB={poll.percentB} totalVotes={poll.totalVotes} />
 
           {/* Option A — left half */}
