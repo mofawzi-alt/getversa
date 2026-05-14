@@ -21,6 +21,7 @@ export default function NewLiveAsk() {
   const [optionA, setOptionA] = useState("");
   const [optionB, setOptionB] = useState("");
   const [targetGender, setTargetGender] = useState<string>("");
+  const [durationMin, setDurationMin] = useState<number>(1440);
   const [submitting, setSubmitting] = useState(false);
 
   if (!user) {
