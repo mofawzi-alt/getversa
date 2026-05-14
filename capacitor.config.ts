@@ -39,6 +39,12 @@ const config: CapacitorConfig = {
       style: 'DARK',
       backgroundColor: '#FFFFFF00',
     },
+    Keyboard: {
+      // Hide the iOS keyboard accessory bar (the gray bar with ↑ ↓ ✓
+      // above the keyboard). Matches the cleaner look in iMessage.
+      resize: 'native',
+      resizeOnFullScreen: true,
+    },
   },
 };
 
