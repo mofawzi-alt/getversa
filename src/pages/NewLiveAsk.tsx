@@ -190,6 +190,28 @@ export default function NewLiveAsk() {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <Label>How long should it stay live?</Label>
+          <div className="grid grid-cols-5 gap-2">
+            {[
+              { v: 15, l: "15 min" },
+              { v: 60, l: "1 hr" },
+              { v: 360, l: "6 hr" },
+              { v: 1440, l: "24 hr" },
+              { v: 4320, l: "3 days" },
+            ].map((opt) => (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => setDurationMin(opt.v)}
+                className={`py-2 rounded-lg text-xs border ${durationMin === opt.v ? "bg-primary text-primary-foreground border-primary" : "bg-background"}`}
+              >
+                {opt.l}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <p className="text-xs text-muted-foreground">
           Photos are auto-checked for safety. No faces, logos, alcohol, or political content.
           1 free Live Ask per week — extras cost 5 credits.
