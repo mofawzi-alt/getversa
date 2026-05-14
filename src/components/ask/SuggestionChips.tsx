@@ -1,5 +1,4 @@
 import { ArrowRight, Flame, TrendingUp, Zap, Users } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface Suggestion {
   text: string;
@@ -37,15 +36,8 @@ export default function SuggestionChips({ label, suggestions, onPick, variant = 
           const IconComp = item.icon ? ICON_MAP[item.icon] : null;
 
           return (
-            <motion.button
+            <button
               key={item.text}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: i * (isDecide ? 0.06 : 0.1),
-                duration: isDecide ? 0.25 : 0.4,
-                ...(isDecide ? { type: 'spring' as const, damping: 15 } : { ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] }),
-              }}
               onClick={() => onPick(item.text)}
               className={`group w-full min-w-0 max-w-full text-left p-3.5 rounded-2xl border active:scale-[0.97] transition-all duration-200 text-sm flex items-center justify-between gap-2 overflow-hidden ${
                 isDecide
@@ -79,7 +71,7 @@ export default function SuggestionChips({ label, suggestions, onPick, variant = 
               <ArrowRight className={`h-4 w-4 group-hover:translate-x-0.5 transition-all shrink-0 ${
                 isDecide ? 'text-muted-foreground group-hover:text-primary' : 'text-muted-foreground group-hover:text-blue-500'
               }`} />
-            </motion.button>
+            </button>
           );
         })}
       </div>
