@@ -84,12 +84,13 @@ export default function NewLiveAsk() {
       if (msg?.code === "PHOTO_REJECTED") {
         toast({
           title: "Try a different photo",
-          description: "We couldn't use this image. Please pick another — avoid faces, alcohol, big brand logos, or anything NSFW.",
+          description: Array.isArray(msg.reasons) && msg.reasons.length
+            ? msg.reasons.join(", ")
+            : "Avoid visible faces, alcohol, big brand logos, or anything NSFW.",
           variant: "destructive",
         });
       } else {
-        const reasons = Array.isArray(msg?.reasons) && msg.reasons.length ? ` — ${msg.reasons.join(", ")}` : "";
-        toast({ title: (msg?.error || e?.message || "Failed to post") + reasons, variant: "destructive" });
+        toast({ title: msg?.error || e?.message || "Failed to post", variant: "destructive" });
       }
     } finally {
       setSubmitting(false);
