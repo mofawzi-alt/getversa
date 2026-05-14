@@ -9,7 +9,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import SwNavigationBridge from "@/components/SwNavigationBridge";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { preloadFeedImages } from "@/lib/preloadFeedImages";
-import { initOneSignal } from "@/lib/onesignal";
 
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from "@/components/onboarding/SwipeOverlay";
 import { markSplashSeen } from "@/components/SplashScreen";
@@ -130,10 +129,6 @@ function AppInner() {
   // Fire-and-forget — never blocks UI or breaks if offline.
   useEffect(() => {
     preloadFeedImages(6);
-  }, []);
-
-  useEffect(() => {
-    void initOneSignal(null);
   }, []);
 
   useEffect(() => {
