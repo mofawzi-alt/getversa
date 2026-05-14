@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import SwNavigationBridge from "@/components/SwNavigationBridge";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { preloadFeedImages } from "@/lib/preloadFeedImages";
 
@@ -158,6 +159,7 @@ function AppInner() {
       <Sonner />
       <CookieConsent />
       <BrowserRouter>
+        <SwNavigationBridge />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<SmartLanding />} />
