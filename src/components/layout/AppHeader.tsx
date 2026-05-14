@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Shield, Clock, Search, Sparkles } from 'lucide-react';
+import { Shield, Clock, Search, Sparkles, Camera } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
 import GlobalPollSearch from '@/components/search/GlobalPollSearch';
 
@@ -35,6 +35,15 @@ export default function AppHeader() {
                 aria-label="Ask Versa"
               >
                 <Sparkles className="h-5 w-5" />
+              </button>
+            )}
+            {user && (
+              <button
+                onClick={() => navigate('/live-ask/new')}
+                className="p-2 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                aria-label="Ask the Crowd"
+              >
+                <Camera className="h-5 w-5" />
               </button>
             )}
             {user && (
