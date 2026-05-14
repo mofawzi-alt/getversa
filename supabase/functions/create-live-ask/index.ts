@@ -30,12 +30,16 @@ Deno.serve(async (req) => {
     const userId = u.user.id;
 
     const body = await req.json().catch(() => ({}));
-    const { photo_url, question, option_a, option_b, target_gender, target_age_ranges, target_cities, target_countries } = body || {};
+    const { photo_url, question, option_a, option_b, target_gender, target_age_ranges, target_cities, target_countries, duration_minutes } = body || {};
 
     if (!photo_url || typeof photo_url !== 'string') return json({ error: 'photo_url required' }, 400);
     if (!question || question.length < 3 || question.length > 140) return json({ error: 'question 3-140 chars' }, 400);
     if (!option_a || !option_b) return json({ error: 'options required' }, 400);
     if (option_a.length > 40 || option_b.length > 40) return json({ error: 'options max 40 chars' }, 400);
+
+    const ALLOWED_DURATIONS = [15, 60, 360, 1440, 4320]; // 15min, 1h, 6h, 24h, 3d
+    const durMin = ALLOWED_DURATIONS.includes(Number(duration_minutes)) ? Number(duration_minutes) : 1440;
+    const revealAt = new Date(Date.now() + durMin * 60_000).toISOString();
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
