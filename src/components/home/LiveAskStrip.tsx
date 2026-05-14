@@ -12,6 +12,34 @@ interface ActiveAsk {
   vote_count: number;
   asker_id: string;
   reveal_at: string;
+  target_gender: string | null;
+  target_age_ranges: string[] | null;
+  target_cities: string[] | null;
+  target_countries: string[] | null;
+}
+
+interface ViewerProfile {
+  gender: string | null;
+  age_range: string | null;
+  city: string | null;
+  city_of_residence: string | null;
+  country: string | null;
+  nationality: string | null;
+}
+
+function matches(ask: ActiveAsk, viewer: ViewerProfile | null): boolean {
+  // Asker explicitly chose targets — viewer must match each non-empty target.
+  if (ask.target_gender && viewer?.gender !== ask.target_gender) return false;
+  if (ask.target_age_ranges?.length && (!viewer?.age_range || !ask.target_age_ranges.includes(viewer.age_range))) return false;
+  if (ask.target_cities?.length) {
+    const cities = [viewer?.city, viewer?.city_of_residence].filter(Boolean) as string[];
+    if (!cities.some((c) => ask.target_cities!.includes(c))) return false;
+  }
+  if (ask.target_countries?.length) {
+    const countries = [viewer?.country, viewer?.nationality].filter(Boolean) as string[];
+    if (!countries.some((c) => ask.target_countries!.includes(c))) return false;
+  }
+  return true;
 }
 
 export default function LiveAskStrip() {
@@ -19,18 +47,31 @@ export default function LiveAskStrip() {
   const { user } = useAuth();
   const [asks, setAsks] = useState<ActiveAsk[]>([]);
   const [open, setOpen] = useState(false);
+  const [viewer, setViewer] = useState<ViewerProfile | null>(null);
+
+  useEffect(() => {
+    if (!user) { setViewer(null); return; }
+    supabase
+      .from('users')
+      .select('gender,age_range,city,city_of_residence,country,nationality')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(({ data }) => setViewer((data as any) ?? null));
+  }, [user?.id]);
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       const { data } = await supabase
         .from('live_asks')
-        .select('id,photo_url,question,vote_count,asker_id,reveal_at')
+        .select('id,photo_url,question,vote_count,asker_id,reveal_at,target_gender,target_age_ranges,target_cities,target_countries')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(30);
       if (!mounted) return;
-      const filtered = (data ?? []).filter((a: any) => !user || a.asker_id !== user.id);
+      const filtered = (data ?? [])
+        .filter((a: any) => !user || a.asker_id !== user.id)
+        .filter((a: any) => matches(a as ActiveAsk, viewer));
       setAsks(filtered as ActiveAsk[]);
     };
     load();
@@ -42,7 +83,8 @@ export default function LiveAskStrip() {
       mounted = false;
       supabase.removeChannel(ch);
     };
-  }, [user?.id]);
+  }, [user?.id, viewer]);
+
 
   if (asks.length === 0) return null;
 
