@@ -173,11 +173,10 @@ Deno.serve(async (req) => {
     (async () => {
       try {
         const recipientIds = new Set<string>();
-        const [{ data: follows }, { data: friends }, { data: asker }] = await Promise.all([
+        const [{ data: follows }, { data: friends }] = await Promise.all([
           admin.from('follows').select('follower_id').eq('following_id', userId),
           admin.from('friendships').select('requester_id,recipient_id').eq('status', 'accepted')
             .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`),
-          admin.from('users').select('username').eq('id', userId).maybeSingle(),
         ]);
         (follows ?? []).forEach((r: any) => recipientIds.add(r.follower_id));
         (friends ?? []).forEach((r: any) => {
@@ -198,13 +197,14 @@ Deno.serve(async (req) => {
         candidates.slice(0, 30).forEach((id: string) => recipientIds.add(id));
 
         if (recipientIds.size > 0) {
-          const askerName = (asker as any)?.username ? `@${(asker as any).username}` : 'Someone';
+          // Anonymous push — never reveal asker identity
+          const preview = String(question).slice(0, 80);
           await fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SERVICE_KEY}` },
             body: JSON.stringify({
-              title: '📸 Quick! Need your opinion',
-              body: `${askerName} is asking the crowd — tap to vote`,
+              title: '📸 Someone needs your opinion',
+              body: preview,
               url: `/live-ask/${(ask as any).id}`,
               user_ids: Array.from(recipientIds),
               notification_type: 'live_ask_new',
