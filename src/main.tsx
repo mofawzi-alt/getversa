@@ -5,6 +5,7 @@ import "./lib/authRedirectCapture";
 import App from "./App.tsx";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";
+import { initOneSignal } from "@/lib/onesignal";
 
 declare global {
   interface Window {
@@ -21,6 +22,8 @@ if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
 // for the header offset. Without this, iOS leaves a white bar AND our
 // CSS adds extra padding, causing the logo to overlap the notch.
 if (Capacitor?.isNativePlatform?.()) {
+  void initOneSignal(null);
+
   void (async () => {
     try {
       const { StatusBar, Style } = await import("@capacitor/status-bar");
