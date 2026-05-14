@@ -98,29 +98,38 @@ export default function LiveAskCards() {
 
   if (asks.length === 0) return null;
 
-  // Show the most relevant: prefer an unvoted ask; otherwise the freshest voted one
-  const next = asks.find((a) => !votedIds.has(a.id)) ?? asks[0];
+  // Queue: unvoted first (freshest first), then voted ones
+  const unvoted = asks.filter((a) => !votedIds.has(a.id));
+  const voted = asks.filter((a) => votedIds.has(a.id));
+  const queue = [...unvoted, ...voted];
+  const next = queue[0];
   const isVoted = votedIds.has(next.id);
-  const unvotedCount = asks.filter((a) => !votedIds.has(a.id)).length;
+  const totalNew = unvoted.length;
+  const showCounter = asks.length > 1;
 
   return (
     <button
       onClick={() => nav(`/live-ask/${next.id}`)}
       className="mx-4 mt-3 mb-1 w-[calc(100%-2rem)] flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[#E8392A]/10 border border-[#E8392A]/30 active:scale-[0.98] transition-transform"
     >
-      <span className="relative flex h-2 w-2">
+      <span className="relative flex h-2 w-2 shrink-0">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8392A] opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E8392A]" />
       </span>
-      <span className="text-[13px] font-bold text-[#E8392A]">
+      <span className="text-[13px] font-bold text-[#E8392A] shrink-0">
         {isVoted
-          ? `${asks.length} live ask${asks.length === 1 ? '' : 's'}`
-          : `${unvotedCount} live ask${unvotedCount === 1 ? '' : 's'}`}
+          ? `${asks.length} Live Ask${asks.length === 1 ? '' : 's'}`
+          : `${totalNew} new Live Ask${totalNew === 1 ? '' : 's'}`}
       </span>
+      {showCounter && (
+        <span className="text-[10px] font-semibold text-[#E8392A]/80 bg-[#E8392A]/15 px-1.5 py-0.5 rounded-full shrink-0">
+          1/{asks.length}
+        </span>
+      )}
       <span className="text-[12px] text-foreground/70 truncate flex-1 text-left">
         · {next.question}
       </span>
-      <span className="text-[11px] font-semibold text-[#E8392A]">
+      <span className="text-[11px] font-semibold text-[#E8392A] shrink-0">
         {isVoted ? 'View →' : 'Vote →'}
       </span>
     </button>
