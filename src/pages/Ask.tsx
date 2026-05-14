@@ -400,7 +400,7 @@ export default function Ask() {
 
         {/* ── DECIDE empty state ── */}
         {empty && askLevel > 0 && isDecide && (
-          <AnimatePresence mode="wait">
+          <>
             <motion.div
               key="decide-empty"
               initial={{ opacity: 0 }}
@@ -435,12 +435,12 @@ export default function Ask() {
               </div>
               <SuggestionChips label="🔥 Everyone's asking right now" suggestions={promptSuggestions} onPick={runPreview} variant="decide" />
             </motion.div>
-          </AnimatePresence>
+          </>
         )}
 
         {/* ── RESEARCH empty state ── */}
         {empty && askLevel > 0 && !isDecide && (
-          <AnimatePresence mode="wait">
+          <>
             <motion.div
               key="research-empty"
               initial={{ opacity: 0 }}
@@ -475,7 +475,7 @@ export default function Ask() {
               </div>
               <SuggestionChips label="📊 Trending research questions" suggestions={promptSuggestions} onPick={runPreview} variant="research" />
             </motion.div>
-          </AnimatePresence>
+          </>
         )}
 
         {!empty && <AskThread turns={turns} onPickSuggestion={runPreview} />}
