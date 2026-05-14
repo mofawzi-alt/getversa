@@ -86,6 +86,8 @@ export default function LiveAskView() {
   const vote = async (choice: "A" | "B") => {
     if (!user) return nav("/auth");
     if (voting || voted) return;
+    if (isAsker) return toast({ title: "You can't vote on your own Live Ask" });
+    if (isClosed) return toast({ title: "Voting closed" });
     setVoting(true);
     // Optimistic UI: bump local counts immediately
     setAsk((prev) => prev ? {
@@ -189,8 +191,10 @@ export default function LiveAskView() {
         </div>
 
         <p className="text-[11px] text-center text-muted-foreground mt-2">
-          {ask.vote_count} {ask.vote_count === 1 ? "vote" : "votes"}
-          {!revealed && !isClosed && " — vote to reveal"}
+          {isAsker
+            ? `${ask.vote_count} ${ask.vote_count === 1 ? "vote" : "votes"} — others can vote on this`
+            : `${ask.vote_count} ${ask.vote_count === 1 ? "vote" : "votes"}`}
+          {!isAsker && !revealed && !isClosed && " — vote to reveal"}
           {isClosed && " — voting closed"}
         </p>
       </main>
@@ -205,7 +209,7 @@ function VoteButton({ label, pct, selected, disabled, onClick }: {
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
+      aria-disabled={disabled}
       className={`group relative min-h-[72px] rounded-2xl px-4 py-3 text-left overflow-hidden transition-all duration-300 ${
         selected
           ? "shadow-[0_8px_24px_-8px_rgba(232,57,42,0.45)] ring-2 ring-[#E8392A]"
