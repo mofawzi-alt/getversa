@@ -144,8 +144,11 @@ export default function LiveAskView() {
   }
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
-      <header className="flex items-center justify-between px-4 py-2 flex-shrink-0">
+    <div className="min-h-[100dvh] bg-background overflow-y-auto">
+      <header
+        className="sticky top-0 z-10 flex items-center justify-between px-4 pb-2 bg-background/95 backdrop-blur flex-shrink-0"
+        style={{ paddingTop: 'max(env(safe-area-inset-top), 0.5rem)' }}
+      >
         <button onClick={() => nav(-1)} className="p-2"><ArrowLeft className="h-5 w-5" /></button>
         <span className="text-xs uppercase tracking-wide text-primary font-semibold">
           {isClosed ? "Live Ask · Closed" : "Live Ask"}
@@ -153,8 +156,11 @@ export default function LiveAskView() {
         <button onClick={report} className="p-2"><Flag className="h-5 w-5 text-muted-foreground" /></button>
       </header>
 
-      <div className="flex-1 flex flex-col px-4 pb-3 max-w-md w-full mx-auto min-h-0">
-        <div className="flex-1 min-h-0 rounded-2xl overflow-hidden bg-muted">
+      <main
+        className="px-4 pt-2 max-w-md w-full mx-auto"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}
+      >
+        <div className="aspect-[4/5] max-h-[54dvh] w-full rounded-2xl overflow-hidden bg-muted shadow-card">
           <img src={ask.photo_url} alt="" className="w-full h-full object-cover" />
         </div>
 
@@ -187,7 +193,7 @@ export default function LiveAskView() {
           {!revealed && !isClosed && " — vote to reveal"}
           {isClosed && " — voting closed"}
         </p>
-      </div>
+      </main>
     </div>
   );
 }
@@ -200,7 +206,7 @@ function VoteButton({ label, pct, selected, disabled, onClick }: {
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`group relative h-[68px] rounded-2xl px-4 text-left overflow-hidden transition-all duration-300 ${
+      className={`group relative min-h-[72px] rounded-2xl px-4 py-3 text-left overflow-hidden transition-all duration-300 ${
         selected
           ? "shadow-[0_8px_24px_-8px_rgba(232,57,42,0.45)] ring-2 ring-[#E8392A]"
           : "shadow-[0_2px_8px_rgba(0,0,0,0.04)] ring-1 ring-border/60 hover:ring-foreground/20"
@@ -222,12 +228,12 @@ function VoteButton({ label, pct, selected, disabled, onClick }: {
       {/* Subtle inner highlight */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
 
-      <div className="relative flex items-center justify-between h-full">
-        <span className={`font-semibold text-[15px] tracking-tight ${selected ? "text-[#E8392A]" : "text-foreground"}`}>
+      <div className="relative flex items-center justify-between gap-3 h-full min-w-0">
+        <span className={`min-w-0 flex-1 break-words line-clamp-2 font-semibold text-[15px] tracking-tight ${selected ? "text-[#E8392A]" : "text-foreground"}`}>
           {label}
         </span>
         {pct !== null && (
-          <span className={`text-xl font-bold tabular-nums tracking-tight ${
+          <span className={`flex-shrink-0 text-xl font-bold tabular-nums tracking-tight ${
             selected ? "text-[#E8392A]" : "text-foreground/80"
           }`}>
             {pct}<span className="text-xs font-semibold opacity-60">%</span>

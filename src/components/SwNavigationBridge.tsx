@@ -9,15 +9,40 @@ import { useNavigate } from "react-router-dom";
 export default function SwNavigationBridge() {
   const navigate = useNavigate();
   useEffect(() => {
-    if (!("serviceWorker" in navigator)) return;
+    const navigateTo = (url: string) => {
+      if (!url.startsWith("/")) return;
+      navigate(url);
+    };
+
+    try {
+      const pending = localStorage.getItem("versa_pending_notification_route");
+      if (pending) {
+        localStorage.removeItem("versa_pending_notification_route");
+        navigateTo(pending);
+      }
+    } catch {}
+
+    const nativeHandler = (event: Event) => {
+      const detail = (event as CustomEvent<{ url?: string }>).detail;
+      if (typeof detail?.url === "string") navigateTo(detail.url);
+    };
+    window.addEventListener("versa:navigate", nativeHandler);
+
+    if (!("serviceWorker" in navigator)) {
+      return () => window.removeEventListener("versa:navigate", nativeHandler);
+    }
+
     const handler = (event: MessageEvent) => {
       const data = event.data;
       if (data && data.type === "NAVIGATE" && typeof data.url === "string") {
-        navigate(data.url);
+        navigateTo(data.url);
       }
     };
     navigator.serviceWorker.addEventListener("message", handler);
-    return () => navigator.serviceWorker.removeEventListener("message", handler);
+    return () => {
+      window.removeEventListener("versa:navigate", nativeHandler);
+      navigator.serviceWorker.removeEventListener("message", handler);
+    };
   }, [navigate]);
   return null;
 }

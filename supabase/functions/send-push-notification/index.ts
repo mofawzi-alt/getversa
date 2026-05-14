@@ -69,7 +69,6 @@ serve(async (req: Request): Promise<Response> => {
           contents: { en: payload.body },
           data: { url: payload.url ?? "/", poll_id: payload.poll_id },
           target_channel: "push",
-          ...(payload.url ? { url: payload.url } : {}),
         };
 
         if (subscriptionIds.length === 0) {

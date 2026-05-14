@@ -4,6 +4,44 @@ import { supabase } from '@/integrations/supabase/client';
 const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
 
 let initialized = false;
+let clickListenerRegistered = false;
+
+function normalizeNotificationRoute(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  const raw = value.trim();
+  if (raw.startsWith('/')) return raw;
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/home';
+    }
+    if (parsed.protocol === 'versa:') {
+      return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/home';
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function dispatchNotificationRoute(route: string) {
+  try { localStorage.setItem('versa_pending_notification_route', route); } catch {}
+  window.dispatchEvent(new CustomEvent('versa:navigate', { detail: { url: route } }));
+}
+
+function registerNotificationClickListener(OneSignal: any) {
+  if (clickListenerRegistered) return;
+  try {
+    OneSignal.Notifications.addEventListener('click', (event: any) => {
+      const additionalData = event?.notification?.additionalData ?? {};
+      const route = normalizeNotificationRoute(additionalData.url ?? event?.result?.url);
+      if (route) dispatchNotificationRoute(route);
+    });
+    clickListenerRegistered = true;
+  } catch (err) {
+    console.error('[OneSignal] click listener failed:', err);
+  }
+}
 
 /**
  * Initialize OneSignal on native iOS/Android. No-op on web.
@@ -22,6 +60,7 @@ export async function initOneSignal(userId: string | null) {
     const OneSignal = (mod as any).default ?? mod;
 
     OneSignal.initialize(ONESIGNAL_APP_ID);
+    registerNotificationClickListener(OneSignal);
 
     // Prompt for permission
     OneSignal.Notifications.requestPermission(true).then(async (granted: boolean) => {
