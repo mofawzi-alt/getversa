@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,6 +50,32 @@ export default function LiveAskCards() {
   const [viewer, setViewer] = useState<ViewerProfile | null>(null);
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
 
+  const load = useCallback(async () => {
+    const { data } = await supabase
+      .from('live_asks')
+      .select('id,photo_url,question,vote_count,asker_id,reveal_at,target_gender,target_age_ranges,target_cities,target_countries')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(30);
+
+    const filtered = (data ?? [])
+      .filter((a: any) => !user || a.asker_id !== user.id)
+      .filter((a: any) => new Date(a.reveal_at).getTime() > Date.now())
+      .filter((a: any) => matches(a as ActiveAsk, viewer));
+    setAsks(filtered as ActiveAsk[]);
+
+    if (user && filtered.length) {
+      const { data: votes } = await supabase
+        .from('live_ask_votes')
+        .select('live_ask_id')
+        .eq('user_id', user.id)
+        .in('live_ask_id', filtered.map((a: any) => a.id));
+      setVotedIds(new Set((votes ?? []).map((v: any) => v.live_ask_id)));
+    } else {
+      setVotedIds(new Set());
+    }
+  }, [user?.id, viewer]);
+
   useEffect(() => {
     if (!user) { setViewer(null); return; }
     supabase
@@ -61,40 +87,20 @@ export default function LiveAskCards() {
   }, [user?.id]);
 
   useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      const { data } = await supabase
-        .from('live_asks')
-        .select('id,photo_url,question,vote_count,asker_id,reveal_at,target_gender,target_age_ranges,target_cities,target_countries')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(30);
-      if (!mounted) return;
-      const filtered = (data ?? [])
-        .filter((a: any) => !user || a.asker_id !== user.id)
-        .filter((a: any) => new Date(a.reveal_at).getTime() > Date.now())
-        .filter((a: any) => matches(a as ActiveAsk, viewer));
-      setAsks(filtered as ActiveAsk[]);
-
-      if (user && filtered.length) {
-        const { data: votes } = await supabase
-          .from('live_ask_votes')
-          .select('live_ask_id')
-          .eq('user_id', user.id)
-          .in('live_ask_id', filtered.map((a: any) => a.id));
-        if (mounted) setVotedIds(new Set((votes ?? []).map((v: any) => v.live_ask_id)));
-      }
-    };
     load();
+    window.addEventListener('focus', load);
+    document.addEventListener('visibilitychange', load);
     const ch = supabase
       .channel('live-asks-cards')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_asks' }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_asks' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_ask_votes' }, () => load())
       .subscribe();
     return () => {
-      mounted = false;
+      window.removeEventListener('focus', load);
+      document.removeEventListener('visibilitychange', load);
       supabase.removeChannel(ch);
     };
-  }, [user?.id, viewer]);
+  }, [load]);
 
   if (asks.length === 0) return null;
 

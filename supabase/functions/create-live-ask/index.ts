@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
             messages: [
               {
                 role: 'system',
-                content: 'You are a content safety classifier for a MENA-region social app. REJECT images containing: NSFW or nudity, alcohol (wine, beer, cocktails, liquor), recognizable human faces (including selfies), political or hate symbols, graphic violence, or visible brand logos. Reply ONLY with JSON: {"safe": boolean, "reasons": string[]}. If safe, reasons must be [].',
+                content: 'You are a content safety classifier for a MENA-region social app. REJECT images containing: NSFW or nudity, alcohol (wine, beer, cocktails, liquor), visible recognizable human faces (including selfies), political or hate symbols, graphic violence, or visible brand logos. ALLOW hands, arms, clothing, fabric, rooms, products without logos, and body parts when no face is visible. Do not infer a face unless a face is clearly visible in the image. Reply ONLY with JSON: {"safe": boolean, "reasons": string[]}. If safe, reasons must be [].',
               },
               {
                 role: 'user',
@@ -129,13 +129,43 @@ Deno.serve(async (req) => {
         visionResult = { safe: false, reasons: ['vision_error'], raw: rawContent };
       }
       if (!visionResult.safe) {
-        console.log('[vision] rejected:', JSON.stringify(visionResult));
-        return json({
-          error: 'Photo failed safety check',
-          reasons: visionResult.reasons?.length ? visionResult.reasons : ['model flagged image without specific reasons — try a different photo (no alcohol, no celebrity faces, no large logos)'],
-          raw: visionResult.raw,
-          code: 'PHOTO_REJECTED',
-        }, 422);
+        const reasons = (visionResult.reasons ?? []).map((r: string) => String(r).toLowerCase());
+        const faceOnlyRejection = reasons.length > 0 && reasons.every((r: string) => r.includes('face') || r.includes('human'));
+        if (faceOnlyRejection) {
+          try {
+            const faceResp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                model: 'google/gemini-2.5-flash',
+                messages: [
+                  { role: 'system', content: 'You are a strict visible-face detector. Return ONLY JSON: {"visible_face": boolean, "reasons": string[]}. A visible face means eyes/nose/mouth are visible enough to identify a person. Hands, arms, clothing, fabric, and body parts without a visible face must return visible_face:false.' },
+                  { role: 'user', content: [{ type: 'text', text: 'Does this image contain a visible human face?' }, { type: 'image_url', image_url: { url: photo_url } }] },
+                ],
+                response_format: { type: 'json_object' },
+              }),
+            });
+            const faceJson = faceResp.ok ? await faceResp.json() : null;
+            const faceRaw = faceJson?.choices?.[0]?.message?.content ?? '';
+            const faceMatch = String(faceRaw).match(/\{[\s\S]*\}/);
+            const faceParsed = faceMatch ? JSON.parse(faceMatch[0]) : null;
+            if (faceParsed?.visible_face === false || faceParsed?.visible_face === 'false') {
+              visionResult = { safe: true, reasons: [], raw: `${visionResult.raw}\nface_recheck:${faceRaw}` };
+            }
+          } catch (e) {
+            console.error('[vision] face recheck failed', e);
+          }
+        }
+
+        if (!visionResult.safe) {
+          console.log('[vision] rejected:', JSON.stringify(visionResult));
+          return json({
+            error: 'Photo failed safety check',
+            reasons: visionResult.reasons?.length ? visionResult.reasons : ['try a different photo — no alcohol, visible faces, large logos, unsafe, or political content'],
+            raw: visionResult.raw,
+            code: 'PHOTO_REJECTED',
+          }, 422);
+        }
       }
     }
 
