@@ -72,6 +72,7 @@ export default function NewLiveAsk() {
           option_a: optionA.trim(),
           option_b: optionB.trim(),
           target_gender: targetGender || null,
+          duration_minutes: durationMin,
         },
       });
       if (error) throw error;
