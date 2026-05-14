@@ -158,6 +158,7 @@ function AppInner() {
       <Sonner />
       <CookieConsent />
       <BrowserRouter>
+        <SwNavigationBridge />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<SmartLanding />} />
