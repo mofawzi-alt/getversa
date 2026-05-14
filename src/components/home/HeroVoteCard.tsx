@@ -813,7 +813,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
       {/* Below-card meta: swipe hint, category, skip */}
       {!result && !isVoting && (
-        <div className="flex flex-col items-center gap-1.5 mt-3">
+        <div className="flex flex-col items-center gap-1.5 mt-2">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
             ← Swipe or tap to vote →
           </div>
