@@ -43,7 +43,13 @@ function registerNotificationClickListener(OneSignal: any) {
   try {
     OneSignal.Notifications.addEventListener('click', (event: any) => {
       const additionalData = event?.notification?.additionalData ?? {};
-      const route = normalizeNotificationRoute(additionalData.url ?? event?.result?.url);
+      const route = normalizeNotificationRoute(
+        additionalData.url ??
+        event?.notification?.launchURL ??
+        event?.notification?.url ??
+        event?.result?.url ??
+        event?.url
+      );
       if (route) dispatchNotificationRoute(route);
     });
     clickListenerRegistered = true;
