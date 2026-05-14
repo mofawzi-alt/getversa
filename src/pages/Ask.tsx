@@ -256,19 +256,19 @@ export default function Ask() {
       if (data?.error) { toast.error(data.error); return; }
 
       if (data.stage === 'offscope') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, variant: 'offscope' } as AskTurn]);
         return;
       }
 
       if (data.stage === 'vague') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, variant: 'offscope' } as AskTurn]);
         return;
       }
 
       if (data.stage === 'clarify') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, variant: 'clarify', clarifications: data.clarifications || [], askQueryId: data.query_id || null } as AskTurn]);
         return;
       }
