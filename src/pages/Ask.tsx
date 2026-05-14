@@ -274,19 +274,19 @@ export default function Ask() {
       }
 
       if (data.stage === 'factual' || data.stage === 'about') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, notice: data.notice, variant: 'factual' } as AskTurn]);
         return;
       }
 
       if (data.stage === 'smart_answer') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, guardrailPolls: data.suggested_polls || [], variant: 'smart_answer', askQueryId: data.query_id || null } as AskTurn]);
         return;
       }
 
       if (data.stage === 'guardrail') {
-        const turnId = crypto.randomUUID();
+        const turnId = createTurnId();
         setTurns((prev) => [...prev, { id: turnId, question, mode, loading: false, summary: data.summary, lowData: true, guardrailPolls: data.suggested_polls || [], askQueryId: data.query_id || null } as AskTurn]);
         return;
       }
