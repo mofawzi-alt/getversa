@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Loader2, Scale, FlaskConical, ArrowUp, RotateCcw, Lock, BarChart3 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -57,6 +57,13 @@ function buildHistoryFromTurns(turns: AskTurn[]) {
     if (assistant) out.push({ role: 'assistant', content: assistant });
   }
   return out;
+}
+
+function createTurnId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `turn-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 interface PreviewState {
@@ -139,9 +146,11 @@ export default function Ask() {
 
   useEffect(() => {
     const vv = (typeof window !== 'undefined' ? window.visualViewport : null);
-    if (!vv) return;
+    if (!vv || typeof vv.addEventListener !== 'function') return;
     const update = () => {
-      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      const height = Number(vv.height) || window.innerHeight;
+      const offsetTop = Number(vv.offsetTop) || 0;
+      const offset = Math.max(0, window.innerHeight - height - offsetTop);
       document.documentElement.style.setProperty('--ask-kb-offset', `${offset}px`);
     };
     update();
@@ -189,7 +198,7 @@ export default function Ask() {
 
   const autoConfirm = async (previewData: PreviewState) => {
     setConfirming(true);
-    const turnId = crypto.randomUUID();
+    const turnId = createTurnId();
     const placeholder: AskTurn = { id: turnId, question: previewData.question, mode: previewData.mode, loading: true };
     setTurns((prev) => [...prev, placeholder]);
 
