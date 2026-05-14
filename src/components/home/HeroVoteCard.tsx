@@ -583,7 +583,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         onMouseLeave={() => { if (isDraggingRef.current) { isDraggingRef.current = false; setIsDragging(false); setDragX(0); setDragY(0); } }}
       >
         {/* Header strip — LIVE pill, recent vote count, avatars */}
-        <div className="flex items-center justify-between px-3 pt-3 pb-1.5">
+        <div className="flex items-center justify-between px-3 pt-2 pb-1">
           <div className="flex items-center gap-2 min-w-0">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold tracking-wide">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
