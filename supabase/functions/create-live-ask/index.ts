@@ -157,14 +157,15 @@ Deno.serve(async (req) => {
           }
         }
 
-        if (visionResult.safe) break;
-        console.log('[vision] rejected:', JSON.stringify(visionResult));
-        return json({
-          error: 'Photo failed safety check',
-          reasons: visionResult.reasons?.length ? visionResult.reasons : ['try a different photo — no alcohol, visible faces, large logos, unsafe, or political content'],
-          raw: visionResult.raw,
-          code: 'PHOTO_REJECTED',
-        }, 422);
+        if (!visionResult.safe) {
+          console.log('[vision] rejected:', JSON.stringify(visionResult));
+          return json({
+            error: 'Photo failed safety check',
+            reasons: visionResult.reasons?.length ? visionResult.reasons : ['try a different photo — no alcohol, visible faces, large logos, unsafe, or political content'],
+            raw: visionResult.raw,
+            code: 'PHOTO_REJECTED',
+          }, 422);
+        }
       }
     }
 
