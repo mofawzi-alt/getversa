@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
 import DailyPulseStrip from '@/components/home/DailyPulseStrip';
+import LiveAskStrip from '@/components/home/LiveAskStrip';
 
 import PulseStoriesRow from '@/components/pulse/PulseStoriesRow';
 
@@ -1568,6 +1569,8 @@ export default function Home() {
         {/* ═══ DAILY PULSE STRIP ═══ */}
         <DailyPulseStrip />
 
+        {/* ═══ LIVE ASKS PULSING STRIP ═══ */}
+        <LiveAskStrip />
 
 
         {/* ═══ INFINITE HERO VOTE CARD ═══ */}
