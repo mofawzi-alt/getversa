@@ -882,7 +882,8 @@ function LiveDebatesList({
                 percent_a: poll.percentA,
                 percent_b: poll.percentB,
               }}
-              className="w-12 h-12 rounded-full bg-card border border-border shadow-md p-0 flex items-center justify-center"
+              iconClassName="h-3.5 w-3.5"
+              className="w-9 h-9 rounded-full bg-card border border-border shadow-md p-0 flex items-center justify-center"
             />
           </div>
         ) : null;
