@@ -220,10 +220,10 @@ export default function BrowseCard({
         {onShare && (
           <button
             onClick={(e) => { e.stopPropagation(); onShare(); }}
-            className={`absolute ${topSlot ? 'top-1' : 'top-3.5'} right-3 w-10 h-10 rounded-full ${shareBtn} flex items-center justify-center active:scale-95 transition-transform`}
+            className={`absolute ${topSlot ? 'top-1' : 'top-3.5'} right-3 w-9 h-9 rounded-full ${shareBtn} flex items-center justify-center active:scale-95 transition-transform`}
             aria-label="Share"
           >
-            <Share2 className="h-[18px] w-[18px]" />
+            <Share2 className="h-[14px] w-[14px]" />
           </button>
         )}
       </div>
