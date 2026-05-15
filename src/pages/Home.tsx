@@ -795,13 +795,7 @@ function LiveDebatesList({
     <div
       className="snap-y snap-mandatory overflow-y-scroll overscroll-auto"
       style={{ height: cardHeight, willChange: 'transform' }}
-      onScroll={(e) => {
-        // When user scrolls up past the first card, scroll the whole page to top
-        const el = e.currentTarget;
-        if (el.scrollTop <= 0) {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      }}
+    >
     >
       {repeatedPolls.map(({ poll, loopIndex }) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
