@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import PollOptionImage from '@/components/poll/PollOptionImage';
+
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import BrowseCard, { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
