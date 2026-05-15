@@ -235,7 +235,7 @@ function PollOptionImageComponent({
   // Photo treatment — varies by card variant
   const photoStyles: Record<CardVariant, { objectFit: string; objectPosition: string; bg: string }> = {
     hero: { objectFit: 'cover', objectPosition: 'center', bg: 'bg-muted' },
-    browse: { objectFit: 'cover', objectPosition: 'center top', bg: 'bg-muted' },
+    browse: { objectFit: 'cover', objectPosition: 'center', bg: 'bg-muted' },
     history: { objectFit: 'contain', objectPosition: 'center', bg: 'bg-muted' },
   };
 
