@@ -125,12 +125,14 @@ function storyContent(story: UserStory, fallbackPoll?: any) {
     case 'duel_result':
       return {
         headline: c.opponent ? `vs ${c.opponent}` : 'Duel Result',
-        primary: c.won ? '🎉 Won!' : c.tied ? '🤝 Tied' : '😤 Lost',
+        primary: c.won ? '🏆 Victory!' : c.tied ? '🤝 Dead Even' : '💀 Defeated',
         secondary: c.score || undefined,
         bg: c.image_url || null,
-        emoji: '⚔️',
+        emoji: c.won ? '🏆' : c.tied ? '⚔️' : '💀',
         label: 'Arena Result',
         type: 'duel_result' as const,
+        duelOutcome: (c.won ? 'won' : c.tied ? 'tied' : 'lost') as 'won' | 'tied' | 'lost',
+        opponent: c.opponent || null,
       };
     default:
       return {
