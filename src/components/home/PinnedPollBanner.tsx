@@ -61,7 +61,7 @@ export default function PinnedPollBanner() {
       {/* Content */}
       <div
         className="px-3 pb-3 cursor-pointer"
-        onClick={() => navigate(`/browse?filter=live&pollId=${poll.id}`)}
+        onClick={() => navigate(`/live-debate?pollId=${poll.id}`)}
       >
         <p className="text-sm font-display font-bold text-foreground leading-tight mb-2">
           {poll.question}
