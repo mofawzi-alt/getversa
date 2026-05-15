@@ -888,33 +888,12 @@ function LiveDebatesList({
           badgeBg = 'bg-primary/10';
         }
 
-        const topSlot = (badgeLabel || friendsOnPoll.length > 0) ? (
-          <div className="flex items-center justify-between gap-3">
-            {badgeLabel ? (
-              <div className="flex items-center gap-2">
-                <div className={`h-7 w-7 rounded-full ${badgeBg} flex items-center justify-center`}>
-                  {badgeIcon}
-                </div>
-                <span className={`text-[13px] font-bold ${badgeColor}`}>{badgeLabel}</span>
-              </div>
-            ) : <div />}
-            {friendsOnPoll.length > 0 && (
-              <div className="flex items-center gap-1.5 min-w-0">
-                <div className="flex -space-x-1.5 shrink-0">
-                  {friendsOnPoll.slice(0, 3).map((f) => (
-                    <UserAvatar
-                      key={f.friendId}
-                      url={f.friendAvatarUrl}
-                      username={f.friendName}
-                      className="w-5 h-5 ring-2 ring-card"
-                    />
-                  ))}
-                </div>
-                <span className="text-[11px] font-medium text-muted-foreground truncate">
-                  +{friendsOnPoll.length} friend{friendsOnPoll.length === 1 ? '' : 's'} voted
-                </span>
-              </div>
-            )}
+        const topSlot = badgeLabel ? (
+          <div className="flex items-center gap-2">
+            <div className={`h-7 w-7 rounded-full ${badgeBg} flex items-center justify-center`}>
+              {badgeIcon}
+            </div>
+            <span className={`text-[13px] font-bold ${badgeColor}`}>{badgeLabel}</span>
           </div>
         ) : null;
 
