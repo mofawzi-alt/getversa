@@ -1489,7 +1489,7 @@ export default function Home() {
     return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); }} />;
   }
 
-  if (isLoading) {
+  if (isLoading || (user && (isVotedPollIdsLoading || !isQueueReady))) {
     return (
       <AppLayout disablePullToRefresh>
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-8">
