@@ -124,6 +124,12 @@ export interface BrowseCardProps {
   onShare?: () => void;
   onSendToFriend?: () => void;
   hideVotePrompt?: boolean;
+  /** 'dark' (Browse default) or 'light' (Home Live Debate) */
+  theme?: 'dark' | 'light';
+  /** Optional eyebrow content rendered above the question (e.g. badges, friends voted) */
+  topSlot?: React.ReactNode;
+  /** Optional extra side-action button rendered above Send / Fire (e.g. add to story) */
+  extraSideAction?: React.ReactNode;
 }
 
 export default function BrowseCard({
@@ -134,6 +140,9 @@ export default function BrowseCard({
   onShare,
   onSendToFriend,
   hideVotePrompt = false,
+  theme = 'dark',
+  topSlot,
+  extraSideAction,
 }: BrowseCardProps) {
   const winnerLabel = poll.winner === 'A' ? poll.option_a : poll.option_b;
   const winnerImg = poll.winner === 'A' ? poll.image_a_url : poll.image_b_url;
@@ -154,6 +163,19 @@ export default function BrowseCard({
     : poll.winnerPct >= 56 ? 'Slight majority chose this'
     : 'Egypt chose this';
   const dividedGap = Math.abs(poll.percentA - poll.percentB);
+
+  const isLight = theme === 'light';
+  const surfaceBg = isLight ? 'bg-background' : 'bg-[#0B0B0C]';
+  const titleColor = isLight ? 'text-foreground' : 'text-white';
+  const chipBg = isLight ? 'bg-muted text-foreground/80' : 'bg-white/10 text-white/85';
+  const subText = isLight ? 'text-muted-foreground' : 'text-white/55';
+  const borderTop = isLight ? 'border-border/40' : 'border-white/5';
+  const tagBg = isLight ? 'bg-muted text-foreground/80' : 'bg-white/8 text-white/90';
+  const loserText = isLight ? 'text-muted-foreground' : 'text-white/55';
+  const loserPrefix = isLight ? 'text-muted-foreground/70' : 'text-white/40';
+  const shareBtn = isLight
+    ? 'bg-muted text-foreground hover:bg-muted/80'
+    : 'bg-white/10 backdrop-blur-md text-white';
 
   return (
     <div
