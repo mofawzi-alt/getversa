@@ -55,6 +55,23 @@ export default function Friends() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      handleSearch();
+    }, 300);
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+  }, [searchTerm]);
 
   const openChat = async (friendId: string) => {
     try {
