@@ -768,6 +768,29 @@ function LiveDebatesList({
     };
   }, [demoMap]);
 
+  const [shareSheetPoll, setShareSheetPoll] = useState<PollCard | null>(null);
+
+  const handleShare = useCallback(async (poll: PollCard) => {
+    const pollUrl = `${window.location.origin}/poll/${poll.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'VERSA Poll', text: `📊 ${poll.question}`, url: pollUrl });
+      } else {
+        await navigator.clipboard.writeText(pollUrl);
+        const { toast } = await import('sonner');
+        toast.success('Link copied!');
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        try {
+          await navigator.clipboard.writeText(pollUrl);
+          const { toast } = await import('sonner');
+          toast.success('Link copied!');
+        } catch {}
+      }
+    }
+  }, []);
+
   return (
     <div
       className="snap-y snap-mandatory overflow-y-scroll overscroll-contain"
@@ -778,6 +801,91 @@ function LiveDebatesList({
         const voteData = userVoteChoices?.get(poll.id);
         const userChoice = voteData?.choice ?? null;
         const browsePoll = toBrowsePoll(poll);
+        const friendsOnPoll = friendsByPoll?.[poll.id] || [];
+        const isTrending = trendingIdSet?.has(poll.id) || false;
+
+        // Build eyebrow (badge + friends voted) — same logic as old HomeLiveDebateCard
+        const isHotTake = (poll as any).is_hot_take === true;
+        const closingSoon = poll.ends_at
+          ? (new Date(poll.ends_at).getTime() - Date.now()) < 6 * 60 * 60 * 1000
+            && new Date(poll.ends_at).getTime() > Date.now()
+          : false;
+        const isNew = poll.created_at
+          ? (Date.now() - new Date(poll.created_at).getTime()) < 24 * 60 * 60 * 1000
+          : false;
+
+        let badgeLabel: string | null = null;
+        let badgeIcon: React.ReactNode = <Flame className="h-3.5 w-3.5 text-destructive" />;
+        let badgeColor = 'text-destructive';
+        let badgeBg = 'bg-destructive/10';
+        if (isHotTake) {
+          badgeLabel = 'Hot Take';
+        } else if (isTrending) {
+          badgeLabel = 'Trending Now';
+          badgeIcon = <TrendingUp className="h-3.5 w-3.5 text-primary" />;
+          badgeColor = 'text-primary';
+          badgeBg = 'bg-primary/10';
+        } else if (closingSoon) {
+          badgeLabel = 'Closing Soon';
+          badgeIcon = <Timer className="h-3.5 w-3.5 text-amber-600" />;
+          badgeColor = 'text-amber-600';
+          badgeBg = 'bg-amber-500/10';
+        } else if (isNew) {
+          badgeLabel = 'New Poll';
+          badgeIcon = <Sparkles className="h-3.5 w-3.5 text-primary" />;
+          badgeColor = 'text-primary';
+          badgeBg = 'bg-primary/10';
+        }
+
+        const topSlot = (badgeLabel || friendsOnPoll.length > 0) ? (
+          <div className="flex items-center justify-between gap-3">
+            {badgeLabel ? (
+              <div className="flex items-center gap-2">
+                <div className={`h-7 w-7 rounded-full ${badgeBg} flex items-center justify-center`}>
+                  {badgeIcon}
+                </div>
+                <span className={`text-[13px] font-bold ${badgeColor}`}>{badgeLabel}</span>
+              </div>
+            ) : <div />}
+            {friendsOnPoll.length > 0 && (
+              <div className="flex items-center gap-1.5 min-w-0">
+                <div className="flex -space-x-1.5 shrink-0">
+                  {friendsOnPoll.slice(0, 3).map((f) => (
+                    <UserAvatar
+                      key={f.friendId}
+                      url={f.friendAvatarUrl}
+                      username={f.friendName}
+                      className="w-5 h-5 ring-2 ring-card"
+                    />
+                  ))}
+                </div>
+                <span className="text-[11px] font-medium text-muted-foreground truncate">
+                  +{friendsOnPoll.length} friend{friendsOnPoll.length === 1 ? '' : 's'} voted
+                </span>
+              </div>
+            )}
+          </div>
+        ) : null;
+
+        const extraSideAction = hasVoted && user ? (
+          <div onClick={(e) => e.stopPropagation()}>
+            <ShareToStoryButton
+              storyType="poll_result"
+              variant="icon"
+              imageUrl={poll.image_a_url || poll.image_b_url}
+              content={{
+                poll_id: poll.id,
+                question: poll.question,
+                option_a: poll.option_a,
+                option_b: poll.option_b,
+                user_choice: userChoice,
+                percent_a: poll.percentA,
+                percent_b: poll.percentB,
+              }}
+              className="w-12 h-12 rounded-full bg-card border border-border shadow-md p-0 flex items-center justify-center"
+            />
+          </div>
+        ) : null;
 
         const handleClick = () => {
           if (!hasVoted) {
@@ -804,11 +912,30 @@ function LiveDebatesList({
               isActive={true}
               isSignedIn={!!user}
               hideVotePrompt
+              theme="light"
+              topSlot={topSlot}
+              onShare={() => handleShare(poll)}
+              onSendToFriend={() => setShareSheetPoll(poll)}
+              extraSideAction={extraSideAction}
             />
           </div>
         );
       })}
       <div ref={sentinelRef} className="h-1" />
+
+      {shareSheetPoll && (
+        <SharePollToFriendSheet
+          pollId={shareSheetPoll.id}
+          pollQuestion={shareSheetPoll.question}
+          optionA={shareSheetPoll.option_a}
+          optionB={shareSheetPoll.option_b}
+          percentA={shareSheetPoll.percentA}
+          percentB={shareSheetPoll.percentB}
+          imageUrl={shareSheetPoll.image_a_url || shareSheetPoll.image_b_url}
+          open={!!shareSheetPoll}
+          onOpenChange={(open) => { if (!open) setShareSheetPoll(null); }}
+        />
+      )}
     </div>
   );
 }
@@ -1704,12 +1831,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Daily featured Ask Versa question */}
-        {user && (
-          <div className="px-3 mb-2">
-            <DailyFeaturedQuestion />
-          </div>
-        )}
+        {/* Ask Egypt daily featured question removed */}
 
         <PulseStoriesRow />
 

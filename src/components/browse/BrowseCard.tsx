@@ -124,6 +124,12 @@ export interface BrowseCardProps {
   onShare?: () => void;
   onSendToFriend?: () => void;
   hideVotePrompt?: boolean;
+  /** 'dark' (Browse default) or 'light' (Home Live Debate) */
+  theme?: 'dark' | 'light';
+  /** Optional eyebrow content rendered above the question (e.g. badges, friends voted) */
+  topSlot?: React.ReactNode;
+  /** Optional extra side-action button rendered above Send / Fire (e.g. add to story) */
+  extraSideAction?: React.ReactNode;
 }
 
 export default function BrowseCard({
@@ -134,6 +140,9 @@ export default function BrowseCard({
   onShare,
   onSendToFriend,
   hideVotePrompt = false,
+  theme = 'dark',
+  topSlot,
+  extraSideAction,
 }: BrowseCardProps) {
   const winnerLabel = poll.winner === 'A' ? poll.option_a : poll.option_b;
   const winnerImg = poll.winner === 'A' ? poll.image_a_url : poll.image_b_url;
@@ -155,35 +164,55 @@ export default function BrowseCard({
     : 'Egypt chose this';
   const dividedGap = Math.abs(poll.percentA - poll.percentB);
 
+  const isLight = theme === 'light';
+  const surfaceBg = isLight ? 'bg-background' : 'bg-[#0B0B0C]';
+  const titleColor = isLight ? 'text-foreground' : 'text-white';
+  const chipBg = isLight ? 'bg-muted text-foreground/80' : 'bg-white/10 text-white/85';
+  const subText = isLight ? 'text-muted-foreground' : 'text-white/55';
+  const borderTop = isLight ? 'border-border/40' : 'border-white/5';
+  const tagBg = isLight ? 'bg-muted text-foreground/80' : 'bg-white/8 text-white/90';
+  const loserText = isLight ? 'text-muted-foreground' : 'text-white/55';
+  const loserPrefix = isLight ? 'text-muted-foreground/70' : 'text-white/40';
+  const shareBtn = isLight
+    ? 'bg-muted text-foreground hover:bg-muted/80'
+    : 'bg-white/10 backdrop-blur-md text-white';
+
   return (
     <div
-      className="h-full w-full flex flex-col relative bg-[#0B0B0C] overflow-hidden"
+      className={`h-full w-full flex flex-col relative ${surfaceBg} overflow-hidden`}
       style={{
         WebkitFontSmoothing: 'antialiased',
         // @ts-ignore
         MozOsxFontSmoothing: 'grayscale',
       }}
     >
+      {/* Optional eyebrow row (badges, friends voted, etc.) */}
+      {topSlot && (
+        <div className={`shrink-0 px-4 pt-3 ${surfaceBg} z-20 relative`}>
+          {topSlot}
+        </div>
+      )}
+
       {/* TOP BAR */}
-      <div className="shrink-0 px-4 pt-4 pb-3 bg-[#0B0B0C] z-20 relative">
+      <div className={`shrink-0 px-4 ${topSlot ? 'pt-2' : 'pt-4'} pb-3 ${surfaceBg} z-20 relative`}>
         <p
-          className="font-display font-bold text-[22px] leading-[1.15] text-white pr-12"
+          className={`font-display font-bold text-[22px] leading-[1.15] ${titleColor} pr-12`}
           style={{ letterSpacing: '-0.01em' }}
         >
           {poll.question}
         </p>
         <div className="flex items-center gap-2 mt-2">
           {poll.category && (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/10 text-white/85 text-[12px] font-semibold tracking-wide">
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full ${chipBg} text-[12px] font-semibold tracking-wide`}>
               {poll.category}
             </span>
           )}
           {poll.isClosed && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 text-white/85 text-[12px] font-semibold">
+            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${chipBg} text-[12px] font-semibold`}>
               🔒 Closed
             </span>
           )}
-          <span className="ml-auto text-[12px] font-semibold text-white/55 tabular-nums">
+          <span className={`ml-auto text-[12px] font-semibold ${subText} tabular-nums`}>
             {poll.totalVotes.toLocaleString()} votes
           </span>
         </div>
@@ -191,7 +220,7 @@ export default function BrowseCard({
         {onShare && (
           <button
             onClick={(e) => { e.stopPropagation(); onShare(); }}
-            className="absolute top-3.5 right-3 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform"
+            className={`absolute ${topSlot ? 'top-1' : 'top-3.5'} right-3 w-10 h-10 rounded-full ${shareBtn} flex items-center justify-center active:scale-95 transition-transform`}
             aria-label="Share"
           >
             <Share2 className="h-[18px] w-[18px]" />
@@ -314,6 +343,7 @@ export default function BrowseCard({
         )}
 
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-20">
+          {extraSideAction}
           {isSignedIn && onSendToFriend && (
             <button
               onClick={(e) => { e.stopPropagation(); onSendToFriend(); }}
@@ -337,13 +367,13 @@ export default function BrowseCard({
       </div>
 
       {/* BOTTOM */}
-      <div className="shrink-0 bg-[#0B0B0C] px-4 pt-3 pb-3 space-y-2 border-t border-white/5">
+      <div className={`shrink-0 ${surfaceBg} px-4 pt-3 pb-3 space-y-2 border-t ${borderTop}`}>
         {poll.demoTags.length > 0 ? (
           <div className="flex flex-wrap gap-x-2.5 gap-y-1.5">
             {poll.demoTags.map((tag, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/8 text-white/90 text-[13px] font-medium leading-snug"
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${tagBg} text-[13px] font-medium leading-snug`}
               >
                 <span className="text-[14px]">{tag.emoji}</span>
                 {tag.label}
@@ -351,21 +381,21 @@ export default function BrowseCard({
             ))}
           </div>
         ) : (
-          <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-white/85">
+          <span className={`inline-flex items-center gap-1.5 text-[14px] font-medium ${isLight ? 'text-foreground/85' : 'text-white/85'}`}>
             🇪🇬 Egypt chose this — <span className="font-bold tabular-nums">{poll.winnerPct}%</span>
           </span>
         )}
 
         <div className="flex items-center justify-between text-[13px]">
-          <span className="text-white/55 truncate">
-            <span className="text-white/40">vs</span> {loserLabel} · <span className="tabular-nums">{loserPct}%</span>
+          <span className={`${loserText} truncate`}>
+            <span className={loserPrefix}>vs</span> {loserLabel} · <span className="tabular-nums">{loserPct}%</span>
           </span>
         </div>
 
         {!userVoted && !poll.isClosed && !hideVotePrompt && onVote && (
           <button
             onClick={(e) => { e.stopPropagation(); onVote(); }}
-            className="w-full text-center text-[13px] font-semibold text-blue-400 active:text-blue-300 transition-colors pt-0.5"
+            className={`w-full text-center text-[13px] font-semibold ${isLight ? 'text-primary active:text-primary/80' : 'text-blue-400 active:text-blue-300'} transition-colors pt-0.5`}
           >
             Vote on today's battles from Home →
           </button>
