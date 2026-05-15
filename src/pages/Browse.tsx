@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Share2, Flame, Check, ChevronUp, X, ArrowLeft, Radio, Send, Search, Trophy, Sparkles } from 'lucide-react';
+import { ChevronUp, X, ArrowLeft, Radio, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
-import { usePollReactions } from '@/hooks/usePollReactions';
 import BrowseCard, { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
 
 // (BrowsePoll, DemoTag, computeDemoTags imported from shared BrowseCard component)
