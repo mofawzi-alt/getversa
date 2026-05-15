@@ -15,6 +15,8 @@ interface NotificationPayload {
   user_ids?: string[];
   skip_in_app?: boolean; // when true, do not insert a row into public.notifications
   notification_type?: string; // type to use if we do insert (default 'new_poll')
+  governance_checked?: boolean; // when true, caller already passed can_send_notification
+  priority?: number; // for governance gate when not yet checked
 }
 
 serve(async (req: Request): Promise<Response> => {
