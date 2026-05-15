@@ -13,7 +13,7 @@ export default function ProtectedRoute({
   requireOnboarding = true,
   requireAdmin = false 
 }: ProtectedRouteProps) {
-  const { user, profile, isAdmin, loading } = useAuth();
+  const { user, profile, isAdmin, rolesLoaded, loading } = useAuth();
 
   if (loading) {
     return (
@@ -25,6 +25,16 @@ export default function ProtectedRoute({
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Wait for roles to finish loading before deciding admin redirect — otherwise
+  // we'd kick admins out to "/" during the brief window before fetchProfile resolves.
+  if (requireAdmin && !rolesLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   // Require onboarding if missing required fields: username, age_range, gender, country
