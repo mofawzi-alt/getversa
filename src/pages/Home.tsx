@@ -913,13 +913,25 @@ export default function Home() {
           return new Set<string>(stored ? JSON.parse(stored) : []);
         } catch { return new Set<string>(); }
       }
-      // Only true votes remove a poll from the deck. Skips are NOT counted —
-      // an accidental skip used to make polls vanish from the user's queue.
-      const { data: votes } = await supabase
-        .from('votes')
-        .select('poll_id')
-        .eq('user_id', user.id);
-      return new Set(votes?.map(v => v.poll_id) || []);
+      // Page through votes — Supabase caps a single .select() at 1000 rows,
+      // so heavy users (>1000 votes) used to see already-voted polls reappear
+      // because older votes silently dropped out of the set.
+      const all = new Set<string>();
+      const PAGE = 1000;
+      let from = 0;
+      for (let i = 0; i < 50; i++) {
+        const { data: votes, error } = await supabase
+          .from('votes')
+          .select('poll_id')
+          .eq('user_id', user.id)
+          .range(from, from + PAGE - 1);
+        if (error) break;
+        if (!votes || votes.length === 0) break;
+        votes.forEach(v => all.add(v.poll_id));
+        if (votes.length < PAGE) break;
+        from += PAGE;
+      }
+      return all;
     },
     staleTime: 1000 * 15,
   });
@@ -929,14 +941,27 @@ export default function Home() {
     queryKey: ['user-vote-choices', user?.id],
     queryFn: async () => {
       if (!user) return new Map<string, { choice: string }>();
-      const { data } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
       const map = new Map<string, { choice: string }>();
-      data?.forEach(v => map.set(v.poll_id, { choice: v.choice }));
+      const PAGE = 1000;
+      let from = 0;
+      for (let i = 0; i < 50; i++) {
+        const { data, error } = await supabase
+          .from('votes')
+          .select('poll_id, choice')
+          .eq('user_id', user.id)
+          .range(from, from + PAGE - 1);
+        if (error) break;
+        if (!data || data.length === 0) break;
+        data.forEach(v => map.set(v.poll_id, { choice: v.choice }));
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
       return map;
     },
     staleTime: 1000 * 30,
     enabled: !!user,
   });
+
 
   // Daily queue system
   const { queuePollIds, remainingToday, allDone, invalidateQueue, isQueueLoading, totalToday } = useDailyQueue();
