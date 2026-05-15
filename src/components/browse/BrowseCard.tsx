@@ -366,7 +366,7 @@ export default function BrowseCard({
           </>
         )}
 
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-20">
+        <div className="absolute right-3 bottom-3 flex flex-row items-center gap-2 z-20">
           {extraSideAction}
           {isSignedIn && onSendToFriend && (
             <button
