@@ -253,7 +253,7 @@ export default function BrowseCard({
       </div>
 
       {/* MIDDLE */}
-      <div className="flex-1 relative overflow-hidden min-h-0 bg-black">
+      <div className="flex-1 relative overflow-hidden min-h-0 bg-black z-10">
         {isDivided ? (
           <>
             <div className="absolute inset-0 flex">
