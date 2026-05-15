@@ -342,15 +342,15 @@ export default function BrowseCard({
           </>
         )}
 
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-20">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-20">
           {extraSideAction}
           {isSignedIn && onSendToFriend && (
             <button
               onClick={(e) => { e.stopPropagation(); onSendToFriend(); }}
-              className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl active:scale-95 transition-transform"
+              className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl active:scale-95 transition-transform"
               aria-label="Send in chat"
             >
-              <Send className="h-[18px] w-[18px]" />
+              <Send className="h-[14px] w-[14px]" />
             </button>
           )}
           <FireReactionButton pollId={poll.id} />
