@@ -337,15 +337,24 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
               className="absolute w-32 h-32 rounded-full blur-[50px] opacity-20"
               style={{ background: theme.accent, bottom: '30%', left: '10%' }}
             />
-            {/* Visual icon instead of emoji to avoid pixelated rendering */}
+            {/* Center hero: expressive emoji for typed stories, fallback to theme icon */}
             <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: '35%' }}>
               <motion.div
                 className="flex items-center justify-center"
                 initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 0.7 }}
+                animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: 'spring', damping: 12 }}
               >
-                <ThemeIcon className="w-24 h-24" style={{ color: theme.accent }} strokeWidth={1} />
+                {content.emoji && content.emoji !== '✨' && story.story_type !== 'poll_result' ? (
+                  <span
+                    className="text-[140px] leading-none drop-shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+                    style={{ filter: `drop-shadow(0 0 40px ${theme.accent}80)` }}
+                  >
+                    {content.emoji}
+                  </span>
+                ) : (
+                  <ThemeIcon className="w-24 h-24 opacity-70" style={{ color: theme.accent }} strokeWidth={1} />
+                )}
               </motion.div>
             </div>
           </>
