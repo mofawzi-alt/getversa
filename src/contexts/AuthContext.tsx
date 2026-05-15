@@ -113,6 +113,7 @@ interface AuthContextType {
   session: Session | null;
   profile: UserProfile | null;
   isAdmin: boolean;
+  rolesLoaded: boolean;
   loading: boolean;
   signUp: (
     email: string,
@@ -132,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [rolesLoaded, setRolesLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const logoutInFlightRef = useRef(false);
   const deliberateSignInRef = useRef(false);
@@ -213,6 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq('user_id', userId);
 
     setIsAdmin(Array.isArray(rolesData) && rolesData.some((r) => r.role === 'admin'));
+    setRolesLoaded(true);
   };
 
   const refreshProfile = async (userId?: string) => {
@@ -246,6 +249,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setProfile(null);
       setIsAdmin(false);
+      setRolesLoaded(true);
     };
 
     const bootFailsafeTimer = window.setTimeout(() => {
@@ -307,12 +311,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(nextSession?.user ?? null);
 
       if (nextSession?.user) {
+        setRolesLoaded(false);
         window.setTimeout(() => {
           void fetchProfile(nextSession.user.id);
         }, 0);
       } else {
         setProfile(null);
         setIsAdmin(false);
+        setRolesLoaded(true);
       }
 
       finishBoot();
@@ -518,6 +524,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     setIsAdmin(false);
+    setRolesLoaded(true);
 
     // Hard-clear any lingering Supabase tokens in localStorage / sessionStorage
     // synchronously so a stale session can't be restored on next app open.
@@ -561,6 +568,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         profile,
         isAdmin,
+        rolesLoaded,
         loading,
         signUp,
         signIn,
