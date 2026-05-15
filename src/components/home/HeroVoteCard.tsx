@@ -22,6 +22,7 @@ import { getInsightTier } from '@/lib/streakGating';
 import HookMoment from '@/components/onboarding/HookMoment';
 import CampaignFeedbackModal from '@/components/poll/CampaignFeedbackModal';
 import { useCampaignFeedbackConfig } from '@/hooks/useCampaignFeedbackConfig';
+import { recordGuestVote } from '@/lib/guestVoteMigration';
 
 interface HeroPoll {
   id: string;
@@ -201,6 +202,9 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         ids.push(poll.id);
         localStorage.setItem('versa_guest_voted_polls', JSON.stringify(ids));
       } catch {}
+      // Capture the actual choice so we can replay these into the user's
+      // votes table after they sign up (prevents seeing the same polls again).
+      recordGuestVote({ pollId: poll.id, choice, category: poll.category ?? null });
       playResultSound();
 
       // Guests always get flash mode

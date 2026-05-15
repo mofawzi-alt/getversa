@@ -790,6 +790,24 @@ export default function Home() {
     }
   }, [loading, user]);
 
+  // Migrate any guest votes (cast pre-signup) into the user's account so the
+  // feed doesn't replay the same polls after they register.
+  useEffect(() => {
+    if (loading || !user) return;
+    let cancelled = false;
+    (async () => {
+      const { migrateGuestVotesToUser } = await import('@/lib/guestVoteMigration');
+      const inserted = await migrateGuestVotesToUser(user.id, profile);
+      if (cancelled) return;
+      if (inserted > 0) {
+        queryClient.invalidateQueries({ queryKey: ['user-voted-ids', user.id] });
+        queryClient.invalidateQueries({ queryKey: ['user-vote-count', user.id] });
+        queryClient.invalidateQueries({ queryKey: ['user-vote-choices', user.id] });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [loading, user, profile, queryClient]);
+
 
 
   // Only show welcome after auth loading finishes and we know the user's state
