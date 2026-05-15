@@ -1624,6 +1624,10 @@ export default function Home() {
             poll={newPolls[heroPollIndex] || null}
             unseenCount={user ? remainingToday : newPolls.length}
             onVoteComplete={(action, pollId) => {
+              if (action === 'vote') {
+                queryClient.setQueryData<Set<string>>(['user-voted-ids', user?.id], (current) => new Set([...(current || new Set<string>()), pollId]));
+                queryClient.setQueryData<Set<string>>(['daily-queue-voted', user?.id], (current) => new Set([...(current || new Set<string>()), pollId]));
+              }
               if (action === 'skip') {
                 setHeroPollIndex((current) => {
                   const activeIndex = newPolls.findIndex((poll) => poll.id === pollId);
