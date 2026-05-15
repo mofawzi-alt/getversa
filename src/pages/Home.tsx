@@ -247,8 +247,26 @@ function HomeLiveDebateCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.025, 0.15), duration: 0.25 }}
       onClick={hasVoted ? onCardClick : undefined}
-      className={`relative h-full flex flex-col rounded-3xl overflow-hidden border bg-card shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
+      className={`relative h-full flex flex-col rounded-3xl overflow-hidden border shadow-md ${hasVoted ? 'cursor-pointer border-border/60' : 'border-primary/40 shadow-primary/10'}`}
     >
+      {/* Blurred image background — makes the picture feel like it fills the whole card */}
+      {(poll.image_a_url || poll.image_b_url) && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+          <div
+            className="absolute inset-0 scale-125"
+            style={{
+              backgroundImage: `url(${poll.image_a_url || poll.image_b_url})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'blur(38px) saturate(1.2)',
+              opacity: 0.55,
+            }}
+          />
+          <div className="absolute inset-0 bg-card/75 backdrop-blur-xl" />
+        </div>
+      )}
+      {/* Content sits above the bg */}
+      <div className="relative z-10 flex flex-col h-full">
       {!hasVoted && (
         <div
           aria-hidden
