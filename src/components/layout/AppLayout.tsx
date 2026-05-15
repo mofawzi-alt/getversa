@@ -25,7 +25,7 @@ export default function AppLayout({ children, hideNav, disablePullToRefresh, flu
   }, [queryClient]);
 
   return (
-    <div className={`min-h-screen ${flushBottom ? '' : 'pb-20'} relative bg-background`}>
+    <div className={`min-h-screen ${flushBottom ? 'bg-white' : 'pb-20 bg-background'} relative`} style={flushBottom ? { backgroundImage: 'none' } : undefined}>
       {!hideNav && <AppHeader />}
       <main
         className="relative z-10"
