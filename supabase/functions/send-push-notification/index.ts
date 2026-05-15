@@ -15,6 +15,8 @@ interface NotificationPayload {
   user_ids?: string[];
   skip_in_app?: boolean; // when true, do not insert a row into public.notifications
   notification_type?: string; // type to use if we do insert (default 'new_poll')
+  governance_checked?: boolean; // when true, caller already passed can_send_notification
+  priority?: number; // for governance gate when not yet checked
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -44,6 +46,55 @@ serve(async (req: Request): Promise<Response> => {
     const payload: NotificationPayload = await req.json();
     console.log("Sending push notification:", payload);
 
+    // ── Anti-spam governance gate ───────────────────────────────────────────
+    // If caller hasn't already been governed AND we have a notification_type,
+    // run can_send_notification per user. Drop users who fail (cap, prefs,
+    // quiet hours, or 6h duplicate). This protects every legacy/bypass caller.
+    let allowedUserIds: string[] | null = payload.user_ids ?? null;
+    const notifType = payload.notification_type || "new_poll";
+    const priority = payload.priority ?? 9;
+    if (!payload.governance_checked && payload.user_ids?.length) {
+      const allowed: string[] = [];
+      const blocked: Record<string, string> = {};
+      await Promise.all(
+        payload.user_ids.map(async (uid) => {
+          const { data: gate } = await supabase.rpc("can_send_notification", {
+            p_user_id: uid,
+            p_notification_type: notifType,
+            p_priority: priority,
+            p_title: payload.title,
+          });
+          if (gate?.allowed) allowed.push(uid);
+          else blocked[uid] = gate?.reason ?? "unknown";
+        })
+      );
+      const blockedCount = payload.user_ids.length - allowed.length;
+      if (blockedCount > 0) {
+        const sample = Object.entries(blocked).slice(0, 5);
+        console.log(`Governance blocked ${blockedCount}/${payload.user_ids.length} users (sample:`, sample, ")");
+      }
+      allowedUserIds = allowed;
+      if (allowed.length === 0) {
+        return new Response(
+          JSON.stringify({ success: true, sent: 0, governance_blocked: blockedCount, message: "All recipients gated by governance" }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+      // Log each allowed send so the 3/day cap and dedupe stay honest
+      await Promise.all(
+        allowed.map((uid) =>
+          supabase.rpc("log_notification_sent", {
+            p_user_id: uid,
+            p_notification_type: notifType,
+            p_priority: priority,
+            p_channel: "push",
+            p_data: { title: payload.title, url: payload.url, poll_id: payload.poll_id },
+          })
+        )
+      );
+    }
+    // Replace the payload's user_ids with the filtered set for downstream queries
+    payload.user_ids = allowedUserIds ?? payload.user_ids;
     // Fire-and-forget: also send via OneSignal for native iOS/Android subscribers.
     const ONESIGNAL_APP_ID = Deno.env.get("ONESIGNAL_APP_ID");
     const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
