@@ -38,11 +38,12 @@ serve(async (req) => {
       });
     }
 
-    // 1. Governance check
+    // 1. Governance check (includes 6h duplicate guard via title)
     const { data: gate, error: gateErr } = await supabase.rpc("can_send_notification", {
       p_user_id: p.user_id,
       p_notification_type: p.notification_type,
       p_priority: p.priority ?? 99,
+      p_title: p.title,
     });
     if (gateErr) throw gateErr;
 
