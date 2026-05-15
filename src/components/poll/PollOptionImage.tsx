@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useId, memo } from 'react';
 import { Loader2, Volume2, VolumeX } from 'lucide-react';
-import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import { getPollDisplayImageSrc, handlePollImageError, resolvePollMediaUrl } from '@/lib/pollImages';
 import { getBrandColor, getImageTreatment } from '@/lib/brandDetection';
 import { videoSound } from '@/lib/videoSound';
 
@@ -36,6 +36,16 @@ function isVideoUrl(url: string | null): boolean {
   return VIDEO_EXTENSIONS.some(ext => lower.endsWith(ext));
 }
 
+function handleVideoError(e: React.SyntheticEvent<HTMLVideoElement>) {
+  const video = e.currentTarget;
+  const fallback = video.dataset.fallbackSrc;
+  if (!fallback || video.dataset.fallbackApplied) return;
+  video.dataset.fallbackApplied = 'true';
+  video.src = fallback;
+  video.load();
+  video.play().catch(() => {});
+}
+
 /**
  * Unified media component for poll options.
  * - Video URLs: muted autoplay looping video
@@ -65,6 +75,7 @@ function PollOptionImageComponent({
     question,
     side,
   });
+  const videoSrc = resolvePollMediaUrl(imageUrl) || undefined;
 
   // Lazy-load & autoplay video only when visible
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -151,7 +162,8 @@ function PollOptionImageComponent({
         )}
         <video
           ref={videoRef}
-          src={videoVisible ? imageUrl! : undefined}
+          src={videoVisible ? videoSrc : undefined}
+          data-fallback-src={imgSrc || undefined}
           className={`w-full h-full pointer-events-none transition-opacity duration-300 ${
             showLoader && !loaded ? 'opacity-0' : 'opacity-100'
           }`}
@@ -165,6 +177,7 @@ function PollOptionImageComponent({
           playsInline
           preload="metadata"
           onLoadedData={() => setLoaded(true)}
+          onError={handleVideoError}
           draggable={draggable}
         />
         {variant !== 'history' && (
