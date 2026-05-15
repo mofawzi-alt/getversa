@@ -1253,6 +1253,7 @@ export default function Home() {
     },
     staleTime: 1000 * 30,
     refetchInterval: 1000 * 60,
+    enabled: !user || (!isVotedPollIdsLoading && isQueueReady),
   });
 
   const [modalPoll, setModalPoll] = useState<PollCard | null>(null);
