@@ -2,6 +2,7 @@ import { Share2, Check, X, Send, Trophy, Sparkles, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { usePollReactions } from '@/hooks/usePollReactions';
+import { getCategoryColorClass, mapToVersaCategory } from '@/lib/categoryMeta';
 
 export interface DemoTag {
   emoji: string;
