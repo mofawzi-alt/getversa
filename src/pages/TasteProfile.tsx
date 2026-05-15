@@ -515,11 +515,13 @@ export default function TasteProfile() {
               storyType="taste_profile"
               content={{
                 archetype: archetype.name,
+                archetype_emoji: archetype.emoji,
                 description: dynamicDescription,
                 top_categories: topCategory ? [topCategory] : [],
                 total_votes: totalVotes,
                 personality_code: personality.ready ? personality.code : undefined,
                 personality_name: personality.ready ? personality.name : undefined,
+                personality_emoji: personality.ready ? personality.emoji : undefined,
               }}
             />
           </div>
