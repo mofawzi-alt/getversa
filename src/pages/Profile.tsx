@@ -78,6 +78,7 @@ export default function Profile() {
     { icon: History, label: 'My Votes', path: '/history', color: 'text-primary' },
     { icon: User, label: 'Edit Profile', path: '/profile/edit', color: 'text-muted-foreground' },
     { icon: Bell, label: 'Notification Settings', path: '/profile/notifications', color: 'text-muted-foreground' },
+    { icon: MessageCircleQuestion, label: 'My Live Asks', path: '/live-ask/mine', color: 'text-primary' },
 
     ...(isAdmin ? [
       { icon: MessageCircleQuestion, label: 'Live Ask (Beta)', path: '/live-ask/new', color: 'text-primary' },
