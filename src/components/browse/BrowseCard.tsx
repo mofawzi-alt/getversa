@@ -98,14 +98,14 @@ export function FireReactionButton({ pollId }: { pollId: string }) {
         }
         toggle();
       }}
-      className={`min-w-10 h-10 px-2 rounded-full backdrop-blur-sm border flex items-center justify-center gap-1 transition-all ${
+      className={`min-w-9 h-9 px-1.5 rounded-full backdrop-blur-sm border flex items-center justify-center gap-1 transition-all ${
         reacted
           ? 'bg-orange-500/20 border-orange-500/40 text-orange-500 scale-110'
           : 'bg-background/80 border-border/50 text-foreground hover:bg-orange-500/10'
       }`}
       aria-label={reacted ? 'Remove fire reaction' : 'Add fire reaction'}
     >
-      <Flame className={`h-4 w-4 ${reacted ? 'fill-current' : ''}`} />
+      <Flame className={`h-3.5 w-3.5 ${reacted ? 'fill-current' : ''}`} />
       {count > 0 && (
         <span className="text-[10px] font-bold tabular-nums">
           {count > 999 ? `${(count / 1000).toFixed(1)}k` : count}
