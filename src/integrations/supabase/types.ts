@@ -3387,14 +3387,24 @@ export type Database = {
         Returns: number
       }
       auto_finalize_live_asks: { Args: never; Returns: number }
-      can_send_notification: {
-        Args: {
-          p_notification_type: string
-          p_priority: number
-          p_user_id: string
-        }
-        Returns: Json
-      }
+      can_send_notification:
+        | {
+            Args: {
+              p_notification_type: string
+              p_priority: number
+              p_user_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_notification_type: string
+              p_priority: number
+              p_title?: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
       can_view_user_stories: {
         Args: { author_id: string; viewer_id: string }
         Returns: boolean
