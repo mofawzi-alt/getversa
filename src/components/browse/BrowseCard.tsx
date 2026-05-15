@@ -366,19 +366,6 @@ export default function BrowseCard({
           </>
         )}
 
-        <div className="absolute right-3 bottom-3 flex flex-row items-center gap-2 z-20">
-          {extraSideAction}
-          {isSignedIn && onSendToFriend && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onSendToFriend(); }}
-              className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl active:scale-95 transition-transform"
-              aria-label="Send in chat"
-            >
-              <Send className="h-[14px] w-[14px]" />
-            </button>
-          )}
-          <FireReactionButton pollId={poll.id} />
-        </div>
 
         {!isDivided && independentPct != null && (
           <div className="absolute top-3 left-3 z-20">
