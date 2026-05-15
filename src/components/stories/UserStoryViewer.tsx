@@ -179,6 +179,114 @@ const STORY_THEMES: Record<string, {
   },
 };
 
+/** Animated Arena Result hero — VS clash with floating sparkles */
+function DuelHero({ outcome, opponent, username, accent }: { outcome: 'won' | 'tied' | 'lost'; opponent: string | null; username: string; accent: string }) {
+  const heroEmoji = outcome === 'won' ? '🏆' : outcome === 'tied' ? '⚔️' : '💀';
+  const sparkles = outcome === 'won'
+    ? ['✨', '🎉', '⭐', '🔥', '💫', '👑']
+    : outcome === 'tied'
+    ? ['⚡', '✨', '🔥', '💥', '⚔️', '✨']
+    : ['💔', '😤', '⚡', '💀', '🥀', '✨'];
+  const positions = [
+    { top: '8%', left: '12%' },
+    { top: '14%', right: '14%' },
+    { top: '38%', left: '4%' },
+    { top: '42%', right: '6%' },
+    { bottom: '12%', left: '18%' },
+    { bottom: '6%', right: '20%' },
+  ];
+
+  const initial = (username || '?')[0].toUpperCase();
+  const oppInitial = (opponent || '?')[0].toUpperCase();
+
+  return (
+    <div className="relative w-full h-full flex items-center justify-center">
+      {/* Floating sparkles */}
+      {sparkles.map((s, i) => (
+        <motion.span
+          key={i}
+          className="absolute text-3xl select-none"
+          style={positions[i] as any}
+          initial={{ opacity: 0, scale: 0, y: 20 }}
+          animate={{
+            opacity: [0, 1, 0.85, 1],
+            scale: [0, 1.1, 0.95, 1],
+            y: [20, -10, 0, -8],
+            rotate: [0, -8, 8, 0],
+          }}
+          transition={{
+            delay: 0.2 + i * 0.08,
+            duration: 3.2,
+            repeat: Infinity,
+            repeatType: 'reverse',
+            ease: 'easeInOut',
+          }}
+        >
+          {s}
+        </motion.span>
+      ))}
+
+      {/* VS clash composition */}
+      <div className="relative flex items-center justify-center gap-2">
+        <motion.div
+          initial={{ x: -40, opacity: 0, scale: 0.6 }}
+          animate={{ x: 0, opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', damping: 14, delay: 0.05 }}
+          className="w-16 h-16 rounded-full flex items-center justify-center text-white font-extrabold text-2xl ring-4"
+          style={{
+            background: `linear-gradient(135deg, ${accent}, ${accent}aa)`,
+            boxShadow: `0 8px 30px ${accent}80`,
+            ['--tw-ring-color' as any]: `${accent}40`,
+          }}
+        >
+          {initial}
+        </motion.div>
+
+        <motion.div
+          initial={{ scale: 0, rotate: -90 }}
+          animate={{ scale: [0, 1.3, 1], rotate: 0 }}
+          transition={{ delay: 0.2, duration: 0.6, type: 'spring', damping: 10 }}
+          className="text-white font-black text-3xl mx-1 drop-shadow-[0_4px_20px_rgba(255,255,255,0.4)]"
+          style={{ textShadow: `0 0 24px ${accent}` }}
+        >
+          VS
+        </motion.div>
+
+        <motion.div
+          initial={{ x: 40, opacity: 0, scale: 0.6 }}
+          animate={{ x: 0, opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', damping: 14, delay: 0.05 }}
+          className="w-16 h-16 rounded-full flex items-center justify-center text-white font-extrabold text-2xl bg-white/15 backdrop-blur-md border border-white/25"
+        >
+          {oppInitial}
+        </motion.div>
+      </div>
+
+      {/* Big outcome emoji floating above */}
+      <motion.span
+        className="absolute text-[110px] leading-none select-none"
+        style={{
+          top: '-8%',
+          filter: `drop-shadow(0 8px 30px ${accent}cc) drop-shadow(0 0 50px ${accent}80)`,
+        }}
+        initial={{ scale: 0, y: -30, rotate: -20 }}
+        animate={{
+          scale: [0, 1.2, 1],
+          y: [-30, 0, -6, 0],
+          rotate: [-20, 8, -4, 0],
+        }}
+        transition={{
+          delay: 0.35,
+          duration: 1.2,
+          y: { delay: 1.2, duration: 2.4, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' },
+        }}
+      >
+        {heroEmoji}
+      </motion.span>
+    </div>
+  );
+}
+
 export default function UserStoryViewer({ open, group, onClose, onViewed, onDelete, onNext, onPrevious }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
