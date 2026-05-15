@@ -719,48 +719,95 @@ function LiveDebatesList({
     return result;
   }, [livePolls, cycles]);
 
+  // Fetch sample of demographic votes to compute demo tags (Browse-style)
+  const { data: demoMap } = useQuery({
+    queryKey: ['live-debate-demo-votes', pollIds.slice(0, 30).sort().join(',')],
+    enabled: pollIds.length > 0,
+    staleTime: 1000 * 60 * 5,
+    queryFn: async () => {
+      const sample = pollIds.slice(0, 30);
+      if (sample.length === 0) return new Map<string, any[]>();
+      const { data } = await supabase
+        .from('votes')
+        .select('poll_id, choice, voter_gender, voter_age_range, voter_city')
+        .in('poll_id', sample)
+        .limit(1000);
+      const map = new Map<string, any[]>();
+      data?.forEach((v: any) => {
+        if (!map.has(v.poll_id)) map.set(v.poll_id, []);
+        map.get(v.poll_id)!.push(v);
+      });
+      return map;
+    },
+  });
+
+  const toBrowsePoll = useCallback((p: PollCard): BrowsePoll => {
+    const winner: 'A' | 'B' = p.percentA >= p.percentB ? 'A' : 'B';
+    const winnerPct = Math.max(p.percentA, p.percentB);
+    const isClosed = p.ends_at ? new Date(p.ends_at) <= new Date() : false;
+    return {
+      id: p.id,
+      question: p.question,
+      option_a: p.option_a,
+      option_b: p.option_b,
+      image_a_url: p.image_a_url,
+      image_b_url: p.image_b_url,
+      category: p.category,
+      created_at: p.created_at,
+      ends_at: p.ends_at,
+      isClosed,
+      totalVotes: p.totalVotes,
+      votesA: p.votesA,
+      votesB: p.votesB,
+      percentA: p.percentA,
+      percentB: p.percentB,
+      winner,
+      winnerPct,
+      egyptPct: winnerPct,
+      demoTags: computeDemoTags(demoMap?.get(p.id) || [], winnerPct, winner),
+    };
+  }, [demoMap]);
+
   return (
-    <div className="px-1.5" style={{ willChange: 'transform' }}>
+    <div
+      className="snap-y snap-mandatory overflow-y-scroll overscroll-contain"
+      style={{ height: cardHeight, willChange: 'transform' }}
+    >
       {repeatedPolls.map(({ poll, loopIndex }) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
-        const userChoice = voteData?.choice;
-        const chosenOptionLabel = userChoice === 'A' ? poll.option_a : userChoice === 'B' ? poll.option_b : null;
-        const friendsOnPoll = friendsByPoll?.[poll.id] || [];
+        const userChoice = voteData?.choice ?? null;
+        const browsePoll = toBrowsePoll(poll);
+
+        const handleClick = () => {
+          if (!hasVoted) {
+            const idx = newPolls.findIndex(p => p.id === poll.id);
+            if (idx >= 0) {
+              setHeroPollIndex(idx);
+              heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+              return;
+            }
+          }
+          setModalPoll(poll);
+        };
 
         return (
           <div
             key={`${poll.id}-${loopIndex}`}
-            className="py-1.5"
+            className="snap-start snap-always"
             style={{ height: cardHeight }}
+            onClick={handleClick}
           >
-            <HomeLiveDebateCard
-              poll={poll}
-              index={loopIndex}
-              hasVoted={hasVoted}
-              chosenOptionLabel={chosenOptionLabel}
-              isTrending={trendingIdSet?.has(poll.id) || false}
-              friendsOnPoll={friendsOnPoll}
-              enableGenderTeaser={loopIndex < 3}
-              onVoteInline={(choice) => handleInlineVote(poll, choice)}
-              onCardClick={() => {
-                if (hasVoted) {
-                  setModalPoll(poll);
-                  return;
-                }
-                const idx = newPolls.findIndex(p => p.id === poll.id);
-                if (idx >= 0) {
-                  setHeroPollIndex(idx);
-                  heroRef.current?.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                  navigate(`/browse?filter=live&pollId=${poll.id}`);
-                }
-              }}
+            <BrowseCard
+              poll={browsePoll}
+              userChoice={userChoice}
+              isActive={true}
+              isSignedIn={!!user}
+              hideVotePrompt
             />
           </div>
         );
       })}
-      {/* Sentinel for infinite scroll — loads more when scrolled near */}
       <div ref={sentinelRef} className="h-1" />
     </div>
   );
