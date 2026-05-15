@@ -388,10 +388,32 @@ export default function BrowseCard({
             </div>
           </div>
         )}
+
+        {/* Small % split bar at the bottom of the picture */}
+        <div className="absolute left-0 right-0 bottom-0 z-30 pointer-events-none">
+          <div className="h-1.5 w-full flex bg-black/40">
+            <div
+              className="h-full bg-option-a transition-all duration-700"
+              style={{ width: `${poll.percentA}%` }}
+            />
+            <div
+              className="h-full bg-option-b transition-all duration-700"
+              style={{ width: `${poll.percentB}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between px-3 py-1 bg-gradient-to-t from-black/70 to-transparent">
+            <span className="text-[11px] font-extrabold text-white tabular-nums drop-shadow">
+              <span className="text-option-a">●</span> {poll.percentA}%
+            </span>
+            <span className="text-[11px] font-extrabold text-white tabular-nums drop-shadow">
+              {poll.percentB}% <span className="text-option-b">●</span>
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* BOTTOM */}
-      <div className={`shrink-0 ${surfaceBg} px-4 pt-3 pb-3 space-y-2 border-t ${borderTop}`}>
+      <div className={`shrink-0 relative z-10 px-4 pt-3 pb-3 space-y-2 border-t ${borderTop}`}>
         {poll.demoTags.length > 0 ? (
           <div className="flex flex-wrap gap-x-2.5 gap-y-1.5">
             {poll.demoTags.map((tag, i) => (
