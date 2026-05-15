@@ -1,6 +1,7 @@
 type PollImageSide = 'A' | 'B';
 
 const POLL_IMAGE_BASE_PATH = '/polls';
+const GENERATED_ASSET_ORIGIN = 'https://getversa.app';
 // Cache version removed — browser caching now relies on natural HTTP cache headers
 
 export function getPublicPollImageUrl(fileName: string) {
@@ -1032,6 +1033,15 @@ function isStoragePollImageUrl(url?: string | null) {
   return !!url && url.includes('/storage/v1/object/public/poll-images/');
 }
 
+export function resolvePollMediaUrl(url?: string | null) {
+  if (!url) return url;
+  // Generated Lovable assets are not bundled inside the native iOS app. A
+  // relative /__l5e URL resolves against capacitor://localhost and breaks in
+  // WKWebView, so force it to the published web origin where the file exists.
+  if (url.startsWith('/__l5e/assets-v1/')) return `${GENERATED_ASSET_ORIGIN}${url}`;
+  return url;
+}
+
 function getPreferredLocalImage({ question, option, side }: PollImageParams) {
   return (
     getQuestionAliasImage(question, side) ||
@@ -1055,12 +1065,14 @@ export function getPollImageFallbackSrc(params: PollImageParams) {
 }
 
 export function getPollDisplayImageSrc(params: PollImageParams) {
+  const resolvedImageUrl = resolvePollMediaUrl(params.imageUrl);
+
   // Any valid absolute URL from the database takes priority — storage, Unsplash, CDN, etc.
-  if (params.imageUrl && /^https?:\/\//i.test(params.imageUrl)) {
+  if (resolvedImageUrl && /^https?:\/\//i.test(resolvedImageUrl)) {
     // Return URL as-is — let the browser cache naturally.
     // Previously we appended a cache-buster (?v=...) which forced re-downloads
     // on every session and caused images to appear "not loading" on slower connections.
-    return params.imageUrl;
+    return resolvedImageUrl;
   }
 
   // NOTE: We intentionally skip the local /polls/* alias lookup here.

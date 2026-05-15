@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { resolvePollMediaUrl } from '@/lib/pollImages';
 
 /**
  * Preloads the first N active poll images so the home feed has zero gray
@@ -8,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
  * Fire-and-forget: never throws, never blocks UI.
  */
 let started = false;
+
+const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|ogg)(\?|#|$)/i;
 
 export function preloadFeedImages(limit = 6) {
   if (started) return;
@@ -31,8 +34,19 @@ export function preloadFeedImages(limit = 6) {
         if (row?.image_b_url) urls.add(row.image_b_url);
       }
 
-      urls.forEach((url) => {
+      urls.forEach((rawUrl) => {
         try {
+          const url = resolvePollMediaUrl(rawUrl) || rawUrl;
+          if (VIDEO_EXTENSIONS.test(url)) {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.muted = true;
+            video.playsInline = true;
+            video.src = url;
+            video.load();
+            return;
+          }
+
           const img = new Image();
           // decoding=async lets the browser warm cache without blocking.
           img.decoding = 'async';
