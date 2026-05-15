@@ -1704,12 +1704,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Daily featured Ask Versa question */}
-        {user && (
-          <div className="px-3 mb-2">
-            <DailyFeaturedQuestion />
-          </div>
-        )}
+        {/* Ask Egypt daily featured question removed */}
 
         <PulseStoriesRow />
 
