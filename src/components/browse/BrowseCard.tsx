@@ -401,28 +401,46 @@ export default function BrowseCard({
 
       {/* BOTTOM */}
       <div className={`shrink-0 relative z-10 px-4 pt-3 pb-3 space-y-2 border-t ${borderTop}`}>
-        {poll.demoTags.length > 0 ? (
-          <div className="flex flex-wrap gap-x-2.5 gap-y-1.5">
-            {poll.demoTags.map((tag, i) => (
-              <span
-                key={i}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${tagBg} text-[13px] font-medium leading-snug`}
-              >
-                <span className="text-[14px]">{tag.emoji}</span>
-                {tag.label}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0 space-y-2">
+            {poll.demoTags.length > 0 ? (
+              <div className="flex flex-wrap gap-x-2.5 gap-y-1.5">
+                {poll.demoTags.map((tag, i) => (
+                  <span
+                    key={i}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${tagBg} text-[13px] font-medium leading-snug`}
+                  >
+                    <span className="text-[14px]">{tag.emoji}</span>
+                    {tag.label}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className={`inline-flex items-center gap-1.5 text-[14px] font-medium ${isLight ? 'text-foreground/85' : 'text-white/85'}`}>
+                🇪🇬 Egypt chose this — <span className="font-bold tabular-nums">{poll.winnerPct}%</span>
               </span>
-            ))}
-          </div>
-        ) : (
-          <span className={`inline-flex items-center gap-1.5 text-[14px] font-medium ${isLight ? 'text-foreground/85' : 'text-white/85'}`}>
-            🇪🇬 Egypt chose this — <span className="font-bold tabular-nums">{poll.winnerPct}%</span>
-          </span>
-        )}
+            )}
 
-        <div className="flex items-center justify-between text-[13px]">
-          <span className={`${loserText} truncate`}>
-            <span className={loserPrefix}>vs</span> {loserLabel} · <span className="tabular-nums">{loserPct}%</span>
-          </span>
+            <div className="flex items-center justify-between text-[13px]">
+              <span className={`${loserText} truncate`}>
+                <span className={loserPrefix}>vs</span> {loserLabel} · <span className="tabular-nums">{loserPct}%</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="shrink-0 flex flex-row items-center gap-1.5 pt-0.5">
+            {extraSideAction}
+            {isSignedIn && onSendToFriend && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onSendToFriend(); }}
+                className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                aria-label="Send in chat"
+              >
+                <Send className="h-3 w-3" />
+              </button>
+            )}
+            <FireReactionButton pollId={poll.id} />
+          </div>
         </div>
 
         {!userVoted && !poll.isClosed && !hideVotePrompt && onVote && (
