@@ -638,6 +638,7 @@ function HomeLiveDebateCard({
         open={shareSheetOpen}
         onOpenChange={setShareSheetOpen}
       />
+      </div>
     </motion.div>
   );
 }
