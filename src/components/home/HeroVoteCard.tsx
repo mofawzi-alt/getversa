@@ -323,6 +323,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
     playResultSound();
 
+    queryClient.setQueryData<Set<string>>(['user-voted-ids', user.id], (current) => new Set([...(current || new Set<string>()), poll.id]));
+    queryClient.setQueryData<Set<string>>(['daily-queue-voted', user.id], (current) => new Set([...(current || new Set<string>()), poll.id]));
     queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
     queryClient.invalidateQueries({ queryKey: ['unseen-poll-count'] });
     queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });

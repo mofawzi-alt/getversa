@@ -903,7 +903,7 @@ export default function Home() {
     }
   }, [hasUnlockedExplore]);
 
-  const { data: votedPollIds } = useQuery({
+  const { data: votedPollIds, isLoading: isVotedPollIdsLoading } = useQuery({
     queryKey: ['user-voted-ids', user?.id],
     queryFn: async () => {
       if (!user) {
@@ -964,7 +964,7 @@ export default function Home() {
 
 
   // Daily queue system
-  const { queuePollIds, remainingToday, allDone, invalidateQueue, isQueueLoading, totalToday } = useDailyQueue();
+  const { queuePollIds, votedQueueIds, remainingToday, allDone, invalidateQueue, isQueueLoading, isQueueReady, totalToday } = useDailyQueue();
 
   const { data: unseenCount } = useQuery({
     queryKey: ['unseen-poll-count', user?.id, queuePollIds],
@@ -1076,8 +1076,9 @@ export default function Home() {
   const isOnboardingFeed = voteCount < ONBOARDING_VOTE_TARGET;
 
   const { data: polls, isLoading } = useQuery({
-    queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, queuePollIds.join('|'), isOnboardingFeed, Array.from(votedPollIds || []).join('|')],
+    queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, queuePollIds.join('|'), Array.from(votedQueueIds || []).join('|'), isQueueReady, isOnboardingFeed, Array.from(votedPollIds || []).join('|')],
     queryFn: async () => {
+      if (user && !isQueueReady) return [];
       return withQueryTimeout(async () => {
         const now = new Date().toISOString();
         const pollSelect = 'id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries, option_a_tag, option_b_tag, tags, is_hot_take';
@@ -1169,7 +1170,7 @@ export default function Home() {
           }
         }
 
-        const queueSet = new Set(queuePollIds);
+        const queueSet = new Set(queuePollIds.filter(id => !votedPollIds?.has(id) && !votedQueueIds?.has(id)));
         let prioritized = mergedPolls;
         if (profile) {
           const matched: typeof mergedPolls = [];
@@ -1252,6 +1253,7 @@ export default function Home() {
     },
     staleTime: 1000 * 30,
     refetchInterval: 1000 * 60,
+    enabled: !user || (!isVotedPollIdsLoading && isQueueReady),
   });
 
   const [modalPoll, setModalPoll] = useState<PollCard | null>(null);
@@ -1487,7 +1489,7 @@ export default function Home() {
     return <WelcomeFlow onComplete={() => { markWelcomeDone(); setShowWelcome(false); }} />;
   }
 
-  if (isLoading) {
+  if (isLoading || (user && (isVotedPollIdsLoading || !isQueueReady))) {
     return (
       <AppLayout disablePullToRefresh>
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-8">
@@ -1622,6 +1624,10 @@ export default function Home() {
             poll={newPolls[heroPollIndex] || null}
             unseenCount={user ? remainingToday : newPolls.length}
             onVoteComplete={(action, pollId) => {
+              if (action === 'vote') {
+                queryClient.setQueryData<Set<string>>(['user-voted-ids', user?.id], (current) => new Set([...(current || new Set<string>()), pollId]));
+                queryClient.setQueryData<Set<string>>(['daily-queue-voted', user?.id], (current) => new Set([...(current || new Set<string>()), pollId]));
+              }
               if (action === 'skip') {
                 setHeroPollIndex((current) => {
                   const activeIndex = newPolls.findIndex((poll) => poll.id === pollId);
