@@ -409,8 +409,24 @@ function HomeLiveDebateCard({
                 <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/40" />
               )}
             </div>
+            {/* Bottom % bar overlay (after vote) */}
+            {hasVoted && (
+              <div className="absolute bottom-0 left-0 right-0 z-10">
+                <div className="h-1.5 bg-black/30">
+                  <motion.div
+                    className="h-full bg-option-b ml-auto"
+                    initial={{ width: '50%' }}
+                    animate={{ width: `${poll.percentB}%` }}
+                    transition={{ type: 'spring', stiffness: 140, damping: 16, delay: 0.15 }}
+                  />
+                </div>
+                <div className="px-2 py-1 flex items-center justify-end bg-gradient-to-t from-black/70 to-transparent">
+                  <span className="text-[11px] font-extrabold text-white tabular-nums drop-shadow">{poll.percentB}%</span>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="px-3 py-2 bg-card">
+          <div className="px-3 py-2 bg-card/90 backdrop-blur-sm">
             <p className={`text-[14px] font-bold leading-tight break-words ${chosenB ? 'text-option-b' : 'text-foreground'}`}>
               {poll.option_b}
             </p>
