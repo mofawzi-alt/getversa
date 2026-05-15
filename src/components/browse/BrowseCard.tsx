@@ -343,6 +343,7 @@ export default function BrowseCard({
         )}
 
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-20">
+          {extraSideAction}
           {isSignedIn && onSendToFriend && (
             <button
               onClick={(e) => { e.stopPropagation(); onSendToFriend(); }}
@@ -366,13 +367,13 @@ export default function BrowseCard({
       </div>
 
       {/* BOTTOM */}
-      <div className="shrink-0 bg-[#0B0B0C] px-4 pt-3 pb-3 space-y-2 border-t border-white/5">
+      <div className={`shrink-0 ${surfaceBg} px-4 pt-3 pb-3 space-y-2 border-t ${borderTop}`}>
         {poll.demoTags.length > 0 ? (
           <div className="flex flex-wrap gap-x-2.5 gap-y-1.5">
             {poll.demoTags.map((tag, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/8 text-white/90 text-[13px] font-medium leading-snug"
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${tagBg} text-[13px] font-medium leading-snug`}
               >
                 <span className="text-[14px]">{tag.emoji}</span>
                 {tag.label}
@@ -380,21 +381,21 @@ export default function BrowseCard({
             ))}
           </div>
         ) : (
-          <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-white/85">
+          <span className={`inline-flex items-center gap-1.5 text-[14px] font-medium ${isLight ? 'text-foreground/85' : 'text-white/85'}`}>
             🇪🇬 Egypt chose this — <span className="font-bold tabular-nums">{poll.winnerPct}%</span>
           </span>
         )}
 
         <div className="flex items-center justify-between text-[13px]">
-          <span className="text-white/55 truncate">
-            <span className="text-white/40">vs</span> {loserLabel} · <span className="tabular-nums">{loserPct}%</span>
+          <span className={`${loserText} truncate`}>
+            <span className={loserPrefix}>vs</span> {loserLabel} · <span className="tabular-nums">{loserPct}%</span>
           </span>
         </div>
 
         {!userVoted && !poll.isClosed && !hideVotePrompt && onVote && (
           <button
             onClick={(e) => { e.stopPropagation(); onVote(); }}
-            className="w-full text-center text-[13px] font-semibold text-blue-400 active:text-blue-300 transition-colors pt-0.5"
+            className={`w-full text-center text-[13px] font-semibold ${isLight ? 'text-primary active:text-primary/80' : 'text-blue-400 active:text-blue-300'} transition-colors pt-0.5`}
           >
             Vote on today's battles from Home →
           </button>
