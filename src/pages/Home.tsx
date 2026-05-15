@@ -743,17 +743,17 @@ function LiveDebatesList({
               enableGenderTeaser={loopIndex < 3}
               onVoteInline={(choice) => handleInlineVote(poll, choice)}
               onCardClick={() => {
-                if (hasVoted) {
-                  setModalPoll(poll);
-                  return;
+                // If unvoted and the poll is in today's hero queue, jump to hero to vote
+                if (!hasVoted) {
+                  const idx = newPolls.findIndex(p => p.id === poll.id);
+                  if (idx >= 0) {
+                    setHeroPollIndex(idx);
+                    heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+                    return;
+                  }
                 }
-                const idx = newPolls.findIndex(p => p.id === poll.id);
-                if (idx >= 0) {
-                  setHeroPollIndex(idx);
-                  heroRef.current?.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                  navigate(`/browse?filter=live&pollId=${poll.id}`);
-                }
+                // Otherwise open the browse-style full-screen live feed at this poll
+                navigate(`/browse?filter=live&pollId=${poll.id}`);
               }}
             />
           </div>
