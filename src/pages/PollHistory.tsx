@@ -324,7 +324,13 @@ export default function PollHistory() {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-secondary/50">
+    <div
+      className="fixed inset-0 z-40 flex flex-col bg-secondary/50"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 72px)',
+      }}
+    >
       {/* Top bar */}
       <div className="px-3 pt-4 pb-2 flex flex-col gap-2 shrink-0 border-b border-border/20">
         <div className="flex items-center gap-3">
