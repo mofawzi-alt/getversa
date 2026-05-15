@@ -903,7 +903,7 @@ export default function Home() {
     }
   }, [hasUnlockedExplore]);
 
-  const { data: votedPollIds } = useQuery({
+  const { data: votedPollIds, isLoading: isVotedPollIdsLoading } = useQuery({
     queryKey: ['user-voted-ids', user?.id],
     queryFn: async () => {
       if (!user) {
@@ -964,7 +964,7 @@ export default function Home() {
 
 
   // Daily queue system
-  const { queuePollIds, remainingToday, allDone, invalidateQueue, isQueueLoading, totalToday } = useDailyQueue();
+  const { queuePollIds, votedQueueIds, remainingToday, allDone, invalidateQueue, isQueueLoading, isQueueReady, totalToday } = useDailyQueue();
 
   const { data: unseenCount } = useQuery({
     queryKey: ['unseen-poll-count', user?.id, queuePollIds],
