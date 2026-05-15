@@ -829,9 +829,24 @@ export default function SwipeFeed() {
       if (excludeHeroPollId) votedPollSet.add(excludeHeroPollId);
 
       if (user) {
-        // Only fetch poll_ids to mark as voted — don't fetch results for all of them
-        const { data: userVotes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
-        if (userVotes && userVotes.length > 0) {
+        // Page through votes — Supabase caps a single .select() at 1000 rows,
+        // so heavy users used to see already-voted polls reappear.
+        const userVotes: Array<{ poll_id: string; choice: string }> = [];
+        const PAGE = 1000;
+        let from = 0;
+        for (let i = 0; i < 50; i++) {
+          const { data: pageData, error: pageErr } = await supabase
+            .from('votes')
+            .select('poll_id, choice')
+            .eq('user_id', user.id)
+            .range(from, from + PAGE - 1);
+          if (pageErr) break;
+          if (!pageData || pageData.length === 0) break;
+          userVotes.push(...pageData);
+          if (pageData.length < PAGE) break;
+          from += PAGE;
+        }
+        if (userVotes.length > 0) {
           const votedPollIds = userVotes.map(v => v.poll_id);
           votedPollSet = new Set([...votedPollSet, ...votedPollIds]);
 
