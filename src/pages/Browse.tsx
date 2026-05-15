@@ -13,6 +13,7 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import { usePollReactions } from '@/hooks/usePollReactions';
+import BrowseCard, { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
 
 interface DemoTag {
   emoji: string;
