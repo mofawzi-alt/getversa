@@ -22,6 +22,7 @@ import { getInsightTier } from '@/lib/streakGating';
 import HookMoment from '@/components/onboarding/HookMoment';
 import CampaignFeedbackModal from '@/components/poll/CampaignFeedbackModal';
 import { useCampaignFeedbackConfig } from '@/hooks/useCampaignFeedbackConfig';
+import { recordGuestVote } from '@/lib/guestVoteMigration';
 
 interface HeroPoll {
   id: string;
