@@ -108,7 +108,7 @@ function storyContent(story: UserStory, fallbackPoll?: any) {
           c.total_votes ? `${Number(c.total_votes).toLocaleString()} votes` : null,
         ].filter(Boolean).join('  ·  ') || undefined,
         bg: c.card_image || null,
-        emoji: '🧬',
+        emoji: resolveTasteStoryEmoji(c),
         label: 'Taste Profile',
         type: 'taste_profile' as const,
       };
