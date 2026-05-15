@@ -41,6 +41,13 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           onClick={() => navigate('/browse')}
         />
         <NavButton
+          path="/live-ask/new"
+          icon={Camera}
+          label="Live Ask"
+          active={location.pathname.startsWith('/live-ask')}
+          onClick={() => navigate('/live-ask/new')}
+        />
+        <NavButton
           path="/friends"
           icon={Users}
           label="Friends"
