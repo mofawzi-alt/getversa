@@ -796,7 +796,6 @@ function LiveDebatesList({
       className="snap-y snap-mandatory overflow-y-scroll overscroll-auto"
       style={{ height: cardHeight, willChange: 'transform' }}
     >
-    >
       {repeatedPolls.map(({ poll, loopIndex }) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
