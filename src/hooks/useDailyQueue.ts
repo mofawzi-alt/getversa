@@ -53,7 +53,7 @@ export function useDailyQueue() {
   });
 
   // Get IDs of voted polls from today's queue
-  const { data: votedQueueIds } = useQuery({
+  const { data: votedQueueIds, isLoading: isVotedQueueLoading } = useQuery({
     queryKey: ['daily-queue-voted', user?.id],
     queryFn: async () => {
       if (!user || !dailyQueue || dailyQueue.length === 0) return new Set<string>();
@@ -92,6 +92,7 @@ export function useDailyQueue() {
   const votedToday = votedQueueIds?.size || 0;
   const remainingToday = totalToday - votedToday;
   const allDone = totalToday > 0 && remainingToday <= 0;
+  const isQueueReady = !user || (!isQueueLoading && (queuePollIds.length === 0 || !!votedQueueIds));
 
   const invalidateQueue = () => {
     queryClient.invalidateQueries({ queryKey: ['daily-queue'] });
@@ -103,6 +104,8 @@ export function useDailyQueue() {
     queuePollIds,
     votedQueueIds,
     isQueueLoading,
+    isVotedQueueLoading,
+    isQueueReady,
     totalToday,
     votedToday,
     remainingToday,
