@@ -28,24 +28,7 @@ export default function AppHeader() {
 
           {/* Right side actions */}
           <div className="flex items-center gap-1">
-            {user && (
-              <button
-                onClick={() => navigate('/ask')}
-                className="p-2 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all"
-                aria-label="Ask Versa"
-              >
-                <Sparkles className="h-5 w-5" />
-              </button>
-            )}
-            {user && (
-              <button
-                onClick={() => navigate('/live-ask/new')}
-                className="p-2 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all"
-                aria-label="Ask the Crowd"
-              >
-                <Camera className="h-5 w-5" />
-              </button>
-            )}
+            {/* Ask & Live Ask buttons moved to BottomNav / FloatingAskButton */}
             {user && (
               <button
                 onClick={() => setSearchOpen(true)}
