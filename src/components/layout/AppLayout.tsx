@@ -10,9 +10,10 @@ interface AppLayoutProps {
   children: ReactNode;
   hideNav?: boolean;
   disablePullToRefresh?: boolean;
+  flushBottom?: boolean;
 }
 
-export default function AppLayout({ children, hideNav, disablePullToRefresh }: AppLayoutProps) {
+export default function AppLayout({ children, hideNav, disablePullToRefresh, flushBottom }: AppLayoutProps) {
   const queryClient = useQueryClient();
   useDuelAutoOpen();
   const safeTopInset = 'max(env(safe-area-inset-top), 1.75rem)';
@@ -24,7 +25,7 @@ export default function AppLayout({ children, hideNav, disablePullToRefresh }: A
   }, [queryClient]);
 
   return (
-    <div className="min-h-screen pb-20 relative bg-background">
+    <div className={`min-h-screen ${flushBottom ? '' : 'pb-20'} relative bg-background`}>
       {!hideNav && <AppHeader />}
       <main
         className="relative z-10"
@@ -37,7 +38,7 @@ export default function AppLayout({ children, hideNav, disablePullToRefresh }: A
             {children}
           </PullToRefresh>
         )}
-        <LegalFooter />
+        {!flushBottom && <LegalFooter />}
       </main>
       {!hideNav && <BottomNav />}
     </div>

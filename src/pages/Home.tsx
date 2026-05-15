@@ -1721,7 +1721,7 @@ export default function Home() {
   };
 
   return (
-    <AppLayout disablePullToRefresh>
+    <AppLayout disablePullToRefresh flushBottom>
       {/* App Tutorial for new visitors */}
       {showTutorial && (
         <AppTutorial onComplete={() => setShowTutorial(false)} />
