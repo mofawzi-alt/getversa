@@ -47,16 +47,16 @@ const EXACT_CATEGORY_ICONS: Record<string, LucideIcon> = {
 
 /** Tailwind color hint per category (used for chips/badges) */
 export const CATEGORY_COLOR: Record<string, string> = {
-  'fmcg & food': 'bg-green-100 text-green-700',
-  'beauty & personal care': 'bg-pink-100 text-pink-700',
-  'financial services': 'bg-blue-100 text-blue-700',
-  'media & entertainment': 'bg-amber-100 text-amber-700',
-  'retail & e-commerce': 'bg-purple-100 text-purple-700',
-  'telco & tech': 'bg-teal-100 text-teal-700',
-  'food delivery & dining': 'bg-orange-100 text-orange-700',
-  'automotive & mobility': 'bg-gray-100 text-gray-700',
-  'lifestyle & society': 'bg-rose-100 text-rose-700',
-  'the pulse': 'bg-red-100 text-red-700',
+  'fmcg & food': 'bg-green-200 text-green-900 ring-1 ring-green-300/60',
+  'beauty & personal care': 'bg-pink-200 text-pink-900 ring-1 ring-pink-300/60',
+  'financial services': 'bg-blue-200 text-blue-900 ring-1 ring-blue-300/60',
+  'media & entertainment': 'bg-amber-200 text-amber-900 ring-1 ring-amber-300/60',
+  'retail & e-commerce': 'bg-purple-200 text-purple-900 ring-1 ring-purple-300/60',
+  'telco & tech': 'bg-teal-200 text-teal-900 ring-1 ring-teal-300/60',
+  'food delivery & dining': 'bg-orange-200 text-orange-900 ring-1 ring-orange-300/60',
+  'automotive & mobility': 'bg-slate-200 text-slate-900 ring-1 ring-slate-300/60',
+  'lifestyle & society': 'bg-rose-200 text-rose-900 ring-1 ring-rose-300/60',
+  'the pulse': 'bg-red-200 text-red-900 ring-1 ring-red-300/60',
 };
 
 const KEYWORD_FALLBACK: Array<{ keywords: string[]; icon: LucideIcon }> = [
