@@ -2,6 +2,7 @@ import { Share2, Check, X, Send, Trophy, Sparkles, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { usePollReactions } from '@/hooks/usePollReactions';
+import { getCategoryColorClass, mapToVersaCategory } from '@/lib/categoryMeta';
 
 export interface DemoTag {
   emoji: string;
@@ -177,24 +178,47 @@ export default function BrowseCard({
     ? 'bg-muted text-foreground hover:bg-muted/80'
     : 'bg-white/10 backdrop-blur-md text-white';
 
+  // Image used to bleed into the card surface (so the pic feels like the whole card)
+  const surfaceImg = poll.image_a_url || poll.image_b_url || winnerImg;
+  const categoryColorClass = poll.category ? getCategoryColorClass(mapToVersaCategory(poll.category)) : chipBg;
+
   return (
     <div
-      className={`h-full w-full flex flex-col relative ${surfaceBg} overflow-hidden`}
+      className={`h-full w-full flex flex-col relative overflow-hidden`}
       style={{
         WebkitFontSmoothing: 'antialiased',
         // @ts-ignore
         MozOsxFontSmoothing: 'grayscale',
       }}
     >
+      {/* Blurred image background — makes the picture feel like it fills the whole card */}
+      {surfaceImg ? (
+        <div aria-hidden className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div
+            className="absolute inset-0 scale-125"
+            style={{
+              backgroundImage: `url(${surfaceImg})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'blur(40px) saturate(1.25)',
+              opacity: 0.6,
+            }}
+          />
+          <div className={`absolute inset-0 ${isLight ? 'bg-background/72' : 'bg-[#0B0B0C]/78'} backdrop-blur-2xl`} />
+        </div>
+      ) : (
+        <div className={`absolute inset-0 z-0 ${surfaceBg}`} />
+      )}
+
       {/* Optional eyebrow row (badges, friends voted, etc.) */}
       {topSlot && (
-        <div className={`shrink-0 px-4 pt-3 ${surfaceBg} z-20 relative`}>
+        <div className={`shrink-0 px-4 pt-3 z-20 relative`}>
           {topSlot}
         </div>
       )}
 
       {/* TOP BAR */}
-      <div className={`shrink-0 px-4 ${topSlot ? 'pt-2' : 'pt-4'} pb-3 ${surfaceBg} z-20 relative`}>
+      <div className={`shrink-0 px-4 ${topSlot ? 'pt-2' : 'pt-4'} pb-3 z-20 relative`}>
         <p
           className={`font-display font-bold text-[22px] leading-[1.15] ${titleColor} pr-12`}
           style={{ letterSpacing: '-0.01em' }}
@@ -203,7 +227,7 @@ export default function BrowseCard({
         </p>
         <div className="flex items-center gap-2 mt-2">
           {poll.category && (
-            <span className={`inline-flex items-center px-2.5 py-1 rounded-full ${chipBg} text-[12px] font-semibold tracking-wide`}>
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full ${categoryColorClass} text-[12px] font-semibold tracking-wide`}>
               {poll.category}
             </span>
           )}
@@ -229,7 +253,7 @@ export default function BrowseCard({
       </div>
 
       {/* MIDDLE */}
-      <div className="flex-1 relative overflow-hidden min-h-0 bg-black">
+      <div className="flex-1 relative overflow-hidden min-h-0 bg-black z-10">
         {isDivided ? (
           <>
             <div className="absolute inset-0 flex">
@@ -364,10 +388,32 @@ export default function BrowseCard({
             </div>
           </div>
         )}
+
+        {/* Small % split bar at the bottom of the picture */}
+        <div className="absolute left-0 right-0 bottom-0 z-30 pointer-events-none">
+          <div className="h-1.5 w-full flex bg-black/40">
+            <div
+              className="h-full bg-option-a transition-all duration-700"
+              style={{ width: `${poll.percentA}%` }}
+            />
+            <div
+              className="h-full bg-option-b transition-all duration-700"
+              style={{ width: `${poll.percentB}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between px-3 py-1 bg-gradient-to-t from-black/70 to-transparent">
+            <span className="text-[11px] font-extrabold text-white tabular-nums drop-shadow">
+              <span className="text-option-a">●</span> {poll.percentA}%
+            </span>
+            <span className="text-[11px] font-extrabold text-white tabular-nums drop-shadow">
+              {poll.percentB}% <span className="text-option-b">●</span>
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* BOTTOM */}
-      <div className={`shrink-0 ${surfaceBg} px-4 pt-3 pb-3 space-y-2 border-t ${borderTop}`}>
+      <div className={`shrink-0 relative z-10 px-4 pt-3 pb-3 space-y-2 border-t ${borderTop}`}>
         {poll.demoTags.length > 0 ? (
           <div className="flex flex-wrap gap-x-2.5 gap-y-1.5">
             {poll.demoTags.map((tag, i) => (
