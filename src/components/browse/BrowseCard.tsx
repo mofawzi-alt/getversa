@@ -172,8 +172,8 @@ export default function BrowseCard({
   const subText = isLight ? 'text-muted-foreground' : 'text-white/55';
   const borderTop = isLight ? 'border-border/40' : 'border-white/5';
   const tagBg = isLight ? 'bg-muted text-foreground/80' : 'bg-white/8 text-white/90';
-  const loserText = isLight ? 'text-muted-foreground' : 'text-white/55';
-  const loserPrefix = isLight ? 'text-muted-foreground/70' : 'text-white/40';
+  const loserText = isLight ? 'text-foreground' : 'text-foreground';
+  const loserPrefix = isLight ? 'text-foreground/70' : 'text-foreground/70';
   const shareBtn = isLight
     ? 'bg-muted text-foreground hover:bg-muted/80'
     : 'bg-white/10 backdrop-blur-md text-white';
