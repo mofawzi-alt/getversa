@@ -98,14 +98,14 @@ export function FireReactionButton({ pollId }: { pollId: string }) {
         }
         toggle();
       }}
-      className={`min-w-10 h-10 px-2 rounded-full backdrop-blur-sm border flex items-center justify-center gap-1 transition-all ${
+      className={`min-w-9 h-9 px-1.5 rounded-full backdrop-blur-sm border flex items-center justify-center gap-1 transition-all ${
         reacted
           ? 'bg-orange-500/20 border-orange-500/40 text-orange-500 scale-110'
           : 'bg-background/80 border-border/50 text-foreground hover:bg-orange-500/10'
       }`}
       aria-label={reacted ? 'Remove fire reaction' : 'Add fire reaction'}
     >
-      <Flame className={`h-4 w-4 ${reacted ? 'fill-current' : ''}`} />
+      <Flame className={`h-3.5 w-3.5 ${reacted ? 'fill-current' : ''}`} />
       {count > 0 && (
         <span className="text-[10px] font-bold tabular-nums">
           {count > 999 ? `${(count / 1000).toFixed(1)}k` : count}
@@ -342,15 +342,15 @@ export default function BrowseCard({
           </>
         )}
 
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-20">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-20">
           {extraSideAction}
           {isSignedIn && onSendToFriend && (
             <button
               onClick={(e) => { e.stopPropagation(); onSendToFriend(); }}
-              className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl active:scale-95 transition-transform"
+              className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl active:scale-95 transition-transform"
               aria-label="Send in chat"
             >
-              <Send className="h-[18px] w-[18px]" />
+              <Send className="h-[14px] w-[14px]" />
             </button>
           )}
           <FireReactionButton pollId={poll.id} />
