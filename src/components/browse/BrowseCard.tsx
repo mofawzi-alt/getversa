@@ -179,33 +179,40 @@ export default function BrowseCard({
 
   return (
     <div
-      className="h-full w-full flex flex-col relative bg-[#0B0B0C] overflow-hidden"
+      className={`h-full w-full flex flex-col relative ${surfaceBg} overflow-hidden`}
       style={{
         WebkitFontSmoothing: 'antialiased',
         // @ts-ignore
         MozOsxFontSmoothing: 'grayscale',
       }}
     >
+      {/* Optional eyebrow row (badges, friends voted, etc.) */}
+      {topSlot && (
+        <div className={`shrink-0 px-4 pt-3 ${surfaceBg} z-20 relative`}>
+          {topSlot}
+        </div>
+      )}
+
       {/* TOP BAR */}
-      <div className="shrink-0 px-4 pt-4 pb-3 bg-[#0B0B0C] z-20 relative">
+      <div className={`shrink-0 px-4 ${topSlot ? 'pt-2' : 'pt-4'} pb-3 ${surfaceBg} z-20 relative`}>
         <p
-          className="font-display font-bold text-[22px] leading-[1.15] text-white pr-12"
+          className={`font-display font-bold text-[22px] leading-[1.15] ${titleColor} pr-12`}
           style={{ letterSpacing: '-0.01em' }}
         >
           {poll.question}
         </p>
         <div className="flex items-center gap-2 mt-2">
           {poll.category && (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/10 text-white/85 text-[12px] font-semibold tracking-wide">
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full ${chipBg} text-[12px] font-semibold tracking-wide`}>
               {poll.category}
             </span>
           )}
           {poll.isClosed && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 text-white/85 text-[12px] font-semibold">
+            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${chipBg} text-[12px] font-semibold`}>
               🔒 Closed
             </span>
           )}
-          <span className="ml-auto text-[12px] font-semibold text-white/55 tabular-nums">
+          <span className={`ml-auto text-[12px] font-semibold ${subText} tabular-nums`}>
             {poll.totalVotes.toLocaleString()} votes
           </span>
         </div>
@@ -213,7 +220,7 @@ export default function BrowseCard({
         {onShare && (
           <button
             onClick={(e) => { e.stopPropagation(); onShare(); }}
-            className="absolute top-3.5 right-3 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform"
+            className={`absolute ${topSlot ? 'top-1' : 'top-3.5'} right-3 w-10 h-10 rounded-full ${shareBtn} flex items-center justify-center active:scale-95 transition-transform`}
             aria-label="Share"
           >
             <Share2 className="h-[18px] w-[18px]" />
