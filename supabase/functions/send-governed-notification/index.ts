@@ -79,6 +79,7 @@ serve(async (req) => {
             user_ids: [p.user_id],
             skip_in_app: true,
             notification_type: p.notification_type,
+            governance_checked: true,
           }),
         });
       } catch (e) {
@@ -86,13 +87,13 @@ serve(async (req) => {
       }
     }
 
-    // 4. Log
+    // 4. Log (include title so the 6h duplicate guard can match)
     await supabase.rpc("log_notification_sent", {
       p_user_id: p.user_id,
       p_notification_type: p.notification_type,
       p_priority: p.priority ?? 99,
       p_channel: "in_app",
-      p_data: p.data ?? {},
+      p_data: { ...(p.data ?? {}), title: p.title },
     });
 
     return new Response(JSON.stringify({ sent: true, displaced_id: gate.displaced_id ?? null }), {
