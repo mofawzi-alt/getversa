@@ -1076,8 +1076,9 @@ export default function Home() {
   const isOnboardingFeed = voteCount < ONBOARDING_VOTE_TARGET;
 
   const { data: polls, isLoading } = useQuery({
-    queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, queuePollIds.join('|'), isOnboardingFeed, Array.from(votedPollIds || []).join('|')],
+    queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, queuePollIds.join('|'), Array.from(votedQueueIds || []).join('|'), isQueueReady, isOnboardingFeed, Array.from(votedPollIds || []).join('|')],
     queryFn: async () => {
+      if (user && !isQueueReady) return [];
       return withQueryTimeout(async () => {
         const now = new Date().toISOString();
         const pollSelect = 'id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries, option_a_tag, option_b_tag, tags, is_hot_take';
@@ -1169,7 +1170,7 @@ export default function Home() {
           }
         }
 
-        const queueSet = new Set(queuePollIds);
+        const queueSet = new Set(queuePollIds.filter(id => !votedPollIds?.has(id) && !votedQueueIds?.has(id)));
         let prioritized = mergedPolls;
         if (profile) {
           const matched: typeof mergedPolls = [];
@@ -1215,7 +1216,7 @@ export default function Home() {
           prioritized = [...matched, ...others];
         }
 
-        const selectedPolls = prioritized.filter((p, index) => index < 100 || queueSet.has(p.id));
+        const selectedPolls = prioritized.filter((p, index) => !votedPollIds?.has(p.id) && (index < 100 || queueSet.has(p.id)));
         const pollIds = selectedPolls.map(p => p.id);
         if (pollIds.length === 0) return [];
 
