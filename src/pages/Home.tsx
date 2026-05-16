@@ -789,61 +789,23 @@ function LiveDebatesList({
   }, [exitImmersive]);
 
 
-  // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
-  const [cycles, setCycles] = useState(1);
+  // Show each poll only once — no repetition (was causing "repetitive" feel)
+  const cycles = 1;
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // Immersive mode — only ENTER via explicit user scroll inside the cards
+  // (handled by the scroller's onScroll below). Do NOT auto-enter or auto-exit
+  // based on the wrapper's intersection ratio: on iOS, momentum/bounce scroll
+  // toggles intersection ratios unpredictably and was snapping the page back
+  // to the top mid-browse. Exit is handled by the explicit pull-down gesture,
+  // the X / back-to-top button, and the Home-tab tap listener.
   useEffect(() => {
-    if (!sentinelRef.current || displayLivePolls.length === 0) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setCycles((prev) => Math.min(prev + 1, 3));
-        }
-      },
-      { rootMargin: '600px' },
-    );
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [displayLivePolls.length]);
-
-  // Immersive mode — when the Live Debates wrapper enters the viewport, pin the
-  // cards container fixed to the screen and hide the AppHeader. This gives a
-  // true TikTok-style full-screen feel regardless of stories/headings above.
-  useEffect(() => {
-    if (!wrapperRef.current) return;
-    const el = wrapperRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const e = entries[0];
-        if (!e) return;
-        const active = e.intersectionRatio >= 0.5;
-        // Only auto-enter immersive when the user has actually scrolled the
-        // page down past the header/stories. This prevents the app from
-        // landing on the live-debate card on initial open.
-        if (active && window.scrollY < 80) {
-          if (immersive) {
-            setImmersive(false);
-            setImmersiveMode(false);
-          }
-          return;
-        }
-        if (active && Date.now() < suppressEnterUntilRef.current) return;
-        setImmersive(active);
-        setImmersiveMode(active);
-      },
-      { threshold: [0, 0.25, 0.5, 0.75, 1] },
-    );
-    observer.observe(el);
-    return () => {
-      observer.disconnect();
-      setImmersiveMode(false);
-    };
+    return () => { setImmersiveMode(false); };
   }, []);
 
   // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {
-    displayLivePolls.slice(0, 4).forEach((p, idx) => {
+    displayLivePolls.slice(0, 8).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
         if (!url) return;
         const img = new Image();
