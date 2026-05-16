@@ -764,6 +764,26 @@ function LiveDebatesList({
     return () => observer.disconnect();
   }, [livePolls.length]);
 
+  // Immersive mode — when the Live Debates section fills the viewport, hide the
+  // global AppHeader so cards feel truly full-screen (TikTok-style).
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const el = containerRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0];
+        if (!e) return;
+        setImmersiveMode(e.intersectionRatio >= 0.6);
+      },
+      { threshold: [0, 0.3, 0.6, 0.9, 1] },
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      setImmersiveMode(false);
+    };
+  }, []);
+
   // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {
     livePolls.slice(0, 6).forEach((p, idx) => {
