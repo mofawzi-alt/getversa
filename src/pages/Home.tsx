@@ -703,6 +703,7 @@ function LiveDebatesList({
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
+  const { postStory } = useUserStories();
 
   const handleInlineVote = useCallback(async (poll: PollCard, choice: 'A' | 'B') => {
     if (!user) {
