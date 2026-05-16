@@ -839,8 +839,14 @@ function LiveDebatesList({
   // If there are no live polls, render nothing.
   if (displayLivePolls.length === 0) return null;
 
+  // Fits between AppHeader (3.5rem + safe-area-top + 0.5rem padding) and BottomNav (4rem + safe-area-bottom)
+  const cardHeight = 'calc(100dvh - 8rem - env(safe-area-inset-top) - env(safe-area-inset-bottom))';
+
   return (
-    <div className="w-full bg-background -mx-3 sm:mx-0">
+    <div
+      className="w-full bg-background -mx-3 sm:mx-0 snap-y snap-mandatory overflow-y-auto"
+      style={{ scrollSnapType: 'y mandatory', height: cardHeight }}
+    >
       {displayLivePolls.map((poll, index) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
@@ -880,8 +886,10 @@ function LiveDebatesList({
           </div>
         ) : null;
 
-        const handleAddToStory = user
-          ? () => {
+        const addToStory = user ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
               postStory({
                 story_type: 'poll_result',
                 content: {
@@ -900,8 +908,13 @@ function LiveDebatesList({
                 },
                 image_url: poll.image_a_url || poll.image_b_url,
               });
-            }
-          : undefined;
+            }}
+            aria-label="Add to your story"
+            className="w-9 h-9 rounded-full bg-muted text-foreground hover:bg-muted/80 flex items-center justify-center active:scale-95 transition-transform"
+          >
+            <BookOpen className="h-[14px] w-[14px]" />
+          </button>
+        ) : null;
 
         const handleClick = () => {
           if (!hasVoted) {
@@ -916,31 +929,24 @@ function LiveDebatesList({
         };
 
         return (
-          <LiveDebateStoryCard
+          <div
             key={poll.id}
-            poll={{
-              id: poll.id,
-              question: poll.question,
-              option_a: poll.option_a,
-              option_b: poll.option_b,
-              image_a_url: poll.image_a_url,
-              image_b_url: poll.image_b_url,
-              category: poll.category,
-              ends_at: poll.ends_at,
-              totalVotes: poll.totalVotes ?? 0,
-              percentA: poll.percentA ?? 0,
-              percentB: poll.percentB ?? 0,
-            }}
-            hasVoted={hasVoted}
-            userChoice={userChoice}
-            topSlot={topSlot}
-            onAddToStory={handleAddToStory}
-            onClick={handleClick}
-            onShare={() => handleShare(poll)}
-            onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
-            eagerImage={index < 2}
-            height="100svh"
-          />
+            className="snap-start snap-always"
+            style={{ scrollSnapAlign: 'start', height: cardHeight }}
+          >
+            <BrowseCard
+              poll={toBrowsePoll(poll)}
+              userChoice={userChoice}
+              isActive={index === 0}
+              isSignedIn={!!user}
+              onVote={handleClick}
+              onShare={() => handleShare(poll)}
+              onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
+              topSlot={topSlot}
+              extraSideAction={addToStory}
+              eagerImages={index < 2}
+            />
+          </div>
         );
       })}
 
