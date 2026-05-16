@@ -917,7 +917,7 @@ function LiveDebatesList({
             hasVoted={hasVoted}
             userChoice={userChoice}
             topSlot={topSlot}
-            extraSideAction={extraSideAction}
+            onAddToStory={handleAddToStory}
             onClick={handleClick}
             onShare={() => handleShare(poll)}
             onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
