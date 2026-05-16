@@ -25,7 +25,7 @@ interface Props {
   userChoice?: string | null;
   topSlot?: ReactNode;
   extraSideAction?: ReactNode;
-  demoTags?: string[];
+  demoTags?: Array<{ emoji: string; label: string; choice: 'A' | 'B' }>;
   showBackToTop?: boolean;
   onBackToTop?: () => void;
   onClick: () => void;
