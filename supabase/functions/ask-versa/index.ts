@@ -1438,22 +1438,22 @@ CRITICAL RULES:
       }).join("\n");
 
       const researchLevelInstructions = askLevel <= 1
-        ? `Reply with ONLY a JSON object: {"verdict": "1-2 sentences max. Lead with the strongest number."}
-Rules: Real numbers only. No fluff. Max 25 words total.`
+        ? `Reply with ONLY a JSON object: {"verdict": "2-3 punchy sentences. Lead with strongest number, then 1 sharp pattern. Max 40 words."}
+Rules: Real numbers only. No fluff.`
         : `Reply ONLY with valid JSON, no markdown, no backticks.
 {
-  "verdict": "1-2 punchy sentences max. Lead with the strongest concrete number. Max 25 words.",
-  ${highlightCount >= 1 ? `"highlight_1": "Max 12 words. The most unexpected demographic split. 'Wait, really?' energy.",` : ""}
-  ${highlightCount >= 2 ? `"highlight_2": "Max 12 words. Second contrast from a different angle.",` : ""}
-  "cultural_context": "Max 12 words. One emotional link to Egyptian social reality.",
-  "action_line": "Max 10 words. The strategic takeaway."
+  "verdict": "2-3 punchy sentences. Lead with strongest number, then sharpest pattern. Max 40 words.",
+  ${highlightCount >= 1 ? `"highlight_1": "Max 20 words. The most unexpected demographic split with real numbers. 'Wait, really?' energy.",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "Max 20 words. Second contrast from a DIFFERENT angle (age vs gender vs city).",` : ""}
+  "cultural_context": "Max 20 words. One emotional link to Egyptian social reality. Concrete.",
+  "action_line": "Max 15 words. The strategic takeaway with a hint of why."
 }
 
 CRITICAL RULES:
-- BREVITY IS EVERYTHING. Max 12 words per field. This is mobile, not a PDF.
-- Surface the most surprising finding first.
-- NEVER tables, lists, multi-sentence fields, or "In summary" / "Overall" language.
-- Think viral tweet with real data, not research paper.`;
+- Verdict 40 words MAX. Highlights 20 words MAX. Action 15 words MAX. Mobile, not a PDF.
+- Surface the most surprising finding first, then explain.
+- NEVER tables, lists, or "In summary"/"Overall" language.
+- Think viral thread with real data — sharp, specific, surprising.`;
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
