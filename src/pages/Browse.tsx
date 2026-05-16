@@ -445,6 +445,7 @@ export default function Browse() {
                   onVote={() => handleVote(poll.id)}
                   onShare={() => share(poll)}
                   onSendToFriend={() => setShareToFriendPoll(poll)}
+                  eagerImages={i < 2}
                 />
               </div>
             </div>
