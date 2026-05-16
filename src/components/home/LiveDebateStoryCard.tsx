@@ -56,12 +56,17 @@ export default function LiveDebateStoryCard({
   height,
 }: Props) {
   // Pick the dominant image (winning side) as the full-bleed background, fallback to either.
+  const dominantSide: 'A' | 'B' = poll.percentA >= poll.percentB ? 'A' : 'B';
   const bgImageSrc = useMemo(() => {
-    const dominantSide: 'A' | 'B' = poll.percentA >= poll.percentB ? 'A' : 'B';
     const primary = dominantSide === 'A' ? poll.image_a_url : poll.image_b_url;
     const fallback = dominantSide === 'A' ? poll.image_b_url : poll.image_a_url;
-    return getPollDisplayImageSrc(primary || fallback || '');
-  }, [poll]);
+    return getPollDisplayImageSrc({
+      imageUrl: primary || fallback,
+      option: dominantSide === 'A' ? poll.option_a : poll.option_b,
+      question: poll.question,
+      side: dominantSide,
+    });
+  }, [poll, dominantSide]);
 
   const [imgLoaded, setImgLoaded] = useState(false);
   const timeLeft = formatTimeLeft(poll.ends_at);
