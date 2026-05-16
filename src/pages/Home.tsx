@@ -789,23 +789,9 @@ function LiveDebatesList({
   }, [exitImmersive]);
 
 
-  // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
-  const [cycles, setCycles] = useState(1);
+  // Show each poll only once — no repetition (was causing "repetitive" feel)
+  const cycles = 1;
   const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!sentinelRef.current || displayLivePolls.length === 0) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setCycles((prev) => Math.min(prev + 1, 3));
-        }
-      },
-      { rootMargin: '600px' },
-    );
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [displayLivePolls.length]);
 
   // Immersive mode — when the Live Debates wrapper enters the viewport, pin the
   // cards container fixed to the screen and hide the AppHeader. This gives a
