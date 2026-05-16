@@ -164,7 +164,7 @@ export default function Browse() {
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
-        .limit(liveFilter ? 100 : 80);
+        .limit(liveFilter ? 60 : 40);
 
       if (pollsError) throw pollsError;
       if (!polls || polls.length === 0) return [];
@@ -174,20 +174,9 @@ export default function Browse() {
       if (resultsError) throw resultsError;
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
 
-      const sampleIds = pollIds.slice(0, 30);
-      const { data: demoVotes, error: demoVotesError } = await supabase
-        .from('votes')
-        .select('poll_id, choice, voter_gender, voter_age_range, voter_city')
-        .in('poll_id', sampleIds)
-        .limit(1000);
-
-      if (demoVotesError) throw demoVotesError;
-
+      // Demo tags are nice-to-have — skip the heavy votes query on initial load
+      // to dramatically speed up Browse cold-start. Cards still render with %.
       const demoMap = new Map<string, any[]>();
-      demoVotes?.forEach(v => {
-        if (!demoMap.has(v.poll_id)) demoMap.set(v.poll_id, []);
-        demoMap.get(v.poll_id)!.push(v);
-      });
 
       let enriched = polls.map(p => {
         const r = resultsMap.get(p.id) as any;
