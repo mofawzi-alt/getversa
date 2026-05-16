@@ -1010,6 +1010,7 @@ function LiveDebatesList({
           onOpenChange={(open) => { if (!open) setShareSheetPoll(null); }}
         />
       )}
+      </div>
     </div>
   );
 }
