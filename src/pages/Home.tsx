@@ -955,6 +955,7 @@ function LiveDebatesList({
             exitImmersive();
           }
         }}
+        onTouchMove={(e) => {
           const el = scrollerRef.current;
           if (!el) return;
           const startY = (el as any)._touchStartY ?? 0;
