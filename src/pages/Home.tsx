@@ -23,6 +23,7 @@ import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import BrowseCard, { computeDemoTags, type BrowsePoll } from '@/components/browse/BrowseCard';
 import LiveDebateStoryCard from '@/components/home/LiveDebateStoryCard';
+import { useUserStories } from '@/hooks/useUserStories';
 import { setImmersiveMode } from '@/lib/immersiveMode';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -702,6 +703,7 @@ function LiveDebatesList({
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
+  const { postStory } = useUserStories();
 
   const handleInlineVote = useCallback(async (poll: PollCard, choice: 'A' | 'B') => {
     if (!user) {
@@ -1057,6 +1059,24 @@ function LiveDebatesList({
             onClick={handleClick}
             onShare={() => handleShare(poll)}
             onSendToFriend={() => setShareSheetPoll(poll)}
+            onAddToStory={user ? () => postStory({
+              story_type: 'poll_result',
+              content: {
+                poll_id: poll.id,
+                question: poll.question,
+                option_a: poll.option_a,
+                option_b: poll.option_b,
+                pct_a: poll.percentA ?? 0,
+                pct_b: poll.percentB ?? 0,
+                total_votes: poll.totalVotes ?? 0,
+                winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
+                winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
+                image_a_url: poll.image_a_url,
+                image_b_url: poll.image_b_url,
+                image_url: poll.image_a_url || poll.image_b_url,
+              },
+              image_url: poll.image_a_url || poll.image_b_url,
+            }) : undefined}
             eagerImage={loopIndex < 2}
             height={cardHeight}
           />

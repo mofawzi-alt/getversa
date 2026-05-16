@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Send, Share2, Clock, ChevronUp, BarChart3 } from 'lucide-react';
+import { Users, Send, Share2, Clock, ChevronUp, BarChart3, CirclePlus } from 'lucide-react';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
@@ -31,6 +31,7 @@ interface Props {
   onClick: () => void;
   onShare?: () => void;
   onSendToFriend?: () => void;
+  onAddToStory?: () => void;
   eagerImage?: boolean;
   height: string;
 }
@@ -58,6 +59,7 @@ export default function LiveDebateStoryCard({
   onClick,
   onShare,
   onSendToFriend,
+  onAddToStory,
   eagerImage,
   height,
 }: Props) {
@@ -177,6 +179,16 @@ export default function LiveDebateStoryCard({
             className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform shadow-lg"
           >
             <Send className="w-[16px] h-[16px]" />
+          </button>
+        )}
+        {onAddToStory && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAddToStory(); }}
+            aria-label="Add to your story"
+            title="Add to your story"
+            className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+          >
+            <CirclePlus className="w-[16px] h-[16px]" />
           </button>
         )}
         {onShare && (
