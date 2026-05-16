@@ -22,9 +22,6 @@ import { mapToVersaCategory } from '@/lib/categoryMeta';
 import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import BrowseCard, { computeDemoTags, type BrowsePoll } from '@/components/browse/BrowseCard';
-import LiveDebateStoryCard from '@/components/home/LiveDebateStoryCard';
-import { useUserStories } from '@/hooks/useUserStories';
-import { setImmersiveMode } from '@/lib/immersiveMode';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
@@ -711,10 +708,8 @@ function LiveDebatesList({
     return Array.from(uniquePolls.values());
   }, [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
-  const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
-  const { postStory } = useUserStories();
 
   const handleInlineVote = useCallback(async (poll: PollCard, choice: 'A' | 'B') => {
     if (!user) {
@@ -753,70 +748,15 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient, navigate]);
 
-  // Full-screen TikTok-style: cards container pins itself fixed to the viewport
-  // when scrolled into view, covering anything above (stories, headings, padding).
-  // Only the bottom nav remains visible.
-  const cardHeight = 'calc(100svh - 4rem - env(safe-area-inset-bottom))';
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const [immersive, setImmersive] = useState(false);
-  // Suppress auto-entering immersive mode on initial mount so the app always
-  // lands on the header/stories, not pinned into the first live-debate card.
-  const suppressEnterUntilRef = useRef<number>(Date.now() + 1500);
-  const userScrolledRef = useRef<boolean>(false);
-
+  // Preload first live-debate card images so the first scrolls feel instant.
   useEffect(() => {
-    const onScroll = () => { userScrolledRef.current = true; };
-    window.addEventListener('scroll', onScroll, { passive: true, once: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  // Exit immersive mode and scroll the page up to reveal stories/header
-  const exitImmersive = useCallback(() => {
-    setImmersive(false);
-    setImmersiveMode(false);
-    if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
-    // Block auto re-entry from the scroll handler for a moment
-    suppressEnterUntilRef.current = Date.now() + 800;
-    // Jump immediately, then smooth-scroll for polish
-    window.scrollTo({ top: 0, behavior: 'auto' });
-    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  }, []);
-
-  // Enter immersive mode and pin the live-debate cards to the viewport
-  const enterImmersive = useCallback(() => {
-    if (!wrapperRef.current) return;
-    wrapperRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setImmersive(true);
-    setImmersiveMode(true);
-  }, []);
-
-  // Listen for Home-tab tap → always return to the very top + reveal header
-  useEffect(() => {
-    const handler = () => exitImmersive();
-    window.addEventListener('versa:home-scroll-top', handler);
-    return () => window.removeEventListener('versa:home-scroll-top', handler);
-  }, [exitImmersive]);
-
-  // Immersive mode — only ENTER via explicit user scroll inside the cards
-  // (handled by the scroller's onScroll below). Do NOT auto-enter or auto-exit
-  // based on the wrapper's intersection ratio: on iOS, momentum/bounce scroll
-  // toggles intersection ratios unpredictably and was snapping the page back
-  // to the top mid-browse. Exit is handled by the explicit pull-down gesture,
-  // the X / back-to-top button, and the Home-tab tap listener.
-  useEffect(() => {
-    return () => { setImmersiveMode(false); };
-  }, []);
-
-  // Preload first 6 live-debate cards' images so the first scrolls feel instant.
-  useEffect(() => {
-    displayLivePolls.slice(0, 8).forEach((p, idx) => {
+    displayLivePolls.slice(0, 6).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
         if (!url) return;
         const img = new Image();
         img.decoding = 'async';
         if (idx < 2) (img as any).fetchPriority = 'high';
-        img.src = getOptimizedPollImageSrc(url, { width: 900, height: 1200, quality: idx < 2 ? 74 : 68 }) || url;
+        img.src = getOptimizedPollImageSrc(url, { width: 700, height: 900, quality: idx < 2 ? 74 : 68 }) || url;
       });
     });
   }, [displayLivePolls]);
@@ -893,51 +833,11 @@ function LiveDebatesList({
     }
   }, []);
 
-  // If there are no live polls, render nothing — avoid a 100svh black void.
+  // If there are no live polls, render nothing.
   if (displayLivePolls.length === 0) return null;
 
   return (
-    <div
-      ref={wrapperRef}
-      className={`relative w-full ${immersive ? 'bg-black' : 'bg-background'}`}
-      style={{ height: cardHeight }}
-    >
-      <div
-        ref={scrollerRef}
-        onTouchStart={(e) => {
-          (scrollerRef.current as any)._touchStartY = e.touches[0]?.clientY ?? 0;
-        }}
-        onWheel={(e) => {
-          const el = scrollerRef.current;
-          if (!el) return;
-          // Desktop/trackpad: at top of cards + scrolling up → exit immersive
-          if (immersive && el.scrollTop <= 0 && e.deltaY < -10) {
-            exitImmersive();
-          }
-        }}
-        onTouchMove={(e) => {
-          const el = scrollerRef.current;
-          if (!el) return;
-          const startY = (el as any)._touchStartY ?? 0;
-          const dy = (e.touches[0]?.clientY ?? 0) - startY;
-          // At very top + clear pull-down → exit immersive and reveal stories/header
-          if (el.scrollTop <= 0 && dy > 60 && immersive) {
-            exitImmersive();
-          }
-        }}
-        onScroll={() => {
-          const el = scrollerRef.current;
-          if (!el) return;
-          if (Date.now() < suppressEnterUntilRef.current) return;
-          if (el.scrollTop > 8 && !immersive) {
-            enterImmersive();
-          }
-        }}
-        className={`overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch] left-0 right-0 top-0 ${
-          immersive ? 'fixed z-30' : 'absolute'
-        }`}
-        style={{ height: cardHeight, willChange: 'transform' }}
-      >
+    <div className="w-full bg-background px-3 py-3 space-y-4">
       {displayLivePolls.map((poll, index) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
@@ -956,18 +856,18 @@ function LiveDebatesList({
 
         let badgeLabel: string | null = null;
         let badgeIcon: React.ReactNode = <Flame className="h-3.5 w-3.5 text-destructive" />;
-        let badgeColor = 'text-white';
+        let badgeColor = 'text-foreground';
         if (isHotTake) {
           badgeLabel = 'Hot Take';
         } else if (isTrending) {
           badgeLabel = 'Trending';
-          badgeIcon = <TrendingUp className="h-3.5 w-3.5 text-primary-foreground" />;
+          badgeIcon = <TrendingUp className="h-3.5 w-3.5 text-primary" />;
         } else if (closingSoon) {
           badgeLabel = 'Closing Soon';
           badgeIcon = <Timer className="h-3.5 w-3.5 text-amber-300" />;
         } else if (isNew) {
           badgeLabel = 'New';
-          badgeIcon = <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />;
+          badgeIcon = <Sparkles className="h-3.5 w-3.5 text-primary" />;
         }
 
         const topSlot = badgeLabel ? (
@@ -977,7 +877,30 @@ function LiveDebatesList({
           </div>
         ) : null;
 
-        const extraSideAction = null;
+        const extraSideAction = user ? (
+          <div onClick={(e) => e.stopPropagation()}>
+            <ShareToStoryButton
+              storyType="poll_result"
+              content={{
+                poll_id: poll.id,
+                question: poll.question,
+                option_a: poll.option_a,
+                option_b: poll.option_b,
+                pct_a: poll.percentA ?? 0,
+                pct_b: poll.percentB ?? 0,
+                total_votes: poll.totalVotes ?? 0,
+                winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
+                winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
+                image_a_url: poll.image_a_url,
+                image_b_url: poll.image_b_url,
+                image_url: poll.image_a_url || poll.image_b_url,
+              }}
+              imageUrl={poll.image_a_url || poll.image_b_url}
+              variant="icon"
+              className="h-7 w-7 bg-primary text-primary-foreground hover:bg-primary/90"
+            />
+          </div>
+        ) : null;
 
         const handleClick = () => {
           if (!hasVoted) {
@@ -992,52 +915,26 @@ function LiveDebatesList({
         };
 
         return (
-          <LiveDebateStoryCard
+          <div
             key={poll.id}
-            poll={{
-              id: poll.id,
-              question: poll.question,
-              option_a: poll.option_a,
-              option_b: poll.option_b,
-              image_a_url: poll.image_a_url,
-              image_b_url: poll.image_b_url,
-              category: poll.category,
-              ends_at: poll.ends_at,
-              totalVotes: poll.totalVotes,
-              percentA: poll.percentA,
-              percentB: poll.percentB,
-            }}
-            hasVoted={hasVoted}
-            userChoice={userChoice}
-            topSlot={topSlot}
-            extraSideAction={extraSideAction}
-            demoTags={computeDemoTags(demoMap?.get(poll.id) || [], Math.max(poll.percentA, poll.percentB), poll.percentA >= poll.percentB ? 'A' : 'B')}
-            showBackToTop={index === 0 && immersive}
-            onBackToTop={exitImmersive}
             onClick={handleClick}
-            onShare={() => handleShare(poll)}
-            onSendToFriend={() => setShareSheetPoll(poll)}
-            onAddToStory={user ? () => postStory({
-              story_type: 'poll_result',
-              content: {
-                poll_id: poll.id,
-                question: poll.question,
-                option_a: poll.option_a,
-                option_b: poll.option_b,
-                pct_a: poll.percentA ?? 0,
-                pct_b: poll.percentB ?? 0,
-                total_votes: poll.totalVotes ?? 0,
-                winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
-                winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
-                image_a_url: poll.image_a_url,
-                image_b_url: poll.image_b_url,
-                image_url: poll.image_a_url || poll.image_b_url,
-              },
-              image_url: poll.image_a_url || poll.image_b_url,
-            }) : undefined}
-            eagerImage={index < 2}
-            height={cardHeight}
-          />
+            className="h-[min(620px,calc(100svh-8rem))] min-h-[500px] overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm active:scale-[0.995] transition-transform"
+          >
+            <BrowseCard
+              poll={toBrowsePoll(poll)}
+              userChoice={userChoice}
+              isActive
+              isSignedIn={!!user}
+              onVote={hasVoted ? undefined : () => handleClick()}
+              onShare={() => handleShare(poll)}
+              onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
+              hideVotePrompt={hasVoted}
+              theme="light"
+              topSlot={topSlot}
+              extraSideAction={extraSideAction}
+              eagerImages={index < 2}
+            />
+          </div>
         );
       })}
 
@@ -1054,7 +951,6 @@ function LiveDebatesList({
           onOpenChange={(open) => { if (!open) setShareSheetPoll(null); }}
         />
       )}
-      </div>
     </div>
   );
 }
