@@ -16,6 +16,7 @@ import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteSc
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
+import { useUserStories } from '@/hooks/useUserStories';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
@@ -710,6 +711,7 @@ function LiveDebatesList({
   }, [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
   const { user, profile } = useAuth();
+  const { postStory } = useUserStories();
   const queryClient = useQueryClient();
 
   const handleInlineVote = useCallback(async (poll: PollCard, choice: 'A' | 'B') => {
@@ -878,30 +880,28 @@ function LiveDebatesList({
           </div>
         ) : null;
 
-        const extraSideAction = user ? (
-          <div onClick={(e) => e.stopPropagation()}>
-            <ShareToStoryButton
-              storyType="poll_result"
-              content={{
-                poll_id: poll.id,
-                question: poll.question,
-                option_a: poll.option_a,
-                option_b: poll.option_b,
-                pct_a: poll.percentA ?? 0,
-                pct_b: poll.percentB ?? 0,
-                total_votes: poll.totalVotes ?? 0,
-                winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
-                winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
-                image_a_url: poll.image_a_url,
-                image_b_url: poll.image_b_url,
+        const handleAddToStory = user
+          ? () => {
+              postStory({
+                story_type: 'poll_result',
+                content: {
+                  poll_id: poll.id,
+                  question: poll.question,
+                  option_a: poll.option_a,
+                  option_b: poll.option_b,
+                  pct_a: poll.percentA ?? 0,
+                  pct_b: poll.percentB ?? 0,
+                  total_votes: poll.totalVotes ?? 0,
+                  winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
+                  winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
+                  image_a_url: poll.image_a_url,
+                  image_b_url: poll.image_b_url,
+                  image_url: poll.image_a_url || poll.image_b_url,
+                },
                 image_url: poll.image_a_url || poll.image_b_url,
-              }}
-              imageUrl={poll.image_a_url || poll.image_b_url}
-              variant="icon"
-              className="h-7 w-7 bg-primary text-primary-foreground hover:bg-primary/90"
-            />
-          </div>
-        ) : null;
+              });
+            }
+          : undefined;
 
         const handleClick = () => {
           if (!hasVoted) {
@@ -934,7 +934,7 @@ function LiveDebatesList({
             hasVoted={hasVoted}
             userChoice={userChoice}
             topSlot={topSlot}
-            extraSideAction={extraSideAction}
+            onAddToStory={handleAddToStory}
             onClick={handleClick}
             onShare={() => handleShare(poll)}
             onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
