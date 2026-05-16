@@ -181,6 +181,16 @@ export default function LiveDebateStoryCard({
             <Send className="w-[16px] h-[16px]" />
           </button>
         )}
+        {onAddToStory && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAddToStory(); }}
+            aria-label="Add to your story"
+            title="Add to your story"
+            className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+          >
+            <CirclePlus className="w-[16px] h-[16px]" />
+          </button>
+        )}
         {onShare && (
           <button
             onClick={(e) => { e.stopPropagation(); onShare(); }}
