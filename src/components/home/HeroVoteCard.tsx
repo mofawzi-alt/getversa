@@ -835,7 +835,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-x-0 bottom-3 z-30 flex justify-center pointer-events-none"
+              className="absolute inset-x-0 top-1/2 -translate-y-[52px] z-30 flex justify-center pointer-events-none"
             >
               <motion.div
                 animate={{ x: [-6, 6, -6] }}
