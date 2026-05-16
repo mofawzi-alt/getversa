@@ -930,6 +930,13 @@ function LiveDebatesList({
             exitImmersive();
           }
         }}
+        onScroll={() => {
+          const el = scrollerRef.current;
+          if (!el) return;
+          if (el.scrollTop > 8 && !immersive) {
+            enterImmersive();
+          }
+        }}
         className={`overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch] left-0 right-0 top-0 ${
           immersive ? 'fixed z-30' : 'absolute'
         }`}
