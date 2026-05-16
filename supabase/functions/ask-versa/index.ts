@@ -191,18 +191,34 @@ serve(async (req) => {
     const body = await req.json();
     const {
       question,
-      mode = "decide",
+      mode: rawMode,
       viewer,
       history,
       stage = "preview", // "preview" or "confirm"
     } = body as {
       question?: string;
-      mode?: "decide" | "research";
+      mode?: "decide" | "research" | "auto";
       viewer?: { age_range?: string; city?: string; gender?: string; ask_level?: number };
       history?: Array<{ role: "user" | "assistant"; content: string }>;
       stage?: "preview" | "confirm";
     };
     const askLevel = viewer?.ask_level ?? 4; // default to full access if not provided
+
+    // ---- Auto-route mode from question shape ----
+    // "X or Y?", "vs", explicit comparison, 2+ entities → decide (pick a side).
+    // Otherwise → research (broader sentiment exploration).
+    const autoDetectMode = (q: string): "decide" | "research" => {
+      const ql = (q || "").toLowerCase();
+      const hasComparison = /\b(or|vs|versus|ولا)\b/.test(ql) || /\?\s*$/.test(ql.trim());
+      const isShort = ql.trim().split(/\s+/).length <= 8;
+      const exploratory = /\b(how (do|are|much|many)|what (do|are)|why|feel|think about|trends?|patterns?|sentiment|divided|attitude|culture|differences?)\b/.test(ql);
+      if (exploratory && !hasComparison) return "research";
+      if (hasComparison || isShort) return "decide";
+      return "research";
+    };
+    const mode: "decide" | "research" = (rawMode === "decide" || rawMode === "research")
+      ? rawMode
+      : autoDetectMode(question || "");
 
     if (!question || typeof question !== "string" || question.trim().length < 3) {
       return new Response(JSON.stringify({ error: "Please ask a fuller question." }), {
@@ -934,7 +950,7 @@ Examples:
       matchedPolls.sort((a: any, b: any) => (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
     }
 
-    matchedPolls = matchedPolls.slice(0, mode === "decide" ? 3 : 12);
+    matchedPolls = matchedPolls.slice(0, mode === "decide" ? 5 : 12);
 
     // ---- 3b. Relevance validation ----
     // Check if matched polls ACTUALLY answer the user's question.
@@ -1315,24 +1331,24 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
 
     // Build level-appropriate prompt instructions
     const levelInstructions = askLevel <= 1
-      ? `Reply with ONLY a JSON object: {"verdict": "Max 12 words. The % + winner. Example: '68% of Egyptians pick Coke.'"}
-Rules: ONE sentence. Real numbers only. No fluff.`
+      ? `Reply with ONLY a JSON object: {"verdict": "Max 25 words. Lead with the % + winner, then one short reason. Example: '68% of Egyptians pick Coke — the nostalgia factor still wins, even with Gen Z.'"}
+Rules: 1-2 sentences. Real numbers only. No fluff.`
       : `Reply ONLY with valid JSON, no markdown, no backticks.
 {
-  "verdict": "Max 12 words. The headline number. Example: '72% picked Nike — not even close.'",
-  ${highlightCount >= 1 ? `"highlight_1": "Max 12 words. One 'wait, really?' demographic contrast. Example: 'But Cairo women went the opposite way.'",` : ""}
-  ${highlightCount >= 2 ? `"highlight_2": "Max 12 words. A second contrast from a DIFFERENT angle. Example: 'Under-25s were the most divided group.'",` : ""}
-  "cultural_context": "Max 12 words. One emotional connection to Egyptian identity. Not academic.",
-  "action_line": "Max 8 words. Direct pick. Example: 'Go with Nike. Egypt agrees.'"
+  "verdict": "Max 25 words. The headline number + one sharp reason. Example: '72% picked Nike — Adidas only wins with men over 35 who care about heritage.'",
+  ${highlightCount >= 1 ? `"highlight_1": "Max 20 words. One 'wait, really?' demographic contrast with real numbers. Example: 'But Cairo women flipped — 58% chose Adidas, the only group that did.'",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "Max 20 words. A second contrast from a DIFFERENT angle (age, city, gender). Example: 'Under-25s split 50/50 — older Egyptians decided this poll.'",` : ""}
+  "cultural_context": "Max 20 words. One emotional connection to Egyptian identity. Concrete, not academic.",
+  "action_line": "Max 12 words. Direct pick. Example: 'Go with Nike — Egypt agrees, especially Cairo Gen Z.'"
 }
 
 CRITICAL RULES:
-- EVERY field: MAX 12 WORDS. Shorter is better. This is a mobile screen, not an essay.
+- Verdict 25 words MAX. Highlights 20 words MAX. Action 12 words MAX. This is mobile, not an essay.
 - The goal is "wait, really?" — surprise, contrast, identity tension.
 - Lead with real numbers. Never vague.
-- NEVER tables, lists, or multi-sentence fields.
+- NEVER tables, lists, or 3+ sentence fields.
 - NEVER "In conclusion", "Overall", "Based on analysis". Just the insight.
-- Think viral tweet, not report paragraph.`;
+- Think viral tweet with sharp insight, not report paragraph.`;
 
     if (mode === "decide") {
       const top = matchedPolls[0];
@@ -1422,22 +1438,22 @@ CRITICAL RULES:
       }).join("\n");
 
       const researchLevelInstructions = askLevel <= 1
-        ? `Reply with ONLY a JSON object: {"verdict": "1-2 sentences max. Lead with the strongest number."}
-Rules: Real numbers only. No fluff. Max 25 words total.`
+        ? `Reply with ONLY a JSON object: {"verdict": "2-3 punchy sentences. Lead with strongest number, then 1 sharp pattern. Max 40 words."}
+Rules: Real numbers only. No fluff.`
         : `Reply ONLY with valid JSON, no markdown, no backticks.
 {
-  "verdict": "1-2 punchy sentences max. Lead with the strongest concrete number. Max 25 words.",
-  ${highlightCount >= 1 ? `"highlight_1": "Max 12 words. The most unexpected demographic split. 'Wait, really?' energy.",` : ""}
-  ${highlightCount >= 2 ? `"highlight_2": "Max 12 words. Second contrast from a different angle.",` : ""}
-  "cultural_context": "Max 12 words. One emotional link to Egyptian social reality.",
-  "action_line": "Max 10 words. The strategic takeaway."
+  "verdict": "2-3 punchy sentences. Lead with strongest number, then sharpest pattern. Max 40 words.",
+  ${highlightCount >= 1 ? `"highlight_1": "Max 20 words. The most unexpected demographic split with real numbers. 'Wait, really?' energy.",` : ""}
+  ${highlightCount >= 2 ? `"highlight_2": "Max 20 words. Second contrast from a DIFFERENT angle (age vs gender vs city).",` : ""}
+  "cultural_context": "Max 20 words. One emotional link to Egyptian social reality. Concrete.",
+  "action_line": "Max 15 words. The strategic takeaway with a hint of why."
 }
 
 CRITICAL RULES:
-- BREVITY IS EVERYTHING. Max 12 words per field. This is mobile, not a PDF.
-- Surface the most surprising finding first.
-- NEVER tables, lists, multi-sentence fields, or "In summary" / "Overall" language.
-- Think viral tweet with real data, not research paper.`;
+- Verdict 40 words MAX. Highlights 20 words MAX. Action 15 words MAX. Mobile, not a PDF.
+- Surface the most surprising finding first, then explain.
+- NEVER tables, lists, or "In summary"/"Overall" language.
+- Think viral thread with real data — sharp, specific, surprising.`;
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [

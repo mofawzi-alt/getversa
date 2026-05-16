@@ -204,7 +204,7 @@ export default function Ask() {
 
     try {
       const { data, error } = await supabase.functions.invoke('ask-versa', {
-        body: { question: previewData.question, mode: previewData.mode, viewer, history: previewData.history, stage: 'confirm' },
+        body: { question: previewData.question, mode: 'auto', viewer, history: previewData.history, stage: 'confirm' },
       });
       if (error) throw error;
       if (data?.error) {
@@ -250,7 +250,7 @@ export default function Ask() {
 
     try {
       const { data, error } = await supabase.functions.invoke('ask-versa', {
-        body: { question, mode, viewer, history, stage: 'preview' },
+        body: { question, mode: 'auto', viewer, history, stage: 'preview' },
       });
       if (error) throw error;
       if (data?.error) { toast.error(data.error); return; }
@@ -347,31 +347,6 @@ export default function Ask() {
                 <RotateCcw className="h-3.5 w-3.5" />
               </button>
             )}
-          </div>
-        </div>
-
-        {/* Mode toggle */}
-        <div className="px-3 pb-2 w-full min-w-0 max-w-lg mx-auto overflow-hidden">
-          <div className="relative grid grid-cols-2 gap-1 p-1 rounded-full bg-muted/60 w-full min-w-0">
-            {/* Sliding indicator — uses left percentage for reliability */}
-            <motion.div
-              className={`absolute top-1 bottom-1 rounded-full shadow-lg ${isDecide ? 'bg-primary' : 'bg-foreground/90'}`}
-              style={{ width: 'calc(50% - 4px)' }}
-              animate={{ left: isDecide ? '4px' : 'calc(50% + 0px)' }}
-              transition={{ type: 'spring', damping: 20, stiffness: 250 }}
-            />
-            <button
-              onClick={() => switchMode('decide')}
-              className={`relative z-10 h-8 rounded-full text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors duration-200 min-w-0 ${isDecide ? 'text-primary-foreground' : 'text-muted-foreground'}`}
-            >
-              <Scale className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Decide</span>
-            </button>
-            <button
-              onClick={() => switchMode('research')}
-              className={`relative z-10 h-8 rounded-full text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors duration-200 min-w-0 ${!isDecide ? 'text-background' : 'text-muted-foreground'}`}
-            >
-              <FlaskConical className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Research</span>
-            </button>
           </div>
         </div>
       </div>
