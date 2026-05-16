@@ -1001,25 +1001,7 @@ function LiveDebatesList({
           </div>
         ) : null;
 
-        const extraSideAction = hasVoted && user ? (
-          <div onClick={(e) => e.stopPropagation()}>
-            <ShareToStoryButton
-              storyType="poll_result"
-              variant="icon"
-              imageUrl={poll.image_a_url || poll.image_b_url}
-              content={{
-                poll_id: poll.id,
-                question: poll.question,
-                option_a: poll.option_a,
-                option_b: poll.option_b,
-                user_choice: userChoice,
-                percent_a: poll.percentA,
-                percent_b: poll.percentB,
-              }}
-              className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white p-0 flex items-center justify-center [&_svg]:!h-4 [&_svg]:!w-4"
-            />
-          </div>
-        ) : null;
+        const extraSideAction = null;
 
         const handleClick = () => {
           if (!hasVoted) {
