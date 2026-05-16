@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Send, Share2, Clock } from 'lucide-react';
+import { Users, Send, Share2, Clock, ChevronUp } from 'lucide-react';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
@@ -25,6 +25,9 @@ interface Props {
   userChoice?: string | null;
   topSlot?: ReactNode;
   extraSideAction?: ReactNode;
+  demoTags?: Array<{ emoji: string; label: string; choice: 'A' | 'B' }>;
+  showBackToTop?: boolean;
+  onBackToTop?: () => void;
   onClick: () => void;
   onShare?: () => void;
   onSendToFriend?: () => void;
@@ -49,6 +52,9 @@ export default function LiveDebateStoryCard({
   userChoice,
   topSlot,
   extraSideAction,
+  demoTags,
+  showBackToTop,
+  onBackToTop,
   onClick,
   onShare,
   onSendToFriend,
@@ -137,6 +143,21 @@ export default function LiveDebateStoryCard({
         </div>
       )}
 
+      {/* BACK-TO-TOP pill — appears in immersive mode so users can return to header/stories */}
+      {showBackToTop && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onBackToTop?.();
+          }}
+          aria-label="Back to top"
+          className="absolute top-[calc(max(env(safe-area-inset-top),12px)+44px)] left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[11px] font-bold shadow-lg active:scale-95 transition-transform"
+        >
+          <ChevronUp className="w-3.5 h-3.5" />
+          Stories
+        </button>
+      )}
+
       {/* BOTTOM CONTENT BLOCK */}
       <div className="absolute inset-x-0 bottom-0 px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-6 z-10 flex flex-col gap-3">
         {/* Question */}
@@ -198,7 +219,22 @@ export default function LiveDebateStoryCard({
           )}
         </div>
 
-        {/* CTA row — Vote Now + Send + Share */}
+        {/* Demographic teasers — who's voting which way (e.g. "Women 65%", "18-24 lean A") */}
+        {demoTags && demoTags.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {demoTags.slice(0, 3).map((tag, i) => (
+              <span
+                key={`${tag.label}-${i}`}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/12 backdrop-blur-md border border-white/15 text-white text-[11px] font-semibold"
+              >
+                <span aria-hidden>{tag.emoji}</span>
+                <span>{tag.label}</span>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* CTA row — Vote Now (or Full Breakdown if voted) + Send + Share */}
         <div className="flex items-center gap-2 mt-1">
           <button
             onClick={(e) => {
@@ -207,7 +243,7 @@ export default function LiveDebateStoryCard({
             }}
             className="flex-1 h-12 rounded-full bg-primary text-primary-foreground font-extrabold text-[15px] shadow-[0_6px_24px_hsl(var(--primary)/0.5)] active:scale-[0.98] transition-transform"
           >
-            {hasVoted ? 'See Results →' : 'Vote Now →'}
+            {hasVoted ? 'Full Breakdown →' : 'Vote Now →'}
           </button>
           {onSendToFriend && (
             <button

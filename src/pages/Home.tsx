@@ -745,7 +745,16 @@ function LiveDebatesList({
   // Only the bottom nav remains visible.
   const cardHeight = 'calc(100svh - 4rem - env(safe-area-inset-bottom))';
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const [immersive, setImmersive] = useState(false);
+
+  // Exit immersive mode and scroll the page up to reveal stories/header
+  const exitImmersive = useCallback(() => {
+    setImmersive(false);
+    setImmersiveMode(false);
+    if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
   const [cycles, setCycles] = useState(1);
@@ -891,6 +900,20 @@ function LiveDebatesList({
       style={{ height: '100svh' }}
     >
       <div
+        ref={scrollerRef}
+        onTouchStart={(e) => {
+          (scrollerRef.current as any)._touchStartY = e.touches[0]?.clientY ?? 0;
+        }}
+        onTouchMove={(e) => {
+          const el = scrollerRef.current;
+          if (!el) return;
+          const startY = (el as any)._touchStartY ?? 0;
+          const dy = (e.touches[0]?.clientY ?? 0) - startY;
+          // At very top + clear pull-down → exit immersive and reveal stories/header
+          if (el.scrollTop <= 0 && dy > 60 && immersive) {
+            exitImmersive();
+          }
+        }}
         className={`overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch] left-0 right-0 top-0 ${
           immersive ? 'fixed z-30' : 'absolute'
         }`}
@@ -987,6 +1010,9 @@ function LiveDebatesList({
             userChoice={userChoice}
             topSlot={topSlot}
             extraSideAction={extraSideAction}
+            demoTags={computeDemoTags(demoMap?.get(poll.id) || [], Math.max(poll.percentA, poll.percentB), poll.percentA >= poll.percentB ? 'A' : 'B')}
+            showBackToTop={loopIndex === 0 && immersive}
+            onBackToTop={exitImmersive}
             onClick={handleClick}
             onShare={() => handleShare(poll)}
             onSendToFriend={() => setShareSheetPoll(poll)}
