@@ -253,13 +253,13 @@ export default function LiveDebateStoryCard({
 
         {/* Demographic teasers */}
         {demoTags && demoTags.length > 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             {demoTags.slice(0, 3).map((tag, i) => (
               <span
                 key={`${tag.label}-${i}`}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/12 backdrop-blur-md border border-white/15 text-white text-[11px] font-semibold"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/25 backdrop-blur-md border border-white/40 text-white text-[13px] font-bold shadow-lg drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
               >
-                <span aria-hidden>{tag.emoji}</span>
+                <span aria-hidden className="text-[15px]">{tag.emoji}</span>
                 <span>{tag.label}</span>
               </span>
             ))}
