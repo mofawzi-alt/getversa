@@ -765,18 +765,21 @@ function LiveDebatesList({
     return () => observer.disconnect();
   }, [livePolls.length]);
 
-  // Immersive mode — when the Live Debates section fills the viewport, hide the
-  // global AppHeader so cards feel truly full-screen (TikTok-style).
+  // Immersive mode — when the Live Debates wrapper enters the viewport, pin the
+  // cards container fixed to the screen and hide the AppHeader. This gives a
+  // true TikTok-style full-screen feel regardless of stories/headings above.
   useEffect(() => {
-    if (!containerRef.current) return;
-    const el = containerRef.current;
+    if (!wrapperRef.current) return;
+    const el = wrapperRef.current;
     const observer = new IntersectionObserver(
       (entries) => {
         const e = entries[0];
         if (!e) return;
-        setImmersiveMode(e.intersectionRatio >= 0.6);
+        const active = e.intersectionRatio >= 0.5;
+        setImmersive(active);
+        setImmersiveMode(active);
       },
-      { threshold: [0, 0.3, 0.6, 0.9, 1] },
+      { threshold: [0, 0.25, 0.5, 0.75, 1] },
     );
     observer.observe(el);
     return () => {
