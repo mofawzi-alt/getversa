@@ -244,6 +244,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
       total: poll.totalVotes,
     });
 
+    // Start the result-display timer NOW (the moment the user sees the result),
+    // so the read time is consistent regardless of how slow the DB call is.
+    const voteShownAt = Date.now();
+
     // Check if this is the first vote of the day
     let firstVoteToday = false;
     const todayStart = new Date();
