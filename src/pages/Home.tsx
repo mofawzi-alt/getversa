@@ -22,6 +22,7 @@ import { mapToVersaCategory } from '@/lib/categoryMeta';
 import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import BrowseCard, { computeDemoTags, type BrowsePoll } from '@/components/browse/BrowseCard';
+import LiveDebateStoryCard from '@/components/home/LiveDebateStoryCard';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
@@ -858,15 +859,13 @@ function LiveDebatesList({
 
   return (
     <div
-      className="overflow-y-scroll [overscroll-behavior-y:auto] [-webkit-overflow-scrolling:touch]"
+      className="overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch]"
       style={{ height: cardHeight, willChange: 'transform' }}
     >
       {repeatedPolls.map(({ poll, loopIndex }) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
         const userChoice = voteData?.choice ?? null;
-        const browsePoll = toBrowsePoll(poll);
-        const friendsOnPoll = friendsByPoll?.[poll.id] || [];
         const isTrending = trendingIdSet?.has(poll.id) || false;
 
         // Build eyebrow (badge + friends voted) — same logic as old HomeLiveDebateCard
@@ -881,33 +880,24 @@ function LiveDebatesList({
 
         let badgeLabel: string | null = null;
         let badgeIcon: React.ReactNode = <Flame className="h-3.5 w-3.5 text-destructive" />;
-        let badgeColor = 'text-destructive';
-        let badgeBg = 'bg-destructive/10';
+        let badgeColor = 'text-white';
         if (isHotTake) {
           badgeLabel = 'Hot Take';
         } else if (isTrending) {
-          badgeLabel = 'Trending Now';
-          badgeIcon = <TrendingUp className="h-3.5 w-3.5 text-primary" />;
-          badgeColor = 'text-primary';
-          badgeBg = 'bg-primary/10';
+          badgeLabel = 'Trending';
+          badgeIcon = <TrendingUp className="h-3.5 w-3.5 text-primary-foreground" />;
         } else if (closingSoon) {
           badgeLabel = 'Closing Soon';
-          badgeIcon = <Timer className="h-3.5 w-3.5 text-amber-600" />;
-          badgeColor = 'text-amber-600';
-          badgeBg = 'bg-amber-500/10';
+          badgeIcon = <Timer className="h-3.5 w-3.5 text-amber-300" />;
         } else if (isNew) {
-          badgeLabel = 'New Poll';
-          badgeIcon = <Sparkles className="h-3.5 w-3.5 text-primary" />;
-          badgeColor = 'text-primary';
-          badgeBg = 'bg-primary/10';
+          badgeLabel = 'New';
+          badgeIcon = <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />;
         }
 
         const topSlot = badgeLabel ? (
-          <div className="flex items-center gap-2">
-            <div className={`h-7 w-7 rounded-full ${badgeBg} flex items-center justify-center`}>
-              {badgeIcon}
-            </div>
-            <span className={`text-[13px] font-bold ${badgeColor}`}>{badgeLabel}</span>
+          <div className="flex items-center gap-1.5">
+            {badgeIcon}
+            <span className={`text-[11px] font-extrabold uppercase tracking-wider ${badgeColor}`}>{badgeLabel}</span>
           </div>
         ) : null;
 
@@ -926,7 +916,7 @@ function LiveDebatesList({
                 percent_a: poll.percentA,
                 percent_b: poll.percentB,
               }}
-              className="w-9 h-9 rounded-full bg-card border border-border shadow-md p-0 flex items-center justify-center [&_svg]:!h-3.5 [&_svg]:!w-3.5"
+              className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white p-0 flex items-center justify-center [&_svg]:!h-4 [&_svg]:!w-4"
             />
           </div>
         ) : null;
@@ -944,25 +934,31 @@ function LiveDebatesList({
         };
 
         return (
-          <div
+          <LiveDebateStoryCard
             key={`${poll.id}-${loopIndex}`}
-            style={{ height: cardHeight }}
+            poll={{
+              id: poll.id,
+              question: poll.question,
+              option_a: poll.option_a,
+              option_b: poll.option_b,
+              image_a_url: poll.image_a_url,
+              image_b_url: poll.image_b_url,
+              category: poll.category,
+              ends_at: poll.ends_at,
+              totalVotes: poll.totalVotes,
+              percentA: poll.percentA,
+              percentB: poll.percentB,
+            }}
+            hasVoted={hasVoted}
+            userChoice={userChoice}
+            topSlot={topSlot}
+            extraSideAction={extraSideAction}
             onClick={handleClick}
-          >
-            <BrowseCard
-              poll={browsePoll}
-              userChoice={userChoice}
-              isActive={true}
-              isSignedIn={!!user}
-              hideVotePrompt
-              theme="light"
-              topSlot={topSlot}
-              onShare={() => handleShare(poll)}
-              onSendToFriend={() => setShareSheetPoll(poll)}
-              extraSideAction={extraSideAction}
-              eagerImages={loopIndex < 2}
-            />
-          </div>
+            onShare={() => handleShare(poll)}
+            onSendToFriend={() => setShareSheetPoll(poll)}
+            eagerImage={loopIndex < 2}
+            height={cardHeight}
+          />
         );
       })}
       <div ref={sentinelRef} className="h-1" />
