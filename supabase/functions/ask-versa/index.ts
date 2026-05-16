@@ -1026,38 +1026,10 @@ Examples:
     // E.g. "best restaurant in cairo" matching "Cairo vs Sahel" is NOT relevant.
     // We do a quick AI check on the top poll to verify semantic relevance.
     let relevanceOverride = false;
-    if (matchedPolls.length > 0 && cleanedEntities.length === 0) {
-      // No specific entities extracted — high risk of false matches.
-      // Check if the top poll's question/options have any semantic overlap with the user's intent.
-      const topPoll = matchedPolls[0];
-      const pollText = `${topPoll.question} | ${topPoll.option_a} vs ${topPoll.option_b}`;
-      
-      try {
-        const relResp = await callAI(LOVABLE_API_KEY, MODEL_FAST, {
-          messages: [
-            {
-              role: "system",
-              content: `You check if a poll result can meaningfully answer a user's question. Reply with ONLY "yes" or "no".
-"yes" = the poll directly addresses what the user is asking about (same topic, same entities, same comparison).
-"no" = the poll is about a different topic, even if they share a word (e.g. user asks about restaurants, poll asks about Cairo vs Sahel travel).
-Be strict. If in doubt, say "no".`,
-            },
-            { role: "user", content: `User's question: "${question}"\nTop matched poll: "${pollText}"` },
-          ],
-        });
-        if (relResp.ok) {
-          const rd = await readJsonSafely(relResp) || {};
-          const answer = (rd.choices?.[0]?.message?.content || "").trim().toLowerCase();
-          if (answer.startsWith("no")) {
-            console.log(`Relevance check FAILED: "${question}" vs "${pollText}" — switching to smart fallback`);
-            relevanceOverride = true;
-          }
-        }
-      } catch (e) {
-        console.error("Relevance check failed:", e);
-        // On error, continue with matched polls (don't block the answer)
-      }
-    }
+    // Relevance check intentionally disabled — it was rejecting genuinely related polls
+    // (e.g. "How do students feel about online learning?" matched "Online vs Real Life" and
+    // "private vs public school" but the AI gate marked them "not relevant"). Matcher
+    // filters + concept expansion are now strong enough to keep results on-topic.
 
     // If relevance check failed, provide a smart AI-powered answer instead of forcing irrelevant poll data
     if (relevanceOverride) {
