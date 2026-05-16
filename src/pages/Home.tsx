@@ -1929,18 +1929,7 @@ export default function Home() {
               : livePolls;
             return filteredLivePolls.length > 0 ? (
               <>
-                {/* Floating heading — overlay so it doesn't steal card height */}
-                <div className="absolute top-2 left-3 z-30 flex items-center gap-2 px-2.5 py-1 rounded-full bg-background/85 backdrop-blur-md border border-border/50 shadow-sm pointer-events-none">
-                  <motion.div
-                    animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="h-2 w-2 rounded-full bg-destructive"
-                  />
-                  <span className="text-[10px] font-display font-bold text-foreground uppercase tracking-wider">LIVE DEBATES</span>
-                  {filteredLivePolls.length > 0 && (
-                    <span className="text-[10px] text-muted-foreground">· {filteredLivePolls.length} active</span>
-                  )}
-                </div>
+                {/* Live debates section — no banner, cards speak for themselves */}
                 <LiveDebatesList
                   livePolls={filteredLivePolls}
                   votedPollIds={votedPollIds}
