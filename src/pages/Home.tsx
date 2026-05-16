@@ -699,7 +699,8 @@ function LiveDebatesList({
   setModalPoll: (p: PollCard) => void;
   navigate: (path: string) => void;
 }) {
-  const pollIds = useMemo(() => livePolls.map(p => p.id), [livePolls]);
+  const displayLivePolls = useMemo(() => livePolls.slice(0, 24), [livePolls]);
+  const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
@@ -793,7 +794,7 @@ function LiveDebatesList({
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!sentinelRef.current || livePolls.length === 0) return;
+    if (!sentinelRef.current || displayLivePolls.length === 0) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
@@ -804,7 +805,7 @@ function LiveDebatesList({
     );
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [livePolls.length]);
+  }, [displayLivePolls.length]);
 
   // Immersive mode — when the Live Debates wrapper enters the viewport, pin the
   // cards container fixed to the screen and hide the AppHeader. This gives a
@@ -842,7 +843,7 @@ function LiveDebatesList({
 
   // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {
-    livePolls.slice(0, 4).forEach((p, idx) => {
+    displayLivePolls.slice(0, 4).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
         if (!url) return;
         const img = new Image();
@@ -851,18 +852,18 @@ function LiveDebatesList({
         img.src = getOptimizedPollImageSrc(url, { width: 900, height: 1200, quality: idx < 2 ? 74 : 68 }) || url;
       });
     });
-  }, [livePolls]);
+  }, [displayLivePolls]);
 
   const repeatedPolls = useMemo(() => {
-    if (livePolls.length === 0) return [];
+    if (displayLivePolls.length === 0) return [];
     const result: Array<{ poll: PollCard; loopIndex: number }> = [];
     for (let c = 0; c < cycles; c++) {
-      for (let i = 0; i < livePolls.length; i++) {
-        result.push({ poll: livePolls[i], loopIndex: c * livePolls.length + i });
+      for (let i = 0; i < displayLivePolls.length; i++) {
+        result.push({ poll: displayLivePolls[i], loopIndex: c * displayLivePolls.length + i });
       }
     }
     return result;
-  }, [livePolls, cycles]);
+  }, [displayLivePolls, cycles]);
 
   // Fetch sample of demographic votes to compute demo tags (Browse-style)
   const { data: demoMap } = useQuery({
@@ -937,7 +938,7 @@ function LiveDebatesList({
   }, []);
 
   // If there are no live polls, render nothing — avoid a 100svh black void.
-  if (livePolls.length === 0) return null;
+  if (displayLivePolls.length === 0) return null;
 
   return (
     <div
