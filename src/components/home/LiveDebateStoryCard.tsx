@@ -94,6 +94,7 @@ export default function LiveDebateStoryCard({
     [bgImageSrc, eagerImage, fallbackImageSrc, videoFailed]
   );
   const shouldRenderVideo = !videoFailed && isVideoUrl(bgVideoSrc);
+  const mediaImageSrc = shouldRenderVideo ? fallbackImageSrc : bgDisplaySrc;
 
   const timeLeft = formatTimeLeft(poll.ends_at);
   const pctA = Math.round(poll.percentA || 0);
@@ -108,6 +109,18 @@ export default function LiveDebateStoryCard({
       onClick={onClick}
     >
       {/* Full-bleed background media */}
+      {mediaImageSrc ? (
+        <img
+          src={mediaImageSrc}
+          alt=""
+          loading={eagerImage ? 'eager' : 'lazy'}
+          decoding="async"
+          data-original-src={fallbackImageSrc}
+          {...(eagerImage ? { fetchpriority: 'high' as any } : {})}
+          onError={(e) => handlePollImageError(e, { option: dominantSide === 'A' ? poll.option_a : poll.option_b, question: poll.question, side: dominantSide })}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      ) : null}
       {shouldRenderVideo ? (
         <video
           src={bgVideoSrc || undefined}
@@ -119,17 +132,6 @@ export default function LiveDebateStoryCard({
           preload={eagerImage ? 'auto' : 'metadata'}
           poster={fallbackImageSrc}
           onError={() => setVideoFailed(true)}
-        />
-      ) : bgDisplaySrc ? (
-        <img
-          src={bgDisplaySrc}
-          alt=""
-          loading={eagerImage ? 'eager' : 'lazy'}
-          decoding="async"
-          data-original-src={fallbackImageSrc}
-          {...(eagerImage ? { fetchpriority: 'high' as any } : {})}
-          onError={(e) => handlePollImageError(e, { option: dominantSide === 'A' ? poll.option_a : poll.option_b, question: poll.question, side: dominantSide })}
-          className="absolute inset-0 w-full h-full object-cover"
         />
       ) : null}
       {/* Dark gradient overlay for legibility */}
