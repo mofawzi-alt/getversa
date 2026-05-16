@@ -938,6 +938,7 @@ function LiveDebatesList({
         onScroll={() => {
           const el = scrollerRef.current;
           if (!el) return;
+          if (Date.now() < suppressEnterUntilRef.current) return;
           if (el.scrollTop > 8 && !immersive) {
             enterImmersive();
           }
