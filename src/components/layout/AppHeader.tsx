@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Shield, Clock, Search } from 'lucide-react';
+import { Shield, Clock, Search, Sparkles } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
 import GlobalPollSearch from '@/components/search/GlobalPollSearch';
 
@@ -28,7 +28,16 @@ export default function AppHeader() {
 
           {/* Right side actions */}
           <div className="flex items-center gap-1">
-            {/* Ask & Live Ask buttons moved to BottomNav / FloatingAskButton */}
+            {user && (
+              <button
+                onClick={() => navigate('/ask')}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-primary text-primary-foreground active:scale-95 transition-transform"
+                aria-label="Ask Versa"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="text-[11px] font-bold">Ask</span>
+              </button>
+            )}
             {user && (
               <button
                 onClick={() => setSearchOpen(true)}
