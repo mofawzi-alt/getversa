@@ -160,7 +160,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
   useEffect(() => {
     if (!showHint) return;
-    const timer = setTimeout(() => setShowHint(false), 4000);
+    const timer = setTimeout(() => setShowHint(false), 5000);
     return () => clearTimeout(timer);
   }, [showHint]);
 
@@ -827,12 +827,9 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         </AnimatePresence>
       </motion.div>
 
-      {/* Below-card meta: swipe hint, category, skip */}
+      {/* Below-card meta: skip only (swipe hint is now an animated overlay on the card) */}
       {!result && !isVoting && (
-        <div className="flex flex-col items-center gap-1.5 mt-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
-            ← Swipe or tap to vote →
-          </div>
+        <div className="flex flex-col items-center mt-2">
           <button
             onClick={submitSkip}
             className="text-xs font-medium text-muted-foreground/80 hover:text-muted-foreground active:scale-95 transition-all px-3 py-1 rounded-full border border-border/40"
