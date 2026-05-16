@@ -806,6 +806,22 @@ function LiveDebatesList({
     return () => { setImmersiveMode(false); };
   }, []);
 
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const scroller = scrollerRef.current;
+    if (!sentinel || !scroller || displayLivePolls.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setCycles((current) => Math.min(current + 3, 40));
+      },
+      { root: scroller, rootMargin: '1600px 0px', threshold: 0.01 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [displayLivePolls.length, cycles]);
+
   // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {
     displayLivePolls.slice(0, 8).forEach((p, idx) => {
