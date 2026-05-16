@@ -19,13 +19,15 @@ export default function AppHeader() {
         style={{ paddingTop: safeTopInset, transform: 'translateZ(0)' }}
       >
         <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
-          {/* Logo */}
-          <button 
-            onClick={() => navigate(user ? '/home' : '/')}
-            className="flex items-center gap-2"
-          >
-            <VersaLogo size="sm" />
-          </button>
+          <div className="flex items-center gap-2 min-w-0">
+            <HeaderAvatarUploader />
+            <button
+              onClick={() => navigate(user ? '/home' : '/')}
+              className="flex items-center gap-2"
+            >
+              <VersaLogo size="sm" />
+            </button>
+          </div>
 
           {/* Right side actions */}
           <div className="flex items-center gap-1">
