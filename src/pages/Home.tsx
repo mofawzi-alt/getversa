@@ -16,6 +16,7 @@ import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteSc
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
+import { useUserStories } from '@/hooks/useUserStories';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
