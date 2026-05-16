@@ -1922,7 +1922,7 @@ export default function Home() {
 
 
         {/* ═══ 🔴 LIVE DEBATES ═══ */}
-        <section className="mb-3 bg-secondary/40 py-3">
+        <section className="page-snap-section mb-3 bg-secondary/40 py-3">
           <div className="px-3 flex items-center gap-2 mb-2">
             <motion.div
               animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
