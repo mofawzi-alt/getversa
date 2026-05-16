@@ -1010,6 +1010,9 @@ function LiveDebatesList({
             userChoice={userChoice}
             topSlot={topSlot}
             extraSideAction={extraSideAction}
+            demoTags={computeDemoTags(demoMap?.get(poll.id) || [], Math.max(poll.percentA, poll.percentB), poll.percentA >= poll.percentB ? 'A' : 'B')}
+            showBackToTop={loopIndex === 0 && immersive}
+            onBackToTop={exitImmersive}
             onClick={handleClick}
             onShare={() => handleShare(poll)}
             onSendToFriend={() => setShareSheetPoll(poll)}
