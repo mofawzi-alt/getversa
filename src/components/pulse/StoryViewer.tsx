@@ -387,12 +387,12 @@ export default function StoryViewer({
               </div>
             )}
 
-            <div className="absolute inset-x-0 bottom-24 px-5 text-white text-center">
-              <h2 className="text-[clamp(1.6rem,4vw,2.25rem)] font-bold leading-tight mb-3 drop-shadow-lg text-balance">
+            <div className="absolute inset-x-0 bottom-24 top-24 px-5 text-white text-center flex flex-col justify-end overflow-hidden">
+              <h2 className="text-[clamp(1.25rem,3.6vw,1.75rem)] font-bold leading-tight mb-3 drop-shadow-lg text-balance line-clamp-3">
                 {card.headline}
               </h2>
               {card.primaryText && (
-                <p className="text-[clamp(2rem,6vw,3.25rem)] font-extrabold tracking-tight mb-2 drop-shadow-lg text-balance">
+                <p className="text-[clamp(1.25rem,3.8vw,1.875rem)] font-extrabold tracking-tight leading-tight mb-2 drop-shadow-lg text-balance line-clamp-3">
                   {card.primaryText}
                 </p>
               )}
