@@ -947,7 +947,14 @@ function LiveDebatesList({
         onTouchStart={(e) => {
           (scrollerRef.current as any)._touchStartY = e.touches[0]?.clientY ?? 0;
         }}
-        onTouchMove={(e) => {
+        onWheel={(e) => {
+          const el = scrollerRef.current;
+          if (!el) return;
+          // Desktop/trackpad: at top of cards + scrolling up → exit immersive
+          if (immersive && el.scrollTop <= 0 && e.deltaY < -10) {
+            exitImmersive();
+          }
+        }}
           const el = scrollerRef.current;
           if (!el) return;
           const startY = (el as any)._touchStartY ?? 0;
