@@ -224,10 +224,11 @@ export default function LiveDebateStoryCard({
           <div className="flex items-center gap-1.5 flex-wrap">
             {demoTags.slice(0, 3).map((tag, i) => (
               <span
-                key={`${tag}-${i}`}
-                className="px-2.5 py-1 rounded-full bg-white/12 backdrop-blur-md border border-white/15 text-white text-[11px] font-semibold"
+                key={`${tag.label}-${i}`}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/12 backdrop-blur-md border border-white/15 text-white text-[11px] font-semibold"
               >
-                {tag}
+                <span aria-hidden>{tag.emoji}</span>
+                <span>{tag.label}</span>
               </span>
             ))}
           </div>
