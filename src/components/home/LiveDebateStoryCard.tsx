@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Send, Share2, Clock, ChevronUp, BarChart3, CirclePlus } from 'lucide-react';
 import { getOptimizedPollImageSrc, getPollDisplayImageSrc, getPollImageFallbackSrc, handlePollImageError, resolvePollMediaUrl } from '@/lib/pollImages';
@@ -72,6 +72,9 @@ export default function LiveDebateStoryCard({
   // Pick the dominant image (winning side) as the full-bleed background, fallback to either.
   const dominantSide: 'A' | 'B' = poll.percentA >= poll.percentB ? 'A' : 'B';
   const [videoFailed, setVideoFailed] = useState(false);
+  const [videoVisible, setVideoVisible] = useState(Boolean(eagerImage));
+  const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const bgImageSrc = useMemo(() => {
     const primary = dominantSide === 'A' ? poll.image_a_url : poll.image_b_url;
     const fallback = dominantSide === 'A' ? poll.image_b_url : poll.image_a_url;
@@ -96,6 +99,30 @@ export default function LiveDebateStoryCard({
   const shouldRenderVideo = !videoFailed && isVideoUrl(bgVideoSrc);
   const mediaImageSrc = shouldRenderVideo ? fallbackImageSrc : bgDisplaySrc;
 
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node || !shouldRenderVideo) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setVideoVisible(entry.isIntersecting),
+      { threshold: 0.35, rootMargin: '120px 0px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [shouldRenderVideo]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !shouldRenderVideo) return;
+
+    if (videoVisible) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [shouldRenderVideo, videoVisible]);
+
   const timeLeft = formatTimeLeft(poll.ends_at);
   const pctA = Math.round(poll.percentA || 0);
   const pctB = Math.round(poll.percentB || 0);
@@ -104,6 +131,7 @@ export default function LiveDebateStoryCard({
 
   return (
     <div
+      ref={containerRef}
       style={{ height, backgroundColor: '#1a1a1a', backgroundImage: 'linear-gradient(135deg, #2a2a2a 0%, #0f0f0f 100%)' }}
       className="relative w-full snap-start snap-always overflow-hidden cursor-pointer select-none"
       onClick={onClick}
@@ -123,13 +151,14 @@ export default function LiveDebateStoryCard({
       ) : null}
       {shouldRenderVideo ? (
         <video
-          src={bgVideoSrc || undefined}
+          ref={videoRef}
+          src={videoVisible ? bgVideoSrc || undefined : undefined}
           className="absolute inset-0 w-full h-full object-cover"
           autoPlay
           loop
           muted
           playsInline
-          preload={eagerImage ? 'auto' : 'metadata'}
+          preload={eagerImage ? 'auto' : 'none'}
           poster={fallbackImageSrc}
           onError={() => setVideoFailed(true)}
         />
