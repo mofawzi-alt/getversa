@@ -219,7 +219,21 @@ export default function LiveDebateStoryCard({
           )}
         </div>
 
-        {/* CTA row — Vote Now + Send + Share */}
+        {/* Demographic teasers — who's voting which way (e.g. "Women 65%", "18-24 lean A") */}
+        {demoTags && demoTags.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {demoTags.slice(0, 3).map((tag, i) => (
+              <span
+                key={`${tag}-${i}`}
+                className="px-2.5 py-1 rounded-full bg-white/12 backdrop-blur-md border border-white/15 text-white text-[11px] font-semibold"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* CTA row — Vote Now (or Full Breakdown if voted) + Send + Share */}
         <div className="flex items-center gap-2 mt-1">
           <button
             onClick={(e) => {
@@ -228,7 +242,7 @@ export default function LiveDebateStoryCard({
             }}
             className="flex-1 h-12 rounded-full bg-primary text-primary-foreground font-extrabold text-[15px] shadow-[0_6px_24px_hsl(var(--primary)/0.5)] active:scale-[0.98] transition-transform"
           >
-            {hasVoted ? 'See Results →' : 'Vote Now →'}
+            {hasVoted ? 'Full Breakdown →' : 'Vote Now →'}
           </button>
           {onSendToFriend && (
             <button
