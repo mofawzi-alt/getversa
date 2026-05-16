@@ -878,30 +878,13 @@ function LiveDebatesList({
           </div>
         ) : null;
 
-        const extraSideAction = user ? (
-          <div onClick={(e) => e.stopPropagation()}>
-            <ShareToStoryButton
-              storyType="poll_result"
-              content={{
-                poll_id: poll.id,
-                question: poll.question,
-                option_a: poll.option_a,
-                option_b: poll.option_b,
-                pct_a: poll.percentA ?? 0,
-                pct_b: poll.percentB ?? 0,
-                total_votes: poll.totalVotes ?? 0,
-                winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
-                winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
-                image_a_url: poll.image_a_url,
-                image_b_url: poll.image_b_url,
-                image_url: poll.image_a_url || poll.image_b_url,
-              }}
-              imageUrl={poll.image_a_url || poll.image_b_url}
-              variant="icon"
-              className="h-7 w-7 bg-primary text-primary-foreground hover:bg-primary/90"
-            />
-          </div>
-        ) : null;
+        const handleAddToStory = user
+          ? () => {
+              // Hidden trigger renders a ShareToStoryButton off-screen; click it programmatically
+              const el = document.getElementById(`add-to-story-${poll.id}`);
+              (el?.querySelector('button') as HTMLButtonElement | null)?.click();
+            }
+          : undefined;
 
         const handleClick = () => {
           if (!hasVoted) {
