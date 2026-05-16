@@ -164,7 +164,7 @@ export default function Browse() {
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
-        .limit(liveFilter ? 100 : 80);
+        .limit(liveFilter ? 60 : 40);
 
       if (pollsError) throw pollsError;
       if (!polls || polls.length === 0) return [];
@@ -174,20 +174,9 @@ export default function Browse() {
       if (resultsError) throw resultsError;
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
 
-      const sampleIds = pollIds.slice(0, 30);
-      const { data: demoVotes, error: demoVotesError } = await supabase
-        .from('votes')
-        .select('poll_id, choice, voter_gender, voter_age_range, voter_city')
-        .in('poll_id', sampleIds)
-        .limit(1000);
-
-      if (demoVotesError) throw demoVotesError;
-
+      // Demo tags are nice-to-have — skip the heavy votes query on initial load
+      // to dramatically speed up Browse cold-start. Cards still render with %.
       const demoMap = new Map<string, any[]>();
-      demoVotes?.forEach(v => {
-        if (!demoMap.has(v.poll_id)) demoMap.set(v.poll_id, []);
-        demoMap.get(v.poll_id)!.push(v);
-      });
 
       let enriched = polls.map(p => {
         const r = resultsMap.get(p.id) as any;
@@ -241,12 +230,8 @@ export default function Browse() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Generate a daily seed that changes each calendar day + a per-visit jitter
-  const [sessionSeed] = useState(() => {
-    const today = new Date();
-    const daySeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-    return daySeed + Math.random(); // daily base + per-visit variation
-  });
+  // Per-visit random seed so the Browse feed reshuffles every time the user opens it.
+  const [sessionSeed] = useState(() => Math.random() * 1000000 + Date.now());
 
   const sortedFeed = useMemo(() => {
     if (!feedPolls || feedPolls.length === 0) return [];
@@ -261,8 +246,6 @@ export default function Browse() {
     };
 
     const votedIds = userVotes ? new Set(Array.from(userVotes.keys())) : new Set<string>();
-    const recencySort = <T extends { created_at: string; score: number }>(a: T, b: T) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime() || b.score - a.score;
 
     const diversifyByCategory = <T extends { category: string | null }>(items: T[]) => {
       const result: T[] = [];
@@ -283,18 +266,19 @@ export default function Browse() {
       const createdAt = new Date(p.created_at).getTime();
       const isToday = createdAt > h24Ago;
       const isRecent = createdAt > weekAgo;
-      const recencyScore = isToday ? 200 : isRecent ? 30 : 0;
-      const voteScore = Math.min(p.totalVotes / 10, 40);
-      const debateScore = p.totalVotes >= 5 ? (50 - Math.abs(p.percentA - 50)) * 0.6 : 0;
-      const randomBoost = (seededRandom(sessionSeed, i) - 0.5) * 70;
+      const recencyScore = isToday ? 80 : isRecent ? 20 : 0;
+      const voteScore = Math.min(p.totalVotes / 10, 30);
+      const debateScore = p.totalVotes >= 5 ? (50 - Math.abs(p.percentA - 50)) * 0.4 : 0;
+      // Big per-visit random boost so the feed order shuffles every time the user opens Browse.
+      const randomBoost = seededRandom(sessionSeed, i) * 200;
       return { ...p, score: recencyScore + voteScore + debateScore + randomBoost };
     });
 
     const freshPolls = scored.filter((p) => new Date(p.created_at).getTime() > h24Ago);
     const olderPolls = scored.filter((p) => new Date(p.created_at).getTime() <= h24Ago);
 
-    const freshUnvoted = freshPolls.filter((p) => !votedIds.has(p.id)).sort(recencySort);
-    const freshVoted = freshPolls.filter((p) => votedIds.has(p.id)).sort(recencySort);
+    const freshUnvoted = freshPolls.filter((p) => !votedIds.has(p.id)).sort((a, b) => b.score - a.score);
+    const freshVoted = freshPolls.filter((p) => votedIds.has(p.id)).sort((a, b) => b.score - a.score);
 
     const olderUnvoted = olderPolls.filter((p) => !votedIds.has(p.id));
     const olderVoted = olderPolls.filter((p) => votedIds.has(p.id));
