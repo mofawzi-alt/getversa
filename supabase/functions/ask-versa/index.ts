@@ -950,7 +950,7 @@ Examples:
       matchedPolls.sort((a: any, b: any) => (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
     }
 
-    matchedPolls = matchedPolls.slice(0, mode === "decide" ? 3 : 12);
+    matchedPolls = matchedPolls.slice(0, mode === "decide" ? 5 : 12);
 
     // ---- 3b. Relevance validation ----
     // Check if matched polls ACTUALLY answer the user's question.
