@@ -88,8 +88,8 @@ export default function LiveDebateStoryCard({
 
   return (
     <div
-      style={{ height }}
-      className="relative w-full snap-start snap-always overflow-hidden bg-black cursor-pointer select-none"
+      style={{ height, backgroundColor: '#1a1a1a', backgroundImage: 'linear-gradient(135deg, #2a2a2a 0%, #0f0f0f 100%)' }}
+      className="relative w-full snap-start snap-always overflow-hidden cursor-pointer select-none"
       onClick={onClick}
     >
       {/* Full-bleed background image */}
