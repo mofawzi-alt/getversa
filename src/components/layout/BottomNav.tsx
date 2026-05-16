@@ -31,7 +31,13 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           icon={Home}
           label="Home"
           active={location.pathname === '/home'}
-          onClick={() => navigate('/home')}
+          onClick={() => {
+            if (location.pathname === '/home') {
+              window.dispatchEvent(new CustomEvent('versa:home-scroll-top'));
+            } else {
+              navigate('/home');
+            }
+          }}
         />
         <NavButton
           path="/browse"

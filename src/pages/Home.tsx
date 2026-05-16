@@ -756,6 +756,22 @@ function LiveDebatesList({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  // Enter immersive mode and pin the live-debate cards to the viewport
+  const enterImmersive = useCallback(() => {
+    if (!wrapperRef.current) return;
+    wrapperRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setImmersive(true);
+    setImmersiveMode(true);
+  }, []);
+
+  // Listen for Home-tab tap → always return to the very top + reveal header
+  useEffect(() => {
+    const handler = () => exitImmersive();
+    window.addEventListener('versa:home-scroll-top', handler);
+    return () => window.removeEventListener('versa:home-scroll-top', handler);
+  }, [exitImmersive]);
+
+
   // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
   const [cycles, setCycles] = useState(1);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -912,6 +928,13 @@ function LiveDebatesList({
           // At very top + clear pull-down → exit immersive and reveal stories/header
           if (el.scrollTop <= 0 && dy > 60 && immersive) {
             exitImmersive();
+          }
+        }}
+        onScroll={() => {
+          const el = scrollerRef.current;
+          if (!el) return;
+          if (el.scrollTop > 8 && !immersive) {
+            enterImmersive();
           }
         }}
         className={`overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch] left-0 right-0 top-0 ${
