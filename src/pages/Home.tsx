@@ -858,8 +858,8 @@ function LiveDebatesList({
 
   return (
     <div
-      className="snap-y snap-mandatory overflow-y-scroll [overscroll-behavior-y:auto] [-webkit-overflow-scrolling:touch]"
-      style={{ height: cardHeight, willChange: 'transform', scrollSnapStop: 'always' }}
+      className="overflow-y-scroll [overscroll-behavior-y:auto] [-webkit-overflow-scrolling:touch]"
+      style={{ height: cardHeight, willChange: 'transform' }}
     >
       {repeatedPolls.map(({ poll, loopIndex }) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
@@ -946,7 +946,6 @@ function LiveDebatesList({
         return (
           <div
             key={`${poll.id}-${loopIndex}`}
-            className="snap-start snap-always"
             style={{ height: cardHeight }}
             onClick={handleClick}
           >

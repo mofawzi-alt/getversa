@@ -16,16 +16,8 @@ html, body {
   overscroll-behavior-y: contain;
 }
 
-/* Gentle page-level snap so fullscreen sections (e.g. Live Debates) always
-   align cleanly under the fixed header instead of being clipped when the user
-   scrolls from outside the inner snap scroller. */
-html {
-  scroll-snap-type: y proximity;
-}
-
+/* IG-style: free vertical scrolling, no snap. */
 .page-snap-section {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
   scroll-margin-top: calc(3.5rem + max(env(safe-area-inset-top), 1.75rem));
 }
 
