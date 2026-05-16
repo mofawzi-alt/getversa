@@ -268,7 +268,7 @@ export default function BrowseCard({
                   question={poll.question}
                   side="A"
                   maxLogoSize="80%"
-                  loading="lazy"
+                  loading={imgLoading}
                   variant="browse"
                 />
                 <div className="absolute inset-x-0 bottom-0 px-3 pt-12 pb-3 bg-gradient-to-t from-black/95 via-black/65 to-transparent">
@@ -288,7 +288,7 @@ export default function BrowseCard({
                   question={poll.question}
                   side="B"
                   maxLogoSize="80%"
-                  loading="lazy"
+                  loading={imgLoading}
                   variant="browse"
                 />
                 <div className="absolute inset-x-0 bottom-0 px-3 pt-12 pb-3 bg-gradient-to-t from-black/95 via-black/65 to-transparent">
@@ -323,7 +323,7 @@ export default function BrowseCard({
                 question={poll.question}
                 side={poll.winner}
                 maxLogoSize="80%"
-                loading="lazy"
+                loading={imgLoading}
                 variant="browse"
               />
             </div>
