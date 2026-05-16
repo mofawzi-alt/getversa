@@ -699,9 +699,18 @@ function LiveDebatesList({
   setModalPoll: (p: PollCard) => void;
   navigate: (path: string) => void;
 }) {
-  const displayLivePolls = useMemo(() => livePolls.slice(0, 40), [livePolls]);
+  const displayLivePolls = useMemo(() => {
+    const uniquePolls = new Map<string, PollCard>();
+    const seenQuestions = new Set<string>();
+    livePolls.forEach((poll) => {
+      const questionKey = poll.question.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      if (uniquePolls.has(poll.id) || seenQuestions.has(questionKey)) return;
+      seenQuestions.add(questionKey);
+      uniquePolls.set(poll.id, poll);
+    });
+    return Array.from(uniquePolls.values());
+  }, [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
-  const liveDebateKey = useMemo(() => pollIds.join('|'), [pollIds]);
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
@@ -789,13 +798,6 @@ function LiveDebatesList({
     return () => window.removeEventListener('versa:home-scroll-top', handler);
   }, [exitImmersive]);
 
-  const [cycles, setCycles] = useState(5);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setCycles(5);
-  }, [liveDebateKey]);
-
   // Immersive mode — only ENTER via explicit user scroll inside the cards
   // (handled by the scroller's onScroll below). Do NOT auto-enter or auto-exit
   // based on the wrapper's intersection ratio: on iOS, momentum/bounce scroll
@@ -805,22 +807,6 @@ function LiveDebatesList({
   useEffect(() => {
     return () => { setImmersiveMode(false); };
   }, []);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    const scroller = scrollerRef.current;
-    if (!sentinel || !scroller || displayLivePolls.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setCycles((current) => Math.min(current + 3, 40));
-      },
-      { root: scroller, rootMargin: '1600px 0px', threshold: 0.01 }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [displayLivePolls.length, cycles]);
 
   // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {
@@ -834,17 +820,6 @@ function LiveDebatesList({
       });
     });
   }, [displayLivePolls]);
-
-  const repeatedPolls = useMemo(() => {
-    if (displayLivePolls.length === 0) return [];
-    const result: Array<{ poll: PollCard; loopIndex: number }> = [];
-    for (let c = 0; c < cycles; c++) {
-      for (let i = 0; i < displayLivePolls.length; i++) {
-        result.push({ poll: displayLivePolls[i], loopIndex: c * displayLivePolls.length + i });
-      }
-    }
-    return result;
-  }, [displayLivePolls, cycles]);
 
   // Fetch sample of demographic votes to compute demo tags (Browse-style)
   const { data: demoMap } = useQuery({
@@ -963,7 +938,7 @@ function LiveDebatesList({
         }`}
         style={{ height: cardHeight, willChange: 'transform' }}
       >
-      {repeatedPolls.map(({ poll, loopIndex }) => {
+      {displayLivePolls.map((poll, index) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
         const userChoice = voteData?.choice ?? null;
@@ -1018,7 +993,7 @@ function LiveDebatesList({
 
         return (
           <LiveDebateStoryCard
-            key={`${poll.id}-${loopIndex}`}
+            key={poll.id}
             poll={{
               id: poll.id,
               question: poll.question,
@@ -1037,7 +1012,7 @@ function LiveDebatesList({
             topSlot={topSlot}
             extraSideAction={extraSideAction}
             demoTags={computeDemoTags(demoMap?.get(poll.id) || [], Math.max(poll.percentA, poll.percentB), poll.percentA >= poll.percentB ? 'A' : 'B')}
-            showBackToTop={loopIndex === 0 && immersive}
+            showBackToTop={index === 0 && immersive}
             onBackToTop={exitImmersive}
             onClick={handleClick}
             onShare={() => handleShare(poll)}
@@ -1060,12 +1035,11 @@ function LiveDebatesList({
               },
               image_url: poll.image_a_url || poll.image_b_url,
             }) : undefined}
-            eagerImage={loopIndex < 2}
+            eagerImage={index < 2}
             height={cardHeight}
           />
         );
       })}
-      <div ref={sentinelRef} className="h-1" />
 
       {shareSheetPoll && (
         <SharePollToFriendSheet
