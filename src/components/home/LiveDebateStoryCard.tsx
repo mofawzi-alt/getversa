@@ -193,7 +193,6 @@ export default function LiveDebateStoryCard({
             </span>
           )}
         </div>
-        {extraSideAction && <div>{extraSideAction}</div>}
       </div>
 
       {/* OPTIONAL EYEBROW BADGE (Hot Take, Trending, etc.) */}
@@ -250,6 +249,11 @@ export default function LiveDebateStoryCard({
           >
             <CirclePlus className="w-[16px] h-[16px]" />
           </button>
+        )}
+        {extraSideAction && (
+          <div className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center shadow-lg [&>*]:!bg-transparent [&>*]:!border-0 [&>*]:!h-full [&>*]:!w-full [&>*]:!rounded-full">
+            {extraSideAction}
+          </div>
         )}
         {onShare && (
           <button
