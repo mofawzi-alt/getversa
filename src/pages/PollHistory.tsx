@@ -13,6 +13,7 @@ import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import PinButton from '@/components/poll/PinButton';
+import BottomNav from '@/components/layout/BottomNav';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 
@@ -372,6 +373,7 @@ export default function PollHistory() {
           ))}
         </div>
       )}
+      <BottomNav />
     </div>
   );
 }

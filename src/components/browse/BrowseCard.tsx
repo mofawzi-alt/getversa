@@ -169,7 +169,7 @@ export default function BrowseCard({
     : 'Egypt chose this';
   const dividedGap = Math.abs(poll.percentA - poll.percentB);
 
-  const isLight = theme === 'light';
+  const isLight = true; // Force light surface + black text for readability across all card images
   const surfaceBg = isLight ? 'bg-background' : 'bg-[#0B0B0C]';
   const titleColor = isLight ? 'text-foreground' : 'text-white';
   const chipBg = isLight ? 'bg-muted text-foreground/80' : 'bg-white/10 text-white/85';
