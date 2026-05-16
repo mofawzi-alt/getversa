@@ -209,9 +209,10 @@ serve(async (req) => {
     // Otherwise → research (broader sentiment exploration).
     const autoDetectMode = (q: string): "decide" | "research" => {
       const ql = (q || "").toLowerCase();
-      const hasComparison = /\b(or|vs|versus|ولا)\b/.test(ql) || /\?\s*$/.test(ql.trim());
-      const isShort = ql.trim().split(/\s+/).length <= 8;
-      const exploratory = /\b(how (do|are|much|many)|what (do|are)|why|feel|think about|trends?|patterns?|sentiment|divided|attitude|culture|differences?)\b/.test(ql);
+      // Real comparison = "X or Y", "X vs Y", "X ولا Y" — NOT every "?" question.
+      const hasComparison = /\b(or|vs|versus|ولا)\b/.test(ql);
+      const isShort = ql.trim().split(/\s+/).length <= 6;
+      const exploratory = /\b(how (do|are|much|many|do they|are they)|what (do|are|do they|are they)|why|feel|feels|feeling|think|thinks|thinking|trends?|patterns?|sentiment|divided|attitude|attitudes|culture|differences?|opinions?|views?)\b/.test(ql);
       if (exploratory && !hasComparison) return "research";
       if (hasComparison || isShort) return "decide";
       return "research";
@@ -463,10 +464,13 @@ Rules:
     // Research-mode override: in research mode, opinion/comparison/lifestyle/attitude questions
     // are exactly what Versa polls answer ("Cairo vs Alexandria lifestyle", "How do students feel about X").
     // Only treat as factual when the question is clearly a hard lookup (year/date/market size/who-founded).
-    if (mode === "research" && intent === "factual") {
+    // Override: opinion/sentiment-shaped questions ("how do X feel about Y",
+    // "do Egyptians prefer A or B") are exactly what Versa polls answer.
+    // Only keep "factual" when it's clearly a hard lookup (year/market size/who-founded).
+    if (intent === "factual") {
       const q = question.toLowerCase();
       const hardLookup = /\b(when did|what year|how many|market size|market share|revenue|founded by|who founded|population of|gdp|currency|capital of|ceo of|headquarters)\b/.test(q);
-      const opinionShape = /\b(vs|versus|or |feel|think|prefer|love|like|hate|differences?|lifestyle|attitudes?|opinions?|divided|split|culture|trend|popular|wins?|better)\b/.test(q);
+      const opinionShape = /\b(vs|versus|or |feel|feels|feeling|think|thinks|prefer|love|like|hate|differences?|lifestyle|attitudes?|opinions?|divided|split|culture|trend|popular|wins?|better|views?|sentiment)\b/.test(q);
       if (!hardLookup || opinionShape) {
         intent = "preference";
       }
