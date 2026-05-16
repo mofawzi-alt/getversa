@@ -747,7 +747,16 @@ function LiveDebatesList({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [immersive, setImmersive] = useState(false);
-  const suppressEnterUntilRef = useRef<number>(0);
+  // Suppress auto-entering immersive mode on initial mount so the app always
+  // lands on the header/stories, not pinned into the first live-debate card.
+  const suppressEnterUntilRef = useRef<number>(Date.now() + 1500);
+  const userScrolledRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const onScroll = () => { userScrolledRef.current = true; };
+    window.addEventListener('scroll', onScroll, { passive: true, once: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Exit immersive mode and scroll the page up to reveal stories/header
   const exitImmersive = useCallback(() => {
@@ -806,6 +815,9 @@ function LiveDebatesList({
         const e = entries[0];
         if (!e) return;
         const active = e.intersectionRatio >= 0.5;
+        // Don't auto-enter immersive until the user has actually scrolled
+        // and the initial suppression window has passed.
+        if (active && (!userScrolledRef.current || Date.now() < suppressEnterUntilRef.current)) return;
         setImmersive(active);
         setImmersiveMode(active);
       },
