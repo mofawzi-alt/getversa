@@ -236,15 +236,29 @@ export default function LiveDebateStoryCard({
 
         {/* CTA row — Vote Now (or Full Breakdown if voted) + Send + Share */}
         <div className="flex items-center gap-2 mt-1">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClick();
-            }}
-            className="flex-1 h-12 rounded-full bg-primary text-primary-foreground font-extrabold text-[15px] shadow-[0_6px_24px_hsl(var(--primary)/0.5)] active:scale-[0.98] transition-transform"
-          >
-            {hasVoted ? 'Full Breakdown →' : 'Vote Now →'}
-          </button>
+          {hasVoted ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}
+              aria-label="Full breakdown"
+              title="See full breakdown"
+              className="h-12 w-12 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <BarChart3 className="w-[18px] h-[18px]" />
+            </button>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}
+              className="flex-1 h-12 rounded-full bg-primary text-primary-foreground font-extrabold text-[15px] shadow-[0_6px_24px_hsl(var(--primary)/0.5)] active:scale-[0.98] transition-transform"
+            >
+              Vote Now →
+            </button>
+          )}
           {onSendToFriend && (
             <button
               onClick={(e) => {
