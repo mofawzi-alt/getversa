@@ -235,7 +235,7 @@ export default function LiveDebateStoryCard({
         )}
 
         {/* CTA row — Vote Now (or Full Breakdown if voted) + Send + Share */}
-        <div className="flex items-center gap-2 mt-1">
+        <div className={`flex items-center gap-2 mt-1 ${hasVoted ? 'justify-end' : ''}`}>
           {hasVoted ? (
             <button
               onClick={(e) => {
