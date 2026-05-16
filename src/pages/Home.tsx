@@ -22,6 +22,7 @@ import { mapToVersaCategory } from '@/lib/categoryMeta';
 import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import BrowseCard, { computeDemoTags, type BrowsePoll } from '@/components/browse/BrowseCard';
+import LiveDebateStoryCard from '@/components/home/LiveDebateStoryCard';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
@@ -915,26 +916,31 @@ function LiveDebatesList({
         };
 
         return (
-          <div
+          <LiveDebateStoryCard
             key={poll.id}
+            poll={{
+              id: poll.id,
+              question: poll.question,
+              option_a: poll.option_a,
+              option_b: poll.option_b,
+              image_a_url: poll.image_a_url,
+              image_b_url: poll.image_b_url,
+              category: poll.category,
+              ends_at: poll.ends_at,
+              totalVotes: poll.totalVotes ?? 0,
+              percentA: poll.percentA ?? 0,
+              percentB: poll.percentB ?? 0,
+            }}
+            hasVoted={hasVoted}
+            userChoice={userChoice}
+            topSlot={topSlot}
+            extraSideAction={extraSideAction}
             onClick={handleClick}
-            className="h-[min(620px,calc(100svh-8rem))] min-h-[500px] overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm active:scale-[0.995] transition-transform"
-          >
-            <BrowseCard
-              poll={toBrowsePoll(poll)}
-              userChoice={userChoice}
-              isActive
-              isSignedIn={!!user}
-              onVote={hasVoted ? undefined : () => handleClick()}
-              onShare={() => handleShare(poll)}
-              onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
-              hideVotePrompt={hasVoted}
-              theme="light"
-              topSlot={topSlot}
-              extraSideAction={extraSideAction}
-              eagerImages={index < 2}
-            />
-          </div>
+            onShare={() => handleShare(poll)}
+            onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
+            eagerImage={index < 2}
+            height="calc(100svh - 8rem)"
+          />
         );
       })}
 
