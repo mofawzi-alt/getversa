@@ -1059,7 +1059,7 @@ function LiveDebatesList({
             onClick={handleClick}
             onShare={() => handleShare(poll)}
             onSendToFriend={() => setShareSheetPoll(poll)}
-            onAddToStory={user ? () => postStory.mutate({
+            onAddToStory={user ? () => postStory({
               story_type: 'poll_result',
               content: {
                 poll_id: poll.id,
