@@ -749,70 +749,15 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient, navigate]);
 
-  // Full-screen TikTok-style: cards container pins itself fixed to the viewport
-  // when scrolled into view, covering anything above (stories, headings, padding).
-  // Only the bottom nav remains visible.
-  const cardHeight = 'calc(100svh - 4rem - env(safe-area-inset-bottom))';
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const [immersive, setImmersive] = useState(false);
-  // Suppress auto-entering immersive mode on initial mount so the app always
-  // lands on the header/stories, not pinned into the first live-debate card.
-  const suppressEnterUntilRef = useRef<number>(Date.now() + 1500);
-  const userScrolledRef = useRef<boolean>(false);
-
+  // Preload first live-debate card images so the first scrolls feel instant.
   useEffect(() => {
-    const onScroll = () => { userScrolledRef.current = true; };
-    window.addEventListener('scroll', onScroll, { passive: true, once: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  // Exit immersive mode and scroll the page up to reveal stories/header
-  const exitImmersive = useCallback(() => {
-    setImmersive(false);
-    setImmersiveMode(false);
-    if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
-    // Block auto re-entry from the scroll handler for a moment
-    suppressEnterUntilRef.current = Date.now() + 800;
-    // Jump immediately, then smooth-scroll for polish
-    window.scrollTo({ top: 0, behavior: 'auto' });
-    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  }, []);
-
-  // Enter immersive mode and pin the live-debate cards to the viewport
-  const enterImmersive = useCallback(() => {
-    if (!wrapperRef.current) return;
-    wrapperRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setImmersive(true);
-    setImmersiveMode(true);
-  }, []);
-
-  // Listen for Home-tab tap → always return to the very top + reveal header
-  useEffect(() => {
-    const handler = () => exitImmersive();
-    window.addEventListener('versa:home-scroll-top', handler);
-    return () => window.removeEventListener('versa:home-scroll-top', handler);
-  }, [exitImmersive]);
-
-  // Immersive mode — only ENTER via explicit user scroll inside the cards
-  // (handled by the scroller's onScroll below). Do NOT auto-enter or auto-exit
-  // based on the wrapper's intersection ratio: on iOS, momentum/bounce scroll
-  // toggles intersection ratios unpredictably and was snapping the page back
-  // to the top mid-browse. Exit is handled by the explicit pull-down gesture,
-  // the X / back-to-top button, and the Home-tab tap listener.
-  useEffect(() => {
-    return () => { setImmersiveMode(false); };
-  }, []);
-
-  // Preload first 6 live-debate cards' images so the first scrolls feel instant.
-  useEffect(() => {
-    displayLivePolls.slice(0, 8).forEach((p, idx) => {
+    displayLivePolls.slice(0, 6).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
         if (!url) return;
         const img = new Image();
         img.decoding = 'async';
         if (idx < 2) (img as any).fetchPriority = 'high';
-        img.src = getOptimizedPollImageSrc(url, { width: 900, height: 1200, quality: idx < 2 ? 74 : 68 }) || url;
+        img.src = getOptimizedPollImageSrc(url, { width: 700, height: 900, quality: idx < 2 ? 74 : 68 }) || url;
       });
     });
   }, [displayLivePolls]);
