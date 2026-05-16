@@ -348,6 +348,7 @@ export default function Ask() {
               </button>
             )}
           </div>
+        </div>
       </div>
 
       {/* ── Content ── */}
