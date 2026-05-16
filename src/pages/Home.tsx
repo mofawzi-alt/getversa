@@ -858,7 +858,7 @@ function LiveDebatesList({
 
   return (
     <div
-      className="snap-y snap-mandatory overflow-y-scroll [overscroll-behavior:contain]"
+      className="snap-y snap-mandatory overflow-y-scroll [overscroll-behavior-y:auto]"
       style={{ height: cardHeight, willChange: 'transform', scrollSnapStop: 'always' }}
     >
       {repeatedPolls.map(({ poll, loopIndex }) => {
