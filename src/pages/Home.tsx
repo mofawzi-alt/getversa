@@ -23,6 +23,7 @@ import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import BrowseCard, { computeDemoTags, type BrowsePoll } from '@/components/browse/BrowseCard';
 import LiveDebateStoryCard from '@/components/home/LiveDebateStoryCard';
+import { setImmersiveMode } from '@/lib/immersiveMode';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
@@ -739,9 +740,11 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient, navigate]);
 
-  // Card height = small viewport (svh, stable on iOS) - app header (3.5rem + safe top) - bottom nav (4rem + safe bottom)
-  // Using svh (small viewport) instead of dvh prevents resizing mid-scroll on iOS Safari which caused cards to be clipped.
-  const cardHeight = 'calc(100svh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 4rem - env(safe-area-inset-bottom))';
+  // Full-screen TikTok-style: each card fills the entire viewport. The AppHeader
+  // hides itself (via immersive mode) when this section is in view, so only the
+  // bottom nav remains. Subtract only the bottom nav so cards still clear it.
+  const cardHeight = 'calc(100svh - 4rem - env(safe-area-inset-bottom))';
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
   const [cycles, setCycles] = useState(1);
@@ -760,6 +763,26 @@ function LiveDebatesList({
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
   }, [livePolls.length]);
+
+  // Immersive mode — when the Live Debates section fills the viewport, hide the
+  // global AppHeader so cards feel truly full-screen (TikTok-style).
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const el = containerRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0];
+        if (!e) return;
+        setImmersiveMode(e.intersectionRatio >= 0.6);
+      },
+      { threshold: [0, 0.3, 0.6, 0.9, 1] },
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      setImmersiveMode(false);
+    };
+  }, []);
 
   // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {
@@ -859,6 +882,7 @@ function LiveDebatesList({
 
   return (
     <div
+      ref={containerRef}
       className="overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch]"
       style={{ height: cardHeight, willChange: 'transform' }}
     >
