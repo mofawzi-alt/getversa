@@ -1,22 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shield, Clock, Search, Sparkles } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
 import GlobalPollSearch from '@/components/search/GlobalPollSearch';
 import HeaderAvatarUploader from './HeaderAvatarUploader';
+import { onImmersiveMode } from '@/lib/immersiveMode';
 
 export default function AppHeader() {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [immersive, setImmersive] = useState(false);
   const safeTopInset = 'max(env(safe-area-inset-top), 1.75rem)';
+
+  useEffect(() => onImmersiveMode(setImmersive), []);
 
   return (
     <>
       <header
-        className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background"
-        style={{ paddingTop: safeTopInset, transform: 'translateZ(0)' }}
+        className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background transition-transform duration-300 ease-out"
+        style={{
+          paddingTop: safeTopInset,
+          transform: immersive ? 'translate3d(0,-110%,0)' : 'translateZ(0)',
+        }}
       >
         <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
           <div className="flex items-center gap-2 min-w-0">
