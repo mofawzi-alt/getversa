@@ -370,8 +370,14 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         });
       }, RESULT_MS);
     } else {
-      // Flash mode: show inline result briefly, then auto-advance
+      // Flash mode: show inline result briefly, then auto-advance.
+      // Subtract elapsed DB time so total visible time stays consistent
+      // (~FLASH_RESULT_MS from the moment the user first saw the result),
+      // with a minimum 700ms after the final percentages render so they
+      // still get a beat to read the updated numbers.
       setRevealMode('flash');
+      const elapsed = Date.now() - voteShownAt;
+      const remaining = Math.max(FLASH_RESULT_MS - elapsed, 700);
       setTimeout(() => {
         setResult(null);
         setIsVoting(false);
@@ -380,7 +386,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         setIsFirstVoteOfDay(false);
         setShowHint(true);
         onVoteComplete?.('vote', poll.id);
-      }, FLASH_RESULT_MS);
+      }, remaining);
     }
   }, [onVoteComplete, poll, profile, queryClient, result, isVoting, user]);
 
