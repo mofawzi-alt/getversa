@@ -246,8 +246,6 @@ export default function Browse() {
     };
 
     const votedIds = userVotes ? new Set(Array.from(userVotes.keys())) : new Set<string>();
-    const recencySort = <T extends { created_at: string; score: number }>(a: T, b: T) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime() || b.score - a.score;
 
     const diversifyByCategory = <T extends { category: string | null }>(items: T[]) => {
       const result: T[] = [];
@@ -268,18 +266,19 @@ export default function Browse() {
       const createdAt = new Date(p.created_at).getTime();
       const isToday = createdAt > h24Ago;
       const isRecent = createdAt > weekAgo;
-      const recencyScore = isToday ? 200 : isRecent ? 30 : 0;
-      const voteScore = Math.min(p.totalVotes / 10, 40);
-      const debateScore = p.totalVotes >= 5 ? (50 - Math.abs(p.percentA - 50)) * 0.6 : 0;
-      const randomBoost = (seededRandom(sessionSeed, i) - 0.5) * 70;
+      const recencyScore = isToday ? 80 : isRecent ? 20 : 0;
+      const voteScore = Math.min(p.totalVotes / 10, 30);
+      const debateScore = p.totalVotes >= 5 ? (50 - Math.abs(p.percentA - 50)) * 0.4 : 0;
+      // Big per-visit random boost so the feed order shuffles every time the user opens Browse.
+      const randomBoost = seededRandom(sessionSeed, i) * 200;
       return { ...p, score: recencyScore + voteScore + debateScore + randomBoost };
     });
 
     const freshPolls = scored.filter((p) => new Date(p.created_at).getTime() > h24Ago);
     const olderPolls = scored.filter((p) => new Date(p.created_at).getTime() <= h24Ago);
 
-    const freshUnvoted = freshPolls.filter((p) => !votedIds.has(p.id)).sort(recencySort);
-    const freshVoted = freshPolls.filter((p) => votedIds.has(p.id)).sort(recencySort);
+    const freshUnvoted = freshPolls.filter((p) => !votedIds.has(p.id)).sort((a, b) => b.score - a.score);
+    const freshVoted = freshPolls.filter((p) => votedIds.has(p.id)).sort((a, b) => b.score - a.score);
 
     const olderUnvoted = olderPolls.filter((p) => !votedIds.has(p.id));
     const olderVoted = olderPolls.filter((p) => votedIds.has(p.id));
