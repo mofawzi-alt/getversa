@@ -143,6 +143,21 @@ export default function LiveDebateStoryCard({
         </div>
       )}
 
+      {/* BACK-TO-TOP pill — appears in immersive mode so users can return to header/stories */}
+      {showBackToTop && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onBackToTop?.();
+          }}
+          aria-label="Back to top"
+          className="absolute top-[calc(max(env(safe-area-inset-top),12px)+44px)] left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[11px] font-bold shadow-lg active:scale-95 transition-transform"
+        >
+          <ChevronUp className="w-3.5 h-3.5" />
+          Stories
+        </button>
+      )}
+
       {/* BOTTOM CONTENT BLOCK */}
       <div className="absolute inset-x-0 bottom-0 px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-6 z-10 flex flex-col gap-3">
         {/* Question */}
