@@ -946,7 +946,6 @@ function LiveDebatesList({
         return (
           <div
             key={`${poll.id}-${loopIndex}`}
-            className="snap-start snap-always"
             style={{ height: cardHeight }}
             onClick={handleClick}
           >
