@@ -861,13 +861,13 @@ function LiveDebatesList({
           badgeLabel = 'Hot Take';
         } else if (isTrending) {
           badgeLabel = 'Trending';
-          badgeIcon = <TrendingUp className="h-3.5 w-3.5 text-primary-foreground" />;
+          badgeIcon = <TrendingUp className="h-3.5 w-3.5 text-primary" />;
         } else if (closingSoon) {
           badgeLabel = 'Closing Soon';
           badgeIcon = <Timer className="h-3.5 w-3.5 text-amber-300" />;
         } else if (isNew) {
           badgeLabel = 'New';
-          badgeIcon = <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />;
+          badgeIcon = <Sparkles className="h-3.5 w-3.5 text-primary" />;
         }
 
         const topSlot = badgeLabel ? (
