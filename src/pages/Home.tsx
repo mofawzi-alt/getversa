@@ -50,7 +50,7 @@ import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/compon
 import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/NotificationPrompt';
 import { isWelcomeTourDone } from '@/components/onboarding/FirstTimeWelcomeTour';
 
-import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import { getOptimizedPollImageSrc, getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import PollCardSkeleton from '@/components/poll/PollCardSkeleton';
 import { useDailyQueue } from '@/hooks/useDailyQueue';
@@ -797,7 +797,7 @@ function LiveDebatesList({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          setCycles((prev) => prev + 1);
+          setCycles((prev) => Math.min(prev + 1, 3));
         }
       },
       { rootMargin: '600px' },
@@ -842,13 +842,13 @@ function LiveDebatesList({
 
   // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {
-    livePolls.slice(0, 6).forEach((p, idx) => {
+    livePolls.slice(0, 4).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
         if (!url) return;
         const img = new Image();
         img.decoding = 'async';
         if (idx < 2) (img as any).fetchPriority = 'high';
-        img.src = url;
+        img.src = getOptimizedPollImageSrc(url, { width: 900, height: 1200, quality: idx < 2 ? 74 : 68 }) || url;
       });
     });
   }, [livePolls]);
