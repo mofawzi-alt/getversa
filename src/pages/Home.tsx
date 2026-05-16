@@ -699,7 +699,7 @@ function LiveDebatesList({
   setModalPoll: (p: PollCard) => void;
   navigate: (path: string) => void;
 }) {
-  const displayLivePolls = useMemo(() => livePolls.slice(0, 24), [livePolls]);
+  const displayLivePolls = useMemo(() => livePolls.slice(0, 40), [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
@@ -788,9 +788,7 @@ function LiveDebatesList({
     return () => window.removeEventListener('versa:home-scroll-top', handler);
   }, [exitImmersive]);
 
-
-  // Show each poll only once — no repetition (was causing "repetitive" feel)
-  const cycles = 1;
+  const cycles = displayLivePolls.length >= 8 ? 4 : 8;
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Immersive mode — only ENTER via explicit user scroll inside the cards
