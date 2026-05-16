@@ -31,6 +31,7 @@ interface Props {
   onClick: () => void;
   onShare?: () => void;
   onSendToFriend?: () => void;
+  onAddToStory?: () => void;
   eagerImage?: boolean;
   height: string;
 }
