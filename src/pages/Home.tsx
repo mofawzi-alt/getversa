@@ -699,9 +699,14 @@ function LiveDebatesList({
   setModalPoll: (p: PollCard) => void;
   navigate: (path: string) => void;
 }) {
-  const displayLivePolls = useMemo(() => livePolls.slice(0, 40), [livePolls]);
+  const displayLivePolls = useMemo(() => {
+    const uniquePolls = new Map<string, PollCard>();
+    livePolls.forEach((poll) => {
+      if (!uniquePolls.has(poll.id)) uniquePolls.set(poll.id, poll);
+    });
+    return Array.from(uniquePolls.values());
+  }, [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
-  const liveDebateKey = useMemo(() => pollIds.join('|'), [pollIds]);
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
