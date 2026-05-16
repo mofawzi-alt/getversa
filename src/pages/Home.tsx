@@ -936,11 +936,14 @@ function LiveDebatesList({
     }
   }, []);
 
+  // If there are no live polls, render nothing — avoid a 100svh black void.
+  if (livePolls.length === 0) return null;
+
   return (
     <div
       ref={wrapperRef}
-      className="relative w-full bg-black"
-      style={{ height: '100svh' }}
+      className={`relative w-full ${immersive ? 'bg-black' : 'bg-background'}`}
+      style={{ height: cardHeight }}
     >
       <div
         ref={scrollerRef}
