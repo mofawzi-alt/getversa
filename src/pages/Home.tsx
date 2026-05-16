@@ -1776,7 +1776,7 @@ export default function Home() {
           open={showNotifPrompt}
           onClose={() => setShowNotifPrompt(false)}
         />
-      <div className="min-h-screen flex flex-col pb-28 gap-0">
+      <div className="flex flex-col gap-0">
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
 
