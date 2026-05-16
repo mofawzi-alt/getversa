@@ -250,6 +250,8 @@ export default function BestPollsHighlights() {
                       <img 
                         src={activeData.poll.image_a_url} 
                         alt={activeData.poll.option_a}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full aspect-square object-cover"
                       />
                     ) : (
@@ -277,6 +279,8 @@ export default function BestPollsHighlights() {
                       <img 
                         src={activeData.poll.image_b_url} 
                         alt={activeData.poll.option_b}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full aspect-square object-cover"
                       />
                     ) : (
