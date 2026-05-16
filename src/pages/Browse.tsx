@@ -311,6 +311,19 @@ export default function Browse() {
     );
   }, [sortedFeed, searchQuery]);
 
+  // Preload first 6 browse cards' images so the initial scroll feels instant.
+  useEffect(() => {
+    visibleFeed.slice(0, 6).forEach((p, idx) => {
+      [p.image_a_url, p.image_b_url].forEach((url) => {
+        if (!url) return;
+        const img = new Image();
+        img.decoding = 'async';
+        if (idx < 2) (img as any).fetchPriority = 'high';
+        img.src = url;
+      });
+    });
+  }, [visibleFeed]);
+
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -432,6 +445,7 @@ export default function Browse() {
                   onVote={() => handleVote(poll.id)}
                   onShare={() => share(poll)}
                   onSendToFriend={() => setShareToFriendPoll(poll)}
+                  eagerImages={i < 2}
                 />
               </div>
             </div>
