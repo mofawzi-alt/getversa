@@ -900,6 +900,20 @@ function LiveDebatesList({
       style={{ height: '100svh' }}
     >
       <div
+        ref={scrollerRef}
+        onTouchStart={(e) => {
+          (scrollerRef.current as any)._touchStartY = e.touches[0]?.clientY ?? 0;
+        }}
+        onTouchMove={(e) => {
+          const el = scrollerRef.current;
+          if (!el) return;
+          const startY = (el as any)._touchStartY ?? 0;
+          const dy = (e.touches[0]?.clientY ?? 0) - startY;
+          // At very top + clear pull-down → exit immersive and reveal stories/header
+          if (el.scrollTop <= 0 && dy > 60 && immersive) {
+            exitImmersive();
+          }
+        }}
         className={`overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch] left-0 right-0 top-0 ${
           immersive ? 'fixed z-30' : 'absolute'
         }`}
