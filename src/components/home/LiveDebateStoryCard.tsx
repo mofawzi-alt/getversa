@@ -193,7 +193,7 @@ export default function LiveDebateStoryCard({
             </span>
           )}
         </div>
-        {extraSideAction && <div>{extraSideAction}</div>}
+        </div>
       </div>
 
       {/* OPTIONAL EYEBROW BADGE (Hot Take, Trending, etc.) */}
