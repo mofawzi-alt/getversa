@@ -76,8 +76,8 @@ export default function LiveDebateStoryCard({
     });
   }, [poll, dominantSide]);
   const bgDisplaySrc = useMemo(
-    () => getOptimizedPollImageSrc(bgImageSrc, { width: 900, height, quality: eagerImage ? 74 : 68 }) || bgImageSrc,
-    [bgImageSrc, eagerImage, height]
+    () => getOptimizedPollImageSrc(bgImageSrc, { width: 900, height: 1200, quality: eagerImage ? 74 : 68 }) || bgImageSrc,
+    [bgImageSrc, eagerImage]
   );
 
   const timeLeft = formatTimeLeft(poll.ends_at);
@@ -99,8 +99,8 @@ export default function LiveDebateStoryCard({
           alt=""
           loading={eagerImage ? 'eager' : 'lazy'}
           decoding="async"
-          fetchPriority={eagerImage ? 'high' : 'auto'}
           data-original-src={bgImageSrc}
+          {...(eagerImage ? { fetchpriority: 'high' as any } : {})}
           onError={(e) => handlePollImageError(e, { option: dominantSide === 'A' ? poll.option_a : poll.option_b, question: poll.question, side: dominantSide })}
           className="absolute inset-0 w-full h-full object-cover"
         />
