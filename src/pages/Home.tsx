@@ -882,6 +882,7 @@ function LiveDebatesList({
 
   return (
     <div
+      ref={containerRef}
       className="overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch]"
       style={{ height: cardHeight, willChange: 'transform' }}
     >
