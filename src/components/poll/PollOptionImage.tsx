@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useId, memo } from 'react';
 import { Loader2, Volume2, VolumeX } from 'lucide-react';
-import { getPollDisplayImageSrc, handlePollImageError, resolvePollMediaUrl } from '@/lib/pollImages';
+import { getOptimizedPollImageSrc, getPollDisplayImageSrc, handlePollImageError, resolvePollMediaUrl } from '@/lib/pollImages';
 import { getBrandColor, getImageTreatment } from '@/lib/brandDetection';
 import { videoSound } from '@/lib/videoSound';
 
@@ -75,6 +75,12 @@ function PollOptionImageComponent({
     question,
     side,
   });
+  const displayImgSrc = getOptimizedPollImageSrc(imgSrc, {
+    width: variant === 'history' ? 520 : 900,
+    height: variant === 'history' ? 650 : 1200,
+    quality: loading === 'eager' ? 74 : 68,
+    resize: variant === 'history' ? 'contain' : 'cover',
+  }) || imgSrc;
   const videoSrc = resolvePollMediaUrl(imageUrl) || undefined;
 
   // Lazy-load & autoplay video only when visible
@@ -212,7 +218,7 @@ function PollOptionImageComponent({
           </div>
         )}
         <img
-          src={imgSrc}
+          src={displayImgSrc}
           alt={option}
           className="pointer-events-none transition-opacity duration-300"
           style={{
@@ -226,7 +232,8 @@ function PollOptionImageComponent({
           draggable={draggable}
           loading={loading}
           decoding="async"
-          {...(loading === 'eager' ? { fetchPriority: 'high' as any } : {})}
+          data-original-src={imgSrc || undefined}
+          {...(loading === 'eager' ? { fetchpriority: 'high' as any } : {})}
         />
       </div>
     );
@@ -252,7 +259,7 @@ function PollOptionImageComponent({
         </div>
       )}
       <img
-        src={imgSrc || undefined}
+        src={displayImgSrc || undefined}
         alt={option}
         className={`w-full h-full ${style.bg} pointer-events-none transition-opacity duration-300 ${
           showLoader && !loaded ? 'opacity-0' : 'opacity-100'
@@ -266,7 +273,8 @@ function PollOptionImageComponent({
         draggable={draggable}
         loading={loading}
         decoding="async"
-        {...(loading === 'eager' ? { fetchPriority: 'high' as any } : {})}
+        data-original-src={imgSrc || undefined}
+        {...(loading === 'eager' ? { fetchpriority: 'high' as any } : {})}
       />
     </div>
   );
