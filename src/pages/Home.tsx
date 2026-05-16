@@ -844,8 +844,8 @@ function LiveDebatesList({
 
   return (
     <div
-      className="w-full bg-background -mx-3 sm:mx-0 snap-y snap-mandatory overflow-y-auto"
-      style={{ scrollSnapType: 'y mandatory', height: cardHeight }}
+      className="relative left-1/2 right-1/2 -translate-x-1/2 w-screen bg-background snap-y snap-mandatory overflow-y-auto"
+      style={{ scrollSnapType: 'y mandatory', height: cardHeight, maxWidth: '100vw' }}
     >
       {displayLivePolls.map((poll, index) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
