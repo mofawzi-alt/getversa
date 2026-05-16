@@ -739,9 +739,11 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient, navigate]);
 
-  // Card height = small viewport (svh, stable on iOS) - app header (3.5rem + safe top) - bottom nav (4rem + safe bottom)
-  // Using svh (small viewport) instead of dvh prevents resizing mid-scroll on iOS Safari which caused cards to be clipped.
-  const cardHeight = 'calc(100svh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 4rem - env(safe-area-inset-bottom))';
+  // Full-screen TikTok-style: each card fills the entire viewport. The AppHeader
+  // hides itself (via immersive mode) when this section is in view, so only the
+  // bottom nav remains. Subtract only the bottom nav so cards still clear it.
+  const cardHeight = 'calc(100svh - 4rem - env(safe-area-inset-bottom))';
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
   const [cycles, setCycles] = useState(1);
