@@ -805,7 +805,7 @@ function LiveDebatesList({
 
   // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {
-    displayLivePolls.slice(0, 4).forEach((p, idx) => {
+    displayLivePolls.slice(0, 8).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
         if (!url) return;
         const img = new Image();
