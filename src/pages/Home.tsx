@@ -1923,43 +1923,51 @@ export default function Home() {
 
 
         {/* ═══ 🔴 LIVE DEBATES ═══ */}
-        <section className="page-snap-section mb-3 bg-secondary/40 py-3">
-          <div className="px-3 flex items-center gap-2 mb-2">
-            <motion.div
-              animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="h-2.5 w-2.5 rounded-full bg-destructive"
-            />
-            <div className="flex flex-col">
-              <span className="text-xs font-display font-bold text-foreground uppercase tracking-wider">LIVE DEBATES</span>
-              <span className="text-[10px] text-muted-foreground -mt-0.5">Happening right now{livePolls.length > 0 ? ` · ${livePolls.length} active` : ''}</span>
-            </div>
-          </div>
-
+        <section className="page-snap-section mb-3 bg-secondary/40 relative">
           {(() => {
             const filteredLivePolls = categoryFilter
               ? livePolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter)
               : livePolls;
             return filteredLivePolls.length > 0 ? (
-              <LiveDebatesList
-                livePolls={filteredLivePolls}
-                votedPollIds={votedPollIds}
-                userVoteChoices={userVoteChoices}
-                trendingIdSet={trendingIdSet}
-                newPolls={newPolls}
-                setHeroPollIndex={setHeroPollIndex}
-                heroRef={heroRef}
-                setModalPoll={setModalPoll}
-                navigate={navigate}
-              />
+              <>
+                {/* Floating heading — overlay so it doesn't steal card height */}
+                <div className="absolute top-2 left-3 z-30 flex items-center gap-2 px-2.5 py-1 rounded-full bg-background/85 backdrop-blur-md border border-border/50 shadow-sm pointer-events-none">
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="h-2 w-2 rounded-full bg-destructive"
+                  />
+                  <span className="text-[10px] font-display font-bold text-foreground uppercase tracking-wider">LIVE DEBATES</span>
+                  {filteredLivePolls.length > 0 && (
+                    <span className="text-[10px] text-muted-foreground">· {filteredLivePolls.length} active</span>
+                  )}
+                </div>
+                <LiveDebatesList
+                  livePolls={filteredLivePolls}
+                  votedPollIds={votedPollIds}
+                  userVoteChoices={userVoteChoices}
+                  trendingIdSet={trendingIdSet}
+                  newPolls={newPolls}
+                  setHeroPollIndex={setHeroPollIndex}
+                  heroRef={heroRef}
+                  setModalPoll={setModalPoll}
+                  navigate={navigate}
+                />
+              </>
             ) : (
-            <div className="mx-3 rounded-2xl border border-border/60 bg-card px-4 py-8 text-center">
-              <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }}>
+              <div className="mx-3 rounded-2xl border border-border/60 bg-card px-4 py-8 text-center">
+                <div className="flex items-center gap-2 justify-center mb-2">
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="h-2 w-2 rounded-full bg-destructive"
+                  />
+                  <span className="text-[10px] font-display font-bold text-foreground uppercase tracking-wider">LIVE DEBATES</span>
+                </div>
                 <Sparkles className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-              </motion.div>
-              <p className="text-sm font-display font-bold text-foreground">New live debates launching soon</p>
-              <p className="text-xs text-muted-foreground mt-1">Stay tuned for real-time polls</p>
-            </div>
+                <p className="text-sm font-display font-bold text-foreground">New live debates launching soon</p>
+                <p className="text-xs text-muted-foreground mt-1">Stay tuned for real-time polls</p>
+              </div>
             );
           })()}
         </section>
