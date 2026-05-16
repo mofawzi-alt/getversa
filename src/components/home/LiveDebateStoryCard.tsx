@@ -158,31 +158,63 @@ export default function LiveDebateStoryCard({
         </button>
       )}
 
-      {/* BOTTOM CONTENT BLOCK */}
-      <div className="absolute inset-x-0 bottom-0 px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-6 z-10 flex flex-col gap-3">
+      {/* SIDE ACTION RAIL — small icons, right edge, vertically centered (TikTok style) */}
+      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2.5">
+        {hasVoted && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
+            aria-label="Full breakdown"
+            title="See full breakdown"
+            className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+          >
+            <BarChart3 className="w-[16px] h-[16px]" />
+          </button>
+        )}
+        {onSendToFriend && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onSendToFriend(); }}
+            aria-label="Send to friend"
+            className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+          >
+            <Send className="w-[16px] h-[16px]" />
+          </button>
+        )}
+        {onShare && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onShare(); }}
+            aria-label="Share"
+            className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+          >
+            <Share2 className="w-[16px] h-[16px]" />
+          </button>
+        )}
+      </div>
+
+      {/* BOTTOM CONTENT BLOCK — sits flush near the bottom edge */}
+      <div className="absolute inset-x-0 bottom-0 pl-5 pr-16 pb-[max(env(safe-area-inset-bottom),16px)] pt-3 z-10 flex flex-col gap-2.5">
         {/* Question */}
         <motion.h2
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-white text-[26px] sm:text-[28px] leading-[1.15] font-extrabold drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
+          className="text-white text-[24px] sm:text-[26px] leading-[1.15] font-extrabold drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
         >
           {poll.question}
         </motion.h2>
 
         {/* Option labels */}
-        <div className="grid grid-cols-2 gap-3 text-white/85 text-[13px] font-semibold leading-snug">
+        <div className="grid grid-cols-2 gap-3 text-white/85 text-[12.5px] font-semibold leading-snug">
           <div className="line-clamp-2">{poll.option_a}</div>
           <div className="line-clamp-2 text-right">{poll.option_b}</div>
         </div>
 
         {/* Split bar */}
-        <div className="w-full h-9 rounded-full overflow-hidden flex bg-white/15 backdrop-blur-md border border-white/15 shadow-lg">
+        <div className="w-full h-8 rounded-full overflow-hidden flex bg-white/15 backdrop-blur-md border border-white/15 shadow-lg">
           <motion.div
             initial={{ width: '50%' }}
             animate={{ width: `${pctA}%` }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className={`h-full flex items-center justify-start pl-3 text-[13px] font-extrabold text-white ${
+            className={`h-full flex items-center justify-start pl-3 text-[12.5px] font-extrabold text-white ${
               userChoice === 'A' ? 'ring-2 ring-white/70 ring-inset' : ''
             }`}
             style={{ backgroundColor: 'hsl(var(--option-a))' }}
@@ -190,7 +222,7 @@ export default function LiveDebateStoryCard({
             {pctA > 12 && `${pctA}%`}
           </motion.div>
           <div
-            className={`h-full flex-1 flex items-center justify-end pr-3 text-[13px] font-extrabold text-white ${
+            className={`h-full flex-1 flex items-center justify-end pr-3 text-[12.5px] font-extrabold text-white ${
               userChoice === 'B' ? 'ring-2 ring-white/70 ring-inset' : ''
             }`}
             style={{ backgroundColor: 'hsl(var(--option-b) / 0.85)' }}
@@ -219,7 +251,7 @@ export default function LiveDebateStoryCard({
           )}
         </div>
 
-        {/* Demographic teasers — who's voting which way (e.g. "Women 65%", "18-24 lean A") */}
+        {/* Demographic teasers */}
         {demoTags && demoTags.length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap">
             {demoTags.slice(0, 3).map((tag, i) => (
@@ -234,56 +266,15 @@ export default function LiveDebateStoryCard({
           </div>
         )}
 
-        {/* CTA row — Vote Now (or Full Breakdown if voted) + Send + Share */}
-        <div className={`flex items-center gap-2 mt-1 ${hasVoted ? 'justify-end' : ''}`}>
-          {hasVoted ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onClick();
-              }}
-              aria-label="Full breakdown"
-              title="See full breakdown"
-              className="h-12 w-12 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform"
-            >
-              <BarChart3 className="w-[18px] h-[18px]" />
-            </button>
-          ) : (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onClick();
-              }}
-              className="flex-1 h-12 rounded-full bg-primary text-primary-foreground font-extrabold text-[15px] shadow-[0_6px_24px_hsl(var(--primary)/0.5)] active:scale-[0.98] transition-transform"
-            >
-              Vote Now →
-            </button>
-          )}
-          {onSendToFriend && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onSendToFriend();
-              }}
-              aria-label="Send to friend"
-              className="h-12 w-12 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform"
-            >
-              <Send className="w-[18px] h-[18px]" />
-            </button>
-          )}
-          {onShare && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onShare();
-              }}
-              aria-label="Share"
-              className="h-12 w-12 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform"
-            >
-              <Share2 className="w-[18px] h-[18px]" />
-            </button>
-          )}
-        </div>
+        {/* Vote Now CTA — only when not yet voted */}
+        {!hasVoted && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
+            className="w-full h-11 rounded-full bg-primary text-primary-foreground font-extrabold text-[15px] shadow-[0_6px_24px_hsl(var(--primary)/0.5)] active:scale-[0.98] transition-transform mt-0.5"
+          >
+            Vote Now →
+          </button>
+        )}
       </div>
     </div>
   );
