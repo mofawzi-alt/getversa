@@ -738,8 +738,9 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient, navigate]);
 
-  // Card height = viewport - app header (3.5rem + safe top + 0.5rem padding) - bottom nav (4rem + safe bottom)
-  const cardHeight = 'calc(100dvh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 0.5rem - 4rem - env(safe-area-inset-bottom))';
+  // Card height = small viewport (svh, stable on iOS) - app header (3.5rem + safe top) - bottom nav (4rem + safe bottom) - small buffer
+  // Using svh (small viewport) instead of dvh prevents resizing mid-scroll on iOS Safari which caused cards to be clipped.
+  const cardHeight = 'calc(100svh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 4rem - env(safe-area-inset-bottom) - 8px)';
 
   // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
   const [cycles, setCycles] = useState(1);
@@ -758,6 +759,19 @@ function LiveDebatesList({
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
   }, [livePolls.length]);
+
+  // Preload the first 3 live-debate cards' images so the first scroll feels instant.
+  useEffect(() => {
+    livePolls.slice(0, 3).forEach((p) => {
+      [p.image_a_url, p.image_b_url].forEach((url) => {
+        if (!url) return;
+        const img = new Image();
+        img.decoding = 'async';
+        (img as any).fetchPriority = 'high';
+        img.src = url;
+      });
+    });
+  }, [livePolls]);
 
   const repeatedPolls = useMemo(() => {
     if (livePolls.length === 0) return [];
@@ -844,8 +858,8 @@ function LiveDebatesList({
 
   return (
     <div
-      className="snap-y snap-mandatory overflow-y-scroll overscroll-auto"
-      style={{ height: cardHeight, willChange: 'transform' }}
+      className="snap-y snap-mandatory overflow-y-scroll [overscroll-behavior:contain]"
+      style={{ height: cardHeight, willChange: 'transform', scrollSnapStop: 'always' }}
     >
       {repeatedPolls.map(({ poll, loopIndex }) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));

@@ -54,8 +54,8 @@ const SWIPE_THRESHOLD = 50;
 // the deck. Raised so only an obvious upward gesture counts.
 const SWIPE_UP_THRESHOLD = 140;
 const SWIPE_UP_HORIZONTAL_LOCK = 40;
-const FLASH_RESULT_MS = 1500;
-const RESULT_MS = 1500;
+const FLASH_RESULT_MS = 2400;
+const RESULT_MS = 2400;
 const TAP_MOVE_TOLERANCE = 12;
 const DRAG_DEAD_ZONE = 15;
 
@@ -244,6 +244,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
       total: poll.totalVotes,
     });
 
+    // Start the result-display timer NOW (the moment the user sees the result),
+    // so the read time is consistent regardless of how slow the DB call is.
+    const voteShownAt = Date.now();
+
     // Check if this is the first vote of the day
     let firstVoteToday = false;
     const todayStart = new Date();
@@ -366,8 +370,14 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         });
       }, RESULT_MS);
     } else {
-      // Flash mode: show inline result briefly, then auto-advance
+      // Flash mode: show inline result briefly, then auto-advance.
+      // Subtract elapsed DB time so total visible time stays consistent
+      // (~FLASH_RESULT_MS from the moment the user first saw the result),
+      // with a minimum 700ms after the final percentages render so they
+      // still get a beat to read the updated numbers.
       setRevealMode('flash');
+      const elapsed = Date.now() - voteShownAt;
+      const remaining = Math.max(FLASH_RESULT_MS - elapsed, 700);
       setTimeout(() => {
         setResult(null);
         setIsVoting(false);
@@ -376,7 +386,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         setIsFirstVoteOfDay(false);
         setShowHint(true);
         onVoteComplete?.('vote', poll.id);
-      }, FLASH_RESULT_MS);
+      }, remaining);
     }
   }, [onVoteComplete, poll, profile, queryClient, result, isVoting, user]);
 
