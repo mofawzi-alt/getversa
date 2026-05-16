@@ -701,8 +701,12 @@ function LiveDebatesList({
 }) {
   const displayLivePolls = useMemo(() => {
     const uniquePolls = new Map<string, PollCard>();
+    const seenQuestions = new Set<string>();
     livePolls.forEach((poll) => {
-      if (!uniquePolls.has(poll.id)) uniquePolls.set(poll.id, poll);
+      const questionKey = poll.question.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      if (uniquePolls.has(poll.id) || seenQuestions.has(questionKey)) return;
+      seenQuestions.add(questionKey);
+      uniquePolls.set(poll.id, poll);
     });
     return Array.from(uniquePolls.values());
   }, [livePolls]);
