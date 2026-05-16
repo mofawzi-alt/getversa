@@ -738,9 +738,9 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient, navigate]);
 
-  // Card height = small viewport (svh, stable on iOS) - app header (3.5rem + safe top) - bottom nav (4rem + safe bottom) - small buffer
+  // Card height = small viewport (svh, stable on iOS) - app header (3.5rem + safe top) - bottom nav (4rem + safe bottom)
   // Using svh (small viewport) instead of dvh prevents resizing mid-scroll on iOS Safari which caused cards to be clipped.
-  const cardHeight = 'calc(100svh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 4rem - env(safe-area-inset-bottom) - 8px)';
+  const cardHeight = 'calc(100svh - 3.5rem - max(env(safe-area-inset-top), 1.75rem) - 4rem - env(safe-area-inset-bottom))';
 
   // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
   const [cycles, setCycles] = useState(1);
