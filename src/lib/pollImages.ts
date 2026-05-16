@@ -1033,6 +1033,26 @@ function isStoragePollImageUrl(url?: string | null) {
   return !!url && url.includes('/storage/v1/object/public/poll-images/');
 }
 
+export function getOptimizedPollImageSrc(
+  url?: string | null,
+  options: { width?: number; height?: number; quality?: number; resize?: 'cover' | 'contain' } = {}
+) {
+  const resolvedUrl = resolvePollMediaUrl(url);
+  if (!resolvedUrl || !isStoragePollImageUrl(resolvedUrl)) return resolvedUrl;
+
+  try {
+    const parsed = new URL(resolvedUrl);
+    parsed.pathname = parsed.pathname.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+    parsed.searchParams.set('width', String(options.width ?? 900));
+    parsed.searchParams.set('height', String(options.height ?? 1200));
+    parsed.searchParams.set('resize', options.resize ?? 'cover');
+    parsed.searchParams.set('quality', String(options.quality ?? 72));
+    return parsed.toString();
+  } catch {
+    return resolvedUrl;
+  }
+}
+
 export function resolvePollMediaUrl(url?: string | null) {
   if (!url) return url;
   // Generated Lovable assets are not bundled inside the native iOS app. A
@@ -1088,6 +1108,12 @@ export function handlePollImageError(
   params: Omit<PollImageParams, 'imageUrl'>
 ) {
   const target = e.currentTarget;
+  const originalSrc = target.dataset.originalSrc;
+  if (originalSrc && !target.dataset.originalApplied && target.src !== originalSrc) {
+    target.dataset.originalApplied = 'true';
+    target.src = originalSrc;
+    return;
+  }
   if (target.dataset.fallbackApplied) return; // prevent infinite loop
   target.dataset.fallbackApplied = 'true';
   // Use Unsplash fallback which always loads

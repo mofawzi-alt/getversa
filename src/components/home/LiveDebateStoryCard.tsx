@@ -1,7 +1,7 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Send, Share2, Clock, ChevronUp, BarChart3, CirclePlus } from 'lucide-react';
-import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import { getOptimizedPollImageSrc, getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 
@@ -75,8 +75,11 @@ export default function LiveDebateStoryCard({
       side: dominantSide,
     });
   }, [poll, dominantSide]);
+  const bgDisplaySrc = useMemo(
+    () => getOptimizedPollImageSrc(bgImageSrc, { width: 900, height: 1200, quality: eagerImage ? 74 : 68 }) || bgImageSrc,
+    [bgImageSrc, eagerImage]
+  );
 
-  const [imgLoaded, setImgLoaded] = useState(false);
   const timeLeft = formatTimeLeft(poll.ends_at);
   const pctA = Math.round(poll.percentA || 0);
   const pctB = Math.round(poll.percentB || 0);
@@ -92,15 +95,14 @@ export default function LiveDebateStoryCard({
       {/* Full-bleed background image */}
       {bgImageSrc && (
         <img
-          src={bgImageSrc}
+          src={bgDisplaySrc}
           alt=""
           loading={eagerImage ? 'eager' : 'lazy'}
           decoding="async"
-          onLoad={() => setImgLoaded(true)}
+          data-original-src={bgImageSrc}
+          {...(eagerImage ? { fetchpriority: 'high' as any } : {})}
           onError={(e) => handlePollImageError(e, { option: dominantSide === 'A' ? poll.option_a : poll.option_b, question: poll.question, side: dominantSide })}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-            imgLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
+          className="absolute inset-0 w-full h-full object-cover"
         />
       )}
       {/* Dark gradient overlay for legibility */}
