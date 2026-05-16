@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Shield, Clock, Search } from 'lucide-react';
+import { Shield, Clock, Search, Sparkles } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
 import GlobalPollSearch from '@/components/search/GlobalPollSearch';
 
