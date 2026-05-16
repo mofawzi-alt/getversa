@@ -701,6 +701,7 @@ function LiveDebatesList({
 }) {
   const displayLivePolls = useMemo(() => livePolls.slice(0, 40), [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
+  const liveDebateKey = useMemo(() => pollIds.join('|'), [pollIds]);
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
@@ -788,8 +789,12 @@ function LiveDebatesList({
     return () => window.removeEventListener('versa:home-scroll-top', handler);
   }, [exitImmersive]);
 
-  const cycles = displayLivePolls.length >= 8 ? 4 : 8;
+  const [cycles, setCycles] = useState(5);
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setCycles(5);
+  }, [liveDebateKey]);
 
   // Immersive mode — only ENTER via explicit user scroll inside the cards
   // (handled by the scroller's onScroll below). Do NOT auto-enter or auto-exit
