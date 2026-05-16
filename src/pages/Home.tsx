@@ -934,7 +934,7 @@ function LiveDebatesList({
         }`}
         style={{ height: cardHeight, willChange: 'transform' }}
       >
-      {repeatedPolls.map(({ poll, loopIndex }) => {
+      {displayLivePolls.map((poll, index) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
         const userChoice = voteData?.choice ?? null;
@@ -989,7 +989,7 @@ function LiveDebatesList({
 
         return (
           <LiveDebateStoryCard
-            key={`${poll.id}-${loopIndex}`}
+            key={poll.id}
             poll={{
               id: poll.id,
               question: poll.question,
@@ -1008,7 +1008,7 @@ function LiveDebatesList({
             topSlot={topSlot}
             extraSideAction={extraSideAction}
             demoTags={computeDemoTags(demoMap?.get(poll.id) || [], Math.max(poll.percentA, poll.percentB), poll.percentA >= poll.percentB ? 'A' : 'B')}
-            showBackToTop={loopIndex === 0 && immersive}
+            showBackToTop={index === 0 && immersive}
             onBackToTop={exitImmersive}
             onClick={handleClick}
             onShare={() => handleShare(poll)}
@@ -1031,12 +1031,11 @@ function LiveDebatesList({
               },
               image_url: poll.image_a_url || poll.image_b_url,
             }) : undefined}
-            eagerImage={loopIndex < 2}
+            eagerImage={index < 2}
             height={cardHeight}
           />
         );
       })}
-      <div ref={sentinelRef} className="h-1" />
 
       {shareSheetPoll && (
         <SharePollToFriendSheet
