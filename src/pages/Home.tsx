@@ -22,9 +22,6 @@ import { mapToVersaCategory } from '@/lib/categoryMeta';
 import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import BrowseCard, { computeDemoTags, type BrowsePoll } from '@/components/browse/BrowseCard';
-import LiveDebateStoryCard from '@/components/home/LiveDebateStoryCard';
-import { useUserStories } from '@/hooks/useUserStories';
-import { setImmersiveMode } from '@/lib/immersiveMode';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
@@ -714,7 +711,6 @@ function LiveDebatesList({
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
-  const { postStory } = useUserStories();
 
   const handleInlineVote = useCallback(async (poll: PollCard, choice: 'A' | 'B') => {
     if (!user) {
