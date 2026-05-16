@@ -961,6 +961,7 @@ function LiveDebatesList({
               onShare={() => handleShare(poll)}
               onSendToFriend={() => setShareSheetPoll(poll)}
               extraSideAction={extraSideAction}
+              eagerImages={loopIndex < 2}
             />
           </div>
         );
