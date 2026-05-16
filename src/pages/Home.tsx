@@ -745,7 +745,16 @@ function LiveDebatesList({
   // Only the bottom nav remains visible.
   const cardHeight = 'calc(100svh - 4rem - env(safe-area-inset-bottom))';
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const [immersive, setImmersive] = useState(false);
+
+  // Exit immersive mode and scroll the page up to reveal stories/header
+  const exitImmersive = useCallback(() => {
+    setImmersive(false);
+    setImmersiveMode(false);
+    if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
   const [cycles, setCycles] = useState(1);
