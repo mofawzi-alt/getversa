@@ -38,8 +38,8 @@ const runNativeBootTasks = () => {
   //    Plugin may not be installed yet (added on next App Store submission).
   void (async () => {
     try {
-      const { SplashScreen } = await import("@capacitor/splash-screen");
-      await SplashScreen.hide({ fadeOutDuration: 200 });
+      const mod: any = await import(/* @vite-ignore */ "@capacitor/splash-screen").catch(() => null);
+      if (mod?.SplashScreen?.hide) await mod.SplashScreen.hide({ fadeOutDuration: 200 });
     } catch {
       /* plugin not installed yet — safe no-op */
     }
