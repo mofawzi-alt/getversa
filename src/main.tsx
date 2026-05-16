@@ -121,4 +121,12 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </HelmetProvider>
 );
+
+// Kick off native boot tasks AFTER the first React render is scheduled,
+// so the UI paints first and the user no longer stares at white.
+requestAnimationFrame(() => {
+  runNativeBootTasks();
+  // Warm the home feed image cache in the background.
+  import("@/lib/preloadFeedImages").then((m) => m.preloadFeedImages?.(6)).catch(() => {});
+});
 }
