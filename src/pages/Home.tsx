@@ -815,6 +815,9 @@ function LiveDebatesList({
         const e = entries[0];
         if (!e) return;
         const active = e.intersectionRatio >= 0.5;
+        // Don't auto-enter immersive until the user has actually scrolled
+        // and the initial suppression window has passed.
+        if (active && (!userScrolledRef.current || Date.now() < suppressEnterUntilRef.current)) return;
         setImmersive(active);
         setImmersiveMode(active);
       },
