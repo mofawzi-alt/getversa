@@ -25,6 +25,9 @@ interface Props {
   userChoice?: string | null;
   topSlot?: ReactNode;
   extraSideAction?: ReactNode;
+  demoTags?: string[];
+  showBackToTop?: boolean;
+  onBackToTop?: () => void;
   onClick: () => void;
   onShare?: () => void;
   onSendToFriend?: () => void;
