@@ -489,10 +489,75 @@ Rules:
     }
     const cleanedEntities: string[] = Array.from(new Set([...rawEntities, ...injectedEntities].filter((e) => e.length >= 2 && !STOP_TERMS.has(e))));
     const requiredEntityVariants = cleanedEntities.map((e) => expandEntityVariants(e));
-    const topicalTerms = Array.from(new Set([...cleanedEntities, ...keywords]
+
+    // ---- Concept expansion: concept words → related keywords + category hints ----
+    // Fixes questions like "how do students feel about online learning" that have no
+    // hard entities. We expand "students" → ["school","university","education"...] and
+    // map them to the closest category so matchers can find related polls.
+    const CONCEPT_EXPANSION: Record<string, { keywords: string[]; categories: string[] }> = {
+      students: { keywords: ["student", "school", "university", "college", "uni", "class", "campus", "studying", "education"], categories: ["Lifestyle & Society"] },
+      student: { keywords: ["student", "school", "university", "college", "uni", "class", "campus", "studying", "education"], categories: ["Lifestyle & Society"] },
+      learning: { keywords: ["learn", "study", "class", "school", "university", "online class", "hybrid", "in-person", "remote", "education"], categories: ["Lifestyle & Society"] },
+      online: { keywords: ["online", "remote", "virtual", "hybrid", "digital", "zoom"], categories: [] },
+      school: { keywords: ["school", "student", "class", "university", "education"], categories: ["Lifestyle & Society"] },
+      university: { keywords: ["university", "uni", "college", "campus", "student", "auc", "guc"], categories: ["Lifestyle & Society"] },
+      college: { keywords: ["college", "university", "uni", "campus", "student"], categories: ["Lifestyle & Society"] },
+      work: { keywords: ["work", "job", "career", "office", "remote", "hybrid", "workplace", "employer"], categories: ["Lifestyle & Society", "Financial Services"] },
+      job: { keywords: ["job", "work", "career", "salary", "employer", "office"], categories: ["Lifestyle & Society", "Financial Services"] },
+      youth: { keywords: ["youth", "young", "gen z", "teen", "teenager", "student"], categories: ["Lifestyle & Society"] },
+      teens: { keywords: ["teen", "teenager", "youth", "young", "gen z", "student"], categories: ["Lifestyle & Society"] },
+      women: { keywords: ["women", "woman", "girl", "female", "lady"], categories: [] },
+      men: { keywords: ["men", "man", "guy", "male", "boy"], categories: [] },
+      parents: { keywords: ["parent", "mom", "dad", "father", "mother", "family", "kids"], categories: ["Lifestyle & Society"] },
+      marriage: { keywords: ["marriage", "wedding", "married", "spouse", "husband", "wife", "engagement"], categories: ["Lifestyle & Society"] },
+      dating: { keywords: ["dating", "date", "relationship", "partner", "boyfriend", "girlfriend", "love"], categories: ["Lifestyle & Society"] },
+      relationship: { keywords: ["relationship", "partner", "dating", "love", "marriage"], categories: ["Lifestyle & Society"] },
+      fitness: { keywords: ["fitness", "gym", "workout", "exercise", "training", "sport"], categories: ["Lifestyle & Society"] },
+      health: { keywords: ["health", "wellness", "fitness", "diet", "mental", "doctor"], categories: ["Lifestyle & Society"] },
+      money: { keywords: ["money", "salary", "savings", "income", "rent", "afford", "expensive", "cheap", "budget"], categories: ["Financial Services"] },
+      saving: { keywords: ["save", "saving", "savings", "money", "budget", "afford"], categories: ["Financial Services"] },
+      spending: { keywords: ["spend", "spending", "money", "afford", "expensive", "budget"], categories: ["Financial Services"] },
+      politics: { keywords: ["politics", "government", "vote", "election", "policy"], categories: ["Lifestyle & Society"] },
+      news: { keywords: ["news", "media", "current", "events"], categories: ["Media & Entertainment"] },
+      religion: { keywords: ["religion", "faith", "islam", "muslim", "christian", "pray"], categories: ["Lifestyle & Society"] },
+      music: { keywords: ["music", "song", "artist", "playlist", "spotify", "anghami"], categories: ["Media & Entertainment"] },
+      movie: { keywords: ["movie", "film", "cinema", "netflix", "watch", "series"], categories: ["Media & Entertainment"] },
+      film: { keywords: ["movie", "film", "cinema", "netflix", "watch", "series"], categories: ["Media & Entertainment"] },
+      tv: { keywords: ["tv", "series", "show", "netflix", "shahid", "watch"], categories: ["Media & Entertainment"] },
+      shopping: { keywords: ["shop", "shopping", "buy", "store", "mall", "online shopping"], categories: ["Retail & E-commerce"] },
+      housing: { keywords: ["housing", "rent", "apartment", "flat", "home", "compound", "buy"], categories: ["Lifestyle & Society"] },
+      rent: { keywords: ["rent", "rental", "apartment", "flat", "housing"], categories: ["Lifestyle & Society"] },
+      transport: { keywords: ["transport", "car", "uber", "careem", "bus", "metro", "commute"], categories: ["Lifestyle & Society"] },
+      commute: { keywords: ["commute", "transport", "traffic", "uber", "metro", "drive"], categories: ["Lifestyle & Society"] },
+      traffic: { keywords: ["traffic", "commute", "transport", "drive", "uber"], categories: ["Lifestyle & Society"] },
+      egyptians: { keywords: [], categories: [] }, // pure concept, no narrowing
+      egyptian: { keywords: [], categories: [] },
+      people: { keywords: [], categories: [] },
+      everyone: { keywords: [], categories: [] },
+    };
+
+    const conceptKeywords: string[] = [];
+    const conceptCategories: string[] = [];
+    const qLower = (question || "").toLowerCase();
+    for (const [concept, expansion] of Object.entries(CONCEPT_EXPANSION)) {
+      // Match whole-word so "online" doesn't fire on "wineline"
+      const re = new RegExp(`\\b${concept}\\b`, "i");
+      if (re.test(qLower)) {
+        conceptKeywords.push(...expansion.keywords);
+        conceptCategories.push(...expansion.categories);
+      }
+    }
+    if (conceptKeywords.length > 0 || conceptCategories.length > 0) {
+      console.log("Concept expansion fired:", { conceptKeywords: Array.from(new Set(conceptKeywords)), conceptCategories: Array.from(new Set(conceptCategories)) });
+    }
+
+    const topicalTerms = Array.from(new Set([...cleanedEntities, ...keywords, ...conceptKeywords]
       .map((term: string) => normalizeTerm(String(term || "")))
       .filter((term: string) => term.length >= 3 && !STOP_TERMS.has(term))));
-    const categoryBuckets = category && category !== "any" ? (CATEGORY_MAP[category] || []) : [];
+    const categoryBuckets = Array.from(new Set([
+      ...(category && category !== "any" ? (CATEGORY_MAP[category] || []) : []),
+      ...conceptCategories,
+    ]));
 
     // ---- 1a. Self-referential guard: questions about Versa the app itself ----
     // Detect "what is versa", "how does versa work", "who made versa", "is versa free", etc.
@@ -1165,9 +1230,9 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
       }
 
       const summary = matchedPolls.length > 0
-        ? `Versa found polls on this topic, but there still isn't enough vote data yet. Vote on these polls to help build the answer — and earn credits while you do.`
+        ? `Here's what's closest to your question — vote on these to sharpen the answer and earn credits.`
         : suggestedPolls.length > 0
-          ? `Versa doesn't have enough data on this topic yet. Vote on these related polls to help build it — and earn credits while you do.`
+          ? `No direct match yet, but here are the closest polls Versa has. Vote on them to help build the answer — and earn credits while you do.`
           : `Versa doesn't have any polls on this topic yet. Try a different question, or vote on polls in the feed to help build new topics.`;
 
       // Log (no charge)
