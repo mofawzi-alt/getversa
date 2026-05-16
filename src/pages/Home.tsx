@@ -760,6 +760,19 @@ function LiveDebatesList({
     return () => observer.disconnect();
   }, [livePolls.length]);
 
+  // Preload the first 3 live-debate cards' images so the first scroll feels instant.
+  useEffect(() => {
+    livePolls.slice(0, 3).forEach((p) => {
+      [p.image_a_url, p.image_b_url].forEach((url) => {
+        if (!url) return;
+        const img = new Image();
+        img.decoding = 'async';
+        (img as any).fetchPriority = 'high';
+        img.src = url;
+      });
+    });
+  }, [livePolls]);
+
   const repeatedPolls = useMemo(() => {
     if (livePolls.length === 0) return [];
     const result: Array<{ poll: PollCard; loopIndex: number }> = [];
