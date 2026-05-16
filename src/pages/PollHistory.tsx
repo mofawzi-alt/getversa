@@ -373,6 +373,7 @@ export default function PollHistory() {
           ))}
         </div>
       )}
+      <BottomNav />
     </div>
   );
 }
