@@ -421,11 +421,6 @@ export default function BrowseCard({
               </span>
             )}
 
-            <div className="flex items-center justify-between text-[13px]">
-              <span className={`${loserText} truncate`}>
-                <span className={loserPrefix}>vs</span> {loserLabel} · <span className="tabular-nums">{loserPct}%</span>
-              </span>
-            </div>
           </div>
 
           <div className="shrink-0 flex flex-row items-center gap-1.5 pt-0.5">
