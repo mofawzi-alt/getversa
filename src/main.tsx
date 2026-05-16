@@ -18,30 +18,12 @@ if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
   console.info("[Versa] Native OAuth bridge handled callback before app boot.");
 } else {
 
-// Native iOS: make the WebView extend under the status bar so our
-// safe-area CSS (env(safe-area-inset-top)) is the single source of truth
-// for the header offset. Without this, iOS leaves a white bar AND our
-// CSS adds extra padding, causing the logo to overlap the notch.
-if (Capacitor?.isNativePlatform?.()) {
-  void initOneSignal(null);
-  // Tell Capgo this bundle booted successfully so it doesn't roll back.
-  void (async () => {
-    try {
-      const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
-      await CapacitorUpdater.notifyAppReady();
-    } catch (err) {
-      console.warn("[CapacitorUpdater] notifyAppReady failed", err);
-    }
-  })();
-  void CapacitorApp.getLaunchUrl().then((launch) => {
-    const route = getNotificationRoute(launch?.url);
-    if (route && route !== "/home") openNotificationRoute(route);
-  }).catch(() => {});
-  void CapacitorApp.addListener("appUrlOpen", ({ url }) => {
-    const route = getNotificationRoute(url);
-    if (route && route !== "/home" && !route.startsWith("/auth-callback")) openNotificationRoute(route);
-  });
+// Native iOS boot work — deferred until AFTER first paint so the home screen
+// can render as fast as possible. None of these are needed to draw the UI.
+const runNativeBootTasks = () => {
+  if (!Capacitor?.isNativePlatform?.()) return;
 
+  // 1) StatusBar first — only thing that affects layout, runs ASAP.
   void (async () => {
     try {
       const { StatusBar, Style } = await import("@capacitor/status-bar");
@@ -50,16 +32,59 @@ if (Capacitor?.isNativePlatform?.()) {
     } catch (err) {
       console.warn("[StatusBar] setup failed", err);
     }
+  })();
+
+  // 2) Hide native splash screen the instant React is on screen.
+  //    Plugin may not be installed yet (added on next App Store submission).
+  void (async () => {
     try {
-      const { Keyboard } = await import("@capacitor/keyboard");
-      // Hide the iOS keyboard accessory bar (gray bar with ↑ ↓ ✓)
-      // so inputs look clean like iMessage.
-      await Keyboard.setAccessoryBarVisible({ isVisible: false });
-    } catch (err) {
-      console.warn("[Keyboard] hide accessory bar failed", err);
+      const modName = "@capacitor/splash-screen";
+      const mod: any = await import(/* @vite-ignore */ modName).catch(() => null);
+      if (mod?.SplashScreen?.hide) await mod.SplashScreen.hide({ fadeOutDuration: 200 });
+    } catch {
+      /* plugin not installed yet — safe no-op */
     }
   })();
-}
+
+  // 3) Everything below is pure background work — push it to idle time.
+  const runIdle = (cb: () => void) => {
+    const ric = (window as any).requestIdleCallback;
+    if (typeof ric === "function") ric(cb, { timeout: 2000 });
+    else setTimeout(cb, 600);
+  };
+
+  runIdle(() => {
+    void initOneSignal(null);
+
+    void (async () => {
+      try {
+        const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
+        await CapacitorUpdater.notifyAppReady();
+      } catch (err) {
+        console.warn("[CapacitorUpdater] notifyAppReady failed", err);
+      }
+    })();
+
+    void CapacitorApp.getLaunchUrl().then((launch) => {
+      const route = getNotificationRoute(launch?.url);
+      if (route && route !== "/home") openNotificationRoute(route);
+    }).catch(() => {});
+
+    void CapacitorApp.addListener("appUrlOpen", ({ url }) => {
+      const route = getNotificationRoute(url);
+      if (route && route !== "/home" && !route.startsWith("/auth-callback")) openNotificationRoute(route);
+    });
+
+    void (async () => {
+      try {
+        const { Keyboard } = await import("@capacitor/keyboard");
+        await Keyboard.setAccessoryBarVisible({ isVisible: false });
+      } catch (err) {
+        console.warn("[Keyboard] hide accessory bar failed", err);
+      }
+    })();
+  });
+};
 
 const isInIframe = (() => {
   try {
@@ -96,4 +121,12 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </HelmetProvider>
 );
+
+// Kick off native boot tasks AFTER the first React render is scheduled,
+// so the UI paints first and the user no longer stares at white.
+requestAnimationFrame(() => {
+  runNativeBootTasks();
+  // Warm the home feed image cache in the background.
+  import("@/lib/preloadFeedImages").then((m) => m.preloadFeedImages?.(6)).catch(() => {});
+});
 }
