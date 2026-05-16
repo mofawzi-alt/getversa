@@ -760,14 +760,14 @@ function LiveDebatesList({
     return () => observer.disconnect();
   }, [livePolls.length]);
 
-  // Preload the first 3 live-debate cards' images so the first scroll feels instant.
+  // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {
-    livePolls.slice(0, 3).forEach((p) => {
+    livePolls.slice(0, 6).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
         if (!url) return;
         const img = new Image();
         img.decoding = 'async';
-        (img as any).fetchPriority = 'high';
+        if (idx < 2) (img as any).fetchPriority = 'high';
         img.src = url;
       });
     });
