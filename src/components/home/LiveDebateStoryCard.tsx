@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Send, Share2, Clock, ChevronUp } from 'lucide-react';
+import { Users, Send, Share2, Clock, ChevronUp, BarChart3 } from 'lucide-react';
 import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
