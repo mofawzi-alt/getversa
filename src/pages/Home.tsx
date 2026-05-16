@@ -886,36 +886,6 @@ function LiveDebatesList({
           </div>
         ) : null;
 
-        const addToStory = user ? (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              postStory({
-                story_type: 'poll_result',
-                content: {
-                  poll_id: poll.id,
-                  question: poll.question,
-                  option_a: poll.option_a,
-                  option_b: poll.option_b,
-                  pct_a: poll.percentA ?? 0,
-                  pct_b: poll.percentB ?? 0,
-                  total_votes: poll.totalVotes ?? 0,
-                  winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
-                  winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
-                  image_a_url: poll.image_a_url,
-                  image_b_url: poll.image_b_url,
-                  image_url: poll.image_a_url || poll.image_b_url,
-                },
-                image_url: poll.image_a_url || poll.image_b_url,
-              });
-            }}
-            aria-label="Add to your story"
-            className="w-9 h-9 rounded-full bg-muted text-foreground hover:bg-muted/80 flex items-center justify-center active:scale-95 transition-transform"
-          >
-            <BookOpen className="h-[14px] w-[14px]" />
-          </button>
-        ) : null;
-
         const handleClick = () => {
           if (!hasVoted) {
             const idx = newPolls.findIndex(p => p.id === poll.id);
@@ -928,23 +898,59 @@ function LiveDebatesList({
           setModalPoll(poll);
         };
 
+        const handleAddToStory = user ? () => {
+          postStory({
+            story_type: 'poll_result',
+            content: {
+              poll_id: poll.id,
+              question: poll.question,
+              option_a: poll.option_a,
+              option_b: poll.option_b,
+              pct_a: poll.percentA ?? 0,
+              pct_b: poll.percentB ?? 0,
+              total_votes: poll.totalVotes ?? 0,
+              winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
+              winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
+              image_a_url: poll.image_a_url,
+              image_b_url: poll.image_b_url,
+              image_url: poll.image_a_url || poll.image_b_url,
+            },
+            image_url: poll.image_a_url || poll.image_b_url,
+          });
+        } : undefined;
+
+        const demoTags = computeDemoTags(demoMap?.get(poll.id) || [], Math.max(poll.percentA, poll.percentB), poll.percentA >= poll.percentB ? 'A' : 'B');
+
         return (
           <div
             key={poll.id}
             className="snap-start snap-always"
             style={{ scrollSnapAlign: 'start', height: cardHeight }}
           >
-            <BrowseCard
-              poll={toBrowsePoll(poll)}
+            <LiveDebateStoryCard
+              poll={{
+                id: poll.id,
+                question: poll.question,
+                option_a: poll.option_a,
+                option_b: poll.option_b,
+                image_a_url: poll.image_a_url,
+                image_b_url: poll.image_b_url,
+                category: poll.category,
+                ends_at: poll.ends_at,
+                totalVotes: poll.totalVotes,
+                percentA: poll.percentA,
+                percentB: poll.percentB,
+              }}
+              hasVoted={hasVoted}
               userChoice={userChoice}
-              isActive={index === 0}
-              isSignedIn={!!user}
-              onVote={handleClick}
+              topSlot={topSlot}
+              demoTags={demoTags.map(t => ({ emoji: t.emoji, label: t.label, choice: t.choice }))}
+              onClick={handleClick}
               onShare={() => handleShare(poll)}
               onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
-              topSlot={topSlot}
-              extraSideAction={addToStory}
-              eagerImages={index < 2}
+              onAddToStory={handleAddToStory}
+              eagerImage={index < 2}
+              height={cardHeight}
             />
           </div>
         );
