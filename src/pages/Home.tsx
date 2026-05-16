@@ -817,9 +817,17 @@ function LiveDebatesList({
         const e = entries[0];
         if (!e) return;
         const active = e.intersectionRatio >= 0.5;
-        // Don't auto-enter immersive until the user has actually scrolled
-        // and the initial suppression window has passed.
-        if (active && (!userScrolledRef.current || Date.now() < suppressEnterUntilRef.current)) return;
+        // Only auto-enter immersive when the user has actually scrolled the
+        // page down past the header/stories. This prevents the app from
+        // landing on the live-debate card on initial open.
+        if (active && window.scrollY < 80) {
+          if (immersive) {
+            setImmersive(false);
+            setImmersiveMode(false);
+          }
+          return;
+        }
+        if (active && Date.now() < suppressEnterUntilRef.current) return;
         setImmersive(active);
         setImmersiveMode(active);
       },
