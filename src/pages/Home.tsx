@@ -840,7 +840,7 @@ function LiveDebatesList({
   if (displayLivePolls.length === 0) return null;
 
   return (
-    <div className="w-full bg-background px-3 py-3 space-y-4">
+    <div className="w-full bg-background -mx-3 sm:mx-0">
       {displayLivePolls.map((poll, index) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
@@ -939,7 +939,7 @@ function LiveDebatesList({
             onShare={() => handleShare(poll)}
             onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
             eagerImage={index < 2}
-            height="calc(100svh - 8rem)"
+            height="100svh"
           />
         );
       })}
