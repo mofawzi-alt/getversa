@@ -708,7 +708,6 @@ function LiveDebatesList({
     return Array.from(uniquePolls.values());
   }, [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
-  const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
 
