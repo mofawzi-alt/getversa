@@ -191,18 +191,34 @@ serve(async (req) => {
     const body = await req.json();
     const {
       question,
-      mode = "decide",
+      mode: rawMode,
       viewer,
       history,
       stage = "preview", // "preview" or "confirm"
     } = body as {
       question?: string;
-      mode?: "decide" | "research";
+      mode?: "decide" | "research" | "auto";
       viewer?: { age_range?: string; city?: string; gender?: string; ask_level?: number };
       history?: Array<{ role: "user" | "assistant"; content: string }>;
       stage?: "preview" | "confirm";
     };
     const askLevel = viewer?.ask_level ?? 4; // default to full access if not provided
+
+    // ---- Auto-route mode from question shape ----
+    // "X or Y?", "vs", explicit comparison, 2+ entities → decide (pick a side).
+    // Otherwise → research (broader sentiment exploration).
+    const autoDetectMode = (q: string): "decide" | "research" => {
+      const ql = (q || "").toLowerCase();
+      const hasComparison = /\b(or|vs|versus|ولا)\b/.test(ql) || /\?\s*$/.test(ql.trim());
+      const isShort = ql.trim().split(/\s+/).length <= 8;
+      const exploratory = /\b(how (do|are|much|many)|what (do|are)|why|feel|think about|trends?|patterns?|sentiment|divided|attitude|culture|differences?)\b/.test(ql);
+      if (exploratory && !hasComparison) return "research";
+      if (hasComparison || isShort) return "decide";
+      return "research";
+    };
+    const mode: "decide" | "research" = (rawMode === "decide" || rawMode === "research")
+      ? rawMode
+      : autoDetectMode(question || "");
 
     if (!question || typeof question !== "string" || question.trim().length < 3) {
       return new Response(JSON.stringify({ error: "Please ask a fuller question." }), {
