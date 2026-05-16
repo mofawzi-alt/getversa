@@ -747,13 +747,18 @@ function LiveDebatesList({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [immersive, setImmersive] = useState(false);
+  const suppressEnterUntilRef = useRef<number>(0);
 
   // Exit immersive mode and scroll the page up to reveal stories/header
   const exitImmersive = useCallback(() => {
     setImmersive(false);
     setImmersiveMode(false);
     if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Block auto re-entry from the scroll handler for a moment
+    suppressEnterUntilRef.current = Date.now() + 800;
+    // Jump immediately, then smooth-scroll for polish
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }, []);
 
   // Enter immersive mode and pin the live-debate cards to the viewport
@@ -933,6 +938,7 @@ function LiveDebatesList({
         onScroll={() => {
           const el = scrollerRef.current;
           if (!el) return;
+          if (Date.now() < suppressEnterUntilRef.current) return;
           if (el.scrollTop > 8 && !immersive) {
             enterImmersive();
           }
