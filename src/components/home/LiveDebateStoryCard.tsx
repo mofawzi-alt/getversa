@@ -89,7 +89,7 @@ export default function LiveDebateStoryCard({
           loading={eagerImage ? 'eager' : 'lazy'}
           decoding="async"
           onLoad={() => setImgLoaded(true)}
-          onError={(e) => handlePollImageError(e, bgImageSrc)}
+          onError={(e) => handlePollImageError(e, { option: dominantSide === 'A' ? poll.option_a : poll.option_b, question: poll.question, side: dominantSide })}
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
             imgLoaded ? 'opacity-100' : 'opacity-0'
           }`}
