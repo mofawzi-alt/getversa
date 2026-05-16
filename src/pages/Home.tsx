@@ -740,11 +740,12 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient, navigate]);
 
-  // Full-screen TikTok-style: each card fills the entire viewport. The AppHeader
-  // hides itself (via immersive mode) when this section is in view, so only the
-  // bottom nav remains. Subtract only the bottom nav so cards still clear it.
+  // Full-screen TikTok-style: cards container pins itself fixed to the viewport
+  // when scrolled into view, covering anything above (stories, headings, padding).
+  // Only the bottom nav remains visible.
   const cardHeight = 'calc(100svh - 4rem - env(safe-area-inset-bottom))';
-  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [immersive, setImmersive] = useState(false);
 
   // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
   const [cycles, setCycles] = useState(1);
@@ -764,18 +765,21 @@ function LiveDebatesList({
     return () => observer.disconnect();
   }, [livePolls.length]);
 
-  // Immersive mode — when the Live Debates section fills the viewport, hide the
-  // global AppHeader so cards feel truly full-screen (TikTok-style).
+  // Immersive mode — when the Live Debates wrapper enters the viewport, pin the
+  // cards container fixed to the screen and hide the AppHeader. This gives a
+  // true TikTok-style full-screen feel regardless of stories/headings above.
   useEffect(() => {
-    if (!containerRef.current) return;
-    const el = containerRef.current;
+    if (!wrapperRef.current) return;
+    const el = wrapperRef.current;
     const observer = new IntersectionObserver(
       (entries) => {
         const e = entries[0];
         if (!e) return;
-        setImmersiveMode(e.intersectionRatio >= 0.6);
+        const active = e.intersectionRatio >= 0.5;
+        setImmersive(active);
+        setImmersiveMode(active);
       },
-      { threshold: [0, 0.3, 0.6, 0.9, 1] },
+      { threshold: [0, 0.25, 0.5, 0.75, 1] },
     );
     observer.observe(el);
     return () => {
@@ -882,10 +886,16 @@ function LiveDebatesList({
 
   return (
     <div
-      ref={containerRef}
-      className="overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch]"
-      style={{ height: cardHeight, willChange: 'transform' }}
+      ref={wrapperRef}
+      className="relative w-full bg-black"
+      style={{ height: '100svh' }}
     >
+      <div
+        className={`overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch] left-0 right-0 top-0 ${
+          immersive ? 'fixed z-30' : 'absolute'
+        }`}
+        style={{ height: cardHeight, willChange: 'transform' }}
+      >
       {repeatedPolls.map(({ poll, loopIndex }) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
@@ -1000,6 +1010,7 @@ function LiveDebatesList({
           onOpenChange={(open) => { if (!open) setShareSheetPoll(null); }}
         />
       )}
+      </div>
     </div>
   );
 }
