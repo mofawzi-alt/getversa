@@ -1,7 +1,7 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Send, Share2, Clock, ChevronUp, BarChart3, CirclePlus } from 'lucide-react';
-import { getOptimizedPollImageSrc, getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import { getOptimizedPollImageSrc, getPollDisplayImageSrc, getPollImageFallbackSrc, handlePollImageError, resolvePollMediaUrl } from '@/lib/pollImages';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 
@@ -45,6 +45,12 @@ function formatTimeLeft(ends_at?: string | null): string | null {
   if (hours >= 1) return `${hours}h left`;
   const mins = Math.floor(ms / 60_000);
   return `${mins}m left`;
+}
+
+const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|ogg)(\?|#|$)/i;
+
+function isVideoUrl(url?: string | null) {
+  return !!url && VIDEO_EXTENSIONS.test(url);
 }
 
 export default function LiveDebateStoryCard({
