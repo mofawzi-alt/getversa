@@ -1035,7 +1035,7 @@ function isStoragePollImageUrl(url?: string | null) {
 
 export function getOptimizedPollImageSrc(
   url?: string | null,
-  options: { width?: number; height?: number; quality?: number } = {}
+  options: { width?: number; height?: number; quality?: number; resize?: 'cover' | 'contain' } = {}
 ) {
   const resolvedUrl = resolvePollMediaUrl(url);
   if (!resolvedUrl || !isStoragePollImageUrl(resolvedUrl)) return resolvedUrl;
@@ -1045,7 +1045,7 @@ export function getOptimizedPollImageSrc(
     parsed.pathname = parsed.pathname.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
     parsed.searchParams.set('width', String(options.width ?? 900));
     parsed.searchParams.set('height', String(options.height ?? 1200));
-    parsed.searchParams.set('resize', 'cover');
+    parsed.searchParams.set('resize', options.resize ?? 'cover');
     parsed.searchParams.set('quality', String(options.quality ?? 72));
     return parsed.toString();
   } catch {
