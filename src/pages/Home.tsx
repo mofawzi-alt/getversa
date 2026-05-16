@@ -699,8 +699,9 @@ function LiveDebatesList({
   setModalPoll: (p: PollCard) => void;
   navigate: (path: string) => void;
 }) {
-  const displayLivePolls = useMemo(() => livePolls.slice(0, 24), [livePolls]);
+  const displayLivePolls = useMemo(() => livePolls.slice(0, 40), [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
+  const liveDebateKey = useMemo(() => pollIds.join('|'), [pollIds]);
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
@@ -788,10 +789,12 @@ function LiveDebatesList({
     return () => window.removeEventListener('versa:home-scroll-top', handler);
   }, [exitImmersive]);
 
-
-  // Show each poll only once — no repetition (was causing "repetitive" feel)
-  const cycles = 1;
+  const [cycles, setCycles] = useState(5);
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setCycles(5);
+  }, [liveDebateKey]);
 
   // Immersive mode — only ENTER via explicit user scroll inside the cards
   // (handled by the scroller's onScroll below). Do NOT auto-enter or auto-exit
@@ -802,6 +805,22 @@ function LiveDebatesList({
   useEffect(() => {
     return () => { setImmersiveMode(false); };
   }, []);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const scroller = scrollerRef.current;
+    if (!sentinel || !scroller || displayLivePolls.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setCycles((current) => Math.min(current + 3, 40));
+      },
+      { root: scroller, rootMargin: '1600px 0px', threshold: 0.01 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [displayLivePolls.length, cycles]);
 
   // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {

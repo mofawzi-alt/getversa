@@ -1,7 +1,7 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Send, Share2, Clock, ChevronUp, BarChart3, CirclePlus } from 'lucide-react';
-import { getOptimizedPollImageSrc, getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import { getOptimizedPollImageSrc, getPollDisplayImageSrc, getPollImageFallbackSrc, handlePollImageError, resolvePollMediaUrl } from '@/lib/pollImages';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 
@@ -47,6 +47,12 @@ function formatTimeLeft(ends_at?: string | null): string | null {
   return `${mins}m left`;
 }
 
+const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|ogg)(\?|#|$)/i;
+
+function isVideoUrl(url?: string | null) {
+  return !!url && VIDEO_EXTENSIONS.test(url);
+}
+
 export default function LiveDebateStoryCard({
   poll,
   hasVoted,
@@ -65,6 +71,7 @@ export default function LiveDebateStoryCard({
 }: Props) {
   // Pick the dominant image (winning side) as the full-bleed background, fallback to either.
   const dominantSide: 'A' | 'B' = poll.percentA >= poll.percentB ? 'A' : 'B';
+  const [videoFailed, setVideoFailed] = useState(false);
   const bgImageSrc = useMemo(() => {
     const primary = dominantSide === 'A' ? poll.image_a_url : poll.image_b_url;
     const fallback = dominantSide === 'A' ? poll.image_b_url : poll.image_a_url;
@@ -75,10 +82,18 @@ export default function LiveDebateStoryCard({
       side: dominantSide,
     });
   }, [poll, dominantSide]);
+  const bgVideoSrc = useMemo(() => resolvePollMediaUrl(dominantSide === 'A' ? poll.image_a_url : poll.image_b_url), [poll, dominantSide]);
+  const fallbackImageSrc = useMemo(() => getPollImageFallbackSrc({
+    imageUrl: bgImageSrc,
+    option: dominantSide === 'A' ? poll.option_a : poll.option_b,
+    question: poll.question,
+    side: dominantSide,
+  }), [bgImageSrc, dominantSide, poll.option_a, poll.option_b, poll.question]);
   const bgDisplaySrc = useMemo(
-    () => getOptimizedPollImageSrc(bgImageSrc, { width: 900, height: 1200, quality: eagerImage ? 74 : 68 }) || bgImageSrc,
-    [bgImageSrc, eagerImage]
+    () => getOptimizedPollImageSrc(videoFailed ? fallbackImageSrc : bgImageSrc, { width: 900, height: 1200, quality: eagerImage ? 74 : 68 }) || (videoFailed ? fallbackImageSrc : bgImageSrc),
+    [bgImageSrc, eagerImage, fallbackImageSrc, videoFailed]
   );
+  const shouldRenderVideo = !videoFailed && isVideoUrl(bgVideoSrc);
 
   const timeLeft = formatTimeLeft(poll.ends_at);
   const pctA = Math.round(poll.percentA || 0);
@@ -92,19 +107,31 @@ export default function LiveDebateStoryCard({
       className="relative w-full snap-start snap-always overflow-hidden cursor-pointer select-none"
       onClick={onClick}
     >
-      {/* Full-bleed background image */}
-      {bgImageSrc && (
+      {/* Full-bleed background media */}
+      {shouldRenderVideo ? (
+        <video
+          src={bgVideoSrc || undefined}
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload={eagerImage ? 'auto' : 'metadata'}
+          poster={fallbackImageSrc}
+          onError={() => setVideoFailed(true)}
+        />
+      ) : bgDisplaySrc ? (
         <img
           src={bgDisplaySrc}
           alt=""
           loading={eagerImage ? 'eager' : 'lazy'}
           decoding="async"
-          data-original-src={bgImageSrc}
+          data-original-src={fallbackImageSrc}
           {...(eagerImage ? { fetchpriority: 'high' as any } : {})}
           onError={(e) => handlePollImageError(e, { option: dominantSide === 'A' ? poll.option_a : poll.option_b, question: poll.question, side: dominantSide })}
           className="absolute inset-0 w-full h-full object-cover"
         />
-      )}
+      ) : null}
       {/* Dark gradient overlay for legibility */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/85 pointer-events-none" />
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/55 to-transparent pointer-events-none" />
