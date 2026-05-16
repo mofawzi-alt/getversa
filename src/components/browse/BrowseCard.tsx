@@ -400,7 +400,7 @@ export default function BrowseCard({
       </div>
 
       {/* BOTTOM */}
-      <div className={`shrink-0 relative z-10 px-4 pt-3 pb-3 space-y-2 border-t ${borderTop}`}>
+      <div className={`shrink-0 relative z-10 px-4 pt-2 pb-2 space-y-1.5 border-t ${borderTop}`}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0 space-y-2">
             {poll.demoTags.length > 0 ? (
