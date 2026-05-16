@@ -740,11 +740,12 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient, navigate]);
 
-  // Full-screen TikTok-style: each card fills the entire viewport. The AppHeader
-  // hides itself (via immersive mode) when this section is in view, so only the
-  // bottom nav remains. Subtract only the bottom nav so cards still clear it.
+  // Full-screen TikTok-style: cards container pins itself fixed to the viewport
+  // when scrolled into view, covering anything above (stories, headings, padding).
+  // Only the bottom nav remains visible.
   const cardHeight = 'calc(100svh - 4rem - env(safe-area-inset-bottom))';
-  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [immersive, setImmersive] = useState(false);
 
   // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
   const [cycles, setCycles] = useState(1);
