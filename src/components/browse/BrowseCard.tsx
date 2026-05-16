@@ -131,6 +131,8 @@ export interface BrowseCardProps {
   topSlot?: React.ReactNode;
   /** Optional extra side-action button rendered above Send / Fire (e.g. add to story) */
   extraSideAction?: React.ReactNode;
+  /** Eager-load poll images (first cards in a feed) for instant first paint. */
+  eagerImages?: boolean;
 }
 
 export default function BrowseCard({
@@ -144,7 +146,9 @@ export default function BrowseCard({
   theme = 'dark',
   topSlot,
   extraSideAction,
+  eagerImages = false,
 }: BrowseCardProps) {
+  const imgLoading: 'eager' | 'lazy' = eagerImages ? 'eager' : 'lazy';
   const winnerLabel = poll.winner === 'A' ? poll.option_a : poll.option_b;
   const winnerImg = poll.winner === 'A' ? poll.image_a_url : poll.image_b_url;
   const loserLabel = poll.winner === 'A' ? poll.option_b : poll.option_a;
