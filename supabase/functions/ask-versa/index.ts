@@ -209,9 +209,10 @@ serve(async (req) => {
     // Otherwise → research (broader sentiment exploration).
     const autoDetectMode = (q: string): "decide" | "research" => {
       const ql = (q || "").toLowerCase();
-      const hasComparison = /\b(or|vs|versus|ولا)\b/.test(ql) || /\?\s*$/.test(ql.trim());
-      const isShort = ql.trim().split(/\s+/).length <= 8;
-      const exploratory = /\b(how (do|are|much|many)|what (do|are)|why|feel|think about|trends?|patterns?|sentiment|divided|attitude|culture|differences?)\b/.test(ql);
+      // Real comparison = "X or Y", "X vs Y", "X ولا Y" — NOT every "?" question.
+      const hasComparison = /\b(or|vs|versus|ولا)\b/.test(ql);
+      const isShort = ql.trim().split(/\s+/).length <= 6;
+      const exploratory = /\b(how (do|are|much|many|do they|are they)|what (do|are|do they|are they)|why|feel|feels|feeling|think|thinks|thinking|trends?|patterns?|sentiment|divided|attitude|attitudes|culture|differences?|opinions?|views?)\b/.test(ql);
       if (exploratory && !hasComparison) return "research";
       if (hasComparison || isShort) return "decide";
       return "research";
