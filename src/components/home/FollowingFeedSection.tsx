@@ -110,7 +110,7 @@ export default function FollowingFeedSection() {
             <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-primary via-primary/70 to-primary/40">
               <div className="w-full h-full rounded-full overflow-hidden border-2 border-background bg-muted">
                 {resolvedImg ? (
-                  <img src={resolvedImg} alt={chosenOption} className="w-full h-full object-cover" />
+                  <img src={resolvedImg} alt={chosenOption} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-primary/10 flex items-center justify-center">
                     <span className="text-sm font-bold text-primary/60">{fv.username[0]?.toUpperCase()}</span>
