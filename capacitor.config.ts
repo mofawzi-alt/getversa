@@ -39,6 +39,18 @@ const config: CapacitorConfig = {
       style: 'DARK',
       backgroundColor: '#FFFFFF00',
     },
+    SplashScreen: {
+      // Show our branded splash on launch and keep it up until React tells
+      // it to hide (see src/main.tsx -> SplashScreen.hide). No flicker.
+      launchShowDuration: 3000,
+      launchAutoHide: false,
+      backgroundColor: '#FFFFFF',
+      iosSpinnerStyle: 'small',
+      spinnerColor: '#E8392A',
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
     Keyboard: {
       // Hide the iOS keyboard accessory bar (the gray bar with ↑ ↓ ✓
       // above the keyboard). Matches the cleaner look in iMessage.
