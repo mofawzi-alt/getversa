@@ -59,6 +59,7 @@ export default function LiveDebateStoryCard({
   onClick,
   onShare,
   onSendToFriend,
+  onAddToStory,
   eagerImage,
   height,
 }: Props) {
