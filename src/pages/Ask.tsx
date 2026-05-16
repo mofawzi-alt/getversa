@@ -250,7 +250,7 @@ export default function Ask() {
 
     try {
       const { data, error } = await supabase.functions.invoke('ask-versa', {
-        body: { question, mode, viewer, history, stage: 'preview' },
+        body: { question, mode: 'auto', viewer, history, stage: 'preview' },
       });
       if (error) throw error;
       if (data?.error) { toast.error(data.error); return; }
