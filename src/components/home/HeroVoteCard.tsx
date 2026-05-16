@@ -567,7 +567,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               animate={{ scale: 1, opacity: 1 }}
               className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-secondary text-foreground font-semibold"
             >
-              🔥 <span className="text-destructive">{unseenCount}</span> battle{unseenCount !== 1 ? 's' : ''} left today
+              🔥 <span className="text-destructive">{unseenCount}</span> pulse{unseenCount !== 1 ? 's' : ''} left today
             </motion.span>
           )}
           {poll.ends_at && <CountdownTimer endsAt={poll.ends_at} size="sm" />}
