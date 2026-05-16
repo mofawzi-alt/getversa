@@ -886,10 +886,16 @@ function LiveDebatesList({
 
   return (
     <div
-      ref={containerRef}
-      className="overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch]"
-      style={{ height: cardHeight, willChange: 'transform' }}
+      ref={wrapperRef}
+      className="relative w-full bg-black"
+      style={{ height: '100svh' }}
     >
+      <div
+        className={`overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch] left-0 right-0 top-0 ${
+          immersive ? 'fixed z-30' : 'absolute'
+        }`}
+        style={{ height: cardHeight, willChange: 'transform' }}
+      >
       {repeatedPolls.map(({ poll, loopIndex }) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
