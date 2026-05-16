@@ -794,13 +794,6 @@ function LiveDebatesList({
     return () => window.removeEventListener('versa:home-scroll-top', handler);
   }, [exitImmersive]);
 
-  const [cycles, setCycles] = useState(5);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setCycles(5);
-  }, [liveDebateKey]);
-
   // Immersive mode — only ENTER via explicit user scroll inside the cards
   // (handled by the scroller's onScroll below). Do NOT auto-enter or auto-exit
   // based on the wrapper's intersection ratio: on iOS, momentum/bounce scroll
@@ -810,22 +803,6 @@ function LiveDebatesList({
   useEffect(() => {
     return () => { setImmersiveMode(false); };
   }, []);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    const scroller = scrollerRef.current;
-    if (!sentinel || !scroller || displayLivePolls.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setCycles((current) => Math.min(current + 3, 40));
-      },
-      { root: scroller, rootMargin: '1600px 0px', threshold: 0.01 }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [displayLivePolls.length, cycles]);
 
   // Preload first 6 live-debate cards' images so the first scrolls feel instant.
   useEffect(() => {
@@ -839,17 +816,6 @@ function LiveDebatesList({
       });
     });
   }, [displayLivePolls]);
-
-  const repeatedPolls = useMemo(() => {
-    if (displayLivePolls.length === 0) return [];
-    const result: Array<{ poll: PollCard; loopIndex: number }> = [];
-    for (let c = 0; c < cycles; c++) {
-      for (let i = 0; i < displayLivePolls.length; i++) {
-        result.push({ poll: displayLivePolls[i], loopIndex: c * displayLivePolls.length + i });
-      }
-    }
-    return result;
-  }, [displayLivePolls, cycles]);
 
   // Fetch sample of demographic votes to compute demo tags (Browse-style)
   const { data: demoMap } = useQuery({
