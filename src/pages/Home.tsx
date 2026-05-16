@@ -1424,7 +1424,7 @@ export default function Home() {
           .or(`starts_at.is.null,starts_at.lte.${now}`)
           .order('weight_score', { ascending: false, nullsFirst: false })
           .order('created_at', { ascending: false })
-          .limit(300);
+          .limit(700);
 
         if (rawPollsError) throw rawPollsError;
         if (!rawPolls || rawPolls.length === 0) return [];
@@ -1510,7 +1510,7 @@ export default function Home() {
           prioritized = [...matched, ...others];
         }
 
-        const selectedPolls = prioritized.filter((p, index) => index < 300 || queueSet.has(p.id));
+        const selectedPolls = prioritized.filter((p, index) => index < 700 || queueSet.has(p.id));
         const pollIds = selectedPolls.map(p => p.id);
         if (pollIds.length === 0) return [];
 
