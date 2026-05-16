@@ -131,7 +131,7 @@ export default function LiveDebateStoryCard({
           onError={(e) => handlePollImageError(e, { option: dominantSide === 'A' ? poll.option_a : poll.option_b, question: poll.question, side: dominantSide })}
           className="absolute inset-0 w-full h-full object-cover"
         />
-      )}
+      ) : null}
       {/* Dark gradient overlay for legibility */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/85 pointer-events-none" />
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/55 to-transparent pointer-events-none" />
