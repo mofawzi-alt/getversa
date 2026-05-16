@@ -230,12 +230,8 @@ export default function Browse() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Generate a daily seed that changes each calendar day + a per-visit jitter
-  const [sessionSeed] = useState(() => {
-    const today = new Date();
-    const daySeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-    return daySeed + Math.random(); // daily base + per-visit variation
-  });
+  // Per-visit random seed so the Browse feed reshuffles every time the user opens it.
+  const [sessionSeed] = useState(() => Math.random() * 1000000 + Date.now());
 
   const sortedFeed = useMemo(() => {
     if (!feedPolls || feedPolls.length === 0) return [];
