@@ -711,6 +711,7 @@ function LiveDebatesList({
   }, [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
   const { user, profile } = useAuth();
+  const { postStory } = useUserStories();
   const queryClient = useQueryClient();
 
   const handleInlineVote = useCallback(async (poll: PollCard, choice: 'A' | 'B') => {
