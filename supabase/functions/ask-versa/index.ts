@@ -1230,9 +1230,9 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
       }
 
       const summary = matchedPolls.length > 0
-        ? `Versa found polls on this topic, but there still isn't enough vote data yet. Vote on these polls to help build the answer — and earn credits while you do.`
+        ? `Here's what's closest to your question — vote on these to sharpen the answer and earn credits.`
         : suggestedPolls.length > 0
-          ? `Versa doesn't have enough data on this topic yet. Vote on these related polls to help build it — and earn credits while you do.`
+          ? `No direct match yet, but here are the closest polls Versa has. Vote on them to help build the answer — and earn credits while you do.`
           : `Versa doesn't have any polls on this topic yet. Try a different question, or vote on polls in the feed to help build new topics.`;
 
       // Log (no charge)
