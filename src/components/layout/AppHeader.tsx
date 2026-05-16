@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Shield, Clock, Search, Sparkles } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
 import GlobalPollSearch from '@/components/search/GlobalPollSearch';
+import HeaderAvatarUploader from './HeaderAvatarUploader';
 
 export default function AppHeader() {
   const navigate = useNavigate();
