@@ -825,6 +825,30 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Animated swipe-or-tap-to-vote hint overlay — auto-hides after 5s */}
+        <AnimatePresence>
+          {showHint && !result && !isVoting && (
+            <motion.div
+              key="swipe-hint"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-x-0 bottom-3 z-30 flex justify-center pointer-events-none"
+            >
+              <motion.div
+                animate={{ x: [-6, 6, -6] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-background/90 backdrop-blur-md border border-border/60 shadow-lg text-foreground text-xs font-semibold"
+              >
+                <span>←</span>
+                <span>Swipe or tap to vote</span>
+                <span>→</span>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Below-card meta: skip only (swipe hint is now an animated overlay on the card) */}
