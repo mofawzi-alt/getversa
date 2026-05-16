@@ -834,51 +834,11 @@ function LiveDebatesList({
     }
   }, []);
 
-  // If there are no live polls, render nothing — avoid a 100svh black void.
+  // If there are no live polls, render nothing.
   if (displayLivePolls.length === 0) return null;
 
   return (
-    <div
-      ref={wrapperRef}
-      className={`relative w-full ${immersive ? 'bg-black' : 'bg-background'}`}
-      style={{ height: cardHeight }}
-    >
-      <div
-        ref={scrollerRef}
-        onTouchStart={(e) => {
-          (scrollerRef.current as any)._touchStartY = e.touches[0]?.clientY ?? 0;
-        }}
-        onWheel={(e) => {
-          const el = scrollerRef.current;
-          if (!el) return;
-          // Desktop/trackpad: at top of cards + scrolling up → exit immersive
-          if (immersive && el.scrollTop <= 0 && e.deltaY < -10) {
-            exitImmersive();
-          }
-        }}
-        onTouchMove={(e) => {
-          const el = scrollerRef.current;
-          if (!el) return;
-          const startY = (el as any)._touchStartY ?? 0;
-          const dy = (e.touches[0]?.clientY ?? 0) - startY;
-          // At very top + clear pull-down → exit immersive and reveal stories/header
-          if (el.scrollTop <= 0 && dy > 60 && immersive) {
-            exitImmersive();
-          }
-        }}
-        onScroll={() => {
-          const el = scrollerRef.current;
-          if (!el) return;
-          if (Date.now() < suppressEnterUntilRef.current) return;
-          if (el.scrollTop > 8 && !immersive) {
-            enterImmersive();
-          }
-        }}
-        className={`overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch] left-0 right-0 top-0 ${
-          immersive ? 'fixed z-30' : 'absolute'
-        }`}
-        style={{ height: cardHeight, willChange: 'transform' }}
-      >
+    <div className="w-full bg-background px-3 py-3 space-y-4">
       {displayLivePolls.map((poll, index) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
@@ -897,7 +857,7 @@ function LiveDebatesList({
 
         let badgeLabel: string | null = null;
         let badgeIcon: React.ReactNode = <Flame className="h-3.5 w-3.5 text-destructive" />;
-        let badgeColor = 'text-white';
+        let badgeColor = 'text-foreground';
         if (isHotTake) {
           badgeLabel = 'Hot Take';
         } else if (isTrending) {
@@ -918,7 +878,30 @@ function LiveDebatesList({
           </div>
         ) : null;
 
-        const extraSideAction = null;
+        const extraSideAction = user ? (
+          <div onClick={(e) => e.stopPropagation()}>
+            <ShareToStoryButton
+              storyType="poll_result"
+              content={{
+                poll_id: poll.id,
+                question: poll.question,
+                option_a: poll.option_a,
+                option_b: poll.option_b,
+                pct_a: poll.percentA ?? 0,
+                pct_b: poll.percentB ?? 0,
+                total_votes: poll.totalVotes ?? 0,
+                winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
+                winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
+                image_a_url: poll.image_a_url,
+                image_b_url: poll.image_b_url,
+                image_url: poll.image_a_url || poll.image_b_url,
+              }}
+              imageUrl={poll.image_a_url || poll.image_b_url}
+              variant="icon"
+              className="h-7 w-7 bg-primary text-primary-foreground hover:bg-primary/90"
+            />
+          </div>
+        ) : null;
 
         const handleClick = () => {
           if (!hasVoted) {
@@ -933,52 +916,26 @@ function LiveDebatesList({
         };
 
         return (
-          <LiveDebateStoryCard
+          <div
             key={poll.id}
-            poll={{
-              id: poll.id,
-              question: poll.question,
-              option_a: poll.option_a,
-              option_b: poll.option_b,
-              image_a_url: poll.image_a_url,
-              image_b_url: poll.image_b_url,
-              category: poll.category,
-              ends_at: poll.ends_at,
-              totalVotes: poll.totalVotes,
-              percentA: poll.percentA,
-              percentB: poll.percentB,
-            }}
-            hasVoted={hasVoted}
-            userChoice={userChoice}
-            topSlot={topSlot}
-            extraSideAction={extraSideAction}
-            demoTags={computeDemoTags(demoMap?.get(poll.id) || [], Math.max(poll.percentA, poll.percentB), poll.percentA >= poll.percentB ? 'A' : 'B')}
-            showBackToTop={index === 0 && immersive}
-            onBackToTop={exitImmersive}
             onClick={handleClick}
-            onShare={() => handleShare(poll)}
-            onSendToFriend={() => setShareSheetPoll(poll)}
-            onAddToStory={user ? () => postStory({
-              story_type: 'poll_result',
-              content: {
-                poll_id: poll.id,
-                question: poll.question,
-                option_a: poll.option_a,
-                option_b: poll.option_b,
-                pct_a: poll.percentA ?? 0,
-                pct_b: poll.percentB ?? 0,
-                total_votes: poll.totalVotes ?? 0,
-                winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
-                winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
-                image_a_url: poll.image_a_url,
-                image_b_url: poll.image_b_url,
-                image_url: poll.image_a_url || poll.image_b_url,
-              },
-              image_url: poll.image_a_url || poll.image_b_url,
-            }) : undefined}
-            eagerImage={index < 2}
-            height={cardHeight}
-          />
+            className="h-[min(620px,calc(100svh-8rem))] min-h-[500px] overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm active:scale-[0.995] transition-transform"
+          >
+            <BrowseCard
+              poll={toBrowsePoll(poll)}
+              userChoice={userChoice}
+              isActive
+              isSignedIn={!!user}
+              onVote={hasVoted ? undefined : () => handleClick()}
+              onShare={() => handleShare(poll)}
+              onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
+              hideVotePrompt={hasVoted}
+              theme="light"
+              topSlot={topSlot}
+              extraSideAction={extraSideAction}
+              eagerImages={index < 2}
+            />
+          </div>
         );
       })}
 
@@ -995,7 +952,6 @@ function LiveDebatesList({
           onOpenChange={(open) => { if (!open) setShareSheetPoll(null); }}
         />
       )}
-      </div>
     </div>
   );
 }
