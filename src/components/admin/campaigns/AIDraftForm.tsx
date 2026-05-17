@@ -23,6 +23,7 @@ export default function AIDraftForm({ onLaunched }: Props) {
   const [polls, setPolls] = useState<DraftPoll[]>([]);
   const [generating, setGenerating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [targeting, setTargeting] = useState<CampaignTargeting>(emptyTargeting());
 
   const generate = async () => {
     if (!brand.trim() || !goal.trim()) return toast.error('Brand and goal required');
