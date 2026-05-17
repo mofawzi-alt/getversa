@@ -329,7 +329,7 @@ export default function BrowseCard({
             </div>
 
             <div
-              className="absolute inset-x-0 bottom-0 flex flex-col justify-end px-4 pb-4 pt-16"
+              className="absolute inset-x-0 bottom-0 flex flex-col justify-end px-4 pb-14 pt-16"
               style={{
                 background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.78) 40%, rgba(0,0,0,0.35) 75%, rgba(0,0,0,0) 100%)',
               }}
