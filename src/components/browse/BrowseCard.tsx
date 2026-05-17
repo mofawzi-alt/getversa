@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { usePollReactions } from '@/hooks/usePollReactions';
 import { getCategoryColorClass, mapToVersaCategory } from '@/lib/categoryMeta';
+import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 
 export interface DemoTag {
   emoji: string;
