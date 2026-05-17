@@ -8,6 +8,7 @@ import { Loader2, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CAMPAIGN_TEMPLATES, applyTemplate } from '@/lib/campaignTemplates';
 import { launchCampaign, DraftPoll } from './launchCampaign';
+import CampaignTargetingFields, { emptyTargeting, targetingToPayload, CampaignTargeting } from './CampaignTargetingFields';
 
 interface Props { onLaunched: () => void }
 
@@ -23,6 +24,7 @@ export default function TemplatesForm({ onLaunched }: Props) {
   const [brandB, setBrandB] = useState('');
   const [polls, setPolls] = useState<DraftPoll[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [targeting, setTargeting] = useState<CampaignTargeting>(emptyTargeting());
 
   const generate = () => {
     if (tpl.needsTwoBrands) {
@@ -46,9 +48,10 @@ export default function TemplatesForm({ onLaunched }: Props) {
       const brandName = tpl.needsTwoBrands ? `${brandA} vs ${brandB}` : brand;
       const { pollCount } = await launchCampaign({
         userId: user.id, name, brandName, polls,
+        targeting: targetingToPayload(targeting),
       });
-      toast.success(`Launched ${pollCount} polls from "${tpl.name}"`);
-      setName(''); setBrand(''); setBrandA(''); setBrandB(''); setPolls([]);
+      toast.success(`Created ${pollCount} polls from "${tpl.name}" (paused). Activate to notify users.`);
+      setName(''); setBrand(''); setBrandA(''); setBrandB(''); setPolls([]); setTargeting(emptyTargeting());
       qc.invalidateQueries({ queryKey: ['active-brand-campaign'] });
       onLaunched();
     } catch (e: any) {
@@ -121,9 +124,10 @@ export default function TemplatesForm({ onLaunched }: Props) {
               </div>
             </div>
           ))}
+          <CampaignTargetingFields value={targeting} onChange={setTargeting} />
           <Button onClick={handleLaunch} disabled={submitting} className="w-full">
             {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-            Launch Campaign
+            Create Campaign (Paused)
           </Button>
         </div>
       )}

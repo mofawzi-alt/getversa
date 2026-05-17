@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { launchCampaign, DraftPoll } from './launchCampaign';
+import CampaignTargetingFields, { emptyTargeting, targetingToPayload, CampaignTargeting } from './CampaignTargetingFields';
 
 const empty = (): DraftPoll => ({ question: '', option_a: '', option_b: '' });
 
@@ -24,6 +25,7 @@ export default function QuickLaunchForm({ onLaunched }: Props) {
   const [description, setDescription] = useState('');
   const [releaseAt, setReleaseAt] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
+  const [targeting, setTargeting] = useState<CampaignTargeting>(emptyTargeting());
   const [submitting, setSubmitting] = useState(false);
 
   const update = (i: number, patch: Partial<DraftPoll>) =>
@@ -42,10 +44,12 @@ export default function QuickLaunchForm({ onLaunched }: Props) {
     try {
       const { pollCount } = await launchCampaign({
         userId: user.id, name, brandName, brandLogoUrl, description, releaseAt, expiresAt, polls,
+        targeting: targetingToPayload(targeting),
       });
-      toast.success(`Campaign launched with ${pollCount} polls!`);
+      toast.success(`Campaign created (paused) with ${pollCount} polls. Activate to notify users.`);
       setName(''); setBrandName(''); setPolls([empty(), empty(), empty()]);
       setBrandLogoUrl(''); setDescription(''); setReleaseAt(''); setExpiresAt('');
+      setTargeting(emptyTargeting());
       qc.invalidateQueries({ queryKey: ['active-brand-campaign'] });
       onLaunched();
     } catch (e: any) {
@@ -123,9 +127,11 @@ export default function QuickLaunchForm({ onLaunched }: Props) {
         </div>
       )}
 
+      <CampaignTargetingFields value={targeting} onChange={setTargeting} />
+
       <Button onClick={handleLaunch} disabled={submitting} className="w-full">
         {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-        Launch Campaign
+        Create Campaign (Paused)
       </Button>
     </div>
   );

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Sparkles, Trash2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { launchCampaign, DraftPoll } from './launchCampaign';
+import CampaignTargetingFields, { emptyTargeting, targetingToPayload, CampaignTargeting } from './CampaignTargetingFields';
 
 interface Props { onLaunched: () => void }
 
@@ -22,6 +23,7 @@ export default function AIDraftForm({ onLaunched }: Props) {
   const [polls, setPolls] = useState<DraftPoll[]>([]);
   const [generating, setGenerating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [targeting, setTargeting] = useState<CampaignTargeting>(emptyTargeting());
 
   const generate = async () => {
     if (!brand.trim() || !goal.trim()) return toast.error('Brand and goal required');
@@ -53,9 +55,10 @@ export default function AIDraftForm({ onLaunched }: Props) {
     try {
       const { pollCount } = await launchCampaign({
         userId: user.id, name, brandName: brand, polls,
+        targeting: targetingToPayload(targeting),
       });
-      toast.success(`Launched ${pollCount} AI-drafted polls`);
-      setName(''); setBrand(''); setGoal(''); setPolls([]);
+      toast.success(`Created ${pollCount} AI-drafted polls (paused). Activate to notify users.`);
+      setName(''); setBrand(''); setGoal(''); setPolls([]); setTargeting(emptyTargeting());
       qc.invalidateQueries({ queryKey: ['active-brand-campaign'] });
       onLaunched();
     } catch (e: any) {
@@ -122,9 +125,10 @@ export default function AIDraftForm({ onLaunched }: Props) {
               </div>
             </div>
           ))}
+          <CampaignTargetingFields value={targeting} onChange={setTargeting} />
           <Button onClick={handleLaunch} disabled={submitting} className="w-full">
             {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-            Launch Campaign
+            Create Campaign (Paused)
           </Button>
         </div>
       )}
