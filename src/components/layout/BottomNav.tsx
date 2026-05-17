@@ -1,8 +1,8 @@
 import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, LogIn, Compass, Users, Camera } from 'lucide-react';
+import { Home, User, LogIn, Compass, MessageCircle, Camera } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useFriendsBadge } from '@/hooks/useFriendsBadge';
+import { useMessages } from '@/hooks/useMessages';
 
 const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   const location = useLocation();
