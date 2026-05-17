@@ -4,15 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronUp, X, ArrowLeft, Radio, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { ChevronUp, X, ArrowLeft, Radio } from 'lucide-react';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
-import BrowseCard, { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
+import { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
+import BrowseFullCard from '@/components/browse/BrowseFullCard';
 
 // (BrowsePoll, DemoTag, computeDemoTags imported from shared BrowseCard component)
 
@@ -133,8 +133,7 @@ export default function Browse() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [bannerDismissed, setBannerDismissed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
+  const searchQuery = '';
   const [showSwipeHint, setShowSwipeHint] = useState(() => {
     if (!liveFilter) return false;
     return !localStorage.getItem('versa_live_swipe_hint_seen');
@@ -333,17 +332,6 @@ export default function Browse() {
     if (newIndex !== activeIndex) setActiveIndex(newIndex);
   }, [activeIndex]);
 
-  const handleVote = useCallback((pollId: string) => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    // Browse is results-only — redirect to home for voting
-    toast.info('Vote on today\'s battles from the Home screen! 🔥');
-    navigate('/home');
-  }, [user, navigate]);
-
-
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
@@ -379,36 +367,9 @@ export default function Browse() {
           <span className="text-sm font-display font-bold text-foreground">Browse</span>
         )}
 
-        {searchOpen ? (
-          <div className="flex-1 flex items-center gap-2 ml-1">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                autoFocus
-                placeholder="Search polls, brands, options…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 pl-8 text-xs bg-muted/40 border-border/60 rounded-lg"
-              />
-            </div>
-            <button
-              onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
-              className="p-1 rounded-full hover:bg-muted/50 text-muted-foreground"
-              aria-label="Close search"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 hover:bg-muted transition-colors text-muted-foreground"
-            aria-label="Search"
-          >
-            <Search className="h-3.5 w-3.5" />
-            <span className="text-[11px] font-medium">{visibleFeed.length}</span>
-          </button>
-        )}
+        <span className="ml-auto text-[11px] font-medium text-muted-foreground tabular-nums">
+          {visibleFeed.length}
+        </span>
       </div>
 
       {visibleFeed.length === 0 ? (
@@ -437,12 +398,10 @@ export default function Browse() {
                 className="snap-start snap-always"
                 style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 7rem)' }}
               >
-                <BrowseCard
+                <BrowseFullCard
                   poll={poll}
                   userChoice={userVotes?.get(poll.id) || null}
-                  isActive={i === activeIndex}
                   isSignedIn={!!user}
-                  onVote={() => handleVote(poll.id)}
                   onShare={() => share(poll)}
                   onSendToFriend={() => setShareToFriendPoll(poll)}
                   eagerImages={i < 2}
