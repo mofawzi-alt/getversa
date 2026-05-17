@@ -244,7 +244,7 @@ export default function StoryViewer({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center p-2 sm:p-4"
+        className="fixed inset-0 z-[300] bg-black flex items-center justify-center"
         onPointerDown={() => setPaused(true)}
         onPointerUp={() => { setPaused(false); startedAt.current = Date.now() - progress * autoAdvanceMs; }}
         onPointerCancel={() => setPaused(false)}
@@ -255,11 +255,9 @@ export default function StoryViewer({
         onDragEnd={(_, info) => { if (info.offset.y > 100) { onClose(); } }}
       >
         <div
-          className="relative w-auto rounded-2xl sm:rounded-3xl overflow-hidden bg-black shadow-2xl"
+          className="relative overflow-hidden bg-black shadow-2xl w-screen"
           style={{
-            height: 'min(calc(100dvh - 32px), calc((100vw - 16px) * 16 / 9))',
-            aspectRatio: '9 / 16',
-            maxWidth: 'calc(100vw - 16px)',
+            height: '100dvh',
           }}
         >
           <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2 pt-3">
