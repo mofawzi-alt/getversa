@@ -32,7 +32,7 @@ export default function Profile() {
     queryFn: async () => {
       if (!profile) return null;
 
-      const [votesResult, streakResult, comparisonsResult, battlesResult] = await Promise.all([
+      const [votesResult, streakResult, comparisonsResult, battlesResult, followersResult, followingResult] = await Promise.all([
         supabase.from('votes').select('id', { count: 'exact', head: true }).eq('user_id', profile.id),
         supabase.from('users').select('current_streak, longest_streak, prediction_accuracy, prediction_total').eq('id', profile.id).single(),
         // Comparisons = friendships (each accepted friend = a possible compatibility comparison)
@@ -42,6 +42,8 @@ export default function Profile() {
         // Battles = poll_challenges the user is part of
         supabase.from('poll_challenges').select('id', { count: 'exact', head: true })
           .or(`challenger_id.eq.${profile.id},challenged_id.eq.${profile.id}`),
+        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', profile.id),
+        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', profile.id),
       ]);
 
       return {
@@ -52,6 +54,8 @@ export default function Profile() {
         predictionTotal: (streakResult.data as any)?.prediction_total || 0,
         comparisons: comparisonsResult.count || 0,
         battles: battlesResult.count || 0,
+        followers: followersResult.count || 0,
+        following: followingResult.count || 0,
       };
     },
     enabled: !!profile,
