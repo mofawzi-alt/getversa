@@ -386,15 +386,15 @@ export default function Browse() {
               {/* NUDGE 2: Insert signup card after 5th card for guests */}
               {i === 5 && !user && !feedNudgeDismissed && !searchQuery && (
                 <div
-                  className="snap-start snap-always"
-                  style={{ scrollSnapAlign: 'start', height: '100dvh' }}
+                  className="snap-start snap-always h-full"
+                  style={{ scrollSnapAlign: 'start' }}
                 >
                   <BrowseFeedNudgeCard onDismiss={() => setFeedNudgeDismissed(true)} />
                 </div>
               )}
               <div
-                className="snap-start snap-always"
-                style={{ scrollSnapAlign: 'start', height: '100dvh' }}
+                className="snap-start snap-always h-full"
+                style={{ scrollSnapAlign: 'start' }}
               >
                 <BrowseCard
                   poll={poll}
