@@ -332,17 +332,6 @@ export default function Browse() {
     if (newIndex !== activeIndex) setActiveIndex(newIndex);
   }, [activeIndex]);
 
-  const handleVote = useCallback((pollId: string) => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    // Browse is results-only — redirect to home for voting
-    toast.info('Vote on today\'s battles from the Home screen! 🔥');
-    navigate('/home');
-  }, [user, navigate]);
-
-
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
