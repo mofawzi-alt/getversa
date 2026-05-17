@@ -205,6 +205,3 @@ export default function BrowseFullCard({
     </div>
   );
 }
-
-// Silence unused import warning when VerifiedBadge isn't rendered conditionally
-void VerifiedBadge;
