@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { launchCampaign, DraftPoll } from './launchCampaign';
+import CampaignTargetingFields, { emptyTargeting, targetingToPayload, CampaignTargeting } from './CampaignTargetingFields';
 
 const empty = (): DraftPoll => ({ question: '', option_a: '', option_b: '' });
 
