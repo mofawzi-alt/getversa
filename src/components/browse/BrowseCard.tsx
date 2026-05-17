@@ -430,6 +430,25 @@ export default function BrowseCard({
 
           <div className="shrink-0 flex flex-row items-center gap-1.5 pt-0.5">
             {extraSideAction}
+            {isSignedIn && (
+              <ShareToStoryButton
+                variant="icon"
+                storyType="poll_result"
+                imageUrl={winnerImg}
+                content={{
+                  poll_id: poll.id,
+                  question: poll.question,
+                  option_a: poll.option_a,
+                  option_b: poll.option_b,
+                  image_a_url: poll.image_a_url,
+                  image_b_url: poll.image_b_url,
+                  winner: poll.winner,
+                  winner_pct: poll.winnerPct,
+                  user_choice: userChoice,
+                }}
+                className="w-7 h-7 bg-muted hover:bg-muted/80"
+              />
+            )}
             {isSignedIn && onSendToFriend && (
               <button
                 onClick={(e) => { e.stopPropagation(); onSendToFriend(); }}
