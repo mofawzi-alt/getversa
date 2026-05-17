@@ -133,8 +133,7 @@ export default function Browse() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [bannerDismissed, setBannerDismissed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
+  const searchQuery = '';
   const [showSwipeHint, setShowSwipeHint] = useState(() => {
     if (!liveFilter) return false;
     return !localStorage.getItem('versa_live_swipe_hint_seen');
