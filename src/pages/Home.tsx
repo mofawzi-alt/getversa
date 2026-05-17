@@ -699,7 +699,7 @@ function LiveDebatesList({
   setModalPoll: (p: PollCard) => void;
   navigate: (path: string) => void;
 }) {
-  const displayLivePolls = useMemo(() => livePolls.slice(0, 24), [livePolls]);
+  const displayLivePolls = useMemo(() => livePolls, [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
