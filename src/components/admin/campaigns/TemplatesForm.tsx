@@ -24,6 +24,7 @@ export default function TemplatesForm({ onLaunched }: Props) {
   const [brandB, setBrandB] = useState('');
   const [polls, setPolls] = useState<DraftPoll[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [targeting, setTargeting] = useState<CampaignTargeting>(emptyTargeting());
 
   const generate = () => {
     if (tpl.needsTwoBrands) {
