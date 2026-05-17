@@ -44,10 +44,12 @@ export default function QuickLaunchForm({ onLaunched }: Props) {
     try {
       const { pollCount } = await launchCampaign({
         userId: user.id, name, brandName, brandLogoUrl, description, releaseAt, expiresAt, polls,
+        targeting: targetingToPayload(targeting),
       });
-      toast.success(`Campaign launched with ${pollCount} polls!`);
+      toast.success(`Campaign created (paused) with ${pollCount} polls. Activate to notify users.`);
       setName(''); setBrandName(''); setPolls([empty(), empty(), empty()]);
       setBrandLogoUrl(''); setDescription(''); setReleaseAt(''); setExpiresAt('');
+      setTargeting(emptyTargeting());
       qc.invalidateQueries({ queryKey: ['active-brand-campaign'] });
       onLaunched();
     } catch (e: any) {
