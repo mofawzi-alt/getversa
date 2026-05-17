@@ -405,6 +405,7 @@ export default function Browse() {
                   onShare={() => share(poll)}
                   onSendToFriend={() => setShareToFriendPoll(poll)}
                   eagerImages={i < 2}
+                  safeAreaTop
                 />
               </div>
             </div>
