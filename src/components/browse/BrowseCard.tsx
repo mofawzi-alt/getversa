@@ -134,6 +134,8 @@ export interface BrowseCardProps {
   extraSideAction?: React.ReactNode;
   /** Eager-load poll images (first cards in a feed) for instant first paint. */
   eagerImages?: boolean;
+  /** Adds native iOS safe-area room when the card is pinned to the top of the screen. */
+  safeAreaTop?: boolean;
 }
 
 export default function BrowseCard({
@@ -148,6 +150,7 @@ export default function BrowseCard({
   topSlot,
   extraSideAction,
   eagerImages = false,
+  safeAreaTop = false,
 }: BrowseCardProps) {
   const imgLoading: 'eager' | 'lazy' = eagerImages ? 'eager' : 'lazy';
   const winnerLabel = poll.winner === 'A' ? poll.option_a : poll.option_b;
@@ -182,6 +185,7 @@ export default function BrowseCard({
   const shareBtn = isLight
     ? 'bg-muted text-foreground hover:bg-muted/80'
     : 'bg-white/10 backdrop-blur-md text-white';
+  const topInset = safeAreaTop ? 'env(safe-area-inset-top, 0px)' : '0px';
 
   // Image used to bleed into the card surface (so the pic feels like the whole card)
   const surfaceImg = poll.image_a_url || poll.image_b_url || winnerImg;
@@ -217,13 +221,16 @@ export default function BrowseCard({
 
       {/* Optional eyebrow row (badges, friends voted, etc.) */}
       {topSlot && (
-        <div className={`shrink-0 px-4 pt-3 z-20 relative`}>
+        <div className={`shrink-0 px-4 z-20 relative`} style={{ paddingTop: `calc(${topInset} + 12px)` }}>
           {topSlot}
         </div>
       )}
 
       {/* TOP BAR */}
-      <div className={`shrink-0 px-4 ${topSlot ? 'pt-2' : 'pt-4'} pb-3 z-20 relative`}>
+      <div
+        className={`shrink-0 px-4 pb-3 z-20 relative`}
+        style={{ paddingTop: topSlot ? '8px' : `calc(${topInset} + 16px)` }}
+      >
         <p
           className={`font-display font-bold text-[22px] leading-[1.15] ${titleColor} pr-12`}
           style={{ letterSpacing: '-0.01em' }}
@@ -249,7 +256,8 @@ export default function BrowseCard({
         {onShare && (
           <button
             onClick={(e) => { e.stopPropagation(); onShare(); }}
-            className={`absolute ${topSlot ? 'top-1' : 'top-3.5'} right-3 w-9 h-9 rounded-full ${shareBtn} flex items-center justify-center active:scale-95 transition-transform`}
+            className={`absolute right-3 w-9 h-9 rounded-full ${shareBtn} flex items-center justify-center active:scale-95 transition-transform`}
+            style={{ top: topSlot ? '4px' : `calc(${topInset} + 14px)` }}
             aria-label="Share"
           >
             <Share2 className="h-[14px] w-[14px]" />
