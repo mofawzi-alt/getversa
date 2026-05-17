@@ -8,7 +8,7 @@ import PulseStoriesRow from '@/components/pulse/PulseStoriesRow';
 
 import AppLayout from '@/components/layout/AppLayout';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
