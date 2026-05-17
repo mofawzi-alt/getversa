@@ -11,8 +11,7 @@ import { toast } from 'sonner';
 
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
-import { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
-import BrowseFullCard from '@/components/browse/BrowseFullCard';
+import BrowseCard, { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
 
 // (BrowsePoll, DemoTag, computeDemoTags imported from shared BrowseCard component)
 
@@ -349,28 +348,27 @@ export default function Browse() {
     );
   }
 
+  const handleVote = useCallback(() => {
+    if (!user) { navigate('/auth'); return; }
+    toast.info("Vote on today's battles from the Home screen! 🔥");
+    navigate('/home');
+  }, [user, navigate]);
+
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
-      {/* Top header — search trigger + (optional) live filter */}
-      <div className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-border/40 bg-background z-30">
-        {liveFilter && (
-          <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-muted/50">
-            <ArrowLeft className="h-5 w-5 text-foreground" />
+      {/* Floating back chip — only when launched as Live Debates filter */}
+      {liveFilter && (
+        <div
+          className="absolute left-3 z-40 flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-background/80 backdrop-blur-md border border-border/40 shadow-sm"
+          style={{ top: 'calc(env(safe-area-inset-top, 8px) + 8px)' }}
+        >
+          <button onClick={() => navigate(-1)} aria-label="Back" className="p-0.5 -ml-0.5">
+            <ArrowLeft className="h-4 w-4 text-foreground" />
           </button>
-        )}
-        {liveFilter ? (
-          <>
-            <Radio className="h-4 w-4 text-destructive animate-pulse" />
-            <span className="text-sm font-display font-bold text-foreground">Live Debates</span>
-          </>
-        ) : (
-          <span className="text-sm font-display font-bold text-foreground">Browse</span>
-        )}
-
-        <span className="ml-auto text-[11px] font-medium text-muted-foreground tabular-nums">
-          {visibleFeed.length}
-        </span>
-      </div>
+          <Radio className="h-3.5 w-3.5 text-destructive animate-pulse" />
+          <span className="text-[11px] font-display font-bold text-foreground">Live Debates</span>
+        </div>
+      )}
 
       {visibleFeed.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
@@ -380,7 +378,7 @@ export default function Browse() {
         <div
           ref={containerRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-scroll snap-y snap-mandatory pb-16"
+          className="flex-1 overflow-y-scroll snap-y snap-mandatory"
           style={{ scrollSnapType: 'y mandatory' }}
         >
           {visibleFeed.map((poll, i) => (
@@ -389,19 +387,21 @@ export default function Browse() {
               {i === 5 && !user && !feedNudgeDismissed && !searchQuery && (
                 <div
                   className="snap-start snap-always"
-                  style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 7rem)' }}
+                  style={{ scrollSnapAlign: 'start', height: '100dvh' }}
                 >
                   <BrowseFeedNudgeCard onDismiss={() => setFeedNudgeDismissed(true)} />
                 </div>
               )}
               <div
                 className="snap-start snap-always"
-                style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 7rem)' }}
+                style={{ scrollSnapAlign: 'start', height: '100dvh' }}
               >
-                <BrowseFullCard
+                <BrowseCard
                   poll={poll}
                   userChoice={userVotes?.get(poll.id) || null}
+                  isActive={i === activeIndex}
                   isSignedIn={!!user}
+                  onVote={() => handleVote()}
                   onShare={() => share(poll)}
                   onSendToFriend={() => setShareToFriendPoll(poll)}
                   eagerImages={i < 2}
