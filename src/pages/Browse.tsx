@@ -4,15 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronUp, X, ArrowLeft, Radio, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { ChevronUp, X, ArrowLeft, Radio } from 'lucide-react';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
-import BrowseCard, { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
+import { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
+import BrowseFullCard from '@/components/browse/BrowseFullCard';
 
 // (BrowsePoll, DemoTag, computeDemoTags imported from shared BrowseCard component)
 
