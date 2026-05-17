@@ -26,6 +26,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const PollHistory = lazy(() => import("./pages/PollHistory"));
 const PastPerspectives = lazy(() => import("./pages/PastPerspectives"));
 const Profile = lazy(() => import("./pages/Profile"));
+const FollowList = lazy(() => import("./pages/FollowList"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const ProfileNotifications = lazy(() => import("./pages/ProfileNotifications"));
 const Notifications = lazy(() => import("./pages/Notifications"));
