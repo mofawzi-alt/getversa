@@ -381,28 +381,6 @@ export default function BrowseCard({
         )}
       </div>
 
-      {/* Small % split bar — sits right below the picture, not over it */}
-      <div className="shrink-0 relative z-10 px-3 pt-2">
-        <div className="h-1.5 w-full flex rounded-full overflow-hidden bg-muted">
-          <div
-            className="h-full bg-option-a transition-all duration-700"
-            style={{ width: `${poll.percentA}%` }}
-          />
-          <div
-            className="h-full bg-option-b transition-all duration-700"
-            style={{ width: `${poll.percentB}%` }}
-          />
-        </div>
-        <div className="flex items-center justify-between mt-1">
-          <span className={`text-[11px] font-extrabold tabular-nums ${isLight ? 'text-foreground' : 'text-white'}`}>
-            <span className="text-option-a">●</span> {poll.percentA}%
-          </span>
-          <span className={`text-[11px] font-extrabold tabular-nums ${isLight ? 'text-foreground' : 'text-white'}`}>
-            {poll.percentB}% <span className="text-option-b">●</span>
-          </span>
-        </div>
-      </div>
-
       {/* BOTTOM */}
       <div className={`shrink-0 relative z-10 px-4 pt-2 pb-2 space-y-1.5 border-t ${borderTop}`}>
         <div className="flex items-start justify-between gap-3">
