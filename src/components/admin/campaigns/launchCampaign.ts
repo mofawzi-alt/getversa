@@ -21,6 +21,12 @@ export interface LaunchInput {
   expiresAt?: string;
   visibilityMode?: CampaignVisibilityMode;
   polls: DraftPoll[];
+  targeting?: {
+    target_gender?: string | null;
+    target_age_ranges?: string[] | null;
+    target_countries?: string[] | null;
+    target_cities?: string[] | null;
+  };
 }
 
 export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: string; pollCount: number }> {
