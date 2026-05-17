@@ -25,6 +25,7 @@ export default function QuickLaunchForm({ onLaunched }: Props) {
   const [description, setDescription] = useState('');
   const [releaseAt, setReleaseAt] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
+  const [targeting, setTargeting] = useState<CampaignTargeting>(emptyTargeting());
   const [submitting, setSubmitting] = useState(false);
 
   const update = (i: number, patch: Partial<DraftPoll>) =>
