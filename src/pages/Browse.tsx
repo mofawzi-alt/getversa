@@ -11,8 +11,7 @@ import { toast } from 'sonner';
 
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
-import { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
-import BrowseFullCard from '@/components/browse/BrowseFullCard';
+import BrowseCard, { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
 
 // (BrowsePoll, DemoTag, computeDemoTags imported from shared BrowseCard component)
 
