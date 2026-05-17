@@ -55,9 +55,10 @@ export default function AIDraftForm({ onLaunched }: Props) {
     try {
       const { pollCount } = await launchCampaign({
         userId: user.id, name, brandName: brand, polls,
+        targeting: targetingToPayload(targeting),
       });
-      toast.success(`Launched ${pollCount} AI-drafted polls`);
-      setName(''); setBrand(''); setGoal(''); setPolls([]);
+      toast.success(`Created ${pollCount} AI-drafted polls (paused). Activate to notify users.`);
+      setName(''); setBrand(''); setGoal(''); setPolls([]); setTargeting(emptyTargeting());
       qc.invalidateQueries({ queryKey: ['active-brand-campaign'] });
       onLaunched();
     } catch (e: any) {
