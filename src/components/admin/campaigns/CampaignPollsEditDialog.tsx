@@ -87,6 +87,34 @@ export default function CampaignPollsEditDialog({ campaignId, campaignName }: Pr
                     <Pencil className="w-3 h-3" />
                     Edit
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    title="Delete poll"
+                    onClick={async () => {
+                      const alsoDelete = confirm(
+                        `Delete poll "${p.question}"?\n\nOK = delete poll completely.\nCancel = just remove it from this campaign (keep poll).`
+                      );
+                      const { error: linkErr } = await supabase
+                        .from('campaign_polls')
+                        .delete()
+                        .eq('campaign_id', campaignId)
+                        .eq('poll_id', p.id);
+                      if (linkErr) return toast.error(linkErr.message);
+                      if (alsoDelete) {
+                        const { error: pErr } = await supabase.from('polls').delete().eq('id', p.id);
+                        if (pErr) return toast.error(`Unlinked, but failed to delete poll: ${pErr.message}`);
+                        toast.success('Poll deleted');
+                      } else {
+                        await supabase.from('polls').update({ campaign_id: null }).eq('id', p.id);
+                        toast.success('Poll removed from campaign');
+                      }
+                      refetch();
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
                 </div>
               ))}
             </div>
