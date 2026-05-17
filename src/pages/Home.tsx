@@ -1592,6 +1592,7 @@ export default function Home() {
     },
     staleTime: 1000 * 30,
     refetchInterval: 1000 * 60,
+    placeholderData: keepPreviousData,
     enabled: !user || (!isVotedPollIdsLoading && isQueueReady),
   });
 
