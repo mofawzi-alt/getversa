@@ -1765,10 +1765,16 @@ export type Database = {
           expires_at: string | null
           id: string
           is_active: boolean
+          launch_notification_sent: boolean
+          launch_notification_sent_at: string | null
           name: string
           panel_incentive_points: number | null
           panel_size_target: number | null
           release_at: string | null
+          target_age_ranges: string[] | null
+          target_cities: string[] | null
+          target_countries: string[] | null
+          target_gender: string | null
           target_vote_count: number | null
           updated_at: string
           visibility_mode: string
@@ -1787,10 +1793,16 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean
+          launch_notification_sent?: boolean
+          launch_notification_sent_at?: string | null
           name: string
           panel_incentive_points?: number | null
           panel_size_target?: number | null
           release_at?: string | null
+          target_age_ranges?: string[] | null
+          target_cities?: string[] | null
+          target_countries?: string[] | null
+          target_gender?: string | null
           target_vote_count?: number | null
           updated_at?: string
           visibility_mode?: string
@@ -1809,10 +1821,16 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean
+          launch_notification_sent?: boolean
+          launch_notification_sent_at?: string | null
           name?: string
           panel_incentive_points?: number | null
           panel_size_target?: number | null
           release_at?: string | null
+          target_age_ranges?: string[] | null
+          target_cities?: string[] | null
+          target_countries?: string[] | null
+          target_gender?: string | null
           target_vote_count?: number | null
           updated_at?: string
           visibility_mode?: string

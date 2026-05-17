@@ -38,7 +38,9 @@ export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: 
       release_at: releaseAt ? new Date(releaseAt).toISOString() : null,
       expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       visibility_mode: visibilityMode || 'mixed',
-      is_active: true,
+      // New campaigns start PAUSED. An admin must review images/copy and activate
+      // from the dashboard, which fires the launch push notification.
+      is_active: false,
       created_by: userId,
     })
     .select()
@@ -55,7 +57,8 @@ export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: 
     image_a_url: p.image_a_url?.trim() || null,
     image_b_url: p.image_b_url?.trim() || null,
     category: p.category?.trim() || 'brands',
-    is_active: true,
+    // Polls also start inactive — they activate when the admin launches the campaign
+    is_active: false,
     starts_at: startsAt,
     ends_at: endsAt,
     campaign_id: campaign.id,
