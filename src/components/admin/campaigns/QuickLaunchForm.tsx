@@ -127,9 +127,11 @@ export default function QuickLaunchForm({ onLaunched }: Props) {
         </div>
       )}
 
+      <CampaignTargetingFields value={targeting} onChange={setTargeting} />
+
       <Button onClick={handleLaunch} disabled={submitting} className="w-full">
         {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-        Launch Campaign
+        Create Campaign (Paused)
       </Button>
     </div>
   );
