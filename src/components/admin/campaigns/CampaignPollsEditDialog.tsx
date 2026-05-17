@@ -10,7 +10,8 @@ import {
   DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Pencil, ListOrdered, Loader2 } from 'lucide-react';
+import { Pencil, ListOrdered, Loader2, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import PollEditDialog from '../PollEditDialog';
 
 interface Props {
