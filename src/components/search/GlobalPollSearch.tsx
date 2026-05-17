@@ -110,11 +110,7 @@ export default function GlobalPollSearch({ open, onClose }: GlobalPollSearchProp
 
   const handlePollClick = (poll: SearchablePoll) => {
     onClose();
-    if (poll.userVoted) {
-      navigate(`/history?pollId=${poll.id}`);
-    } else {
-      navigate(`/browse?pollId=${poll.id}`);
-    }
+    navigate(`/browse?pollId=${poll.id}`);
   };
 
   return createPortal(
