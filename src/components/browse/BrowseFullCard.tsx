@@ -1,7 +1,6 @@
 import { Share2, Send, Users, Check, X as XIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PollOptionImage from '@/components/poll/PollOptionImage';
-import VerifiedBadge from '@/components/VerifiedBadge';
 import { FireReactionButton, type BrowsePoll } from './BrowseCard';
 
 export interface BrowseFullCardProps {
