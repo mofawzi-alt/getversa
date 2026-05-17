@@ -410,12 +410,10 @@ export default function Browse() {
                 className="snap-start snap-always"
                 style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 7rem)' }}
               >
-                <BrowseCard
+                <BrowseFullCard
                   poll={poll}
                   userChoice={userVotes?.get(poll.id) || null}
-                  isActive={i === activeIndex}
                   isSignedIn={!!user}
-                  onVote={() => handleVote(poll.id)}
                   onShare={() => share(poll)}
                   onSendToFriend={() => setShareToFriendPoll(poll)}
                   eagerImages={i < 2}
