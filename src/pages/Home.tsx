@@ -1614,12 +1614,24 @@ export default function Home() {
     // This enforces first_day_limit / daily_limit so users don't see all 99 active polls at once.
     if (user && queuePollIds.length > 0) {
       const queueSet = new Set(queuePollIds);
-      const freshCutoff = Date.now() - 48 * 60 * 60 * 1000;
+      const freshCutoff = Date.now() - 24 * 60 * 60 * 1000;
+      const isFresh = (p: PollCard) => new Date(p.created_at).getTime() >= freshCutoff;
+
+      // Polls created in last 24h that are NOT in today's queue → top of feed
       const freshUnqueuedPolls = unvoted
-        .filter(p => !queueSet.has(p.id) && new Date(p.created_at).getTime() >= freshCutoff)
+        .filter(p => !queueSet.has(p.id) && isFresh(p))
         .sort((a, b) => ((b.weight_score || 0) - (a.weight_score || 0)) || (new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+
+      // Queue polls — but pull today's freshly-created polls to the front so
+      // the hero card always opens on "today's polls" instead of older queued ones.
       const queuePolls = unvoted.filter(p => queueSet.has(p.id));
       queuePolls.sort((a, b) => {
+        const aFresh = isFresh(a) ? 1 : 0;
+        const bFresh = isFresh(b) ? 1 : 0;
+        if (aFresh !== bFresh) return bFresh - aFresh;
+        if (aFresh && bFresh) {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        }
         const aIdx = queuePollIds.indexOf(a.id);
         const bIdx = queuePollIds.indexOf(b.id);
         return aIdx - bIdx;
