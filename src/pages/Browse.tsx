@@ -379,36 +379,9 @@ export default function Browse() {
           <span className="text-sm font-display font-bold text-foreground">Browse</span>
         )}
 
-        {searchOpen ? (
-          <div className="flex-1 flex items-center gap-2 ml-1">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                autoFocus
-                placeholder="Search polls, brands, options…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 pl-8 text-xs bg-muted/40 border-border/60 rounded-lg"
-              />
-            </div>
-            <button
-              onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
-              className="p-1 rounded-full hover:bg-muted/50 text-muted-foreground"
-              aria-label="Close search"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 hover:bg-muted transition-colors text-muted-foreground"
-            aria-label="Search"
-          >
-            <Search className="h-3.5 w-3.5" />
-            <span className="text-[11px] font-medium">{visibleFeed.length}</span>
-          </button>
-        )}
+        <span className="ml-auto text-[11px] font-medium text-muted-foreground tabular-nums">
+          {visibleFeed.length}
+        </span>
       </div>
 
       {visibleFeed.length === 0 ? (
