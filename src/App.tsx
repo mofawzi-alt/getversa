@@ -26,6 +26,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const PollHistory = lazy(() => import("./pages/PollHistory"));
 const PastPerspectives = lazy(() => import("./pages/PastPerspectives"));
 const Profile = lazy(() => import("./pages/Profile"));
+const FollowList = lazy(() => import("./pages/FollowList"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const ProfileNotifications = lazy(() => import("./pages/ProfileNotifications"));
 const Notifications = lazy(() => import("./pages/Notifications"));
@@ -187,6 +188,8 @@ function AppInner() {
             <Route path="/personality" element={<ProtectedRoute><PersonalityResults /></ProtectedRoute>} />
             <Route path="/weekly-results" element={<WeeklyTopResults />} />
             <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+            <Route path="/profile/connections" element={<ProtectedRoute><FollowList /></ProtectedRoute>} />
+            <Route path="/user/:userId/connections" element={<ProtectedRoute><FollowList /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
             <Route path="/ask" element={<Ask />} />

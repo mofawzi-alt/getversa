@@ -32,7 +32,7 @@ export default function Profile() {
     queryFn: async () => {
       if (!profile) return null;
 
-      const [votesResult, streakResult, comparisonsResult, battlesResult] = await Promise.all([
+      const [votesResult, streakResult, comparisonsResult, battlesResult, followersResult, followingResult] = await Promise.all([
         supabase.from('votes').select('id', { count: 'exact', head: true }).eq('user_id', profile.id),
         supabase.from('users').select('current_streak, longest_streak, prediction_accuracy, prediction_total').eq('id', profile.id).single(),
         // Comparisons = friendships (each accepted friend = a possible compatibility comparison)
@@ -42,6 +42,8 @@ export default function Profile() {
         // Battles = poll_challenges the user is part of
         supabase.from('poll_challenges').select('id', { count: 'exact', head: true })
           .or(`challenger_id.eq.${profile.id},challenged_id.eq.${profile.id}`),
+        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', profile.id),
+        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', profile.id),
       ]);
 
       return {
@@ -52,6 +54,8 @@ export default function Profile() {
         predictionTotal: (streakResult.data as any)?.prediction_total || 0,
         comparisons: comparisonsResult.count || 0,
         battles: battlesResult.count || 0,
+        followers: followersResult.count || 0,
+        following: followingResult.count || 0,
       };
     },
     enabled: !!profile,
@@ -131,6 +135,23 @@ export default function Profile() {
             {profile?.country || 'Unknown location'}
           </p>
 
+          {/* Followers / Following — IG style */}
+          <div className="flex items-center justify-center gap-6 mt-2">
+            <button
+              onClick={() => navigate('/profile/connections?tab=followers')}
+              className="flex items-baseline gap-1"
+            >
+              <span className="text-sm font-bold text-foreground">{stats?.followers || 0}</span>
+              <span className="text-[11px] text-muted-foreground">Followers</span>
+            </button>
+            <button
+              onClick={() => navigate('/profile/connections?tab=following')}
+              className="flex items-baseline gap-1"
+            >
+              <span className="text-sm font-bold text-foreground">{stats?.following || 0}</span>
+              <span className="text-[11px] text-muted-foreground">Following</span>
+            </button>
+          </div>
           {/* Profile confidence indicator */}
           {(stats?.votes ?? 0) >= 30 && (stats?.votes ?? 0) < 50 && (
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">
