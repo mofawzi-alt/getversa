@@ -48,6 +48,7 @@ export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: 
       // from the dashboard, which fires the launch push notification.
       is_active: false,
       created_by: userId,
+      ...(targeting || {}),
     })
     .select()
     .single();
