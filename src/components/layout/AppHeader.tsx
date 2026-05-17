@@ -50,9 +50,9 @@ export default function AppHeader() {
             )}
             {user && (
               <button
-                onClick={() => navigate('/browse')}
+                onClick={() => setSearchOpen(true)}
                 className="p-2 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all"
-                aria-label="Browse polls"
+                aria-label="Search polls"
               >
                 <Search className="h-5 w-5" />
               </button>
