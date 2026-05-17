@@ -48,9 +48,10 @@ export default function TemplatesForm({ onLaunched }: Props) {
       const brandName = tpl.needsTwoBrands ? `${brandA} vs ${brandB}` : brand;
       const { pollCount } = await launchCampaign({
         userId: user.id, name, brandName, polls,
+        targeting: targetingToPayload(targeting),
       });
-      toast.success(`Launched ${pollCount} polls from "${tpl.name}"`);
-      setName(''); setBrand(''); setBrandA(''); setBrandB(''); setPolls([]);
+      toast.success(`Created ${pollCount} polls from "${tpl.name}" (paused). Activate to notify users.`);
+      setName(''); setBrand(''); setBrandA(''); setBrandB(''); setPolls([]); setTargeting(emptyTargeting());
       qc.invalidateQueries({ queryKey: ['active-brand-campaign'] });
       onLaunched();
     } catch (e: any) {
