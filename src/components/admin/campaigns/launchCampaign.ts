@@ -31,7 +31,7 @@ export interface LaunchInput {
 
 export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: string; pollCount: number }> {
   const {
-    userId, name, brandName, brandLogoUrl, description, releaseAt, expiresAt, visibilityMode, polls,
+    userId, name, brandName, brandLogoUrl, description, releaseAt, expiresAt, visibilityMode, polls, targeting,
   } = input;
 
   const { data: campaign, error: cErr } = await supabase
