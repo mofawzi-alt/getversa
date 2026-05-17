@@ -188,6 +188,8 @@ function AppInner() {
             <Route path="/personality" element={<ProtectedRoute><PersonalityResults /></ProtectedRoute>} />
             <Route path="/weekly-results" element={<WeeklyTopResults />} />
             <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+            <Route path="/profile/connections" element={<ProtectedRoute><FollowList /></ProtectedRoute>} />
+            <Route path="/user/:userId/connections" element={<ProtectedRoute><FollowList /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
             <Route path="/ask" element={<Ask />} />
