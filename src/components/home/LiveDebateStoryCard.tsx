@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Send, Share2, Clock, ChevronUp, BarChart3, CirclePlus } from 'lucide-react';
-import { getOptimizedPollImageSrc, getPollDisplayImageSrc, getPollImageFallbackSrc, handlePollImageError, resolvePollMediaUrl } from '@/lib/pollImages';
+import { getOptimizedPollImageSrc, getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 
@@ -47,12 +47,6 @@ function formatTimeLeft(ends_at?: string | null): string | null {
   return `${mins}m left`;
 }
 
-const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|ogg)(\?|#|$)/i;
-
-function isVideoUrl(url?: string | null) {
-  return !!url && VIDEO_EXTENSIONS.test(url);
-}
-
 export default function LiveDebateStoryCard({
   poll,
   hasVoted,
@@ -71,10 +65,6 @@ export default function LiveDebateStoryCard({
 }: Props) {
   // Pick the dominant image (winning side) as the full-bleed background, fallback to either.
   const dominantSide: 'A' | 'B' = poll.percentA >= poll.percentB ? 'A' : 'B';
-  const [videoFailed, setVideoFailed] = useState(false);
-  const [videoVisible, setVideoVisible] = useState(Boolean(eagerImage));
-  const containerRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const bgImageSrc = useMemo(() => {
     const primary = dominantSide === 'A' ? poll.image_a_url : poll.image_b_url;
     const fallback = dominantSide === 'A' ? poll.image_b_url : poll.image_a_url;
@@ -85,43 +75,10 @@ export default function LiveDebateStoryCard({
       side: dominantSide,
     });
   }, [poll, dominantSide]);
-  const bgVideoSrc = useMemo(() => resolvePollMediaUrl(dominantSide === 'A' ? poll.image_a_url : poll.image_b_url), [poll, dominantSide]);
-  const fallbackImageSrc = useMemo(() => getPollImageFallbackSrc({
-    imageUrl: bgImageSrc,
-    option: dominantSide === 'A' ? poll.option_a : poll.option_b,
-    question: poll.question,
-    side: dominantSide,
-  }), [bgImageSrc, dominantSide, poll.option_a, poll.option_b, poll.question]);
   const bgDisplaySrc = useMemo(
-    () => getOptimizedPollImageSrc(videoFailed ? fallbackImageSrc : bgImageSrc, { width: 900, height: 1200, quality: eagerImage ? 74 : 68 }) || (videoFailed ? fallbackImageSrc : bgImageSrc),
-    [bgImageSrc, eagerImage, fallbackImageSrc, videoFailed]
+    () => getOptimizedPollImageSrc(bgImageSrc, { width: 900, height: 1200, quality: eagerImage ? 74 : 68 }) || bgImageSrc,
+    [bgImageSrc, eagerImage]
   );
-  const shouldRenderVideo = !videoFailed && isVideoUrl(bgVideoSrc);
-  const mediaImageSrc = shouldRenderVideo ? fallbackImageSrc : bgDisplaySrc;
-
-  useEffect(() => {
-    const node = containerRef.current;
-    if (!node || !shouldRenderVideo) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setVideoVisible(entry.isIntersecting),
-      { threshold: 0.35, rootMargin: '120px 0px' }
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [shouldRenderVideo]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !shouldRenderVideo) return;
-
-    if (videoVisible) {
-      video.play().catch(() => {});
-    } else {
-      video.pause();
-    }
-  }, [shouldRenderVideo, videoVisible]);
 
   const timeLeft = formatTimeLeft(poll.ends_at);
   const pctA = Math.round(poll.percentA || 0);
@@ -131,38 +88,23 @@ export default function LiveDebateStoryCard({
 
   return (
     <div
-      ref={containerRef}
-      style={{ height, backgroundColor: '#1a1a1a', backgroundImage: 'linear-gradient(135deg, #2a2a2a 0%, #0f0f0f 100%)' }}
-      className="relative w-full snap-start snap-always overflow-hidden cursor-pointer select-none"
+      style={{ height }}
+      className="relative w-full snap-start snap-always overflow-hidden bg-black cursor-pointer select-none"
       onClick={onClick}
     >
-      {/* Full-bleed background media */}
-      {mediaImageSrc ? (
+      {/* Full-bleed background image */}
+      {bgImageSrc && (
         <img
-          src={mediaImageSrc}
+          src={bgDisplaySrc}
           alt=""
           loading={eagerImage ? 'eager' : 'lazy'}
           decoding="async"
-          data-original-src={fallbackImageSrc}
+          data-original-src={bgImageSrc}
           {...(eagerImage ? { fetchpriority: 'high' as any } : {})}
           onError={(e) => handlePollImageError(e, { option: dominantSide === 'A' ? poll.option_a : poll.option_b, question: poll.question, side: dominantSide })}
           className="absolute inset-0 w-full h-full object-cover"
         />
-      ) : null}
-      {shouldRenderVideo ? (
-        <video
-          ref={videoRef}
-          src={videoVisible ? bgVideoSrc || undefined : undefined}
-          className="absolute inset-0 w-full h-full object-cover"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload={eagerImage ? 'auto' : 'none'}
-          poster={fallbackImageSrc}
-          onError={() => setVideoFailed(true)}
-        />
-      ) : null}
+      )}
       {/* Dark gradient overlay for legibility */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/85 pointer-events-none" />
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/55 to-transparent pointer-events-none" />
@@ -193,6 +135,7 @@ export default function LiveDebateStoryCard({
             </span>
           )}
         </div>
+        {extraSideAction && <div>{extraSideAction}</div>}
       </div>
 
       {/* OPTIONAL EYEBROW BADGE (Hot Take, Trending, etc.) */}
@@ -249,11 +192,6 @@ export default function LiveDebateStoryCard({
           >
             <CirclePlus className="w-[16px] h-[16px]" />
           </button>
-        )}
-        {extraSideAction && (
-          <div className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white flex items-center justify-center shadow-lg [&>*]:!bg-transparent [&>*]:!border-0 [&>*]:!h-full [&>*]:!w-full [&>*]:!rounded-full">
-            {extraSideAction}
-          </div>
         )}
         {onShare && (
           <button

@@ -16,7 +16,6 @@ import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteSc
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
-import { useUserStories } from '@/hooks/useUserStories';
 import LiveIndicator from '@/components/poll/LiveIndicator';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
@@ -24,6 +23,8 @@ import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import BrowseCard, { computeDemoTags, type BrowsePoll } from '@/components/browse/BrowseCard';
 import LiveDebateStoryCard from '@/components/home/LiveDebateStoryCard';
+import { useUserStories } from '@/hooks/useUserStories';
+import { setImmersiveMode } from '@/lib/immersiveMode';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WelcomeFlow, { isWelcomeDone, markWelcomeDone } from '@/components/onboarding/WelcomeFlow';
@@ -698,21 +699,12 @@ function LiveDebatesList({
   setModalPoll: (p: PollCard) => void;
   navigate: (path: string) => void;
 }) {
-  const displayLivePolls = useMemo(() => {
-    const uniquePolls = new Map<string, PollCard>();
-    const seenQuestions = new Set<string>();
-    livePolls.forEach((poll) => {
-      const questionKey = poll.question.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-      if (uniquePolls.has(poll.id) || seenQuestions.has(questionKey)) return;
-      seenQuestions.add(questionKey);
-      uniquePolls.set(poll.id, poll);
-    });
-    return Array.from(uniquePolls.values());
-  }, [livePolls]);
+  const displayLivePolls = useMemo(() => livePolls.slice(0, 24), [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
+  const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
-  const { postStory } = useUserStories();
   const queryClient = useQueryClient();
+  const { postStory } = useUserStories();
 
   const handleInlineVote = useCallback(async (poll: PollCard, choice: 'A' | 'B') => {
     if (!user) {
@@ -751,18 +743,127 @@ function LiveDebatesList({
     queryClient.invalidateQueries({ queryKey: ['votes-24h'] });
   }, [user, profile, queryClient, navigate]);
 
-  // Preload first live-debate card images so the first scrolls feel instant.
+  // Full-screen TikTok-style: cards container pins itself fixed to the viewport
+  // when scrolled into view, covering anything above (stories, headings, padding).
+  // Only the bottom nav remains visible.
+  const cardHeight = 'calc(100svh - 4rem - env(safe-area-inset-bottom))';
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [immersive, setImmersive] = useState(false);
+  // Suppress auto-entering immersive mode on initial mount so the app always
+  // lands on the header/stories, not pinned into the first live-debate card.
+  const suppressEnterUntilRef = useRef<number>(Date.now() + 1500);
+  const userScrolledRef = useRef<boolean>(false);
+
   useEffect(() => {
-    displayLivePolls.slice(0, 6).forEach((p, idx) => {
+    const onScroll = () => { userScrolledRef.current = true; };
+    window.addEventListener('scroll', onScroll, { passive: true, once: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Exit immersive mode and scroll the page up to reveal stories/header
+  const exitImmersive = useCallback(() => {
+    setImmersive(false);
+    setImmersiveMode(false);
+    if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
+    // Block auto re-entry from the scroll handler for a moment
+    suppressEnterUntilRef.current = Date.now() + 800;
+    // Jump immediately, then smooth-scroll for polish
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }, []);
+
+  // Enter immersive mode and pin the live-debate cards to the viewport
+  const enterImmersive = useCallback(() => {
+    if (!wrapperRef.current) return;
+    wrapperRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setImmersive(true);
+    setImmersiveMode(true);
+  }, []);
+
+  // Listen for Home-tab tap → always return to the very top + reveal header
+  useEffect(() => {
+    const handler = () => exitImmersive();
+    window.addEventListener('versa:home-scroll-top', handler);
+    return () => window.removeEventListener('versa:home-scroll-top', handler);
+  }, [exitImmersive]);
+
+
+  // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
+  const [cycles, setCycles] = useState(1);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!sentinelRef.current || displayLivePolls.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setCycles((prev) => Math.min(prev + 1, 3));
+        }
+      },
+      { rootMargin: '600px' },
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [displayLivePolls.length]);
+
+  // Immersive mode — when the Live Debates wrapper enters the viewport, pin the
+  // cards container fixed to the screen and hide the AppHeader. This gives a
+  // true TikTok-style full-screen feel regardless of stories/headings above.
+  useEffect(() => {
+    if (!wrapperRef.current) return;
+    const el = wrapperRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0];
+        if (!e) return;
+        const active = e.intersectionRatio >= 0.5;
+        // Only auto-enter immersive when the user has actually scrolled the
+        // page down past the header/stories. This prevents the app from
+        // landing on the live-debate card on initial open.
+        if (active && window.scrollY < 80) {
+          if (immersive) {
+            setImmersive(false);
+            setImmersiveMode(false);
+          }
+          return;
+        }
+        if (active && Date.now() < suppressEnterUntilRef.current) return;
+        setImmersive(active);
+        setImmersiveMode(active);
+      },
+      { threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      setImmersiveMode(false);
+    };
+  }, []);
+
+  // Preload first 6 live-debate cards' images so the first scrolls feel instant.
+  useEffect(() => {
+    displayLivePolls.slice(0, 4).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
         if (!url) return;
         const img = new Image();
         img.decoding = 'async';
         if (idx < 2) (img as any).fetchPriority = 'high';
-        img.src = getOptimizedPollImageSrc(url, { width: 700, height: 900, quality: idx < 2 ? 74 : 68 }) || url;
+        img.src = getOptimizedPollImageSrc(url, { width: 900, height: 1200, quality: idx < 2 ? 74 : 68 }) || url;
       });
     });
   }, [displayLivePolls]);
+
+  const repeatedPolls = useMemo(() => {
+    if (displayLivePolls.length === 0) return [];
+    const result: Array<{ poll: PollCard; loopIndex: number }> = [];
+    for (let c = 0; c < cycles; c++) {
+      for (let i = 0; i < displayLivePolls.length; i++) {
+        result.push({ poll: displayLivePolls[i], loopIndex: c * displayLivePolls.length + i });
+      }
+    }
+    return result;
+  }, [displayLivePolls, cycles]);
 
   // Fetch sample of demographic votes to compute demo tags (Browse-style)
   const { data: demoMap } = useQuery({
@@ -836,18 +937,52 @@ function LiveDebatesList({
     }
   }, []);
 
-  // If there are no live polls, render nothing.
+  // If there are no live polls, render nothing — avoid a 100svh black void.
   if (displayLivePolls.length === 0) return null;
-
-  // Fits between AppHeader (3.5rem + safe-area-top + 0.5rem padding) and BottomNav (4rem + safe-area-bottom)
-  const cardHeight = 'calc(100dvh - 8rem - env(safe-area-inset-top) - env(safe-area-inset-bottom))';
 
   return (
     <div
-      className="relative left-1/2 right-1/2 -translate-x-1/2 w-screen bg-background snap-y snap-mandatory overflow-y-auto"
-      style={{ scrollSnapType: 'y mandatory', height: cardHeight, maxWidth: '100vw' }}
+      ref={wrapperRef}
+      className={`relative w-full ${immersive ? 'bg-black' : 'bg-background'}`}
+      style={{ height: cardHeight }}
     >
-      {displayLivePolls.map((poll, index) => {
+      <div
+        ref={scrollerRef}
+        onTouchStart={(e) => {
+          (scrollerRef.current as any)._touchStartY = e.touches[0]?.clientY ?? 0;
+        }}
+        onWheel={(e) => {
+          const el = scrollerRef.current;
+          if (!el) return;
+          // Desktop/trackpad: at top of cards + scrolling up → exit immersive
+          if (immersive && el.scrollTop <= 0 && e.deltaY < -10) {
+            exitImmersive();
+          }
+        }}
+        onTouchMove={(e) => {
+          const el = scrollerRef.current;
+          if (!el) return;
+          const startY = (el as any)._touchStartY ?? 0;
+          const dy = (e.touches[0]?.clientY ?? 0) - startY;
+          // At very top + clear pull-down → exit immersive and reveal stories/header
+          if (el.scrollTop <= 0 && dy > 60 && immersive) {
+            exitImmersive();
+          }
+        }}
+        onScroll={() => {
+          const el = scrollerRef.current;
+          if (!el) return;
+          if (Date.now() < suppressEnterUntilRef.current) return;
+          if (el.scrollTop > 8 && !immersive) {
+            enterImmersive();
+          }
+        }}
+        className={`overflow-y-scroll snap-y snap-mandatory [overscroll-behavior-y:contain] [-webkit-overflow-scrolling:touch] left-0 right-0 top-0 ${
+          immersive ? 'fixed z-30' : 'absolute'
+        }`}
+        style={{ height: cardHeight, willChange: 'transform' }}
+      >
+      {repeatedPolls.map(({ poll, loopIndex }) => {
         const hasVoted = Boolean(votedPollIds?.has(poll.id));
         const voteData = userVoteChoices?.get(poll.id);
         const userChoice = voteData?.choice ?? null;
@@ -865,18 +1000,18 @@ function LiveDebatesList({
 
         let badgeLabel: string | null = null;
         let badgeIcon: React.ReactNode = <Flame className="h-3.5 w-3.5 text-destructive" />;
-        let badgeColor = 'text-foreground';
+        let badgeColor = 'text-white';
         if (isHotTake) {
           badgeLabel = 'Hot Take';
         } else if (isTrending) {
           badgeLabel = 'Trending';
-          badgeIcon = <TrendingUp className="h-3.5 w-3.5 text-primary" />;
+          badgeIcon = <TrendingUp className="h-3.5 w-3.5 text-primary-foreground" />;
         } else if (closingSoon) {
           badgeLabel = 'Closing Soon';
           badgeIcon = <Timer className="h-3.5 w-3.5 text-amber-300" />;
         } else if (isNew) {
           badgeLabel = 'New';
-          badgeIcon = <Sparkles className="h-3.5 w-3.5 text-primary" />;
+          badgeIcon = <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />;
         }
 
         const topSlot = badgeLabel ? (
@@ -885,6 +1020,8 @@ function LiveDebatesList({
             <span className={`text-[11px] font-extrabold uppercase tracking-wider ${badgeColor}`}>{badgeLabel}</span>
           </div>
         ) : null;
+
+        const extraSideAction = null;
 
         const handleClick = () => {
           if (!hasVoted) {
@@ -898,63 +1035,56 @@ function LiveDebatesList({
           setModalPoll(poll);
         };
 
-        const handleAddToStory = user ? () => {
-          postStory({
-            story_type: 'poll_result',
-            content: {
-              poll_id: poll.id,
+        return (
+          <LiveDebateStoryCard
+            key={`${poll.id}-${loopIndex}`}
+            poll={{
+              id: poll.id,
               question: poll.question,
               option_a: poll.option_a,
               option_b: poll.option_b,
-              pct_a: poll.percentA ?? 0,
-              pct_b: poll.percentB ?? 0,
-              total_votes: poll.totalVotes ?? 0,
-              winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
-              winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
               image_a_url: poll.image_a_url,
               image_b_url: poll.image_b_url,
-              image_url: poll.image_a_url || poll.image_b_url,
-            },
-            image_url: poll.image_a_url || poll.image_b_url,
-          });
-        } : undefined;
-
-        const demoTags = computeDemoTags(demoMap?.get(poll.id) || [], Math.max(poll.percentA, poll.percentB), poll.percentA >= poll.percentB ? 'A' : 'B');
-
-        return (
-          <div
-            key={poll.id}
-            className="snap-start snap-always"
-            style={{ scrollSnapAlign: 'start', height: cardHeight }}
-          >
-            <LiveDebateStoryCard
-              poll={{
-                id: poll.id,
+              category: poll.category,
+              ends_at: poll.ends_at,
+              totalVotes: poll.totalVotes,
+              percentA: poll.percentA,
+              percentB: poll.percentB,
+            }}
+            hasVoted={hasVoted}
+            userChoice={userChoice}
+            topSlot={topSlot}
+            extraSideAction={extraSideAction}
+            demoTags={computeDemoTags(demoMap?.get(poll.id) || [], Math.max(poll.percentA, poll.percentB), poll.percentA >= poll.percentB ? 'A' : 'B')}
+            showBackToTop={loopIndex === 0 && immersive}
+            onBackToTop={exitImmersive}
+            onClick={handleClick}
+            onShare={() => handleShare(poll)}
+            onSendToFriend={() => setShareSheetPoll(poll)}
+            onAddToStory={user ? () => postStory({
+              story_type: 'poll_result',
+              content: {
+                poll_id: poll.id,
                 question: poll.question,
                 option_a: poll.option_a,
                 option_b: poll.option_b,
+                pct_a: poll.percentA ?? 0,
+                pct_b: poll.percentB ?? 0,
+                total_votes: poll.totalVotes ?? 0,
+                winning_option: (poll.percentA ?? 0) >= (poll.percentB ?? 0) ? poll.option_a : poll.option_b,
+                winning_pct: Math.max(poll.percentA ?? 0, poll.percentB ?? 0),
                 image_a_url: poll.image_a_url,
                 image_b_url: poll.image_b_url,
-                category: poll.category,
-                ends_at: poll.ends_at,
-                totalVotes: poll.totalVotes,
-                percentA: poll.percentA,
-                percentB: poll.percentB,
-              }}
-              hasVoted={hasVoted}
-              userChoice={userChoice}
-              topSlot={topSlot}
-              demoTags={demoTags.map(t => ({ emoji: t.emoji, label: t.label, choice: t.choice }))}
-              onClick={handleClick}
-              onShare={() => handleShare(poll)}
-              onSendToFriend={user ? () => setShareSheetPoll(poll) : undefined}
-              onAddToStory={handleAddToStory}
-              eagerImage={index < 2}
-              height={cardHeight}
-            />
-          </div>
+                image_url: poll.image_a_url || poll.image_b_url,
+              },
+              image_url: poll.image_a_url || poll.image_b_url,
+            }) : undefined}
+            eagerImage={loopIndex < 2}
+            height={cardHeight}
+          />
         );
       })}
+      <div ref={sentinelRef} className="h-1" />
 
       {shareSheetPoll && (
         <SharePollToFriendSheet
@@ -969,6 +1099,7 @@ function LiveDebatesList({
           onOpenChange={(open) => { if (!open) setShareSheetPoll(null); }}
         />
       )}
+      </div>
     </div>
   );
 }
@@ -1338,7 +1469,7 @@ export default function Home() {
           .or(`starts_at.is.null,starts_at.lte.${now}`)
           .order('weight_score', { ascending: false, nullsFirst: false })
           .order('created_at', { ascending: false })
-          .limit(700);
+          .limit(80);
 
         if (rawPollsError) throw rawPollsError;
         if (!rawPolls || rawPolls.length === 0) return [];
@@ -1353,7 +1484,7 @@ export default function Home() {
             .gte('created_at', freshSince)
             .or(`starts_at.is.null,starts_at.lte.${now}`)
             .order('created_at', { ascending: false })
-            .limit(150),
+            .limit(50),
           Promise.resolve(queuePollIds.filter(id => !fetchedIds.has(id))),
         ]);
         if (freshPollsError) throw freshPollsError;
@@ -1424,7 +1555,7 @@ export default function Home() {
           prioritized = [...matched, ...others];
         }
 
-        const selectedPolls = prioritized.filter((p, index) => index < 700 || queueSet.has(p.id));
+        const selectedPolls = prioritized.filter((p, index) => index < 100 || queueSet.has(p.id));
         const pollIds = selectedPolls.map(p => p.id);
         if (pollIds.length === 0) return [];
 

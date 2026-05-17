@@ -428,14 +428,14 @@ export default function Browse() {
               {i === 5 && !user && !feedNudgeDismissed && !searchQuery && (
                 <div
                   className="snap-start snap-always"
-                  style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 7rem - env(safe-area-inset-bottom))' }}
+                  style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 7rem)' }}
                 >
                   <BrowseFeedNudgeCard onDismiss={() => setFeedNudgeDismissed(true)} />
                 </div>
               )}
               <div
                 className="snap-start snap-always"
-                style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 7rem - env(safe-area-inset-bottom))' }}
+                style={{ scrollSnapAlign: 'start', height: 'calc(100dvh - 7rem)' }}
               >
                 <BrowseCard
                   poll={poll}
