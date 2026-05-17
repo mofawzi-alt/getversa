@@ -271,7 +271,7 @@ export default function BrowseCard({
                   loading={imgLoading}
                   variant="browse"
                 />
-                <div className="absolute inset-x-0 bottom-0 px-3 pt-12 pb-3 bg-gradient-to-t from-black/95 via-black/65 to-transparent">
+                <div className="absolute inset-x-0 bottom-0 px-3 pt-12 pb-12 bg-gradient-to-t from-black/95 via-black/65 to-transparent">
                   <p className="text-white font-semibold text-[15px] line-clamp-2 leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }}>
                     {poll.option_a}
                   </p>
@@ -291,7 +291,7 @@ export default function BrowseCard({
                   loading={imgLoading}
                   variant="browse"
                 />
-                <div className="absolute inset-x-0 bottom-0 px-3 pt-12 pb-3 bg-gradient-to-t from-black/95 via-black/65 to-transparent">
+                <div className="absolute inset-x-0 bottom-0 px-3 pt-12 pb-12 bg-gradient-to-t from-black/95 via-black/65 to-transparent">
                   <p className="text-white font-semibold text-[15px] line-clamp-2 leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }}>
                     {poll.option_b}
                   </p>
@@ -329,7 +329,7 @@ export default function BrowseCard({
             </div>
 
             <div
-              className="absolute inset-x-0 bottom-0 flex flex-col justify-end px-4 pb-4 pt-16"
+              className="absolute inset-x-0 bottom-0 flex flex-col justify-end px-4 pb-14 pt-16"
               style={{
                 background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.78) 40%, rgba(0,0,0,0.35) 75%, rgba(0,0,0,0) 100%)',
               }}
