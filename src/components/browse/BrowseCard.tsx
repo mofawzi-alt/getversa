@@ -379,27 +379,27 @@ export default function BrowseCard({
             </div>
           </div>
         )}
-      </div>
 
-      {/* Small % split bar — sits right below the picture, not over it */}
-      <div className="shrink-0 relative z-10 px-3 pt-2">
-        <div className="h-1.5 w-full flex rounded-full overflow-hidden bg-muted">
-          <div
-            className="h-full bg-option-a transition-all duration-700"
-            style={{ width: `${poll.percentA}%` }}
-          />
-          <div
-            className="h-full bg-option-b transition-all duration-700"
-            style={{ width: `${poll.percentB}%` }}
-          />
-        </div>
-        <div className="flex items-center justify-between mt-1">
-          <span className={`text-[11px] font-extrabold tabular-nums ${isLight ? 'text-foreground' : 'text-white'}`}>
-            <span className="text-option-a">●</span> {poll.percentA}%
-          </span>
-          <span className={`text-[11px] font-extrabold tabular-nums ${isLight ? 'text-foreground' : 'text-white'}`}>
-            {poll.percentB}% <span className="text-option-b">●</span>
-          </span>
+        {/* % split bar — merged onto the picture itself, edge-to-edge */}
+        <div className="absolute inset-x-0 bottom-0 z-20 pointer-events-none">
+          <div className="flex items-center justify-between px-3 pb-1.5">
+            <span className="text-[13px] font-extrabold tabular-nums text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>
+              <span className="text-option-a">●</span> {poll.percentA}%
+            </span>
+            <span className="text-[13px] font-extrabold tabular-nums text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>
+              {poll.percentB}% <span className="text-option-b">●</span>
+            </span>
+          </div>
+          <div className="h-3 w-full flex overflow-hidden">
+            <div
+              className="h-full bg-option-a transition-all duration-700"
+              style={{ width: `${poll.percentA}%` }}
+            />
+            <div
+              className="h-full bg-option-b transition-all duration-700"
+              style={{ width: `${poll.percentB}%` }}
+            />
+          </div>
         </div>
       </div>
 
