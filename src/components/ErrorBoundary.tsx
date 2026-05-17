@@ -31,8 +31,34 @@ export default class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: unknown) {
     console.error('App crashed:', error, info);
 
+    // Detect stale chunk / dynamic import failures after a redeploy.
+    // The user's cached index.html references JS chunks that no longer exist,
+    // so lazy-loaded routes (e.g. /admin) fail with "Importing a module script
+    // failed" or "Failed to fetch dynamically imported module". A hard reload
+    // fetches the new index + chunk hashes and resolves it.
+    const msg = String(error?.message || '');
+    const isChunkError =
+      /Importing a module script failed/i.test(msg) ||
+      /Failed to fetch dynamically imported module/i.test(msg) ||
+      /error loading dynamically imported module/i.test(msg) ||
+      (/Load failed/i.test(msg) && /chunk|module|script/i.test(String((error as any)?.stack || '')));
+
+    if (isChunkError) {
+      const KEY = 'versa.chunk-reload.v1';
+      try {
+        const last = Number(sessionStorage.getItem(KEY) || '0');
+        if (Date.now() - last > 10_000) {
+          sessionStorage.setItem(KEY, String(Date.now()));
+          window.location.reload();
+          return;
+        }
+      } catch {
+        window.location.reload();
+        return;
+      }
+    }
+
     // First crash: try a silent automatic recovery on the next tick.
-    // This avoids ever showing the scary fallback for transient errors.
     if (this.state.retryCount < 1) {
       setTimeout(() => {
         this.setState((s) => ({
