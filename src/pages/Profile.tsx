@@ -135,6 +135,23 @@ export default function Profile() {
             {profile?.country || 'Unknown location'}
           </p>
 
+          {/* Followers / Following — IG style */}
+          <div className="flex items-center justify-center gap-6 mt-2">
+            <button
+              onClick={() => navigate('/profile/connections?tab=followers')}
+              className="flex items-baseline gap-1"
+            >
+              <span className="text-sm font-bold text-foreground">{stats?.followers || 0}</span>
+              <span className="text-[11px] text-muted-foreground">Followers</span>
+            </button>
+            <button
+              onClick={() => navigate('/profile/connections?tab=following')}
+              className="flex items-baseline gap-1"
+            >
+              <span className="text-sm font-bold text-foreground">{stats?.following || 0}</span>
+              <span className="text-[11px] text-muted-foreground">Following</span>
+            </button>
+          </div>
           {/* Profile confidence indicator */}
           {(stats?.votes ?? 0) >= 30 && (stats?.votes ?? 0) < 50 && (
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">
