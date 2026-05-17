@@ -38,7 +38,9 @@ export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: 
       release_at: releaseAt ? new Date(releaseAt).toISOString() : null,
       expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       visibility_mode: visibilityMode || 'mixed',
-      is_active: true,
+      // New campaigns start PAUSED. An admin must review images/copy and activate
+      // from the dashboard, which fires the launch push notification.
+      is_active: false,
       created_by: userId,
     })
     .select()
