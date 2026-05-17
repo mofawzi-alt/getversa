@@ -49,7 +49,7 @@ export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: 
       is_active: false,
       created_by: userId,
       ...(targeting || {}),
-    })
+    } as any)
     .select()
     .single();
   if (cErr) throw cErr;
