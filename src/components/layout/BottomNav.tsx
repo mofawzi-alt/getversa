@@ -2,13 +2,13 @@ import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, User, LogIn, Compass, MessageCircle, Camera } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMessages } from '@/hooks/useMessages';
+import { useConversations } from '@/hooks/useMessages';
 
 const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const friendsBadge = useFriendsBadge();
+  const { totalUnread } = useConversations();
 
   // While auth is loading, show the full authenticated nav to prevent flash
   if (!user && !loading) {
