@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Target, Swords, BarChart3, Coins, FileText, ScrollText, LifeBuoy, MessageCircleQuestion } from 'lucide-react';
+import { LogOut, ChevronRight, User, Bell, Shield, Flame, History, Sparkles, Target, Swords, BarChart3, Coins, FileText, ScrollText, LifeBuoy, MessageCircleQuestion, Users } from 'lucide-react';
 import { useAskCredits } from '@/hooks/useAskCredits';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
@@ -76,6 +76,7 @@ export default function Profile() {
   const menuItems = [
     { icon: Sparkles, label: 'Taste Profile', path: '/taste-profile', color: 'text-primary', highlight: true },
     { icon: History, label: 'My Votes', path: '/history', color: 'text-primary' },
+    { icon: Users, label: 'Friends', path: '/friends', color: 'text-primary' },
     { icon: User, label: 'Edit Profile', path: '/profile/edit', color: 'text-muted-foreground' },
     { icon: Bell, label: 'Notification Settings', path: '/profile/notifications', color: 'text-muted-foreground' },
     { icon: MessageCircleQuestion, label: 'My Live Asks', path: '/live-ask/mine', color: 'text-primary' },

@@ -1,14 +1,14 @@
 import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, LogIn, Compass, Users, Camera } from 'lucide-react';
+import { Home, User, LogIn, Compass, MessageCircle, Camera } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useFriendsBadge } from '@/hooks/useFriendsBadge';
+import { useConversations } from '@/hooks/useMessages';
 
 const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const friendsBadge = useFriendsBadge();
+  const { totalUnread } = useConversations();
 
   // While auth is loading, show the full authenticated nav to prevent flash
   if (!user && !loading) {
@@ -54,12 +54,12 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           onClick={() => navigate('/live-ask/new')}
         />
         <NavButton
-          path="/friends"
-          icon={Users}
-          label="Friends"
-          active={location.pathname === '/friends' || location.pathname.startsWith('/friends/')}
-          onClick={() => navigate('/friends')}
-          badge={friendsBadge}
+          path="/messages"
+          icon={MessageCircle}
+          label="Inbox"
+          active={location.pathname === '/messages' || location.pathname.startsWith('/messages/')}
+          onClick={() => navigate('/messages')}
+          badge={totalUnread}
         />
         <NavButton
           path="/profile"
