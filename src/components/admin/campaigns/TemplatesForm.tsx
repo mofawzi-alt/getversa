@@ -8,6 +8,7 @@ import { Loader2, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CAMPAIGN_TEMPLATES, applyTemplate } from '@/lib/campaignTemplates';
 import { launchCampaign, DraftPoll } from './launchCampaign';
+import CampaignTargetingFields, { emptyTargeting, targetingToPayload, CampaignTargeting } from './CampaignTargetingFields';
 
 interface Props { onLaunched: () => void }
 
