@@ -57,7 +57,8 @@ export async function launchCampaign(input: LaunchInput): Promise<{ campaignId: 
     image_a_url: p.image_a_url?.trim() || null,
     image_b_url: p.image_b_url?.trim() || null,
     category: p.category?.trim() || 'brands',
-    is_active: true,
+    // Polls also start inactive — they activate when the admin launches the campaign
+    is_active: false,
     starts_at: startsAt,
     ends_at: endsAt,
     campaign_id: campaign.id,
