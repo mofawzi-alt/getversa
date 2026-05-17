@@ -54,12 +54,12 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           onClick={() => navigate('/live-ask/new')}
         />
         <NavButton
-          path="/friends"
-          icon={Users}
-          label="Friends"
-          active={location.pathname === '/friends' || location.pathname.startsWith('/friends/')}
-          onClick={() => navigate('/friends')}
-          badge={friendsBadge}
+          path="/messages"
+          icon={MessageCircle}
+          label="Inbox"
+          active={location.pathname === '/messages' || location.pathname.startsWith('/messages/')}
+          onClick={() => navigate('/messages')}
+          badge={totalUnread}
         />
         <NavButton
           path="/profile"
