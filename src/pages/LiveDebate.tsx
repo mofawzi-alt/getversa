@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { X, Flame, Users } from 'lucide-react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { playSwipeSound, playResultSound, playMinoritySound } from '@/lib/sounds';
-import { getPollDisplayImageSrc, getStablePollFallbackImage, handlePollImageError } from '@/lib/pollImages';
+import { getPollDisplayImageSrc, getStablePollFallbackImage, handlePollImageError, getOptimizedPollImageSrc } from '@/lib/pollImages';
 import { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useCelebrityPresence, useCelebrityVotes } from '@/hooks/useCelebrityVotes';
