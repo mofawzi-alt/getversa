@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { resolvePollMediaUrl } from '@/lib/pollImages';
+import { resolvePollMediaUrl, getOptimizedPollImageSrc } from '@/lib/pollImages';
 
 /**
  * Preloads the first N active poll images so the home feed has zero gray
