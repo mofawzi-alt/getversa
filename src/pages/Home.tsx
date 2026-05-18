@@ -1610,7 +1610,8 @@ export default function Home() {
         guestSkipped = new Set(JSON.parse(localStorage.getItem('versa_guest_skipped_polls') || '[]'));
       } catch {}
     }
-    const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id) && !guestSkipped.has(p.id));
+    const skipSet = skippedPollIds || new Set<string>();
+    const unvoted = allPolls.filter(p => !votedPollIds?.has(p.id) && !guestSkipped.has(p.id) && !skipSet.has(p.id));
     if (isOnboardingFeed) {
       return unvoted;
     }
@@ -1643,7 +1644,7 @@ export default function Home() {
       return [...freshUnqueuedPolls, ...queuePolls];
     }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
-  }, [allPolls, votedPollIds, profile?.age_range, user, queuePollIds, isOnboardingFeed]);
+  }, [allPolls, votedPollIds, skippedPollIds, profile?.age_range, user, queuePollIds, isOnboardingFeed]);
   const newPolls = useMemo(() => {
     if (!categoryFilter) return allNewPolls;
     return allNewPolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter);
