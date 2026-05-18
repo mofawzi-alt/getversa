@@ -10,7 +10,6 @@ import { SplashScreen } from "@capacitor/splash-screen";
 declare global {
   interface Window {
     __VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__?: boolean;
-    requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
   }
 }
 
@@ -106,8 +105,7 @@ const runNativeBootTasks = () => {
 
   // 3) Everything below is pure background work — push it to idle time.
   const runIdle = (cb: () => void) => {
-    const ric = window.requestIdleCallback;
-    if (typeof ric === "function") ric(cb, { timeout: 2000 });
+    if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(() => cb(), { timeout: 2000 });
     else setTimeout(cb, 600);
   };
 
