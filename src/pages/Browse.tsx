@@ -307,7 +307,7 @@ export default function Browse() {
     }
 
     return result;
-  }, [feedPolls, profile?.age_range, userVotes, targetPollId, sessionSeed]);
+  }, [feedPolls, profile?.age_range, userVotes, targetPollId, sessionSeed, skippedIdsSet]);
 
   // Apply keyword search across question + options + category
   const visibleFeed = useMemo(() => {
