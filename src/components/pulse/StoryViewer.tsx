@@ -260,7 +260,7 @@ export default function StoryViewer({
             height: '100dvh',
           }}
         >
-          <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2 pt-3">
+          <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}>
             {cards.map((_, i) => (
               <div key={i} className="flex-1 h-0.5 rounded-full bg-white/30 overflow-hidden">
                 <div
@@ -273,7 +273,7 @@ export default function StoryViewer({
             ))}
           </div>
 
-          <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+          <div className="absolute right-3 z-20 flex items-center gap-2" style={{ top: 'calc(env(safe-area-inset-top) + 18px)' }}>
             {card.shareable !== false && (
               <button
                 type="button"
@@ -378,7 +378,7 @@ export default function StoryViewer({
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/85" />
 
             {card.label && (
-              <div className="absolute top-12 left-0 right-0 text-center px-5 pointer-events-none">
+              <div className="absolute left-0 right-0 text-center px-5 pointer-events-none" style={{ top: 'calc(env(safe-area-inset-top) + 40px)' }}>
                 <p className="text-white/90 text-sm font-medium tracking-wide uppercase">
                   {card.categoryEmoji ? `${card.categoryEmoji} ` : ''}{card.label}
                 </p>
