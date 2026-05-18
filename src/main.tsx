@@ -48,7 +48,8 @@ function AppLoader() {
     void import("./App.tsx")
       .then((module) => {
         if (active) setAppComponent(() => module.default);
-        hideNativeSplash(120);
+        // Hide splash AFTER React commits the first paint of the real App.
+        requestAnimationFrame(() => requestAnimationFrame(() => hideNativeSplash(200)));
       })
       .catch((err) => {
         console.error("[Versa] App boot failed", err);
