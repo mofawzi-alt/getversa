@@ -178,9 +178,10 @@ export default function LiveDebate() {
         return;
       }
 
-      // Deduplicate against already-loaded polls
+      // Deduplicate against already-loaded polls and exclude skipped polls
       const existingIds = new Set(allPolls.map(p => p.id));
-      const newPolls = fetched.filter(p => !existingIds.has(p.id));
+      const skipSet = skippedIdsSet || new Set<string>();
+      const newPolls = fetched.filter(p => !existingIds.has(p.id) && !skipSet.has(p.id));
 
       if (newPolls.length > 0) {
         setAllPolls(prev => [...prev, ...newPolls]);
