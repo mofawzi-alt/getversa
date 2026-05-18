@@ -13,6 +13,7 @@ import { useCelebrityPresence, useCelebrityVotes } from '@/hooks/useCelebrityVot
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import VerdictResultCard from '@/components/poll/VerdictResultCard';
+import { useSkippedPollIds } from '@/hooks/useSkippedPollIds';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
@@ -93,9 +94,11 @@ export default function LiveDebate() {
   const [hasMorePages, setHasMorePages] = useState(true);
   const loadingMoreRef = useRef(false);
 
+  const { data: skippedIdsSet } = useSkippedPollIds();
+
   // Initial load
   const { isLoading } = useQuery({
-    queryKey: ['live-debate-polls', user?.id],
+    queryKey: ['live-debate-polls', user?.id, skippedIdsSet?.size || 0],
     queryFn: async () => {
       const now = new Date().toISOString();
       const { data: polls } = await supabase.from('polls')
@@ -106,7 +109,8 @@ export default function LiveDebate() {
         .order('created_at', { ascending: false })
         .limit(PAGE_SIZE);
 
-      let fetched = (polls || []) as Poll[];
+      const skipSet = skippedIdsSet || new Set<string>();
+      let fetched = ((polls || []) as Poll[]).filter(p => !skipSet.has(p.id));
       let votedChoices = new Map<string, string>();
 
       if (user && fetched.length > 0) {
@@ -174,9 +178,10 @@ export default function LiveDebate() {
         return;
       }
 
-      // Deduplicate against already-loaded polls
+      // Deduplicate against already-loaded polls and exclude skipped polls
       const existingIds = new Set(allPolls.map(p => p.id));
-      const newPolls = fetched.filter(p => !existingIds.has(p.id));
+      const skipSet = skippedIdsSet || new Set<string>();
+      const newPolls = fetched.filter(p => !existingIds.has(p.id) && !skipSet.has(p.id));
 
       if (newPolls.length > 0) {
         setAllPolls(prev => [...prev, ...newPolls]);
@@ -202,7 +207,7 @@ export default function LiveDebate() {
     } finally {
       loadingMoreRef.current = false;
     }
-  }, [page, hasMorePages, allPolls, user]);
+  }, [page, hasMorePages, allPolls, user, skippedIdsSet]);
 
   // Trigger load-more when within 5 polls of the end
   useEffect(() => {

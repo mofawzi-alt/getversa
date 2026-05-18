@@ -417,6 +417,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     }
 
     queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
+    queryClient.invalidateQueries({ queryKey: ['user-skipped-ids'] });
     queryClient.invalidateQueries({ queryKey: ['visual-feed-home'] });
 
     setIsVoting(false);

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
+import { useSkippedPollIds } from '@/hooks/useSkippedPollIds';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronUp, X, ArrowLeft, Radio } from 'lucide-react';
 import { BrowseFeedNudgeCard } from '@/components/onboarding/GuestNudges';
@@ -233,11 +234,17 @@ export default function Browse() {
     enabled: !user || feedPollIds.length > 0,
   });
 
+  const { data: skippedIdsSet } = useSkippedPollIds();
+
   // Per-visit random seed so the Browse feed reshuffles every time the user opens it.
   const [sessionSeed] = useState(() => Math.random() * 1000000 + Date.now());
 
   const sortedFeed = useMemo(() => {
     if (!feedPolls || feedPolls.length === 0) return [];
+
+    const skipSet = skippedIdsSet || new Set<string>();
+    const filteredFeed = feedPolls.filter(p => !skipSet.has(p.id));
+    if (filteredFeed.length === 0) return [];
 
     const now = Date.now();
     const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
@@ -265,7 +272,7 @@ export default function Browse() {
       return result;
     };
 
-    const scored = feedPolls.map((p, i) => {
+    const scored = filteredFeed.map((p, i) => {
       const createdAt = new Date(p.created_at).getTime();
       const isToday = createdAt > h24Ago;
       const isRecent = createdAt > weekAgo;
@@ -300,7 +307,7 @@ export default function Browse() {
     }
 
     return result;
-  }, [feedPolls, profile?.age_range, userVotes, targetPollId, sessionSeed]);
+  }, [feedPolls, profile?.age_range, userVotes, targetPollId, sessionSeed, skippedIdsSet]);
 
   // Apply keyword search across question + options + category
   const visibleFeed = useMemo(() => {
