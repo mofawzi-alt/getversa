@@ -273,7 +273,7 @@ export default function StoryViewer({
             ))}
           </div>
 
-          <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+          <div className="absolute right-3 z-20 flex items-center gap-2" style={{ top: 'calc(env(safe-area-inset-top) + 18px)' }}>
             {card.shareable !== false && (
               <button
                 type="button"
