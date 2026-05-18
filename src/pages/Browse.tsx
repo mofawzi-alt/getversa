@@ -234,6 +234,8 @@ export default function Browse() {
     enabled: !user || feedPollIds.length > 0,
   });
 
+  const { data: skippedIdsSet } = useSkippedPollIds();
+
   // Per-visit random seed so the Browse feed reshuffles every time the user opens it.
   const [sessionSeed] = useState(() => Math.random() * 1000000 + Date.now());
 
