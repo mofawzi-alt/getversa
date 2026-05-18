@@ -1469,7 +1469,7 @@ export default function Home() {
           .or(`starts_at.is.null,starts_at.lte.${now}`)
           .order('weight_score', { ascending: false, nullsFirst: false })
           .order('created_at', { ascending: false })
-          .limit(80);
+          .limit(1000);
 
         if (rawPollsError) throw rawPollsError;
         if (!rawPolls || rawPolls.length === 0) return [];
@@ -1484,7 +1484,7 @@ export default function Home() {
             .gte('created_at', freshSince)
             .or(`starts_at.is.null,starts_at.lte.${now}`)
             .order('created_at', { ascending: false })
-            .limit(50),
+            .limit(500),
           Promise.resolve(queuePollIds.filter(id => !fetchedIds.has(id))),
         ]);
         if (freshPollsError) throw freshPollsError;
@@ -1555,7 +1555,7 @@ export default function Home() {
           prioritized = [...matched, ...others];
         }
 
-        const selectedPolls = prioritized.filter((p, index) => index < 100 || queueSet.has(p.id));
+        const selectedPolls = prioritized;
         const pollIds = selectedPolls.map(p => p.id);
         if (pollIds.length === 0) return [];
 
