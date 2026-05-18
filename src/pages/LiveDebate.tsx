@@ -207,7 +207,7 @@ export default function LiveDebate() {
     } finally {
       loadingMoreRef.current = false;
     }
-  }, [page, hasMorePages, allPolls, user]);
+  }, [page, hasMorePages, allPolls, user, skippedIdsSet]);
 
   // Trigger load-more when within 5 polls of the end
   useEffect(() => {
