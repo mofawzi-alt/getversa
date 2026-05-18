@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { X, Flame, Users } from 'lucide-react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { playSwipeSound, playResultSound, playMinoritySound } from '@/lib/sounds';
-import { getPollDisplayImageSrc, getStablePollFallbackImage, handlePollImageError } from '@/lib/pollImages';
+import { getPollDisplayImageSrc, getStablePollFallbackImage, handlePollImageError, getOptimizedPollImageSrc } from '@/lib/pollImages';
 import { AnimatedPercent } from '@/components/feed/VoteFeedbackOverlay';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { useCelebrityPresence, useCelebrityVotes } from '@/hooks/useCelebrityVotes';
@@ -260,15 +260,18 @@ export default function LiveDebate() {
     };
   }, [currentPoll, phase, currentPollIsVoted, currentLocalResult, currentPollChoice]);
 
-  // Preload next 3 images
+  // Preload next 3 images using the SAME optimized URL the card will request,
+  // so we hit the browser cache instead of downloading full-res originals.
   useEffect(() => {
     for (let i = 1; i <= 3; i++) {
       const p = polls[currentIndex + i];
       if (!p) break;
       const imgA = getPollDisplayImageSrc({ imageUrl: p.image_a_url, option: p.option_a, question: p.question, side: 'A' });
       const imgB = getPollDisplayImageSrc({ imageUrl: p.image_b_url, option: p.option_b, question: p.question, side: 'B' });
-      const a = new Image(); a.src = imgA;
-      const b = new Image(); b.src = imgB;
+      const optA = getOptimizedPollImageSrc(imgA, { width: 900, height: 1200, quality: 70 }) || imgA;
+      const optB = getOptimizedPollImageSrc(imgB, { width: 900, height: 1200, quality: 70 }) || imgB;
+      const a = new Image(); a.decoding = 'async'; a.src = optA;
+      const b = new Image(); b.decoding = 'async'; b.src = optB;
     }
   }, [currentIndex, polls]);
 
