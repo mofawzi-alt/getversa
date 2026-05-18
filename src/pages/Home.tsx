@@ -12,6 +12,7 @@ import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-quer
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
+import { useSkippedPollIds } from '@/hooks/useSkippedPollIds';
 import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteScoring';
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
