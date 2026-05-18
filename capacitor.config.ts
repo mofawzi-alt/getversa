@@ -40,10 +40,10 @@ const config: CapacitorConfig = {
       backgroundColor: '#FFFFFF00',
     },
     SplashScreen: {
-      // Show our branded splash on launch and keep it up until React tells
-      // it to hide (see src/main.tsx -> SplashScreen.hide). No flicker.
-      launchShowDuration: 3000,
-      launchAutoHide: false,
+      // Show our branded splash, but allow iOS to auto-hide as a safety net
+      // so the app can never stay stuck on the native splash screen.
+      launchShowDuration: 1600,
+      launchAutoHide: true,
       backgroundColor: '#FFFFFF',
       iosSpinnerStyle: 'small',
       spinnerColor: '#E8392A',
