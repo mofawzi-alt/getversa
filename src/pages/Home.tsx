@@ -1484,7 +1484,7 @@ export default function Home() {
             .gte('created_at', freshSince)
             .or(`starts_at.is.null,starts_at.lte.${now}`)
             .order('created_at', { ascending: false })
-            .limit(50),
+            .limit(500),
           Promise.resolve(queuePollIds.filter(id => !fetchedIds.has(id))),
         ]);
         if (freshPollsError) throw freshPollsError;
