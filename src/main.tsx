@@ -1,12 +1,11 @@
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
+import { useEffect, useState, type ComponentType } from "react";
 import "./lib/nativeOAuthBridge"; // Must run before anything else
 import "./lib/authRedirectCapture";
-import App from "./App.tsx";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";
-import { App as CapacitorApp } from "@capacitor/app";
-import { getNotificationRoute, initOneSignal, openNotificationRoute } from "@/lib/onesignal";
+import { SplashScreen } from "@capacitor/splash-screen";
 
 declare global {
   interface Window {
