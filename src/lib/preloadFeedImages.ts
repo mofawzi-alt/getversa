@@ -51,7 +51,9 @@ export function preloadFeedImages(limit = 6) {
           // decoding=async lets the browser warm cache without blocking.
           img.decoding = 'async';
           img.loading = 'eager';
-          img.src = url;
+          // Preload the optimized variant the card will actually request, not
+          // the multi-MB original — otherwise we double-download on cold start.
+          img.src = getOptimizedPollImageSrc(url, { width: 900, height: 1200, quality: 70 }) || url;
         } catch {
           /* best-effort */
         }
