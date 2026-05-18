@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import BrowseCard, { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
+import { getOptimizedPollImageSrc } from '@/lib/pollImages';
 
 // (BrowsePoll, DemoTag, computeDemoTags imported from shared BrowseCard component)
 
