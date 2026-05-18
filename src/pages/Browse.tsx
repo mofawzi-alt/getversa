@@ -314,11 +314,12 @@ export default function Browse() {
     );
   }, [sortedFeed, searchQuery]);
 
-  // Preload first 6 browse cards' images so the initial scroll feels instant.
+  // Preload first 3 browse cards' images so the initial scroll feels instant
+  // without saturating iOS WKWebView's small network queue.
   // IMPORTANT: preload the SAME optimized URL the card will request, otherwise
   // we double-download (full-res original AND the transformed variant).
   useEffect(() => {
-    visibleFeed.slice(0, 6).forEach((p, idx) => {
+    visibleFeed.slice(0, 3).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
         if (!url) return;
         const img = new Image();
