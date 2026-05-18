@@ -98,7 +98,7 @@ export default function LiveDebate() {
 
   // Initial load
   const { isLoading } = useQuery({
-    queryKey: ['live-debate-polls', user?.id],
+    queryKey: ['live-debate-polls', user?.id, skippedIdsSet?.size || 0],
     queryFn: async () => {
       const now = new Date().toISOString();
       const { data: polls } = await supabase.from('polls')
