@@ -1469,7 +1469,7 @@ export default function Home() {
           .or(`starts_at.is.null,starts_at.lte.${now}`)
           .order('weight_score', { ascending: false, nullsFirst: false })
           .order('created_at', { ascending: false })
-          .limit(1000);
+          .limit(user && queuePollIds.length > 0 ? Math.max(queuePollIds.length * 3, 60) : 120);
 
         if (rawPollsError) throw rawPollsError;
         if (!rawPolls || rawPolls.length === 0) return [];
@@ -1484,7 +1484,7 @@ export default function Home() {
             .gte('created_at', freshSince)
             .or(`starts_at.is.null,starts_at.lte.${now}`)
             .order('created_at', { ascending: false })
-            .limit(500),
+            .limit(80),
           Promise.resolve(queuePollIds.filter(id => !fetchedIds.has(id))),
         ]);
         if (freshPollsError) throw freshPollsError;
