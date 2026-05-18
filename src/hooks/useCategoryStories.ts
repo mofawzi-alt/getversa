@@ -27,12 +27,14 @@ export function useCategoryStories() {
     queryFn: async () => {
       const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
 
-      // Fetch all active polls
+      // Fetch a compact active sample; story circles must not compete with the feed.
       const { data: polls } = await supabase
         .from('polls')
         .select('id, question, option_a, option_b, image_a_url, image_b_url, category')
         .eq('is_active', true)
-        .limit(500);
+        .order('weight_score', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false })
+        .limit(120);
 
       if (!polls?.length) return [];
 
@@ -43,7 +45,7 @@ export function useCategoryStories() {
         .select('poll_id, choice')
         .in('poll_id', pollIds)
         .gte('created_at', since)
-        .limit(5000);
+        .limit(1200);
 
       // Tally votes per poll
       const tally = new Map<string, { a: number; b: number; total: number }>();
