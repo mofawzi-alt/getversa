@@ -242,6 +242,10 @@ export default function Browse() {
   const sortedFeed = useMemo(() => {
     if (!feedPolls || feedPolls.length === 0) return [];
 
+    const skipSet = skippedIdsSet || new Set<string>();
+    const filteredFeed = feedPolls.filter(p => !skipSet.has(p.id));
+    if (filteredFeed.length === 0) return [];
+
     const now = Date.now();
     const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
     const h24Ago = now - 24 * 60 * 60 * 1000;
