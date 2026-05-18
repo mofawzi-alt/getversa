@@ -13,6 +13,7 @@ import { useCelebrityPresence, useCelebrityVotes } from '@/hooks/useCelebrityVot
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import VerdictResultCard from '@/components/poll/VerdictResultCard';
+import { useSkippedPollIds } from '@/hooks/useSkippedPollIds';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
