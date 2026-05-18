@@ -149,5 +149,34 @@ async function generateIcons() {
   console.log('[cap-sync] Regenerated iOS app icon set');
 }
 
+async function generateSplash() {
+  const splashSource = path.join(root, 'resources', 'splash.png');
+  const splashDir = path.join(iosDir, 'Assets.xcassets', 'Splash.imageset');
+  if (!fs.existsSync(splashSource)) {
+    console.log('[cap-sync] resources/splash.png not found, skipping splash generation');
+    return;
+  }
+  if (!fs.existsSync(splashDir)) {
+    fs.mkdirSync(splashDir, { recursive: true });
+    console.log('[cap-sync] Created Splash.imageset folder');
+  }
+  const { default: sharp } = await import('sharp');
+  const variants = [
+    { name: 'splash-2732x2732.png', scale: '1x' },
+    { name: 'splash-2732x2732-1.png', scale: '2x' },
+    { name: 'splash-2732x2732-2.png', scale: '3x' },
+  ];
+  for (const v of variants) {
+    await sharp(splashSource).resize(2732, 2732).png().toFile(path.join(splashDir, v.name));
+  }
+  const contents = {
+    images: variants.map(v => ({ idiom: 'universal', filename: v.name, scale: v.scale })),
+    info: { version: 1, author: 'xcode' },
+  };
+  fs.writeFileSync(path.join(splashDir, 'Contents.json'), `${JSON.stringify(contents, null, 2)}\n`, 'utf8');
+  console.log('[cap-sync] Regenerated iOS Splash.imageset with Versa branding');
+}
+
 await generateIcons();
+await generateSplash();
 ensureInfoPlistKeys();
