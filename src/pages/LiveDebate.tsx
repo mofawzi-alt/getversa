@@ -109,7 +109,8 @@ export default function LiveDebate() {
         .order('created_at', { ascending: false })
         .limit(PAGE_SIZE);
 
-      let fetched = (polls || []) as Poll[];
+      const skipSet = skippedIdsSet || new Set<string>();
+      let fetched = ((polls || []) as Poll[]).filter(p => !skipSet.has(p.id));
       let votedChoices = new Map<string, string>();
 
       if (user && fetched.length > 0) {
