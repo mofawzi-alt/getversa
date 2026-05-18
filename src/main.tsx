@@ -29,9 +29,9 @@ const hideNativeSplash = (fadeOutDuration = 0) => {
 function NativeSplashFailsafe({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isNativeApp) return;
-    // Safety net only — if AppLoader never resolves, force-hide after 4s
-    // so users are never stuck on the splash.
-    const timer = window.setTimeout(() => hideNativeSplash(200), 4000);
+    // Safety net — force-hide after 1.2s so users can never get stuck on the
+    // splash, even on warm relaunches where the import is already cached.
+    const timer = window.setTimeout(() => hideNativeSplash(150), 1200);
     return () => window.clearTimeout(timer);
   }, []);
 
