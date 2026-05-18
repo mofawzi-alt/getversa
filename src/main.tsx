@@ -22,17 +22,17 @@ const hideNativeSplash = (fadeOutDuration = 0) => {
   });
 };
 
-hideNativeSplash(0);
+// NOTE: we intentionally do NOT hide the splash here. The native splash
+// must stay visible until App.tsx is loaded and React has painted at least
+// one frame, otherwise users see a white flash between splash and UI.
 
 function NativeSplashFailsafe({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isNativeApp) return;
-
-    const timers = [0, 250, 1000, 2500].map((delay) =>
-      window.setTimeout(() => hideNativeSplash(delay === 0 ? 0 : 120), delay),
-    );
-
-    return () => timers.forEach((timer) => window.clearTimeout(timer));
+    // Safety net only — if AppLoader never resolves, force-hide after 4s
+    // so users are never stuck on the splash.
+    const timer = window.setTimeout(() => hideNativeSplash(200), 4000);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return <>{children}</>;
