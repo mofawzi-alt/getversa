@@ -1469,7 +1469,7 @@ export default function Home() {
           .or(`starts_at.is.null,starts_at.lte.${now}`)
           .order('weight_score', { ascending: false, nullsFirst: false })
           .order('created_at', { ascending: false })
-          .limit(80);
+          .limit(1000);
 
         if (rawPollsError) throw rawPollsError;
         if (!rawPolls || rawPolls.length === 0) return [];
