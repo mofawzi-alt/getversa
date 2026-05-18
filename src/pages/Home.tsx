@@ -1276,6 +1276,8 @@ export default function Home() {
     staleTime: 1000 * 15,
   });
 
+  const { data: skippedPollIds } = useSkippedPollIds();
+
   // Fetch user vote choices for showing "You voted X" on live debate cards
   const { data: userVoteChoices } = useQuery({
     queryKey: ['user-vote-choices', user?.id],
