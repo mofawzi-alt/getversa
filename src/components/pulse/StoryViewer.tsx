@@ -260,7 +260,7 @@ export default function StoryViewer({
             height: '100dvh',
           }}
         >
-          <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2 pt-3">
+          <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}>
             {cards.map((_, i) => (
               <div key={i} className="flex-1 h-0.5 rounded-full bg-white/30 overflow-hidden">
                 <div
