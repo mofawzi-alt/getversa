@@ -29,6 +29,14 @@ const capConfig = fs.readFileSync(path.join(root, 'capacitor.config.ts'), 'utf8'
 if (!capConfig.includes("appId: 'com.Versa.app'") || !capConfig.includes("appName: 'Versa'")) {
   fail('Native app identity is not Versa.');
 }
+if (!capConfig.includes('SplashScreen') || !capConfig.includes('launchAutoHide: true')) {
+  fail('iOS splash safety config is missing. Run npm install, then npm run ios:sync before archiving.');
+}
+
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+if (!packageJson.dependencies?.['@capacitor/splash-screen']) {
+  fail('Missing @capacitor/splash-screen. Run npm install, then npm run ios:sync before archiving.');
+}
 
 const postSync = fs.readFileSync(path.join(root, 'scripts/capacitor-ios-post-sync.mjs'), 'utf8');
 const requiredAppleKeys = [

@@ -1,17 +1,83 @@
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import "./lib/nativeOAuthBridge"; // Must run before anything else
 import "./lib/authRedirectCapture";
-import App from "./App.tsx";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";
-import { App as CapacitorApp } from "@capacitor/app";
-import { getNotificationRoute, initOneSignal, openNotificationRoute } from "@/lib/onesignal";
+import { SplashScreen } from "@capacitor/splash-screen";
 
 declare global {
   interface Window {
     __VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__?: boolean;
   }
+}
+
+const isNativeApp = Capacitor?.isNativePlatform?.() === true;
+
+const hideNativeSplash = (fadeOutDuration = 0) => {
+  if (!isNativeApp) return;
+  void SplashScreen.hide({ fadeOutDuration }).catch((err) => {
+    console.warn("[SplashScreen] hide failed", err);
+  });
+};
+
+hideNativeSplash(0);
+
+function NativeSplashFailsafe({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    if (!isNativeApp) return;
+
+    const timers = [0, 250, 1000, 2500].map((delay) =>
+      window.setTimeout(() => hideNativeSplash(delay === 0 ? 0 : 120), delay),
+    );
+
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, []);
+
+  return <>{children}</>;
+}
+
+function AppLoader() {
+  const [AppComponent, setAppComponent] = useState<ComponentType | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    void import("./App.tsx")
+      .then((module) => {
+        if (active) setAppComponent(() => module.default);
+        hideNativeSplash(120);
+      })
+      .catch((err) => {
+        console.error("[Versa] App boot failed", err);
+        if (active) setLoadFailed(true);
+        hideNativeSplash(0);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loadFailed) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background px-6 text-center text-foreground">
+        <p className="text-base font-semibold">Versa could not start. Please close and reopen the app.</p>
+      </div>
+    );
+  }
+
+  if (!AppComponent) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  return <AppComponent />;
 }
 
 if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
@@ -34,25 +100,17 @@ const runNativeBootTasks = () => {
     }
   })();
 
-  // 2) Hide native splash screen the instant React is on screen.
-  void (async () => {
-    try {
-      const { SplashScreen } = await import("@capacitor/splash-screen");
-      await SplashScreen.hide({ fadeOutDuration: 200 });
-    } catch (err) {
-      console.warn("[SplashScreen] hide failed", err);
-    }
-  })();
+  // 2) Keep hiding the native splash from multiple lifecycle moments.
+  hideNativeSplash(120);
 
   // 3) Everything below is pure background work — push it to idle time.
   const runIdle = (cb: () => void) => {
-    const ric = (window as any).requestIdleCallback;
-    if (typeof ric === "function") ric(cb, { timeout: 2000 });
+    if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(() => cb(), { timeout: 2000 });
     else setTimeout(cb, 600);
   };
 
   runIdle(() => {
-    void initOneSignal(null);
+    void import("@/lib/onesignal").then((m) => m.initOneSignal(null)).catch(() => {});
 
     void (async () => {
       try {
@@ -63,15 +121,19 @@ const runNativeBootTasks = () => {
       }
     })();
 
-    void CapacitorApp.getLaunchUrl().then((launch) => {
-      const route = getNotificationRoute(launch?.url);
-      if (route && route !== "/home") openNotificationRoute(route);
-    }).catch(() => {});
+    void Promise.all([import("@capacitor/app"), import("@/lib/onesignal")]).then(([appModule, oneSignal]) => {
+      const CapacitorApp = appModule.App;
 
-    void CapacitorApp.addListener("appUrlOpen", ({ url }) => {
-      const route = getNotificationRoute(url);
-      if (route && route !== "/home" && !route.startsWith("/auth-callback")) openNotificationRoute(route);
-    });
+      void CapacitorApp.getLaunchUrl().then((launch) => {
+        const route = oneSignal.getNotificationRoute(launch?.url);
+        if (route && route !== "/home") oneSignal.openNotificationRoute(route);
+      }).catch(() => {});
+
+      void CapacitorApp.addListener("appUrlOpen", ({ url }) => {
+        const route = oneSignal.getNotificationRoute(url);
+        if (route && route !== "/home" && !route.startsWith("/auth-callback")) oneSignal.openNotificationRoute(route);
+      });
+    }).catch(() => {});
 
     void (async () => {
       try {
@@ -96,8 +158,6 @@ const isPreviewHost =
   window.location.hostname.includes("id-preview--") ||
   window.location.hostname.includes("lovableproject.com");
 
-const isNativeApp = Capacitor?.isNativePlatform?.() === true;
-
 const clearServiceWorkersAndCaches = async () => {
   if (!("serviceWorker" in navigator)) return;
 
@@ -116,7 +176,9 @@ if (isPreviewHost || isInIframe || isNativeApp) {
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
-    <App />
+    <NativeSplashFailsafe>
+      <AppLoader />
+    </NativeSplashFailsafe>
   </HelmetProvider>
 );
 
