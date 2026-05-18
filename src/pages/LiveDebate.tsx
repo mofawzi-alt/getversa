@@ -109,8 +109,12 @@ export default function LiveDebate() {
       let fetched = (polls || []) as Poll[];
       let votedChoices = new Map<string, string>();
 
-      if (user) {
-        const { data: votes } = await supabase.from('votes').select('poll_id, choice').eq('user_id', user.id);
+      if (user && fetched.length > 0) {
+        const { data: votes } = await supabase
+          .from('votes')
+          .select('poll_id, choice')
+          .eq('user_id', user.id)
+          .in('poll_id', fetched.map((p) => p.id));
         votedChoices = new Map(votes?.map(v => [v.poll_id, v.choice]) || []);
       }
 
