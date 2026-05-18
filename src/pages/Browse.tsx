@@ -272,7 +272,7 @@ export default function Browse() {
       return result;
     };
 
-    const scored = feedPolls.map((p, i) => {
+    const scored = filteredFeed.map((p, i) => {
       const createdAt = new Date(p.created_at).getTime();
       const isToday = createdAt > h24Ago;
       const isRecent = createdAt > weekAgo;
