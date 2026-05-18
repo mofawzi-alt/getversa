@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import "./lib/nativeOAuthBridge"; // Must run before anything else
 import "./lib/authRedirectCapture";
 import "./index.css";
@@ -24,7 +24,7 @@ const hideNativeSplash = (fadeOutDuration = 0) => {
 
 hideNativeSplash(0);
 
-function NativeSplashFailsafe({ children }: { children: React.ReactNode }) {
+function NativeSplashFailsafe({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isNativeApp) return;
 
