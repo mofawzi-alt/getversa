@@ -40,11 +40,13 @@ const config: CapacitorConfig = {
       backgroundColor: '#FFFFFF00',
     },
     SplashScreen: {
-      // Show our branded splash, but allow iOS to auto-hide as a safety net
-      // so the app can never stay stuck on the native splash screen.
-      launchShowDuration: 500,
-      launchAutoHide: true,
-      launchFadeOutDuration: 120,
+      // Keep the native splash visible until the JS app explicitly hides it
+      // (in src/main.tsx, after App.tsx has loaded). This prevents the white
+      // flash users were seeing between the native splash and the React UI.
+      // The 4s duration is a hard safety cap in case JS never boots.
+      launchShowDuration: 4000,
+      launchAutoHide: false,
+      launchFadeOutDuration: 200,
       backgroundColor: '#FFFFFF',
       iosSpinnerStyle: 'small',
       spinnerColor: '#E8392A',
