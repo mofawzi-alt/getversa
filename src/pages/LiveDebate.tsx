@@ -94,6 +94,8 @@ export default function LiveDebate() {
   const [hasMorePages, setHasMorePages] = useState(true);
   const loadingMoreRef = useRef(false);
 
+  const { data: skippedIdsSet } = useSkippedPollIds();
+
   // Initial load
   const { isLoading } = useQuery({
     queryKey: ['live-debate-polls', user?.id],
