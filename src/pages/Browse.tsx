@@ -311,6 +311,8 @@ export default function Browse() {
   }, [sortedFeed, searchQuery]);
 
   // Preload first 6 browse cards' images so the initial scroll feels instant.
+  // IMPORTANT: preload the SAME optimized URL the card will request, otherwise
+  // we double-download (full-res original AND the transformed variant).
   useEffect(() => {
     visibleFeed.slice(0, 6).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
@@ -318,7 +320,7 @@ export default function Browse() {
         const img = new Image();
         img.decoding = 'async';
         if (idx < 2) (img as any).fetchPriority = 'high';
-        img.src = url;
+        img.src = getOptimizedPollImageSrc(url, { width: 900, height: 1200, quality: idx < 2 ? 74 : 68 }) || url;
       });
     });
   }, [visibleFeed]);
