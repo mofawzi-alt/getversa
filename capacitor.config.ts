@@ -42,8 +42,9 @@ const config: CapacitorConfig = {
     SplashScreen: {
       // Show our branded splash, but allow iOS to auto-hide as a safety net
       // so the app can never stay stuck on the native splash screen.
-      launchShowDuration: 1600,
+      launchShowDuration: 500,
       launchAutoHide: true,
+      launchFadeOutDuration: 120,
       backgroundColor: '#FFFFFF',
       iosSpinnerStyle: 'small',
       spinnerColor: '#E8392A',
