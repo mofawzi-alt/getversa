@@ -378,7 +378,7 @@ export default function StoryViewer({
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/85" />
 
             {card.label && (
-              <div className="absolute top-12 left-0 right-0 text-center px-5 pointer-events-none">
+              <div className="absolute left-0 right-0 text-center px-5 pointer-events-none" style={{ top: 'calc(env(safe-area-inset-top) + 40px)' }}>
                 <p className="text-white/90 text-sm font-medium tracking-wide uppercase">
                   {card.categoryEmoji ? `${card.categoryEmoji} ` : ''}{card.label}
                 </p>
