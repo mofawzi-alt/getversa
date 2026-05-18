@@ -32,7 +32,8 @@ export function useEditorialStories() {
         .eq('status', 'published')
         .lte('publish_at', new Date().toISOString())
         .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-        .order('publish_at', { ascending: false });
+        .order('publish_at', { ascending: false })
+        .limit(12);
       if (error) throw error;
       // One per type — newest published wins
       const seen = new Set<string>();

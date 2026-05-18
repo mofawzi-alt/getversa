@@ -37,7 +37,7 @@ export function useBattleOfTheDay() {
         .from('votes')
         .select('poll_id, choice')
         .gte('created_at', since)
-        .limit(5000);
+        .limit(1200);
       if (!votes?.length) return null;
       const tally = new Map<string, { a: number; b: number; total: number }>();
       for (const v of votes as any[]) {
@@ -230,7 +230,7 @@ export function useYourPollsUpdated() {
           .from('polls')
           .select('id, question, option_a, option_b, image_a_url, image_b_url')
           .in('id', pollIds),
-        supabase.from('votes').select('poll_id, choice, created_at').in('poll_id', pollIds),
+        supabase.from('votes').select('poll_id, choice, created_at').in('poll_id', pollIds).limit(1500),
       ]);
       const pollMap = new Map((polls || []).map((p: any) => [p.id, p]));
       const out: any[] = [];
@@ -379,7 +379,7 @@ export function useWeeklyVerdict() {
         .from('votes')
         .select('poll_id, choice')
         .gte('created_at', since)
-        .limit(10000);
+        .limit(2000);
       if (!votes?.length) return null;
       const tally = new Map<string, { a: number; b: number; total: number }>();
       for (const v of votes as any[]) {

@@ -216,17 +216,21 @@ export default function Browse() {
     staleTime: 1000 * 60 * 2,
   });
 
+  const feedPollIds = useMemo(() => feedPolls?.map((p) => p.id) || [], [feedPolls]);
+
   const { data: userVotes } = useQuery({
-    queryKey: ['browse-user-votes', user?.id],
+    queryKey: ['browse-user-votes', user?.id, feedPollIds.join('|')],
     queryFn: async () => {
-      if (!user) return new Map<string, string>();
+      if (!user || feedPollIds.length === 0) return new Map<string, string>();
       const { data } = await supabase
         .from('votes')
         .select('poll_id, choice')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .in('poll_id', feedPollIds);
       return new Map(data?.map(v => [v.poll_id, v.choice]) || []);
     },
     staleTime: 1000 * 60 * 2,
+    enabled: !user || feedPollIds.length > 0,
   });
 
   // Per-visit random seed so the Browse feed reshuffles every time the user opens it.
@@ -310,11 +314,12 @@ export default function Browse() {
     );
   }, [sortedFeed, searchQuery]);
 
-  // Preload first 6 browse cards' images so the initial scroll feels instant.
+  // Preload first 3 browse cards' images so the initial scroll feels instant
+  // without saturating iOS WKWebView's small network queue.
   // IMPORTANT: preload the SAME optimized URL the card will request, otherwise
   // we double-download (full-res original AND the transformed variant).
   useEffect(() => {
-    visibleFeed.slice(0, 6).forEach((p, idx) => {
+    visibleFeed.slice(0, 3).forEach((p, idx) => {
       [p.image_a_url, p.image_b_url].forEach((url) => {
         if (!url) return;
         const img = new Image();
