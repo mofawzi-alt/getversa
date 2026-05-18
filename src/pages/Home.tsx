@@ -1555,7 +1555,7 @@ export default function Home() {
           prioritized = [...matched, ...others];
         }
 
-        const selectedPolls = prioritized.filter((p, index) => index < 100 || queueSet.has(p.id));
+        const selectedPolls = prioritized;
         const pollIds = selectedPolls.map(p => p.id);
         if (pollIds.length === 0) return [];
 
