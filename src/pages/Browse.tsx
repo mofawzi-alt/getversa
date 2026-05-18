@@ -216,17 +216,21 @@ export default function Browse() {
     staleTime: 1000 * 60 * 2,
   });
 
+  const feedPollIds = useMemo(() => feedPolls?.map((p) => p.id) || [], [feedPolls]);
+
   const { data: userVotes } = useQuery({
-    queryKey: ['browse-user-votes', user?.id],
+    queryKey: ['browse-user-votes', user?.id, feedPollIds.join('|')],
     queryFn: async () => {
-      if (!user) return new Map<string, string>();
+      if (!user || feedPollIds.length === 0) return new Map<string, string>();
       const { data } = await supabase
         .from('votes')
         .select('poll_id, choice')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .in('poll_id', feedPollIds);
       return new Map(data?.map(v => [v.poll_id, v.choice]) || []);
     },
     staleTime: 1000 * 60 * 2,
+    enabled: !user || feedPollIds.length > 0,
   });
 
   // Per-visit random seed so the Browse feed reshuffles every time the user opens it.
