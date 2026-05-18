@@ -35,14 +35,12 @@ const runNativeBootTasks = () => {
   })();
 
   // 2) Hide native splash screen the instant React is on screen.
-  //    Plugin may not be installed yet (added on next App Store submission).
   void (async () => {
     try {
-      const modName = "@capacitor/splash-screen";
-      const mod: any = await import(/* @vite-ignore */ modName).catch(() => null);
-      if (mod?.SplashScreen?.hide) await mod.SplashScreen.hide({ fadeOutDuration: 200 });
-    } catch {
-      /* plugin not installed yet — safe no-op */
+      const { SplashScreen } = await import("@capacitor/splash-screen");
+      await SplashScreen.hide({ fadeOutDuration: 200 });
+    } catch (err) {
+      console.warn("[SplashScreen] hide failed", err);
     }
   })();
 
