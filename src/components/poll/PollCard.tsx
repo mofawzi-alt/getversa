@@ -218,9 +218,9 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
         {/* Body — question + meta */}
         <div className="px-4 pt-3 pb-3">
           {poll.subtitle && (
-            <p className="text-[11px] font-semibold italic text-primary/70 mb-0.5 tracking-wide uppercase">{poll.subtitle}</p>
+            <p dir="auto" className="text-[11px] font-semibold italic text-primary/70 mb-0.5 tracking-wide uppercase">{poll.subtitle}</p>
           )}
-          <p className="text-[17px] font-bold text-foreground leading-snug">{poll.question}</p>
+          <p dir="auto" className="text-[17px] font-bold text-foreground leading-snug">{poll.question}</p>
 
           <div className="flex items-center gap-2 mt-2.5">
             {hasResult && (
