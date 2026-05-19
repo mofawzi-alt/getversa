@@ -794,23 +794,24 @@ function LiveDebatesList({
   }, [exitImmersive]);
 
 
-  // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
-  const [cycles, setCycles] = useState(1);
+  // Infinite scroll: ask parent for the next page when sentinel approaches viewport
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef(onLoadMore);
+  loadMoreRef.current = onLoadMore;
 
   useEffect(() => {
-    if (!sentinelRef.current || displayLivePolls.length === 0) return;
+    if (!sentinelRef.current || displayLivePolls.length === 0 || !hasMore) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          setCycles((prev) => Math.min(prev + 1, 3));
+          loadMoreRef.current?.();
         }
       },
-      { rootMargin: '600px' },
+      { rootMargin: '1200px' },
     );
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [displayLivePolls.length]);
+  }, [displayLivePolls.length, hasMore]);
 
   // Immersive mode — when the Live Debates wrapper enters the viewport, pin the
   // cards container fixed to the screen and hide the AppHeader. This gives a
