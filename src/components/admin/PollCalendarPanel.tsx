@@ -292,7 +292,7 @@ export default function PollCalendarPanel() {
     <div className="space-y-4">
       {/* Header controls */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1))}>
               <ChevronLeft className="h-4 w-4" />
@@ -301,11 +301,10 @@ export default function PollCalendarPanel() {
             <Button variant="outline" size="icon" onClick={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1))}>
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => setMonthCursor(startOfMonth(new Date()))}>Today</Button>
             <Button variant="ghost" size="sm" onClick={() => { setMonthCursor(startOfMonth(new Date())); setDayFilter(ymd(new Date())); }}>Today</Button>
           </div>
-          <div className="flex items-center gap-2">
-            <Label htmlFor="jump-date" className="text-xs text-muted-foreground">Jump to day:</Label>
+          <div className="flex items-center gap-2 ml-auto">
+            <Label htmlFor="jump-date" className="text-xs text-muted-foreground whitespace-nowrap">Jump to day:</Label>
             <Input
               id="jump-date"
               type="date"
