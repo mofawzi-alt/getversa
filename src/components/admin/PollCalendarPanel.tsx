@@ -401,7 +401,8 @@ export default function PollCalendarPanel() {
               return (
                 <div
                   key={key}
-                  className={`min-h-[80px] rounded-md border p-1.5 ${isToday ? 'border-primary bg-primary/5' : 'border-border bg-card/40'}`}
+                  onClick={() => setDayFilter(dayFilter === key ? '' : key)}
+                  className={`min-h-[80px] rounded-md border p-1.5 cursor-pointer transition-colors ${dayFilter === key ? 'border-primary bg-primary/10 ring-1 ring-primary' : isToday ? 'border-primary bg-primary/5' : 'border-border bg-card/40 hover:bg-secondary/40'}`}
                 >
                   <div className="text-[11px] font-semibold text-muted-foreground mb-1">{day}</div>
                   <div className="space-y-1">
