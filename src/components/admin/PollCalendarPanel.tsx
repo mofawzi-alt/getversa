@@ -72,6 +72,7 @@ export default function PollCalendarPanel() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [monthCursor, setMonthCursor] = useState(() => startOfMonth(new Date()));
+  const [dayFilter, setDayFilter] = useState<string>('');
   const [editingRow, setEditingRow] = useState<CalendarRow | null>(null);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [bulkProgress, setBulkProgress] = useState<{ current: number; total: number; running: boolean } | null>(null);
@@ -301,6 +302,27 @@ export default function PollCalendarPanel() {
               <ChevronRight className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setMonthCursor(startOfMonth(new Date()))}>Today</Button>
+            <Button variant="ghost" size="sm" onClick={() => { setMonthCursor(startOfMonth(new Date())); setDayFilter(ymd(new Date())); }}>Today</Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="jump-date" className="text-xs text-muted-foreground">Jump to day:</Label>
+            <Input
+              id="jump-date"
+              type="date"
+              value={dayFilter}
+              onChange={(e) => {
+                const v = e.target.value;
+                setDayFilter(v);
+                if (v) {
+                  const [y, m] = v.split('-').map(Number);
+                  setMonthCursor(new Date(y, m - 1, 1));
+                }
+              }}
+              className="h-8 w-[150px]"
+            />
+            {dayFilter && (
+              <Button variant="ghost" size="sm" onClick={() => setDayFilter('')}>Clear</Button>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -379,14 +401,15 @@ export default function PollCalendarPanel() {
               return (
                 <div
                   key={key}
-                  className={`min-h-[80px] rounded-md border p-1.5 ${isToday ? 'border-primary bg-primary/5' : 'border-border bg-card/40'}`}
+                  onClick={() => setDayFilter(dayFilter === key ? '' : key)}
+                  className={`min-h-[80px] rounded-md border p-1.5 cursor-pointer transition-colors ${dayFilter === key ? 'border-primary bg-primary/10 ring-1 ring-primary' : isToday ? 'border-primary bg-primary/5' : 'border-border bg-card/40 hover:bg-secondary/40'}`}
                 >
                   <div className="text-[11px] font-semibold text-muted-foreground mb-1">{day}</div>
                   <div className="space-y-1">
                     {dayRows.slice(0, 3).map((r) => (
                       <button
                         key={r.id}
-                        onClick={() => setEditingRow(r)}
+                        onClick={(e) => { e.stopPropagation(); setEditingRow(r); }}
                         className="w-full text-left text-[10px] leading-tight truncate rounded px-1 py-0.5 hover:bg-secondary"
                         title={r.question}
                       >
@@ -420,8 +443,10 @@ export default function PollCalendarPanel() {
 
       {/* List view of all month rows */}
       <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-muted-foreground">All rows this month ({rows.length})</h3>
-        {rows.map((r) => (
+        <h3 className="text-sm font-semibold text-muted-foreground">
+          {dayFilter ? `Rows for ${dayFilter} (${rows.filter(r => r.release_date === dayFilter).length})` : `All rows this month (${rows.length})`}
+        </h3>
+        {(dayFilter ? rows.filter(r => r.release_date === dayFilter) : rows).map((r) => (
           <div key={r.id} className="rounded-lg border p-3 bg-card/40 flex flex-wrap gap-3 items-start">
             <div className="flex-1 min-w-[240px]">
               <div className="flex items-center gap-2 mb-1">
