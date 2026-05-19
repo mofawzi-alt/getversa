@@ -864,8 +864,6 @@ function LiveDebatesList({
     if (displayLivePolls.length === 0) return [];
     return displayLivePolls.map((poll, i) => ({ poll, loopIndex: i }));
   }, [displayLivePolls]);
-    return result;
-  }, [displayLivePolls, cycles]);
 
   // Fetch sample of demographic votes to compute demo tags (Browse-style)
   const { data: demoMap } = useQuery({
