@@ -443,8 +443,10 @@ export default function PollCalendarPanel() {
 
       {/* List view of all month rows */}
       <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-muted-foreground">All rows this month ({rows.length})</h3>
-        {rows.map((r) => (
+        <h3 className="text-sm font-semibold text-muted-foreground">
+          {dayFilter ? `Rows for ${dayFilter} (${rows.filter(r => r.release_date === dayFilter).length})` : `All rows this month (${rows.length})`}
+        </h3>
+        {(dayFilter ? rows.filter(r => r.release_date === dayFilter) : rows).map((r) => (
           <div key={r.id} className="rounded-lg border p-3 bg-card/40 flex flex-wrap gap-3 items-start">
             <div className="flex-1 min-w-[240px]">
               <div className="flex items-center gap-2 mb-1">
