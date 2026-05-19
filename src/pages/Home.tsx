@@ -862,12 +862,8 @@ function LiveDebatesList({
 
   const repeatedPolls = useMemo(() => {
     if (displayLivePolls.length === 0) return [];
-    const result: Array<{ poll: PollCard; loopIndex: number }> = [];
-    for (let c = 0; c < cycles; c++) {
-      for (let i = 0; i < displayLivePolls.length; i++) {
-        result.push({ poll: displayLivePolls[i], loopIndex: c * displayLivePolls.length + i });
-      }
-    }
+    return displayLivePolls.map((poll, i) => ({ poll, loopIndex: i }));
+  }, [displayLivePolls]);
     return result;
   }, [displayLivePolls, cycles]);
 
