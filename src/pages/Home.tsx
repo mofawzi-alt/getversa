@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useSkippedPollIds } from '@/hooks/useSkippedPollIds';
+import { useLiveDebateFeed } from '@/hooks/useLiveDebateFeed';
 import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteScoring';
 import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
@@ -689,6 +690,8 @@ function LiveDebatesList({
   heroRef,
   setModalPoll,
   navigate,
+  onLoadMore,
+  hasMore,
 }: {
   livePolls: PollCard[];
   votedPollIds?: Set<string>;
@@ -699,6 +702,8 @@ function LiveDebatesList({
   heroRef: React.RefObject<HTMLDivElement>;
   setModalPoll: (p: PollCard) => void;
   navigate: (path: string) => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }) {
   const displayLivePolls = useMemo(() => livePolls, [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
@@ -790,23 +795,24 @@ function LiveDebatesList({
   }, [exitImmersive]);
 
 
-  // Infinite scroll: start with 1 cycle, grow as user scrolls near the end
-  const [cycles, setCycles] = useState(1);
+  // Infinite scroll: ask parent for the next page when sentinel approaches viewport
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef(onLoadMore);
+  loadMoreRef.current = onLoadMore;
 
   useEffect(() => {
-    if (!sentinelRef.current || displayLivePolls.length === 0) return;
+    if (!sentinelRef.current || displayLivePolls.length === 0 || !hasMore) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          setCycles((prev) => Math.min(prev + 1, 3));
+          loadMoreRef.current?.();
         }
       },
-      { rootMargin: '600px' },
+      { rootMargin: '1200px' },
     );
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [displayLivePolls.length]);
+  }, [displayLivePolls.length, hasMore]);
 
   // Immersive mode — when the Live Debates wrapper enters the viewport, pin the
   // cards container fixed to the screen and hide the AppHeader. This gives a
@@ -857,14 +863,8 @@ function LiveDebatesList({
 
   const repeatedPolls = useMemo(() => {
     if (displayLivePolls.length === 0) return [];
-    const result: Array<{ poll: PollCard; loopIndex: number }> = [];
-    for (let c = 0; c < cycles; c++) {
-      for (let i = 0; i < displayLivePolls.length; i++) {
-        result.push({ poll: displayLivePolls[i], loopIndex: c * displayLivePolls.length + i });
-      }
-    }
-    return result;
-  }, [displayLivePolls, cycles]);
+    return displayLivePolls.map((poll, i) => ({ poll, loopIndex: i }));
+  }, [displayLivePolls]);
 
   // Fetch sample of demographic votes to compute demo tags (Browse-style)
   const { data: demoMap } = useQuery({
@@ -1833,6 +1833,15 @@ export default function Home() {
     return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters, closingSoonPolls: closingSoon };
   }, [allPolls, votedPollIds, userTasteProfile]);
 
+  // Infinite-scroll feed of every active live poll — augments `livePolls` so the
+  // Live Debates section never repeats, it just loads the next page on scroll.
+  const {
+    data: liveFeedPages,
+    fetchNextPage: fetchMoreLive,
+    hasNextPage: hasMoreLive,
+    isFetchingNextPage: isFetchingMoreLive,
+  } = useLiveDebateFeed(!loading);
+
   // ── Trending detection: which live polls have >100 votes in last 2h ──
   const livePollIds = useMemo(() => livePolls.map((p) => p.id), [livePolls]);
   const { data: trendingIdSet } = useTrendingPolls(livePollIds);
@@ -2061,9 +2070,21 @@ export default function Home() {
         {/* ═══ 🔴 LIVE DEBATES ═══ */}
         <section className="page-snap-section mb-3 bg-secondary/40 relative">
           {(() => {
+            // Merge seed live polls with paginated infinite pages, dedup, filter voted/skipped
+            const skipSet = skippedPollIds || new Set<string>();
+            const extraPages = (liveFeedPages?.pages || []).flatMap((pg: any) => pg.polls as PollCard[]);
+            const seen = new Set<string>();
+            const merged: PollCard[] = [];
+            for (const p of [...livePolls, ...extraPages]) {
+              if (seen.has(p.id)) continue;
+              if (votedPollIds?.has(p.id)) continue;
+              if (skipSet.has(p.id)) continue;
+              seen.add(p.id);
+              merged.push(p);
+            }
             const filteredLivePolls = categoryFilter
-              ? livePolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter)
-              : livePolls;
+              ? merged.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter)
+              : merged;
             return filteredLivePolls.length > 0 ? (
               <>
                 {/* Live debates section — no banner, cards speak for themselves */}
@@ -2077,6 +2098,8 @@ export default function Home() {
                   heroRef={heroRef}
                   setModalPoll={setModalPoll}
                   navigate={navigate}
+                  onLoadMore={() => { if (hasMoreLive && !isFetchingMoreLive) fetchMoreLive(); }}
+                  hasMore={!!hasMoreLive}
                 />
               </>
             ) : (
