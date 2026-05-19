@@ -259,7 +259,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
             <div className="mt-3 space-y-2 animate-fade-in">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold text-foreground line-clamp-1">{poll.option_a}</span>
+                  <span dir="auto" className="text-sm font-semibold text-foreground line-clamp-1">{poll.option_a}</span>
                   <span className="text-sm font-bold text-foreground shrink-0 ml-2">{result!.percentA}%</span>
                 </div>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
