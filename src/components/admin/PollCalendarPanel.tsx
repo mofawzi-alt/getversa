@@ -72,6 +72,7 @@ export default function PollCalendarPanel() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [monthCursor, setMonthCursor] = useState(() => startOfMonth(new Date()));
+  const [dayFilter, setDayFilter] = useState<string>('');
   const [editingRow, setEditingRow] = useState<CalendarRow | null>(null);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [bulkProgress, setBulkProgress] = useState<{ current: number; total: number; running: boolean } | null>(null);
