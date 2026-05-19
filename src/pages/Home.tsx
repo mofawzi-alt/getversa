@@ -689,6 +689,8 @@ function LiveDebatesList({
   heroRef,
   setModalPoll,
   navigate,
+  onLoadMore,
+  hasMore,
 }: {
   livePolls: PollCard[];
   votedPollIds?: Set<string>;
@@ -699,6 +701,8 @@ function LiveDebatesList({
   heroRef: React.RefObject<HTMLDivElement>;
   setModalPoll: (p: PollCard) => void;
   navigate: (path: string) => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }) {
   const displayLivePolls = useMemo(() => livePolls, [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
