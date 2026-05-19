@@ -2061,9 +2061,21 @@ export default function Home() {
         {/* ═══ 🔴 LIVE DEBATES ═══ */}
         <section className="page-snap-section mb-3 bg-secondary/40 relative">
           {(() => {
+            // Merge seed live polls with paginated infinite pages, dedup, filter voted/skipped
+            const skipSet = skippedPollIds || new Set<string>();
+            const extraPages = (liveFeedPages?.pages || []).flatMap((pg: any) => pg.polls as PollCard[]);
+            const seen = new Set<string>();
+            const merged: PollCard[] = [];
+            for (const p of [...livePolls, ...extraPages]) {
+              if (seen.has(p.id)) continue;
+              if (votedPollIds?.has(p.id)) continue;
+              if (skipSet.has(p.id)) continue;
+              seen.add(p.id);
+              merged.push(p);
+            }
             const filteredLivePolls = categoryFilter
-              ? livePolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter)
-              : livePolls;
+              ? merged.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter)
+              : merged;
             return filteredLivePolls.length > 0 ? (
               <>
                 {/* Live debates section — no banner, cards speak for themselves */}
@@ -2077,6 +2089,8 @@ export default function Home() {
                   heroRef={heroRef}
                   setModalPoll={setModalPoll}
                   navigate={navigate}
+                  onLoadMore={() => { if (hasMoreLive && !isFetchingMoreLive) fetchMoreLive(); }}
+                  hasMore={!!hasMoreLive}
                 />
               </>
             ) : (
