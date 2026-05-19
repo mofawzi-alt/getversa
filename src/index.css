@@ -85,8 +85,8 @@ html, body {
     --shadow-accent: 0 0 40px hsl(225 73% 45% / 0.15);
     --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.08);
 
-    --font-display: 'Space Grotesk', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    --font-display: 'Space Grotesk', 'Noto Sans Arabic', sans-serif;
+    --font-body: 'Inter', 'Noto Sans Arabic', sans-serif;
   }
 
   .dark {
