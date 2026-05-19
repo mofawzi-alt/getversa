@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { PollCard } from '@/types/poll';
+type PollCard = any;
 
 const PAGE_SIZE = 40;
 
