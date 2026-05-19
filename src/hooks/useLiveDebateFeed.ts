@@ -39,7 +39,7 @@ export function useLiveDebateFeed(enabled: boolean = true) {
       if (error) throw error;
 
       const polls = (rawPolls || []).filter(
-        (p) => !isVideoUrl(p.image_a_url) && !isVideoUrl(p.image_b_url) && p.image_a_url && p.image_b_url,
+        (p) => !isVideoUrl(p.image_a_url) && !isVideoUrl(p.image_b_url),
       );
 
       if (polls.length === 0) {
