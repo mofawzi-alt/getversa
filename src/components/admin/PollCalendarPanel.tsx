@@ -409,7 +409,7 @@ export default function PollCalendarPanel() {
                     {dayRows.slice(0, 3).map((r) => (
                       <button
                         key={r.id}
-                        onClick={() => setEditingRow(r)}
+                        onClick={(e) => { e.stopPropagation(); setEditingRow(r); }}
                         className="w-full text-left text-[10px] leading-tight truncate rounded px-1 py-0.5 hover:bg-secondary"
                         title={r.question}
                       >
