@@ -211,24 +211,24 @@ export default function LiveDebateStoryCard({
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-white text-[24px] sm:text-[26px] leading-[1.15] font-extrabold drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
+          className="text-white text-[30px] sm:text-[34px] leading-[1.12] font-extrabold drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
         >
           {poll.question}
         </motion.h2>
 
         {/* Option labels */}
-        <div className="grid grid-cols-2 gap-3 text-white/85 text-[12.5px] font-semibold leading-snug">
-          <div className="line-clamp-2">{poll.option_a}</div>
-          <div className="line-clamp-2 text-right">{poll.option_b}</div>
+        <div className="grid grid-cols-2 gap-3 text-white text-[17px] font-bold leading-snug">
+          <div className="line-clamp-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{poll.option_a}</div>
+          <div className="line-clamp-2 text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{poll.option_b}</div>
         </div>
 
         {/* Split bar */}
-        <div className="w-full h-8 rounded-full overflow-hidden flex bg-white/15 backdrop-blur-md border border-white/15 shadow-lg">
+        <div className="w-full h-12 rounded-full overflow-hidden flex bg-white/15 backdrop-blur-md border border-white/15 shadow-lg">
           <motion.div
             initial={{ width: '50%' }}
             animate={{ width: `${pctA}%` }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className={`h-full flex items-center justify-start pl-3 text-[12.5px] font-extrabold text-white ${
+            className={`h-full flex items-center justify-start pl-4 text-[18px] font-extrabold text-white ${
               userChoice === 'A' ? 'ring-2 ring-white/70 ring-inset' : ''
             }`}
             style={{ backgroundColor: 'hsl(var(--option-a))' }}
@@ -236,7 +236,7 @@ export default function LiveDebateStoryCard({
             {pctA > 12 && `${pctA}%`}
           </motion.div>
           <div
-            className={`h-full flex-1 flex items-center justify-end pr-3 text-[12.5px] font-extrabold text-white ${
+            className={`h-full flex-1 flex items-center justify-end pr-4 text-[18px] font-extrabold text-white ${
               userChoice === 'B' ? 'ring-2 ring-white/70 ring-inset' : ''
             }`}
             style={{ backgroundColor: 'hsl(var(--option-b) / 0.85)' }}
