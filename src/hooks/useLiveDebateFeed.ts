@@ -23,6 +23,7 @@ export function useLiveDebateFeed(enabled: boolean = true) {
     staleTime: 1000 * 60,
     queryFn: async ({ pageParam }) => {
       const now = new Date().toISOString();
+      const nowMs = Date.now();
       const from = (pageParam as number) * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
@@ -31,16 +32,17 @@ export function useLiveDebateFeed(enabled: boolean = true) {
         .select(POLL_SELECT)
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
-        .or(`ends_at.is.null,ends_at.gt.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
 
-      const polls = (rawPolls || []).filter(
-        (p) => !isVideoUrl(p.image_a_url) && !isVideoUrl(p.image_b_url) && p.image_a_url && p.image_b_url,
-      );
+      const polls = (rawPolls || []).filter((p) => {
+        if (isVideoUrl(p.image_a_url) || isVideoUrl(p.image_b_url)) return false;
+        if (p.ends_at && new Date(p.ends_at).getTime() <= nowMs) return false;
+        return true;
+      });
 
       if (polls.length === 0) {
         return { polls: [] as PollCard[], nextPage: undefined as number | undefined };
