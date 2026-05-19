@@ -1833,6 +1833,15 @@ export default function Home() {
     return { livePolls: diversifiedLive, trendingPolls: trending, totalLiveVoters: totalVoters, closingSoonPolls: closingSoon };
   }, [allPolls, votedPollIds, userTasteProfile]);
 
+  // Infinite-scroll feed of every active live poll — augments `livePolls` so the
+  // Live Debates section never repeats, it just loads the next page on scroll.
+  const {
+    data: liveFeedPages,
+    fetchNextPage: fetchMoreLive,
+    hasNextPage: hasMoreLive,
+    isFetchingNextPage: isFetchingMoreLive,
+  } = useLiveDebateFeed(!loading);
+
   // ── Trending detection: which live polls have >100 votes in last 2h ──
   const livePollIds = useMemo(() => livePolls.map((p) => p.id), [livePolls]);
   const { data: trendingIdSet } = useTrendingPolls(livePollIds);
