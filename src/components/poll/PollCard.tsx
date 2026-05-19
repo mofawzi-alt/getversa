@@ -166,7 +166,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
             />
             {/* Label overlay bottom-left */}
             <div className="absolute bottom-0 left-0 right-0 p-2.5 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
-              <p className="text-white text-sm font-bold leading-tight drop-shadow-md line-clamp-2">{poll.option_a}</p>
+              <p dir="auto" className="text-white text-sm font-bold leading-tight drop-shadow-md line-clamp-2">{poll.option_a}</p>
             </div>
             {!hasResult && dragOffset < -30 && (
               <div className="absolute inset-0 border-2 border-option-a/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
