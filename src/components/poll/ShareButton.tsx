@@ -58,14 +58,21 @@ const ShareButton = forwardRef<HTMLButtonElement, ShareButtonProps>(function Sha
           text: shareText,
           url: pollUrl,
         });
+        return;
       } catch (err) {
-        // User cancelled or share failed
-        if ((err as Error).name !== 'AbortError') {
-          toast.error('Failed to share');
-        }
+        // User cancelled — bail silently
+        if ((err as Error).name === 'AbortError') return;
+        // Native share failed (permissions, unsupported context, etc.) — fall through to copy
       }
-    } else {
-      handleCopyLink();
+    }
+    // Fallback: copy link instead of showing an error
+    try {
+      await navigator.clipboard.writeText(pollUrl);
+      setCopied(true);
+      toast.success('Link copied!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Could not share. Copy link manually.');
     }
   };
 

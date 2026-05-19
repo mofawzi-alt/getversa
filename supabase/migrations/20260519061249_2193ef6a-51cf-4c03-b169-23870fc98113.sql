@@ -1,0 +1,1 @@
+DELETE FROM public.polls WHERE image_a_url ~* '\.(mp4|webm|mov)(\?|$)' OR image_b_url ~* '\.(mp4|webm|mov)(\?|$)';
