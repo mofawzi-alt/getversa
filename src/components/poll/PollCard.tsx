@@ -166,7 +166,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
             />
             {/* Label overlay bottom-left */}
             <div className="absolute bottom-0 left-0 right-0 p-2.5 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
-              <p className="text-white text-sm font-bold leading-tight drop-shadow-md line-clamp-2">{poll.option_a}</p>
+              <p dir="auto" className="text-white text-sm font-bold leading-tight drop-shadow-md line-clamp-2">{poll.option_a}</p>
             </div>
             {!hasResult && dragOffset < -30 && (
               <div className="absolute inset-0 border-2 border-option-a/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
@@ -192,7 +192,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               showLoader={true}
             />
             <div className="absolute bottom-0 left-0 right-0 p-2.5 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
-              <p className="text-white text-sm font-bold leading-tight drop-shadow-md line-clamp-2 text-right">{poll.option_b}</p>
+              <p dir="auto" className="text-white text-sm font-bold leading-tight drop-shadow-md line-clamp-2 text-right">{poll.option_b}</p>
             </div>
             {!hasResult && dragOffset > 30 && (
               <div className="absolute inset-0 border-2 border-option-b/60 pointer-events-none" style={{ opacity: highlightIntensity }} />
@@ -218,9 +218,9 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
         {/* Body — question + meta */}
         <div className="px-4 pt-3 pb-3">
           {poll.subtitle && (
-            <p className="text-[11px] font-semibold italic text-primary/70 mb-0.5 tracking-wide uppercase">{poll.subtitle}</p>
+            <p dir="auto" className="text-[11px] font-semibold italic text-primary/70 mb-0.5 tracking-wide uppercase">{poll.subtitle}</p>
           )}
-          <p className="text-[17px] font-bold text-foreground leading-snug">{poll.question}</p>
+          <p dir="auto" className="text-[17px] font-bold text-foreground leading-snug">{poll.question}</p>
 
           <div className="flex items-center gap-2 mt-2.5">
             {hasResult && (
@@ -259,7 +259,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
             <div className="mt-3 space-y-2 animate-fade-in">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold text-foreground line-clamp-1">{poll.option_a}</span>
+                  <span dir="auto" className="text-sm font-semibold text-foreground line-clamp-1">{poll.option_a}</span>
                   <span className="text-sm font-bold text-foreground shrink-0 ml-2">{result!.percentA}%</span>
                 </div>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -268,7 +268,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold text-foreground line-clamp-1">{poll.option_b}</span>
+                  <span dir="auto" className="text-sm font-semibold text-foreground line-clamp-1">{poll.option_b}</span>
                   <span className="text-sm font-bold text-foreground shrink-0 ml-2">{result!.percentB}%</span>
                 </div>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
