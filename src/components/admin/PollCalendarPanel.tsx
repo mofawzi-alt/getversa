@@ -302,6 +302,27 @@ export default function PollCalendarPanel() {
               <ChevronRight className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setMonthCursor(startOfMonth(new Date()))}>Today</Button>
+            <Button variant="ghost" size="sm" onClick={() => { setMonthCursor(startOfMonth(new Date())); setDayFilter(ymd(new Date())); }}>Today</Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="jump-date" className="text-xs text-muted-foreground">Jump to day:</Label>
+            <Input
+              id="jump-date"
+              type="date"
+              value={dayFilter}
+              onChange={(e) => {
+                const v = e.target.value;
+                setDayFilter(v);
+                if (v) {
+                  const [y, m] = v.split('-').map(Number);
+                  setMonthCursor(new Date(y, m - 1, 1));
+                }
+              }}
+              className="h-8 w-[150px]"
+            />
+            {dayFilter && (
+              <Button variant="ghost" size="sm" onClick={() => setDayFilter('')}>Clear</Button>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
