@@ -156,7 +156,7 @@ export default function Browse() {
 
   // Fetch all polls with results — no auth required
   const { data: feedPolls, isLoading } = useQuery({
-    queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range, targetPollId],
+    queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range, targetPollId, pageCount],
     queryFn: async () => {
       const now = new Date().toISOString();
       const POLL_COLS = 'id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, expiry_type';
@@ -167,7 +167,7 @@ export default function Browse() {
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
-        .limit(liveFilter ? 60 : 40);
+        .limit(PAGE_SIZE * pageCount);
 
       if (pollsError) throw pollsError;
       let pollList = polls || [];
