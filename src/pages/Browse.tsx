@@ -151,10 +151,12 @@ export default function Browse() {
   }, [showSwipeHint]);
   const [feedNudgeDismissed, setFeedNudgeDismissed] = useState(false);
   const showSignupBanner = !user && activeIndex >= 10 && !bannerDismissed;
+  const PAGE_SIZE = liveFilter ? 60 : 40;
+  const [pageCount, setPageCount] = useState(1);
 
   // Fetch all polls with results — no auth required
   const { data: feedPolls, isLoading } = useQuery({
-    queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range, targetPollId],
+    queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range, targetPollId, pageCount],
     queryFn: async () => {
       const now = new Date().toISOString();
       const POLL_COLS = 'id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, expiry_type';
@@ -165,7 +167,7 @@ export default function Browse() {
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
-        .limit(liveFilter ? 60 : 40);
+        .limit(PAGE_SIZE * pageCount);
 
       if (pollsError) throw pollsError;
       let pollList = polls || [];
@@ -229,6 +231,7 @@ export default function Browse() {
       return enriched;
     },
     staleTime: 1000 * 60 * 2,
+    placeholderData: (prev) => prev,
   });
 
   const feedPollIds = useMemo(() => feedPolls?.map((p) => p.id) || [], [feedPolls]);
@@ -286,15 +289,22 @@ export default function Browse() {
       return result;
     };
 
-    const scored = filteredFeed.map((p, i) => {
+    const hashId = (id: string) => {
+      let h = 0;
+      for (let i = 0; i < id.length; i++) h = ((h << 5) - h + id.charCodeAt(i)) | 0;
+      return Math.abs(h);
+    };
+
+    const scored = filteredFeed.map((p) => {
       const createdAt = new Date(p.created_at).getTime();
       const isToday = createdAt > h24Ago;
       const isRecent = createdAt > weekAgo;
       const recencyScore = isToday ? 80 : isRecent ? 20 : 0;
       const voteScore = Math.min(p.totalVotes / 10, 30);
       const debateScore = p.totalVotes >= 5 ? (50 - Math.abs(p.percentA - 50)) * 0.4 : 0;
-      // Big per-visit random boost so the feed order shuffles every time the user opens Browse.
-      const randomBoost = seededRandom(sessionSeed, i) * 200;
+      // Stable per-poll random boost (keyed by id+session) so order doesn't reshuffle
+      // when additional pages load via infinite scroll.
+      const randomBoost = seededRandom(sessionSeed, hashId(p.id)) * 200;
       return { ...p, score: recencyScore + voteScore + debateScore + randomBoost };
     });
 
@@ -359,6 +369,16 @@ export default function Browse() {
     const newIndex = Math.round(scrollTop / cardHeight);
     if (newIndex !== activeIndex) setActiveIndex(newIndex);
   }, [activeIndex]);
+
+  // Infinite scroll: when the user is within 10 cards of the end, load the next page.
+  useEffect(() => {
+    const loaded = feedPolls?.length || 0;
+    const expected = PAGE_SIZE * pageCount;
+    // Only fetch more if the previous page returned a full batch (i.e. more likely exists)
+    if (loaded >= expected && activeIndex >= loaded - 10) {
+      setPageCount((c) => c + 1);
+    }
+  }, [activeIndex, feedPolls, pageCount, PAGE_SIZE]);
 
   if (isLoading) {
     return (
