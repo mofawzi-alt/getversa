@@ -288,15 +288,22 @@ export default function Browse() {
       return result;
     };
 
-    const scored = filteredFeed.map((p, i) => {
+    const hashId = (id: string) => {
+      let h = 0;
+      for (let i = 0; i < id.length; i++) h = ((h << 5) - h + id.charCodeAt(i)) | 0;
+      return Math.abs(h);
+    };
+
+    const scored = filteredFeed.map((p) => {
       const createdAt = new Date(p.created_at).getTime();
       const isToday = createdAt > h24Ago;
       const isRecent = createdAt > weekAgo;
       const recencyScore = isToday ? 80 : isRecent ? 20 : 0;
       const voteScore = Math.min(p.totalVotes / 10, 30);
       const debateScore = p.totalVotes >= 5 ? (50 - Math.abs(p.percentA - 50)) * 0.4 : 0;
-      // Big per-visit random boost so the feed order shuffles every time the user opens Browse.
-      const randomBoost = seededRandom(sessionSeed, i) * 200;
+      // Stable per-poll random boost (keyed by id+session) so order doesn't reshuffle
+      // when additional pages load via infinite scroll.
+      const randomBoost = seededRandom(sessionSeed, hashId(p.id)) * 200;
       return { ...p, score: recencyScore + voteScore + debateScore + randomBoost };
     });
 
