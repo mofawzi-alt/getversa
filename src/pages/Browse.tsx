@@ -231,6 +231,7 @@ export default function Browse() {
       return enriched;
     },
     staleTime: 1000 * 60 * 2,
+    placeholderData: (prev) => prev,
   });
 
   const feedPollIds = useMemo(() => feedPolls?.map((p) => p.id) || [], [feedPolls]);
