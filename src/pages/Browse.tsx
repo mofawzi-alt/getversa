@@ -154,12 +154,13 @@ export default function Browse() {
 
   // Fetch all polls with results — no auth required
   const { data: feedPolls, isLoading } = useQuery({
-    queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range],
+    queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range, targetPollId],
     queryFn: async () => {
       const now = new Date().toISOString();
+      const POLL_COLS = 'id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, expiry_type';
       const { data: polls, error: pollsError } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, expiry_type')
+        .select(POLL_COLS)
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
@@ -167,7 +168,24 @@ export default function Browse() {
         .limit(liveFilter ? 60 : 40);
 
       if (pollsError) throw pollsError;
-      if (!polls || polls.length === 0) return [];
+      let pollList = polls || [];
+
+      // Ensure the target poll (from search/deep-link) is always included,
+      // even if it's outside the default feed window.
+      if (targetPollId && !pollList.some((p: any) => p.id === targetPollId)) {
+        const { data: target } = await supabase
+          .from('polls')
+          .select(POLL_COLS)
+          .eq('id', targetPollId)
+          .maybeSingle();
+        if (target) pollList = [target as any, ...pollList];
+      }
+
+      if (pollList.length === 0) return [];
+      const polls2 = pollList;
+      // Reassign for the rest of the function which references `polls`.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _ = polls2;
 
       const pollIds = polls.map(p => p.id);
       const { data: results, error: resultsError } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
