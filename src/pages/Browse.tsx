@@ -154,12 +154,13 @@ export default function Browse() {
 
   // Fetch all polls with results — no auth required
   const { data: feedPolls, isLoading } = useQuery({
-    queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range],
+    queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range, targetPollId],
     queryFn: async () => {
       const now = new Date().toISOString();
+      const POLL_COLS = 'id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, expiry_type';
       const { data: polls, error: pollsError } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, expiry_type')
+        .select(POLL_COLS)
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
@@ -167,9 +168,22 @@ export default function Browse() {
         .limit(liveFilter ? 60 : 40);
 
       if (pollsError) throw pollsError;
-      if (!polls || polls.length === 0) return [];
+      let pollList = polls || [];
 
-      const pollIds = polls.map(p => p.id);
+      // Ensure the target poll (from search/deep-link) is always included,
+      // even if it's outside the default feed window.
+      if (targetPollId && !pollList.some((p: any) => p.id === targetPollId)) {
+        const { data: target } = await supabase
+          .from('polls')
+          .select(POLL_COLS)
+          .eq('id', targetPollId)
+          .maybeSingle();
+        if (target) pollList = [target as any, ...pollList];
+      }
+
+      if (pollList.length === 0) return [];
+
+      const pollIds = pollList.map((p: any) => p.id);
       const { data: results, error: resultsError } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
       if (resultsError) throw resultsError;
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
@@ -178,7 +192,7 @@ export default function Browse() {
       // to dramatically speed up Browse cold-start. Cards still render with %.
       const demoMap = new Map<string, any[]>();
 
-      let enriched = polls.map(p => {
+      let enriched = pollList.map((p: any) => {
         const r = resultsMap.get(p.id) as any;
         const total = r?.total_votes || 0;
         const votesA = r?.votes_a || 0;
@@ -243,7 +257,7 @@ export default function Browse() {
     if (!feedPolls || feedPolls.length === 0) return [];
 
     const skipSet = skippedIdsSet || new Set<string>();
-    const filteredFeed = feedPolls.filter(p => !skipSet.has(p.id));
+    const filteredFeed = feedPolls.filter(p => p.id === targetPollId || !skipSet.has(p.id));
     if (filteredFeed.length === 0) return [];
 
     const now = Date.now();
