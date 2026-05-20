@@ -151,6 +151,8 @@ export default function Browse() {
   }, [showSwipeHint]);
   const [feedNudgeDismissed, setFeedNudgeDismissed] = useState(false);
   const showSignupBanner = !user && activeIndex >= 10 && !bannerDismissed;
+  const PAGE_SIZE = liveFilter ? 60 : 40;
+  const [pageCount, setPageCount] = useState(1);
 
   // Fetch all polls with results — no auth required
   const { data: feedPolls, isLoading } = useQuery({
