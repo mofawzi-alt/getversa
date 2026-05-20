@@ -257,7 +257,7 @@ export default function Browse() {
     if (!feedPolls || feedPolls.length === 0) return [];
 
     const skipSet = skippedIdsSet || new Set<string>();
-    const filteredFeed = feedPolls.filter(p => !skipSet.has(p.id));
+    const filteredFeed = feedPolls.filter(p => p.id === targetPollId || !skipSet.has(p.id));
     if (filteredFeed.length === 0) return [];
 
     const now = Date.now();
