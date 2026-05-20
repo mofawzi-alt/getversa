@@ -182,12 +182,8 @@ export default function Browse() {
       }
 
       if (pollList.length === 0) return [];
-      const polls2 = pollList;
-      // Reassign for the rest of the function which references `polls`.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _ = polls2;
 
-      const pollIds = polls.map(p => p.id);
+      const pollIds = pollList.map((p: any) => p.id);
       const { data: results, error: resultsError } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
       if (resultsError) throw resultsError;
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
@@ -196,7 +192,7 @@ export default function Browse() {
       // to dramatically speed up Browse cold-start. Cards still render with %.
       const demoMap = new Map<string, any[]>();
 
-      let enriched = polls.map(p => {
+      let enriched = pollList.map((p: any) => {
         const r = resultsMap.get(p.id) as any;
         const total = r?.total_votes || 0;
         const votesA = r?.votes_a || 0;
