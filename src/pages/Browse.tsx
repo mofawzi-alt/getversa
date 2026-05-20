@@ -370,6 +370,16 @@ export default function Browse() {
     if (newIndex !== activeIndex) setActiveIndex(newIndex);
   }, [activeIndex]);
 
+  // Infinite scroll: when the user is within 10 cards of the end, load the next page.
+  useEffect(() => {
+    const loaded = feedPolls?.length || 0;
+    const expected = PAGE_SIZE * pageCount;
+    // Only fetch more if the previous page returned a full batch (i.e. more likely exists)
+    if (loaded >= expected && activeIndex >= loaded - 10) {
+      setPageCount((c) => c + 1);
+    }
+  }, [activeIndex, feedPolls, pageCount, PAGE_SIZE]);
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
