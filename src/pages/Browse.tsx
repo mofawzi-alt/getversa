@@ -410,6 +410,12 @@ export default function Browse() {
     }
   }, [activeIndex, feedPolls, pageCount, PAGE_SIZE]);
 
+  const handleVote = useCallback(() => {
+    if (!user) { navigate('/auth'); return; }
+    toast.info("Vote on today's battles from the Home screen! 🔥");
+    navigate('/home');
+  }, [user, navigate]);
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
@@ -427,11 +433,6 @@ export default function Browse() {
     );
   }
 
-  const handleVote = useCallback(() => {
-    if (!user) { navigate('/auth'); return; }
-    toast.info("Vote on today's battles from the Home screen! 🔥");
-    navigate('/home');
-  }, [user, navigate]);
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
