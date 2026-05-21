@@ -286,6 +286,9 @@ export default function Browse() {
   const sortedFeed = useMemo(() => {
     if (!feedPolls || feedPolls.length === 0) return [];
 
+    // Reel Mode: keep the deterministic admin order, skip all scoring/sequencing.
+    if (reelMode) return feedPolls;
+
     const skipSet = skippedIdsSet || new Set<string>();
     const filteredFeed = feedPolls.filter(p => p.id === targetPollId || !skipSet.has(p.id));
     if (filteredFeed.length === 0) return [];
