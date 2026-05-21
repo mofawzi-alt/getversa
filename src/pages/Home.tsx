@@ -1936,6 +1936,21 @@ export default function Home() {
         )}
 
         <section>
+        {/* Admin-only Reel Mode strip — opens private feed of 10 reset polls for IG recording */}
+        {isAdmin && (
+          <button
+            onClick={() => navigate('/browse?reel=1')}
+            className="mx-3 mt-2 mb-1 w-[calc(100%-1.5rem)] flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-sm active:scale-[0.98] transition-transform"
+          >
+            <span className="text-lg">🎬</span>
+            <div className="flex-1 text-left">
+              <div className="text-[13px] font-bold leading-tight">Reel Mode</div>
+              <div className="text-[10px] opacity-80 leading-tight">10 fresh polls · admin only · tap to record</div>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20">REC</span>
+          </button>
+        )}
+
         {/* What's New release announcement */}
         {user && <WhatsNewBanner />}
 
