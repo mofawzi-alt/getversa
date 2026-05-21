@@ -123,11 +123,12 @@ function useShareImage() {
 // FireReactionButton and BrowseCard moved to @/components/browse/BrowseCard
 
 export default function Browse() {
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const liveFilter = searchParams.get('filter') === 'live';
   const targetPollId = searchParams.get('pollId');
+  const reelMode = searchParams.get('reel') === '1' && isAdmin;
   const { share } = useShareImage();
   
   const [shareToFriendPoll, setShareToFriendPoll] = useState<BrowsePoll | null>(null);
