@@ -1,2 +1,0 @@
-ALTER TABLE public.polls ADD COLUMN IF NOT EXISTS is_reel_preview boolean NOT NULL DEFAULT false;
-CREATE INDEX IF NOT EXISTS idx_polls_reel_preview ON public.polls(is_reel_preview) WHERE is_reel_preview = true;

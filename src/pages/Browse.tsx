@@ -123,12 +123,11 @@ function useShareImage() {
 // FireReactionButton and BrowseCard moved to @/components/browse/BrowseCard
 
 export default function Browse() {
-  const { user, profile, isAdmin } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const liveFilter = searchParams.get('filter') === 'live';
   const targetPollId = searchParams.get('pollId');
-  const reelMode = searchParams.get('reel') === '1' && isAdmin;
   const { share } = useShareImage();
   
   const [shareToFriendPoll, setShareToFriendPoll] = useState<BrowsePoll | null>(null);
@@ -157,36 +156,10 @@ export default function Browse() {
 
   // Fetch all polls with results — no auth required
   const { data: feedPolls, isLoading } = useQuery({
-    queryKey: ['browse-feed', liveFilter, reelMode, user?.id, profile?.age_range, targetPollId, pageCount],
+    queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range, targetPollId, pageCount],
     queryFn: async () => {
       const now = new Date().toISOString();
       const POLL_COLS = 'id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, expiry_type';
-
-      // Reel Mode: admin-only private feed of the 10 polls flagged for IG recording.
-      if (reelMode) {
-        const { data: reelPolls, error: reelErr } = await supabase
-          .from('polls')
-          .select(POLL_COLS)
-          .eq('is_reel_preview', true)
-          .order('created_at', { ascending: false });
-        if (reelErr) throw reelErr;
-        const pollList = reelPolls || [];
-        if (pollList.length === 0) return [];
-        return pollList.map((p: any) => ({
-          ...p,
-          isClosed: false,
-          totalVotes: 0,
-          votesA: 0,
-          votesB: 0,
-          percentA: 50,
-          percentB: 50,
-          winner: 'A' as const,
-          winnerPct: 50,
-          egyptPct: 50,
-          demoTags: [],
-        }));
-      }
-
       const { data: polls, error: pollsError } = await supabase
         .from('polls')
         .select(POLL_COLS)
@@ -285,9 +258,6 @@ export default function Browse() {
 
   const sortedFeed = useMemo(() => {
     if (!feedPolls || feedPolls.length === 0) return [];
-
-    // Reel Mode: keep the deterministic admin order, skip all scoring/sequencing.
-    if (reelMode) return feedPolls;
 
     const skipSet = skippedIdsSet || new Set<string>();
     const filteredFeed = feedPolls.filter(p => p.id === targetPollId || !skipSet.has(p.id));
