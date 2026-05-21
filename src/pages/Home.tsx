@@ -1107,7 +1107,7 @@ function LiveDebatesList({
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
   const storiesRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
