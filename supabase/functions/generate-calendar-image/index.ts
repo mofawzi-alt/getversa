@@ -96,6 +96,16 @@ Deno.serve(async (req) => {
         if (lifestyleHint) ageParts.push(lifestyleHint);
       }
       demographicDirective = ` The subject should be ${ageParts.join(", ")}. The setting, clothing, and environment must reflect their demographic — modern, aspirational, and realistic for someone in this age/lifestyle bracket.`;
+    } else {
+      // No explicit gender targeting → enforce gender balance via random rotation
+      // (45% male, 45% female, 10% mixed group) to counter model's bias toward young women.
+      const r = Math.random();
+      const subject = r < 0.45
+        ? "a young man (male subject — do NOT default to a woman)"
+        : r < 0.90
+        ? "a young woman"
+        : "a small mixed-gender group of young friends (include both men and women)";
+      demographicDirective = ` GENDER CASTING (IMPORTANT): The subject must be ${subject}. Rotate gender naturally across generations — do not default to young women every time unless the topic is explicitly female-coded (beauty, makeup, bridal). For neutral lifestyle topics, men and women must appear equally often.`;
     }
 
     // Infer logical setting from question context
