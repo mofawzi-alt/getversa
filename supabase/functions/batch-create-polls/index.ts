@@ -85,7 +85,7 @@ IMAGE V4 RULES:
 
 NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements.
 
-Subject: "${prompt}". ${countryDirective}${contextScene}${keywordBoost}
+Subject: "${prompt}". ${countryDirective}${contextScene}${genderDirective}${keywordBoost}
 
 If the subject is an abstract concept, generate a lifestyle scene showing real people embodying that concept.
 Never default to Western, American, or European settings. No alcohol imagery.`;
