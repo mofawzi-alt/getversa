@@ -1,0 +1,1 @@
+DELETE FROM public.daily_poll_queues WHERE queue_date = CURRENT_DATE;
