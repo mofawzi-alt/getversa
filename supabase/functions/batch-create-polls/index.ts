@@ -64,6 +64,15 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
     const contextScene = culturalContext && CULTURAL_CONTEXTS[culturalContext.toLowerCase()]
       ? ` SCENE SETTING: ${CULTURAL_CONTEXTS[culturalContext.toLowerCase()]}`
       : '';
+    // Random gender rotation to counter model bias toward young women.
+    // 45% male / 45% female / 10% mixed group.
+    const r = Math.random();
+    const genderCast = r < 0.45
+      ? 'a young man (male subject — do NOT default to a woman)'
+      : r < 0.90
+      ? 'a young woman'
+      : 'a small mixed-gender group of young friends (include both men and women)';
+    const genderDirective = ` GENDER CASTING (IMPORTANT): The subject must be ${genderCast}. Rotate gender naturally — do not default to young women unless the topic is explicitly female-coded (beauty, makeup, bridal). For neutral lifestyle topics, men and women must appear equally often.`;
     const imagePrompt = `Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments.
 
 IMAGE V4 RULES:
