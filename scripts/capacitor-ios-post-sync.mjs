@@ -73,7 +73,7 @@ function ensureInfoPlistKeys() {
 \t\t\t<string>com.versa.app</string>
 \t\t</dict>
 \t</array>`;
-    plist = plist.replace('</dict>', `${urlSchemeBlock}\n</dict>`);
+    plist = plist.replace('</dict>\n</plist>', `${urlSchemeBlock}\n</dict>\n</plist>`);
     changed = true;
     console.log('[cap-sync] Added URL schemes for OAuth and Facebook callbacks');
   } else if (missingUrlSchemes.length > 0) {
