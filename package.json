@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@aparajita/capacitor-biometric-auth": "9.1.2",
-    "@capacitor-community/facebook-login": "^8.0.0",
+    "@capacitor-community/facebook-login": "7.0.1",
     "@capacitor/app": "7.1.2",
     "@capacitor/browser": "7.0.5",
     "@capacitor/camera": "7.0.5",

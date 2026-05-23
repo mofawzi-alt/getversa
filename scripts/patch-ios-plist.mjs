@@ -56,7 +56,7 @@ if (!plist.includes('<string>com.versa.app</string>') || !plist.includes('<strin
 const fbKeys = {
   FacebookAppID: '2213580409403160',
   FacebookClientToken: '1e9cc014894aa3fefc2d52e6f1121de3',
-  FacebookDisplayName: 'Ask Versa',
+  FacebookDisplayName: 'getversa',
 };
 
 for (const [key, value] of Object.entries(fbKeys)) {
