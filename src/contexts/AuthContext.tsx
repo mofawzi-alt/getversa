@@ -120,7 +120,7 @@ interface AuthContextType {
     password: string,
     metadata?: Record<string, string>
   ) => Promise<{ error: Error | null; user: User | null; session: Session | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null; session: Session | null }>;
   signOut: () => Promise<void>;
   refreshProfile: (userId?: string) => Promise<void>;
   prepareForExternalSignIn: () => Promise<void>;
@@ -139,15 +139,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deliberateSignInRef = useRef(false);
 
   const fetchProfile = async (userId: string) => {
-    let { data: profileData } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
+    try {
+      let profileData = await withTimeout(async () => {
+        const { data } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
+        return data;
+      }, null, 4000);
     
     // Auto-create user record if missing
     if (!profileData) {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+        const authResponse = await withTimeout(async () => supabase.auth.getUser(), null, 2500);
+        const authUser = authResponse?.data.user ?? null;
       if (authUser) {
         const metadata = authUser.user_metadata || {};
         // Generate a unique username — append random suffix to avoid collisions
@@ -209,13 +214,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(profileData);
     }
 
-    const { data: rolesData } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId);
+      const rolesData = await withTimeout(async () => {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId);
+        return data;
+      }, [], 3000);
 
-    setIsAdmin(Array.isArray(rolesData) && rolesData.some((r) => r.role === 'admin'));
-    setRolesLoaded(true);
+      setIsAdmin(Array.isArray(rolesData) && rolesData.some((r) => r.role === 'admin'));
+    } catch (error) {
+      console.warn('[Auth] Profile load failed; continuing without blocking UI', error);
+      setIsAdmin(false);
+    } finally {
+      setRolesLoaded(true);
+    }
   };
 
   const refreshProfile = async (userId?: string) => {
@@ -447,6 +460,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Race the auth call against a 15s timeout so the UI never hangs forever
     // (WKWebView on iOS can silently drop fetches under low-memory conditions).
     try {
+      let signedInSession: Session | null = null;
       deliberateSignInRef.current = true;
       // Clear explicit logout guards before a deliberate new sign-in attempt.
       // Otherwise the auth listener can reject the fresh session as if it were
@@ -477,6 +491,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, undefined, 1200);
 
         const nextSession = authResult.data?.session ?? await getSessionWithTimeout(1500);
+        signedInSession = nextSession;
         if (nextSession) {
           setSession(nextSession);
           setUser(nextSession.user ?? null);
@@ -492,10 +507,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       }
-      return { error };
+      return { error, session: signedInSession };
     } catch (e) {
       deliberateSignInRef.current = false;
-      return { error: e instanceof Error ? e : new Error('Sign-in failed') };
+      return { error: e instanceof Error ? e : new Error('Sign-in failed'), session: null };
     }
   };
 

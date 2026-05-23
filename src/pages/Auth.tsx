@@ -216,13 +216,12 @@ export default function Auth() {
       }
       setLoading(true);
       try {
-        const { error } = await signIn(email, password);
+        const { error, session: signedInSession } = await signIn(email, password);
         if (error) {
           hapticError();
           toast.error(error.message.includes('Invalid login credentials') ? 'Invalid email/password. If you joined with Google or Apple, use that button.' : error.message);
         } else {
-          const { data } = await supabase.auth.getSession();
-          const signedInUser = data.session?.user || session?.user || null;
+          const signedInUser = signedInSession?.user || session?.user || null;
           const pendingProfile = getPendingSignupProfile(email);
           if (signedInUser && pendingProfile) {
             try {
