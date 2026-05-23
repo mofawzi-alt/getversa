@@ -93,7 +93,7 @@ function ensureInfoPlistKeys() {
 \t<array>
 \t\t${querySchemes.map((scheme) => `<string>${scheme}</string>`).join('\n\t\t')}
 \t</array>`;
-    plist = plist.replace('</dict>', `${lsBlock}\n</dict>`);
+    plist = plist.replace('</dict>\n</plist>', `${lsBlock}\n</dict>\n</plist>`);
     changed = true;
     console.log('[cap-sync] Added Facebook application query schemes');
   } else if (missingQuerySchemes.length > 0) {
