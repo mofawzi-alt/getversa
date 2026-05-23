@@ -8,7 +8,10 @@ const iosRoot = path.join(root, 'ios', 'App');
 const pathsToRemove = [
   path.join(iosRoot, 'App.xcodeproj', 'project.xcworkspace', 'xcshareddata', 'swiftpm', 'Package.resolved'),
   path.join(iosRoot, 'App.xcworkspace', 'xcshareddata', 'swiftpm', 'Package.resolved'),
+  path.join(iosRoot, 'CapApp-SPM', '.build'),
+  path.join(iosRoot, 'CapApp-SPM', 'Package.resolved'),
   path.join(iosRoot, 'App', 'CapApp-SPM', '.build'),
+  path.join(iosRoot, 'App', 'CapApp-SPM', 'Package.resolved'),
   path.join(os.homedir(), 'Library', 'Caches', 'org.swift.swiftpm'),
   path.join(os.homedir(), 'Library', 'Developer', 'Xcode', 'DerivedData'),
 ];
