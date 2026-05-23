@@ -17,6 +17,7 @@ import { AnimatePresence } from "framer-motion";
 // Eagerly loaded — landing + most-visited routes
 const Home = lazy(() => import("./pages/Home"));
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import CookieConsent from "./components/CookieConsent";
 
 // Lazy-loaded — keep these out of the initial bundle
@@ -25,7 +26,6 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const PollHistory = lazy(() => import("./pages/PollHistory"));
 const PastPerspectives = lazy(() => import("./pages/PastPerspectives"));
-const Profile = lazy(() => import("./pages/Profile"));
 const FollowList = lazy(() => import("./pages/FollowList"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const ProfileNotifications = lazy(() => import("./pages/ProfileNotifications"));
