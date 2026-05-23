@@ -9,6 +9,61 @@ const capAppSpmDir = path.join(iosRoot, 'CapApp-SPM');
 const capAppSpmPackage = path.join(capAppSpmDir, 'Package.swift');
 const spmTemplate = path.join(root, 'node_modules', '@capacitor', 'cli', 'assets', 'ios-spm-template.tar.gz');
 
+function extractSpmTemplate() {
+  if (!fs.existsSync(spmTemplate)) {
+    console.error('[ios-spm] STOP: Capacitor iOS SPM template is missing. Run npm install, then npm run ios:update again.');
+    process.exit(1);
+  }
+
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'versa-ios-spm-'));
+  const extract = spawnSync('tar', ['-xzf', spmTemplate, '-C', tempDir], {
+    cwd: root,
+    stdio: 'pipe',
+    encoding: 'utf8',
+  });
+
+  if (extract.status !== 0) {
+    console.error('[ios-spm] STOP: Could not restore generated iOS files.');
+    console.error((extract.stderr || extract.stdout || '').trim());
+    process.exit(1);
+  }
+
+  return tempDir;
+}
+
+function restoreMissingGeneratedIosFiles() {
+  const requiredGeneratedPaths = [
+    'App.xcodeproj',
+    'App/AppDelegate.swift',
+    'App/Base.lproj/Main.storyboard',
+    'App/Base.lproj/LaunchScreen.storyboard',
+    'CapApp-SPM',
+    'debug.xcconfig',
+  ];
+  const missingGeneratedPaths = requiredGeneratedPaths.filter((relativePath) => {
+    const target = path.join(iosRoot, relativePath);
+    return !fs.existsSync(target);
+  });
+
+  if (missingGeneratedPaths.length === 0) return;
+
+  fs.mkdirSync(iosRoot, { recursive: true });
+  const tempDir = extractSpmTemplate();
+  const templateRoot = path.join(tempDir, 'App');
+
+  for (const relativePath of missingGeneratedPaths) {
+    const source = path.join(templateRoot, relativePath);
+    const target = path.join(iosRoot, relativePath);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.cpSync(source, target, { recursive: true });
+    console.log(`[ios-spm] Restored missing generated iOS file/folder: ios/App/${relativePath}`);
+  }
+
+  fs.rmSync(tempDir, { recursive: true, force: true });
+}
+
+restoreMissingGeneratedIosFiles();
+
 const pathsToRemove = [
   path.join(iosRoot, 'App.xcodeproj', 'project.xcworkspace', 'xcshareddata', 'swiftpm', 'Package.resolved'),
   path.join(iosRoot, 'App.xcworkspace', 'xcshareddata', 'swiftpm', 'Package.resolved'),
@@ -36,27 +91,5 @@ if (removed === 0) {
 }
 
 if (fs.existsSync(iosRoot) && !fs.existsSync(capAppSpmPackage)) {
-  if (!fs.existsSync(spmTemplate)) {
-    console.error('[ios-spm] STOP: Capacitor iOS SPM template is missing. Run npm install, then npm run ios:update again.');
-    process.exit(1);
-  }
-
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'versa-ios-spm-'));
-  const extract = spawnSync('tar', ['-xzf', spmTemplate, '-C', tempDir, 'App/CapApp-SPM', 'debug.xcconfig'], {
-    cwd: root,
-    stdio: 'pipe',
-    encoding: 'utf8',
-  });
-
-  if (extract.status !== 0) {
-    console.error('[ios-spm] STOP: Could not restore CapApp-SPM.');
-    console.error((extract.stderr || extract.stdout || '').trim());
-    process.exit(1);
-  }
-
-  fs.rmSync(capAppSpmDir, { recursive: true, force: true });
-  fs.cpSync(path.join(tempDir, 'App', 'CapApp-SPM'), capAppSpmDir, { recursive: true });
-  fs.copyFileSync(path.join(tempDir, 'debug.xcconfig'), path.join(iosRoot, 'debug.xcconfig'));
-  fs.rmSync(tempDir, { recursive: true, force: true });
-  console.log('[ios-spm] Restored missing CapApp-SPM package used by Xcode.');
+  restoreMissingGeneratedIosFiles();
 }

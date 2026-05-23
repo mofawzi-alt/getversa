@@ -7,6 +7,11 @@ const infoPlistPath = path.join(iosDir, 'Info.plist');
 const assetCatalogDir = path.join(iosDir, 'Assets.xcassets', 'AppIcon.appiconset');
 const sourceIconPath = path.join(root, 'public', 'app-icon-1024.png');
 
+if (!fs.existsSync(path.join(root, 'ios', 'App', 'App.xcodeproj', 'project.pbxproj'))) {
+  console.error('[cap-sync] STOP: Xcode project is incomplete. Run npm run ios:update again so generated iOS files can be restored.');
+  process.exit(1);
+}
+
 const iconDefinitions = [
   { size: 20, scale: 2, idiom: 'iphone' },
   { size: 20, scale: 3, idiom: 'iphone' },
