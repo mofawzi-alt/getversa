@@ -2,8 +2,6 @@ import { Bell, BellOff, Loader2 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
 
 const isNative = Capacitor?.isNativePlatform?.() === true;
 
