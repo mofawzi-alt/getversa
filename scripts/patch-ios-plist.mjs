@@ -38,9 +38,41 @@ for (const [key, value] of Object.entries(privacyKeys)) {
 }
 
 if (!plist.includes('<string>com.versa.app</string>') || !plist.includes('<string>com.Versa.app</string>')) {
-  const urlSchemeBlock = `\t<key>CFBundleURLTypes</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>CFBundleURLSchemes</key>\n\t\t\t<array>\n\t\t\t\t<string>com.versa.app</string>\n\t\t\t\t<string>com.Versa.app</string>\n\t\t\t</array>\n\t\t\t<key>CFBundleURLName</key>\n\t\t\t<string>com.versa.app</string>\n\t\t</dict>\n\t</array>\n`;
+  const urlSchemeBlock = `\t<key>CFBundleURLTypes</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>CFBundleURLSchemes</key>\n\t\t\t<array>\n\t\t\t\t<string>com.versa.app</string>\n\t\t\t\t<string>com.Versa.app</string>\n\t\t\t\t<string>fb2213580409403160</string>\n\t\t\t</array>\n\t\t\t<key>CFBundleURLName</key>\n\t\t\t<string>com.versa.app</string>\n\t\t</dict>\n\t</array>\n`;
   plist = plist.replace('</dict>\n</plist>', urlSchemeBlock + '</dict>\n</plist>');
-  console.log('✓ Added OAuth callback URL schemes');
+  console.log('✓ Added OAuth + Facebook callback URL schemes');
+  patched = true;
+} else if (!plist.includes('fb2213580409403160')) {
+  // URL types already exist, inject fb scheme into the first CFBundleURLSchemes array
+  plist = plist.replace(
+    /(<key>CFBundleURLSchemes<\/key>\s*<array>)/,
+    `$1\n\t\t\t\t<string>fb2213580409403160</string>`
+  );
+  console.log('✓ Added Facebook URL scheme to existing CFBundleURLTypes');
+  patched = true;
+}
+
+// ── Facebook SDK required keys ──
+const fbKeys = {
+  FacebookAppID: '2213580409403160',
+  FacebookClientToken: '1e9cc014894aa3fefc2d52e6f1121de3',
+  FacebookDisplayName: 'Ask Versa',
+};
+
+for (const [key, value] of Object.entries(fbKeys)) {
+  if (!plist.includes(`<key>${key}</key>`)) {
+    const entry = `\t<key>${key}</key>\n\t<string>${value}</string>\n`;
+    plist = plist.replace('</dict>\n</plist>', entry + '</dict>\n</plist>');
+    console.log(`✓ Added ${key}`);
+    patched = true;
+  }
+}
+
+// LSApplicationQueriesSchemes — needed so the app can open the FB / Messenger apps
+if (!plist.includes('<key>LSApplicationQueriesSchemes</key>')) {
+  const lsBlock = `\t<key>LSApplicationQueriesSchemes</key>\n\t<array>\n\t\t<string>fbapi</string>\n\t\t<string>fb-messenger-share-api</string>\n\t\t<string>fbauth2</string>\n\t\t<string>fbshareextension</string>\n\t</array>\n`;
+  plist = plist.replace('</dict>\n</plist>', lsBlock + '</dict>\n</plist>');
+  console.log('✓ Added LSApplicationQueriesSchemes for Facebook');
   patched = true;
 }
 
