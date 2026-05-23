@@ -37,26 +37,17 @@ function ensureInfoPlistKeys() {
   let plist = fs.readFileSync(infoPlistPath, 'utf8');
   let changed = false;
 
-  const requiredKeys = [
-    {
-      key: 'NSFaceIDUsageDescription',
-      value: 'Use Face ID to sign in to Versa faster and more securely.',
-    },
-    {
-      key: 'NSCameraUsageDescription',
-      value: 'Versa needs access to your camera to take a profile photo.',
-    },
-    {
-      key: 'NSPhotoLibraryUsageDescription',
-      value: 'Versa needs access to your photo library to choose a profile picture.',
-    },
-    {
-      key: 'NSPhotoLibraryAddUsageDescription',
-      value: 'Versa needs access to save updated profile pictures to your photo library.',
-    },
+  const stringKeys = [
+    { key: 'NSFaceIDUsageDescription', value: 'Use Face ID to sign in to Versa faster and more securely.' },
+    { key: 'NSCameraUsageDescription', value: 'Versa needs access to your camera to take a profile photo.' },
+    { key: 'NSPhotoLibraryUsageDescription', value: 'Versa needs access to your photo library to choose a profile picture.' },
+    { key: 'NSPhotoLibraryAddUsageDescription', value: 'Versa needs access to save updated profile pictures to your photo library.' },
+    { key: 'FacebookAppID', value: '2213580409403160' },
+    { key: 'FacebookClientToken', value: '1e9cc014894aa3fefc2d52e6f1121de3' },
+    { key: 'FacebookDisplayName', value: 'getversa' },
   ];
 
-  for (const { key, value } of requiredKeys) {
+  for (const { key, value } of stringKeys) {
     if (!plist.includes(`<key>${key}</key>`)) {
       const insertion = `\n\t<key>${key}</key>\n\t<string>${value}</string>`;
       plist = plist.replace('</dict>', `${insertion}\n</dict>`);
@@ -67,18 +58,16 @@ function ensureInfoPlistKeys() {
     }
   }
 
-  // Ensure CFBundleURLTypes includes custom URL schemes for OAuth callbacks.
-  // SFSafariViewController redirects to com.versa.app://auth-callback after OAuth.
-  // Include the legacy mixed-case scheme too so older callback URLs still work.
-  if (!plist.includes('<string>com.versa.app</string>') || !plist.includes('<string>com.Versa.app</string>')) {
+  const requiredUrlSchemes = ['com.versa.app', 'com.Versa.app', 'fb2213580409403160'];
+  const missingUrlSchemes = requiredUrlSchemes.filter((scheme) => !plist.includes(`<string>${scheme}</string>`));
+  if (missingUrlSchemes.length > 0 && !plist.includes('<key>CFBundleURLTypes</key>')) {
     const urlSchemeBlock = `
 \t<key>CFBundleURLTypes</key>
 \t<array>
 \t\t<dict>
 \t\t\t<key>CFBundleURLSchemes</key>
 \t\t\t<array>
-\t\t\t\t<string>com.versa.app</string>
-\t\t\t\t<string>com.Versa.app</string>
+\t\t\t\t${requiredUrlSchemes.map((scheme) => `<string>${scheme}</string>`).join('\n\t\t\t\t')}
 \t\t\t</array>
 \t\t\t<key>CFBundleURLName</key>
 \t\t\t<string>com.versa.app</string>
@@ -86,7 +75,34 @@ function ensureInfoPlistKeys() {
 \t</array>`;
     plist = plist.replace('</dict>', `${urlSchemeBlock}\n</dict>`);
     changed = true;
-    console.log('[cap-sync] Added CFBundleURLTypes for OAuth callback schemes');
+    console.log('[cap-sync] Added URL schemes for OAuth and Facebook callbacks');
+  } else if (missingUrlSchemes.length > 0) {
+    plist = plist.replace(
+      /(<key>CFBundleURLSchemes<\/key>\s*<array>)/,
+      `$1\n\t\t\t\t${missingUrlSchemes.map((scheme) => `<string>${scheme}</string>`).join('\n\t\t\t\t')}`,
+    );
+    changed = true;
+    console.log(`[cap-sync] Added missing URL schemes: ${missingUrlSchemes.join(', ')}`);
+  }
+
+  const querySchemes = ['fbapi', 'fb-messenger-share-api', 'fbauth2', 'fbshareextension'];
+  const missingQuerySchemes = querySchemes.filter((scheme) => !plist.includes(`<string>${scheme}</string>`));
+  if (missingQuerySchemes.length > 0 && !plist.includes('<key>LSApplicationQueriesSchemes</key>')) {
+    const lsBlock = `
+\t<key>LSApplicationQueriesSchemes</key>
+\t<array>
+\t\t${querySchemes.map((scheme) => `<string>${scheme}</string>`).join('\n\t\t')}
+\t</array>`;
+    plist = plist.replace('</dict>', `${lsBlock}\n</dict>`);
+    changed = true;
+    console.log('[cap-sync] Added Facebook application query schemes');
+  } else if (missingQuerySchemes.length > 0) {
+    plist = plist.replace(
+      /(<key>LSApplicationQueriesSchemes<\/key>\s*<array>)/,
+      `$1\n\t\t${missingQuerySchemes.map((scheme) => `<string>${scheme}</string>`).join('\n\t\t')}`,
+    );
+    changed = true;
+    console.log(`[cap-sync] Added missing Facebook query schemes: ${missingQuerySchemes.join(', ')}`);
   }
 
   if (changed) {
