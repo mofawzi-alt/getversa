@@ -17,7 +17,7 @@ import { AnimatePresence } from "framer-motion";
 // Eagerly loaded — landing + most-visited routes
 const Home = lazy(() => import("./pages/Home"));
 import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
+const Profile = lazy(() => import("./pages/Profile"));
 import CookieConsent from "./components/CookieConsent";
 
 // Lazy-loaded — keep these out of the initial bundle

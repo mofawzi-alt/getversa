@@ -140,62 +140,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      let profileData = await withTimeout(async () => {
-        const { data } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', userId)
-          .maybeSingle();
-        return data;
-      }, null, 4000);
-    
-    // Auto-create user record if missing
-    if (!profileData) {
-        const authResponse = await withTimeout(async () => supabase.auth.getUser(), null, 2500);
-        const authUser = authResponse?.data.user ?? null;
-      if (authUser) {
-        const metadata = authUser.user_metadata || {};
-        // Generate a unique username — append random suffix to avoid collisions
-        const rawUsername = String(metadata.username || metadata.name || metadata.full_name || authUser.email?.split('@')[0] || 'user');
-        const baseUsername = rawUsername.replace(/[^a-z0-9_]/gi, '').toLowerCase() || 'user';
-        const uniqueUsername = `${baseUsername}_${Math.random().toString(36).slice(2, 6)}`;
-        
-        const { data: newProfile, error: insertError } = await supabase
-          .from('users')
-          .insert({
-            id: authUser.id,
-            email: authUser.email || '',
-            username: uniqueUsername,
-            age_range: metadata.age_range || null,
-            gender: metadata.gender || null,
-            country: metadata.country || null,
-            city: metadata.city || metadata.city_of_residence || null,
-            nationality: metadata.nationality || metadata.country || null,
-            city_of_residence: metadata.city_of_residence || metadata.city || null,
-            points: 0,
-            current_streak: 0,
-            longest_streak: 0,
-            total_days_active: 0,
-          })
-          .select()
-          .single();
-        
-        if (insertError) {
-          console.error('Failed to auto-create user profile:', insertError.message);
-          // Retry with a more unique username
-          const fallbackUsername = `user_${Date.now().toString(36)}`;
-          const { data: retryProfile } = await supabase
+      let { data: profileData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      // Auto-create user record if missing
+      if (!profileData) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const metadata = authUser.user_metadata || {};
+          const rawUsername = String(metadata.username || metadata.name || metadata.full_name || authUser.email?.split('@')[0] || 'user');
+          const baseUsername = rawUsername.replace(/[^a-z0-9_]/gi, '').toLowerCase() || 'user';
+          const uniqueUsername = `${baseUsername}_${Math.random().toString(36).slice(2, 6)}`;
+
+          const { data: newProfile, error: insertError } = await supabase
             .from('users')
             .insert({
               id: authUser.id,
               email: authUser.email || '',
-              username: fallbackUsername,
-            age_range: metadata.age_range || null,
-            gender: metadata.gender || null,
-            country: metadata.country || null,
-            city: metadata.city || metadata.city_of_residence || null,
-            nationality: metadata.nationality || metadata.country || null,
-            city_of_residence: metadata.city_of_residence || metadata.city || null,
+              username: uniqueUsername,
+              age_range: metadata.age_range || null,
+              gender: metadata.gender || null,
+              country: metadata.country || null,
+              city: metadata.city || metadata.city_of_residence || null,
+              nationality: metadata.nationality || metadata.country || null,
+              city_of_residence: metadata.city_of_residence || metadata.city || null,
               points: 0,
               current_streak: 0,
               longest_streak: 0,
@@ -203,24 +174,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             })
             .select()
             .single();
-          profileData = retryProfile;
-        } else {
-          profileData = newProfile;
+
+          if (insertError) {
+            console.error('Failed to auto-create user profile:', insertError.message);
+            const fallbackUsername = `user_${Date.now().toString(36)}`;
+            const { data: retryProfile } = await supabase
+              .from('users')
+              .insert({
+                id: authUser.id,
+                email: authUser.email || '',
+                username: fallbackUsername,
+                age_range: metadata.age_range || null,
+                gender: metadata.gender || null,
+                country: metadata.country || null,
+                city: metadata.city || metadata.city_of_residence || null,
+                nationality: metadata.nationality || metadata.country || null,
+                city_of_residence: metadata.city_of_residence || metadata.city || null,
+                points: 0,
+                current_streak: 0,
+                longest_streak: 0,
+                total_days_active: 0,
+              })
+              .select()
+              .single();
+            profileData = retryProfile;
+          } else {
+            profileData = newProfile;
+          }
         }
       }
-    }
-    
-    if (profileData) {
-      setProfile(profileData);
-    }
 
-      const rolesData = await withTimeout(async () => {
-        const { data } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userId);
-        return data;
-      }, [], 3000);
+      if (profileData) {
+        setProfile(profileData);
+      }
+
+      const { data: rolesData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
 
       setIsAdmin(Array.isArray(rolesData) && rolesData.some((r) => r.role === 'admin'));
     } catch (error) {
