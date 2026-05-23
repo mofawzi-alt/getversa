@@ -49,10 +49,10 @@ function ensureInfoPlistKeys() {
 
   for (const { key, value } of stringKeys) {
     if (!plist.includes(`<key>${key}</key>`)) {
-      const insertion = `\n\t<key>${key}</key>\n\t<string>${value}</string>`;
-      plist = plist.replace('</dict>', `${insertion}\n</dict>`);
+      const insertion = `\t<key>${key}</key>\n\t<string>${value}</string>\n`;
+      plist = plist.replace('</dict>\n</plist>', `${insertion}</dict>\n</plist>`);
       changed = true;
-      console.log(`[cap-sync] Added ${key} to Info.plist`);
+      console.log(`[cap-sync] Added ${key} to root of Info.plist`);
     } else {
       console.log(`[cap-sync] ${key} already present`);
     }
