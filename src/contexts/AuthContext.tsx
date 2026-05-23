@@ -139,15 +139,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deliberateSignInRef = useRef(false);
 
   const fetchProfile = async (userId: string) => {
-    let { data: profileData } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
+    try {
+      let { data: profileData } = await withTimeout(async () => {
+        const { data } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
+        return data;
+      }, null, 4000);
     
     // Auto-create user record if missing
     if (!profileData) {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+        const { data: { user: authUser } } = await withTimeout(async () => supabase.auth.getUser(), { data: { user: null } }, 2500);
       if (authUser) {
         const metadata = authUser.user_metadata || {};
         // Generate a unique username — append random suffix to avoid collisions
@@ -209,13 +213,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(profileData);
     }
 
-    const { data: rolesData } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId);
+      const rolesData = await withTimeout(async () => {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId);
+        return data;
+      }, [], 3000);
 
-    setIsAdmin(Array.isArray(rolesData) && rolesData.some((r) => r.role === 'admin'));
-    setRolesLoaded(true);
+      setIsAdmin(Array.isArray(rolesData) && rolesData.some((r) => r.role === 'admin'));
+    } catch (error) {
+      console.warn('[Auth] Profile load failed; continuing without blocking UI', error);
+      setIsAdmin(false);
+    } finally {
+      setRolesLoaded(true);
+    }
   };
 
   const refreshProfile = async (userId?: string) => {
