@@ -60,6 +60,19 @@ if (!fs.existsSync(plistPath)) {
   fail('iOS project is missing. Run the START-HERE-MAC.command file from the project folder.');
 }
 
+const requiredIosWrapperFiles = [
+  'ios/App/App.xcodeproj/project.pbxproj',
+  'ios/App/App/AppDelegate.swift',
+  'ios/App/App/Base.lproj/Main.storyboard',
+  'ios/App/App/Base.lproj/LaunchScreen.storyboard',
+  'ios/App/CapApp-SPM/Package.swift',
+  'ios/App/debug.xcconfig',
+];
+const missingIosWrapperFiles = requiredIosWrapperFiles.filter((relativePath) => !fs.existsSync(path.join(root, relativePath)));
+if (missingIosWrapperFiles.length > 0) {
+  fail(`iOS wrapper is incomplete. Missing: ${missingIosWrapperFiles.join(', ')}. Run npm run ios:update again.`);
+}
+
 const plist = fs.readFileSync(plistPath, 'utf8');
 const missingPlistKeys = requiredAppleKeys.filter((key) => !plist.includes(`<key>${key}</key>`));
 if (missingPlistKeys.length > 0) {
