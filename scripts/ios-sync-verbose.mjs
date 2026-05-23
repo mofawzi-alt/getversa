@@ -57,6 +57,7 @@ const steps = [
   { label: 'Building web app', command: 'npm', args: ['run', 'build'] },
   { label: 'Syncing iOS project', command: 'npx', args: ['cap', 'sync', 'ios'] },
   { label: 'Patching iOS permissions & app icon', command: 'node', args: ['scripts/capacitor-ios-post-sync.mjs'] },
+  { label: 'Verifying Xcode project before opening', command: 'node', args: ['scripts/apple-release-ready.mjs'] },
   { label: 'Clearing stale Xcode package cache', command: 'node', args: ['scripts/repair-ios-spm.mjs'] },
 ];
 
