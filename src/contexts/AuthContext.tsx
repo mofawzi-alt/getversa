@@ -140,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      let { data: profileData } = await withTimeout(async () => {
+      let profileData = await withTimeout(async () => {
         const { data } = await supabase
           .from('users')
           .select('*')
@@ -151,7 +151,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Auto-create user record if missing
     if (!profileData) {
-        const { data: { user: authUser } } = await withTimeout(async () => supabase.auth.getUser(), { data: { user: null } }, 2500);
+        const authResponse = await withTimeout(async () => supabase.auth.getUser(), null, 2500);
+        const authUser = authResponse?.data.user ?? null;
       if (authUser) {
         const metadata = authUser.user_metadata || {};
         // Generate a unique username — append random suffix to avoid collisions
