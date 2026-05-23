@@ -49,10 +49,10 @@ function ensureInfoPlistKeys() {
 
   for (const { key, value } of stringKeys) {
     if (!plist.includes(`<key>${key}</key>`)) {
-      const insertion = `\n\t<key>${key}</key>\n\t<string>${value}</string>`;
-      plist = plist.replace('</dict>', `${insertion}\n</dict>`);
+      const insertion = `\t<key>${key}</key>\n\t<string>${value}</string>\n`;
+      plist = plist.replace('</dict>\n</plist>', `${insertion}</dict>\n</plist>`);
       changed = true;
-      console.log(`[cap-sync] Added ${key} to Info.plist`);
+      console.log(`[cap-sync] Added ${key} to root of Info.plist`);
     } else {
       console.log(`[cap-sync] ${key} already present`);
     }
@@ -73,7 +73,7 @@ function ensureInfoPlistKeys() {
 \t\t\t<string>com.versa.app</string>
 \t\t</dict>
 \t</array>`;
-    plist = plist.replace('</dict>', `${urlSchemeBlock}\n</dict>`);
+    plist = plist.replace('</dict>\n</plist>', `${urlSchemeBlock}\n</dict>\n</plist>`);
     changed = true;
     console.log('[cap-sync] Added URL schemes for OAuth and Facebook callbacks');
   } else if (missingUrlSchemes.length > 0) {
@@ -93,7 +93,7 @@ function ensureInfoPlistKeys() {
 \t<array>
 \t\t${querySchemes.map((scheme) => `<string>${scheme}</string>`).join('\n\t\t')}
 \t</array>`;
-    plist = plist.replace('</dict>', `${lsBlock}\n</dict>`);
+    plist = plist.replace('</dict>\n</plist>', `${lsBlock}\n</dict>\n</plist>`);
     changed = true;
     console.log('[cap-sync] Added Facebook application query schemes');
   } else if (missingQuerySchemes.length > 0) {
