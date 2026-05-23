@@ -72,6 +72,11 @@ if (!fs.existsSync(appIconContentsPath)) {
   fail('iOS app icon Contents.json is missing.');
 }
 
+const capAppSpmPackage = path.join(root, 'ios', 'App', 'CapApp-SPM', 'Package.swift');
+if (!fs.existsSync(capAppSpmPackage)) {
+  fail('iOS Swift package CapApp-SPM is missing. Run npm run ios:update again.');
+}
+
 const appIconContents = JSON.parse(fs.readFileSync(appIconContentsPath, 'utf8'));
 const marketingIcon = appIconContents.images?.find((image) => image.idiom === 'ios-marketing');
 if (!marketingIcon?.filename || !fs.existsSync(path.join(appIconDir, marketingIcon.filename))) {
@@ -90,4 +95,5 @@ if (fs.existsSync(pbxPath)) {
 console.log('GOOD: Apple camera crash fix is present.');
 console.log('GOOD: Apple photo permission fix is present.');
 console.log('GOOD: App icon is present.');
+console.log('GOOD: Xcode Swift package CapApp-SPM is present.');
 console.log('GOOD: Versa iOS project is ready to open in Xcode.');
