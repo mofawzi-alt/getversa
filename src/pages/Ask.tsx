@@ -267,7 +267,21 @@ export default function Ask() {
       const { data, error } = await supabase.functions.invoke('ask-versa', {
         body: { question, mode: 'auto', viewer, history, stage: 'preview' },
       });
-      if (error) throw error;
+      if (error) {
+        let msg = error.message || 'Failed';
+        try {
+          const ctx: any = (error as any).context;
+          if (ctx && typeof ctx.text === 'function') {
+            const t = await ctx.text();
+            try { msg = JSON.parse(t).error || msg; } catch { if (t) msg = t; }
+          }
+        } catch {}
+        if (/credits?\s*exhausted|not enough credits|402/i.test(msg)) {
+          msg = 'Ask Versa is temporarily unavailable — AI credits exhausted. Please try again later.';
+        }
+        toast.error(msg);
+        return;
+      }
       if (data?.error) { toast.error(data.error); return; }
 
       if (data.stage === 'offscope') {
