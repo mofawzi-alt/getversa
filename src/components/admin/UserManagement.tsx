@@ -58,8 +58,40 @@ export default function UserManagement() {
     );
   });
 
+  // New signup stats (Cairo timezone day boundary)
+  const stats = (() => {
+    if (!users) return { today: 0, yesterday: 0, last7: 0, total: 0 };
+    const cairoNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Africa/Cairo' }));
+    const startToday = new Date(cairoNow); startToday.setHours(0, 0, 0, 0);
+    const startYesterday = new Date(startToday); startYesterday.setDate(startYesterday.getDate() - 1);
+    const start7 = new Date(startToday); start7.setDate(start7.getDate() - 6);
+    let today = 0, yesterday = 0, last7 = 0;
+    for (const u of users) {
+      if (!u.created_at) continue;
+      const d = new Date(u.created_at);
+      if (d >= startToday) today++;
+      else if (d >= startYesterday) yesterday++;
+      if (d >= start7) last7++;
+    }
+    return { today, yesterday, last7, total: users.length };
+  })();
+
   return (
     <div className="space-y-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {[
+          { label: 'New today', value: stats.today },
+          { label: 'Yesterday', value: stats.yesterday },
+          { label: 'Last 7 days', value: stats.last7 },
+          { label: 'Total users', value: stats.total },
+        ].map((s) => (
+          <div key={s.label} className="glass rounded-xl p-3 text-center">
+            <div className="text-2xl font-bold text-primary">{s.value}</div>
+            <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
