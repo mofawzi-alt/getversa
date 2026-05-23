@@ -120,7 +120,7 @@ interface AuthContextType {
     password: string,
     metadata?: Record<string, string>
   ) => Promise<{ error: Error | null; user: User | null; session: Session | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null; session: Session | null }>;
   signOut: () => Promise<void>;
   refreshProfile: (userId?: string) => Promise<void>;
   prepareForExternalSignIn: () => Promise<void>;
@@ -460,6 +460,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Race the auth call against a 15s timeout so the UI never hangs forever
     // (WKWebView on iOS can silently drop fetches under low-memory conditions).
     try {
+      let signedInSession: Session | null = null;
       deliberateSignInRef.current = true;
       // Clear explicit logout guards before a deliberate new sign-in attempt.
       // Otherwise the auth listener can reject the fresh session as if it were
@@ -490,6 +491,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, undefined, 1200);
 
         const nextSession = authResult.data?.session ?? await getSessionWithTimeout(1500);
+        signedInSession = nextSession;
         if (nextSession) {
           setSession(nextSession);
           setUser(nextSession.user ?? null);
@@ -505,10 +507,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       }
-      return { error };
+      return { error, session: signedInSession };
     } catch (e) {
       deliberateSignInRef.current = false;
-      return { error: e instanceof Error ? e : new Error('Sign-in failed') };
+      return { error: e instanceof Error ? e : new Error('Sign-in failed'), session: null };
     }
   };
 
