@@ -23,6 +23,10 @@ function assertVersaNativePreflight() {
     'NSPhotoLibraryUsageDescription',
     'NSPhotoLibraryAddUsageDescription',
     'NSFaceIDUsageDescription',
+    'FacebookAppID',
+    'FacebookClientToken',
+    'FacebookDisplayName',
+    'fb2213580409403160',
   ];
   const missingPermissionKeys = requiredKeys.filter((key) => !postSync.includes(key));
   const identityMatches = capConfig.includes("appId: 'com.Versa.app'") && capConfig.includes("appName: 'Versa'");
