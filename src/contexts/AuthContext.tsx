@@ -231,6 +231,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const prepareForExternalSignIn = async () => {
+    holdNativeUpdatesForAuth();
     deliberateSignInRef.current = true;
     markExternalSignInIntent();
     clearLogoutGuard();
@@ -449,6 +450,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ]);
 
       if (error) {
+        releaseNativeAuthUpdateHold();
         deliberateSignInRef.current = false;
         return { error, user: null, session: null };
       }
@@ -468,11 +470,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           void fetchProfile(nextSession.user.id);
         }
       } else {
+        releaseNativeAuthUpdateHold();
         deliberateSignInRef.current = false;
       }
 
       return { error: null, user: data.user ?? nextSession?.user ?? null, session: nextSession };
     } catch (e) {
+      releaseNativeAuthUpdateHold();
       deliberateSignInRef.current = false;
       return { error: e instanceof Error ? e : new Error('Sign-up failed'), user: null, session: null };
     }
@@ -505,6 +509,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       const error = authResult.error;
       if (error) {
+        releaseNativeAuthUpdateHold();
         deliberateSignInRef.current = false;
       }
       if (!error) {
@@ -533,6 +538,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return { error, session: signedInSession };
     } catch (e) {
+      releaseNativeAuthUpdateHold();
       deliberateSignInRef.current = false;
       return { error: e instanceof Error ? e : new Error('Sign-in failed'), session: null };
     }
