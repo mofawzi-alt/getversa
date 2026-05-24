@@ -6,6 +6,7 @@ import "./lib/authRedirectCapture";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";
 import { SplashScreen } from "@capacitor/splash-screen";
+import { installNativeUpdateGuards, markNativeBundleReady } from "@/lib/nativeUpdateGuards";
 
 declare global {
   interface Window {
@@ -20,11 +21,8 @@ const isNativeApp = Capacitor?.isNativePlatform?.() === true;
 // rollback/reload the bundle, which looks like the app keeps refreshing
 // and makes taps feel ignored.
 if (isNativeApp) {
-  void import("@capgo/capacitor-updater")
-    .then(({ CapacitorUpdater }) => CapacitorUpdater.notifyAppReady())
-    .catch((err) => {
-      console.warn("[CapacitorUpdater] early notifyAppReady failed", err);
-    });
+  markNativeBundleReady();
+  installNativeUpdateGuards();
 }
 
 const hideNativeSplash = (fadeOutDuration = 0) => {
