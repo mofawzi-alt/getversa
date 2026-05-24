@@ -4,15 +4,18 @@ const POLL_IMAGE_BASE_PATH = '/polls';
 const GENERATED_ASSET_ORIGIN = 'https://getversa.app';
 // Cache version removed — browser caching now relies on natural HTTP cache headers
 
-function isNativeWebView() {
+export function isNativeWebView() {
   try {
-    return window.location.protocol === 'capacitor:';
+    return (
+      window.location.protocol === 'capacitor:' ||
+      window.location.hostname === 'localhost' && !!(window as any).Capacitor?.isNativePlatform?.()
+    );
   } catch {
     return false;
   }
 }
 
-function isWebpImageUrl(url?: string | null) {
+export function isWebpImageUrl(url?: string | null) {
   if (!url) return false;
   try {
     const parsed = new URL(url, 'https://getversa.app');
@@ -27,6 +30,12 @@ export function getPublicPollImageUrl(fileName: string) {
 }
 
 const NATIVE_SAFE_FALLBACK_IMAGE = '/polls/lipton-office-fix.png';
+
+export function getNativeSafeImageSrc(url?: string | null, fallback = NATIVE_SAFE_FALLBACK_IMAGE) {
+  const resolvedUrl = resolvePollMediaUrl(url);
+  if (isNativeWebView() && isWebpImageUrl(resolvedUrl)) return fallback;
+  return resolvedUrl || fallback;
+}
 
 // Reliable Unsplash fallback images that always load in browsers. In the iOS
 // native WebView we avoid remote fallbacks because CDNs can still negotiate
@@ -1053,7 +1062,7 @@ function extractFilename(url?: string | null) {
 }
 
 function isStoragePollImageUrl(url?: string | null) {
-  return !!url && url.includes('/storage/v1/object/public/poll-images/');
+  return !!url && /\/storage\/v1\/object\/public\/(poll-images|poll-calendar-images)\//.test(url);
 }
 
 export function getOptimizedPollImageSrc(
