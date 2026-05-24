@@ -1121,6 +1121,7 @@ export default function Home() {
   const [voteMilestone, setVoteMilestone] = useState<{ count: number; message: string } | null>(null);
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const prevVoteCountRef = useRef<number | null>(null);
+  const prevExploreVoteCountRef = useRef<number | null>(null);
 
   // Show tutorial for new visitors who completed welcome but haven't seen tutorial
   useEffect(() => {
@@ -1237,11 +1238,20 @@ export default function Home() {
   const savedHeroIndex = useRef<number>(0);
 
   useEffect(() => {
-    if (hasUnlockedExplore && !isExploreUnlocked()) {
-      markExploreUnlocked();
+    const prev = prevExploreVoteCountRef.current;
+    prevExploreVoteCountRef.current = voteCount;
+
+    if (!hasUnlockedExplore || isExploreUnlocked()) return;
+
+    markExploreUnlocked();
+
+    // Existing users/guests can already be past the threshold on app startup.
+    // Do not block the app with a modal in that case; only celebrate the moment
+    // they cross the threshold during the current session.
+    if (prev !== null && prev < EXPLORE_THRESHOLD) {
       setShowUnlockPopup(true);
     }
-  }, [hasUnlockedExplore]);
+  }, [hasUnlockedExplore, voteCount]);
 
   const { data: votedPollIds, isLoading: isVotedPollIdsLoading } = useQuery({
     queryKey: ['user-voted-ids', user?.id],
