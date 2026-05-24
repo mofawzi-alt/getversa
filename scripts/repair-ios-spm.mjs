@@ -54,6 +54,10 @@ function restoreMissingGeneratedIosFiles() {
   for (const relativePath of missingGeneratedPaths) {
     const source = path.join(templateRoot, relativePath);
     const target = path.join(iosRoot, relativePath);
+    if (!fs.existsSync(source)) {
+      console.log(`[ios-spm] Skipped (not in template): ios/App/${relativePath}`);
+      continue;
+    }
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.cpSync(source, target, { recursive: true });
     console.log(`[ios-spm] Restored missing generated iOS file/folder: ios/App/${relativePath}`);
