@@ -402,49 +402,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user?.id]);
 
   const signUp = async (email: string, password: string, metadata?: Record<string, string>) => {
-    // On native (iOS/Android Capacitor) window.location.origin resolves to
-    // capacitor:// or localhost — Supabase rejects those redirects. Always
-    // route email-confirmation links to the production web URL on native.
-    const redirectUrl = getAuthRedirectUrl();
+    try {
+      // On native (iOS/Android Capacitor) window.location.origin resolves to
+      // capacitor:// or localhost — Supabase rejects those redirects. Always
+      // route email-confirmation links to the production web URL on native.
+      const redirectUrl = getAuthRedirectUrl();
 
-    deliberateSignInRef.current = true;
-    clearLogoutGuard();
-    void withTimeout(async () => {
-      await clearNativeLoggedOut();
-    }, undefined, 1200);
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: metadata,
-      },
-    });
-
-    if (error) {
-      deliberateSignInRef.current = false;
-      return { error, user: null, session: null };
-    }
-
-    const nextSession = data.session ?? await getSessionWithTimeout(1500);
-    if (nextSession) {
-      setSession(nextSession);
-      setUser(nextSession.user ?? null);
+      deliberateSignInRef.current = true;
+      clearLogoutGuard();
       void withTimeout(async () => {
-        await persistSessionNative({
-          access_token: nextSession.access_token,
-          refresh_token: nextSession.refresh_token,
-        });
+        await clearNativeLoggedOut();
       }, undefined, 1200);
-      if (nextSession.user) {
-        void fetchProfile(nextSession.user.id);
-      }
-    } else {
-      deliberateSignInRef.current = false;
-    }
 
-    return { error: null, user: data.user ?? nextSession?.user ?? null, session: nextSession };
+      const { data, error } = await Promise.race([
+        supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: metadata,
+          },
+        }),
+        new Promise<never>((_, reject) =>
+          window.setTimeout(() => reject(new Error('Sign-up timed out. Check your connection and try again.')), 15000)
+        ),
+      ]);
+
+      if (error) {
+        deliberateSignInRef.current = false;
+        return { error, user: null, session: null };
+      }
+
+      const nextSession = data.session ?? await getSessionWithTimeout(1500);
+      if (nextSession) {
+        setSession(nextSession);
+        setUser(nextSession.user ?? null);
+        void withTimeout(async () => {
+          await persistSessionNative({
+            access_token: nextSession.access_token,
+            refresh_token: nextSession.refresh_token,
+          });
+        }, undefined, 1200);
+        if (nextSession.user) {
+          void fetchProfile(nextSession.user.id);
+        }
+      } else {
+        deliberateSignInRef.current = false;
+      }
+
+      return { error: null, user: data.user ?? nextSession?.user ?? null, session: nextSession };
+    } catch (e) {
+      deliberateSignInRef.current = false;
+      return { error: e instanceof Error ? e : new Error('Sign-up failed'), user: null, session: null };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
