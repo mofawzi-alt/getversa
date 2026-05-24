@@ -28,14 +28,14 @@ export default function ShareToStoryButton({
   if (!user) return null;
 
   const handleShare = () => {
-    const safeImageUrl = getNativeSafeImageSrc(imageUrl, null as any);
+    const safeImageUrl = getNativeSafeImageSrc(imageUrl, null);
     const safeContent = {
       ...content,
       image_url: getNativeSafeImageSrc(content.image_url, safeImageUrl || null),
-      image_a_url: getNativeSafeImageSrc(content.image_a_url, null as any),
-      image_b_url: getNativeSafeImageSrc(content.image_b_url, null as any),
-      card_image: getNativeSafeImageSrc(content.card_image, null as any),
-      icon_url: getNativeSafeImageSrc(content.icon_url, null as any),
+      image_a_url: getNativeSafeImageSrc(content.image_a_url, null),
+      image_b_url: getNativeSafeImageSrc(content.image_b_url, null),
+      card_image: getNativeSafeImageSrc(content.card_image, null),
+      icon_url: getNativeSafeImageSrc(content.icon_url, null),
     };
 
     postStory(
