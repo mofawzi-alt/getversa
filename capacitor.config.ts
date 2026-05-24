@@ -61,6 +61,10 @@ const config: CapacitorConfig = {
       // OTA auto-update is ON — this is how daily JS updates ship to users
       // without a new TestFlight/App Store build. Do NOT disable.
       autoUpdate: true,
+      // Give iOS enough time to boot heavier native builds before Capgo decides
+      // the bundle failed and rolls back/reloads. `notifyAppReady()` is also
+      // called immediately in main.tsx.
+      appReadyTimeout: 20000,
       // When a NEW native app version is installed (new TestFlight/App Store
       // build), wipe any older downloaded bundles so the fresh bundled JS
       // runs first. New OTA bundles can then download on top of that.
