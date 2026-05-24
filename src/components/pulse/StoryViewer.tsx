@@ -377,7 +377,7 @@ export default function StoryViewer({
               </>
             )}
             {/* Bottom darken for legibility */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/85" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80" />
 
             {card.label && (
               <div className="absolute left-0 right-0 text-center px-5 pointer-events-none" style={{ top: 'calc(env(safe-area-inset-top) + 40px)' }}>
