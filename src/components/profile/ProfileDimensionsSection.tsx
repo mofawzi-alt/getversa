@@ -29,7 +29,7 @@ export default function ProfileDimensionsSection() {
       if (!user) return 0;
       const { count } = await supabase
         .from('votes')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact' })
         .eq('user_id', user.id);
       return count || 0;
     },

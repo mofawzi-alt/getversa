@@ -271,6 +271,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // On native, INITIAL_SESSION can arrive as null before the Keychain-backed
+      // restore runs. Do not render the app as logged out/zeroed until the
+      // native fallback has had a chance to restore the real session.
+      if (!nextSession && onNative && event === 'INITIAL_SESSION') {
+        return;
+      }
+
       // Accept SIGNED_IN, INITIAL_SESSION, and TOKEN_REFRESHED as "deliberate"
       // when our ref is set — Supabase can emit any of these after a native
       // session restore on iOS cold-start.
@@ -352,28 +359,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const webSession = await getSessionWithTimeout(onNative ? 1200 : 600);
+      if (onNative && await withTimeout(() => isNativeLoggedOut(), false, 800)) {
+        clearAuthState();
+        finishBoot();
+        return;
+      }
+
+      let webSession: Session | null = null;
+      if (onNative) {
+        // iOS WKWebView can hang in getSession() during cold start. Restore the
+        // Keychain-backed session first, then only fall back to web storage.
+        deliberateSignInRef.current = true;
+        const restoredSession = await withTimeout(() => restoreSessionNative(), null, 1800);
+        if (cancelled) return;
+        if (restoredSession?.user) {
+          deliberateSignInRef.current = false;
+          clearExternalSignInIntent();
+          clearLogoutGuard();
+          setSession(restoredSession);
+          setUser(restoredSession.user);
+          void fetchProfile(restoredSession.user.id);
+          finishBoot();
+          return;
+        }
+        deliberateSignInRef.current = false;
+      }
+
+      webSession = await getSessionWithTimeout(onNative ? 900 : 600);
       if (cancelled) return;
 
       if (hasLogoutGuard() || (onNative && await withTimeout(() => isNativeLoggedOut(), false, 800))) {
         clearAuthState();
         finishBoot();
         return;
-      }
-
-      if (!webSession) {
-        if (onNative) {
-          // Treat a successful native restore as a deliberate sign-in so the
-          // SIGNED_IN listener accepts it and clears any stale logout flags.
-          deliberateSignInRef.current = true;
-          const restored = await withTimeout(() => restoreSessionNative(), false, 1200);
-          if (cancelled) return;
-          if (restored) {
-            // onAuthStateChange will fire and populate state — nothing else to do.
-            return;
-          }
-          deliberateSignInRef.current = false;
-        }
       }
 
       setSession((prev) => prev ?? webSession);
