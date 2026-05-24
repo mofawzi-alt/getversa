@@ -57,12 +57,6 @@ const config: CapacitorConfig = {
       resize: 'native',
       resizeOnFullScreen: true,
     },
-    CapacitorUpdater: {
-      // Emergency freeze fix: disable OTA updates so iOS only runs the bundled
-      // files copied by `npx cap sync ios` and never downloads a bad bundle.
-      autoUpdate: false,
-      resetWhenUpdate: true,
-    },
   },
 };
 

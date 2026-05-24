@@ -6,7 +6,6 @@ import "./lib/authRedirectCapture";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";
 import { SplashScreen } from "@capacitor/splash-screen";
-import { installNativeUpdateGuards, markNativeBundleReady } from "@/lib/nativeUpdateGuards";
 
 declare global {
   interface Window {
@@ -15,15 +14,6 @@ declare global {
 }
 
 const isNativeApp = Capacitor?.isNativePlatform?.() === true;
-
-// Capgo must be notified as soon as the JS bundle starts, before auth,
-// data loading, or lazy route imports. If this is delayed, iOS can auto-
-// rollback/reload the bundle, which looks like the app keeps refreshing
-// and makes taps feel ignored.
-if (isNativeApp) {
-  markNativeBundleReady();
-  installNativeUpdateGuards();
-}
 
 const hideNativeSplash = (fadeOutDuration = 0) => {
   if (!isNativeApp) return;
