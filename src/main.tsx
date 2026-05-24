@@ -16,14 +16,21 @@ declare global {
 
 const isNativeApp = Capacitor?.isNativePlatform?.() === true;
 
-let capgoReadyNotified = false;
+let capgoReadyConfirmed = false;
 
 const notifyCapgoAppReady = () => {
-  if (!isNativeApp || capgoReadyNotified) return;
-  capgoReadyNotified = true;
-  void CapacitorUpdater.notifyAppReady().catch((err) => {
-    capgoReadyNotified = false;
+  if (!isNativeApp || capgoReadyConfirmed) return;
+  void CapacitorUpdater.notifyAppReady().then(() => {
+    capgoReadyConfirmed = true;
+  }).catch((err) => {
     console.warn("[CapacitorUpdater] notifyAppReady failed", err);
+  });
+};
+
+const installCapgoReadyRetries = () => {
+  if (!isNativeApp) return;
+  [0, 100, 300, 700, 1500, 3000, 6000].forEach((delay) => {
+    window.setTimeout(notifyCapgoAppReady, delay);
   });
 };
 
@@ -157,6 +164,8 @@ const clearServiceWorkersAndCaches = async () => {
 if (isPreviewHost || isInIframe || isNativeApp) {
   void clearServiceWorkersAndCaches();
 }
+
+installCapgoReadyRetries();
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>

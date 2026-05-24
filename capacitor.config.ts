@@ -34,6 +34,15 @@ const config: CapacitorConfig = {
     contentInset: 'never',
   },
   plugins: {
+    CapacitorUpdater: {
+      // Give the JS bundle enough time on slower App Store devices to call
+      // notifyAppReady() before Capgo decides the OTA failed and rolls back.
+      appReadyTimeout: 60000,
+      autoDeleteFailed: false,
+      autoDeletePrevious: false,
+      directUpdate: false,
+      keepUrlPathAfterReload: true,
+    },
     StatusBar: {
       overlaysWebView: true,
       style: 'DARK',
