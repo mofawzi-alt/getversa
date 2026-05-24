@@ -1,4 +1,13 @@
 import { Component, ReactNode } from 'react';
+import { Capacitor } from '@capacitor/core';
+
+const isNativeApp = () => {
+  try {
+    return Capacitor?.isNativePlatform?.() === true;
+  } catch {
+    return false;
+  }
+};
 
 interface Props {
   children: ReactNode;
@@ -43,7 +52,7 @@ export default class ErrorBoundary extends Component<Props, State> {
       /error loading dynamically imported module/i.test(msg) ||
       (/Load failed/i.test(msg) && /chunk|module|script/i.test(String((error as any)?.stack || '')));
 
-    if (isChunkError) {
+    if (isChunkError && !isNativeApp()) {
       const KEY = 'versa.chunk-reload.v1';
       try {
         const last = Number(sessionStorage.getItem(KEY) || '0');
