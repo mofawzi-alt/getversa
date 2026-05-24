@@ -112,8 +112,8 @@ function ensureInfoPlistKeys() {
     { key: 'NSCameraUsageDescription', value: 'Versa needs access to your camera to take a profile photo.' },
     { key: 'NSPhotoLibraryUsageDescription', value: 'Versa needs access to your photo library to choose a profile picture.' },
     { key: 'NSPhotoLibraryAddUsageDescription', value: 'Versa needs access to save updated profile pictures to your photo library.' },
-    { key: 'FacebookAppID', value: '2213580409403160' },
-    { key: 'FacebookClientToken', value: '1e9cc014894aa3fefc2d52e6f1121de3' },
+    { key: 'FacebookAppID', value: '2007451096553445' },
+    { key: 'FacebookClientToken', value: 'c56baa88249df62d7b4a19c3c067a54c' },
     { key: 'FacebookDisplayName', value: 'getversa' },
   ];
 
@@ -128,7 +128,7 @@ function ensureInfoPlistKeys() {
     }
   }
 
-  const requiredUrlSchemes = ['com.versa.app', 'com.Versa.app', 'fb2213580409403160'];
+  const requiredUrlSchemes = ['com.versa.app', 'com.Versa.app', 'fb2007451096553445'];
   const missingUrlSchemes = requiredUrlSchemes.filter((scheme) => !plist.includes(`<string>${scheme}</string>`));
   if (missingUrlSchemes.length > 0 && !plist.includes('<key>CFBundleURLTypes</key>')) {
     const urlSchemeBlock = `
