@@ -156,7 +156,7 @@ const clearServiceWorkersAndCaches = async () => {
   }
 };
 
-if (isPreviewHost || isInIframe || isNativeApp) {
+if (isPreviewHost || isInIframe) {
   void clearServiceWorkersAndCaches();
 }
 
