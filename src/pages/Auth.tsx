@@ -311,8 +311,9 @@ export default function Auth() {
 
       // If they came from trying to vote, go home (vote intent poll handled there)
       navigate('/home', { replace: true });
-    } catch {
-      toast.error('An unexpected error occurred');
+    } catch (signupError) {
+      const message = signupError instanceof Error ? signupError.message : 'An unexpected error occurred';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
