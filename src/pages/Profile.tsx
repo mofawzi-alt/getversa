@@ -27,27 +27,30 @@ export default function Profile() {
   const { data: credits = 0 } = useAskCredits();
   const [loggingOut, setLoggingOut] = useState(false);
 
+  const targetUserId = profile?.id || user?.id;
+
   const { data: stats } = useQuery({
-    queryKey: ['user-stats-v2', profile?.id],
+    queryKey: ['user-stats-v2', targetUserId],
     queryFn: async () => {
-      if (!profile) return null;
+      if (!targetUserId) return null;
 
       const [votesResult, streakResult, comparisonsResult, battlesResult, followersResult, followingResult] = await Promise.all([
-        supabase.from('votes').select('id', { count: 'exact', head: true }).eq('user_id', profile.id),
-        supabase.from('users').select('current_streak, longest_streak, prediction_accuracy, prediction_total').eq('id', profile.id).single(),
+        supabase.from('votes').select('id', { count: 'exact', head: true }).eq('user_id', targetUserId),
+        supabase.from('users').select('points, current_streak, longest_streak, prediction_accuracy, prediction_total').eq('id', targetUserId).single(),
         // Comparisons = friendships (each accepted friend = a possible compatibility comparison)
         supabase.from('friendships').select('id', { count: 'exact', head: true })
           .eq('status', 'accepted')
-          .or(`requester_id.eq.${profile.id},recipient_id.eq.${profile.id}`),
+          .or(`requester_id.eq.${targetUserId},recipient_id.eq.${targetUserId}`),
         // Battles = poll_challenges the user is part of
         supabase.from('poll_challenges').select('id', { count: 'exact', head: true })
-          .or(`challenger_id.eq.${profile.id},challenged_id.eq.${profile.id}`),
-        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', profile.id),
-        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', profile.id),
+          .or(`challenger_id.eq.${targetUserId},challenged_id.eq.${targetUserId}`),
+        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', targetUserId),
+        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', targetUserId),
       ]);
 
       return {
         votes: votesResult.count || 0,
+        points: streakResult.data?.points || 0,
         currentStreak: streakResult.data?.current_streak || 0,
         longestStreak: streakResult.data?.longest_streak || 0,
         predictionAccuracy: (streakResult.data as any)?.prediction_accuracy || 0,
@@ -58,7 +61,7 @@ export default function Profile() {
         following: followingResult.count || 0,
       };
     },
-    enabled: !!profile,
+    enabled: !!targetUserId,
   });
 
   const handleLogout = async () => {
