@@ -431,7 +431,7 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/30" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
           </>
         ) : (
           <>
