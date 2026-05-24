@@ -203,7 +203,7 @@ export default function Profile() {
             <button onClick={() => navigate('/rewards')} className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-1">
                 <Sparkles className="h-3 w-3 text-muted-foreground" />
-                <span className="text-sm font-bold text-foreground">{profile?.points || 0}</span>
+                <span className="text-sm font-bold text-foreground">{stats?.points ?? profile?.points ?? 0}</span>
               </div>
               <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Points</span>
             </button>
