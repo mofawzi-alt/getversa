@@ -38,15 +38,15 @@ for (const [key, value] of Object.entries(privacyKeys)) {
 }
 
 if (!plist.includes('<string>com.versa.app</string>') || !plist.includes('<string>com.Versa.app</string>')) {
-  const urlSchemeBlock = `\t<key>CFBundleURLTypes</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>CFBundleURLSchemes</key>\n\t\t\t<array>\n\t\t\t\t<string>com.versa.app</string>\n\t\t\t\t<string>com.Versa.app</string>\n\t\t\t\t<string>fb2213580409403160</string>\n\t\t\t</array>\n\t\t\t<key>CFBundleURLName</key>\n\t\t\t<string>com.versa.app</string>\n\t\t</dict>\n\t</array>\n`;
+  const urlSchemeBlock = `\t<key>CFBundleURLTypes</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>CFBundleURLSchemes</key>\n\t\t\t<array>\n\t\t\t\t<string>com.versa.app</string>\n\t\t\t\t<string>com.Versa.app</string>\n\t\t\t\t<string>fb2007451096553445</string>\n\t\t\t</array>\n\t\t\t<key>CFBundleURLName</key>\n\t\t\t<string>com.versa.app</string>\n\t\t</dict>\n\t</array>\n`;
   plist = plist.replace('</dict>\n</plist>', urlSchemeBlock + '</dict>\n</plist>');
   console.log('✓ Added OAuth + Facebook callback URL schemes');
   patched = true;
-} else if (!plist.includes('fb2213580409403160')) {
+} else if (!plist.includes('fb2007451096553445')) {
   // URL types already exist, inject fb scheme into the first CFBundleURLSchemes array
   plist = plist.replace(
     /(<key>CFBundleURLSchemes<\/key>\s*<array>)/,
-    `$1\n\t\t\t\t<string>fb2213580409403160</string>`
+    `$1\n\t\t\t\t<string>fb2007451096553445</string>`
   );
   console.log('✓ Added Facebook URL scheme to existing CFBundleURLTypes');
   patched = true;
@@ -54,8 +54,8 @@ if (!plist.includes('<string>com.versa.app</string>') || !plist.includes('<strin
 
 // ── Facebook SDK required keys ──
 const fbKeys = {
-  FacebookAppID: '2213580409403160',
-  FacebookClientToken: '1e9cc014894aa3fefc2d52e6f1121de3',
+  FacebookAppID: '2007451096553445',
+  FacebookClientToken: 'c56baa88249df62d7b4a19c3c067a54c',
   FacebookDisplayName: 'getversa',
 };
 
