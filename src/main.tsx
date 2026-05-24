@@ -15,6 +15,18 @@ declare global {
 
 const isNativeApp = Capacitor?.isNativePlatform?.() === true;
 
+// Capgo must be notified as soon as the JS bundle starts, before auth,
+// data loading, or lazy route imports. If this is delayed, iOS can auto-
+// rollback/reload the bundle, which looks like the app keeps refreshing
+// and makes taps feel ignored.
+if (isNativeApp) {
+  void import("@capgo/capacitor-updater")
+    .then(({ CapacitorUpdater }) => CapacitorUpdater.notifyAppReady())
+    .catch((err) => {
+      console.warn("[CapacitorUpdater] early notifyAppReady failed", err);
+    });
+}
+
 const hideNativeSplash = (fadeOutDuration = 0) => {
   if (!isNativeApp) return;
   void SplashScreen.hide({ fadeOutDuration }).catch((err) => {
@@ -112,18 +124,6 @@ const runNativeBootTasks = () => {
 
   runIdle(() => {
     void import("@/lib/onesignal").then((m) => m.initOneSignal(null)).catch(() => {});
-
-    void (async () => {
-      try {
-        const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
-        // Tell Capgo the current bundle booted successfully. Without this,
-        // Capgo will auto-rollback to the previous working bundle after a
-        // few seconds, thinking the new one crashed.
-        await CapacitorUpdater.notifyAppReady();
-      } catch (err) {
-        console.warn("[CapacitorUpdater] notifyAppReady failed", err);
-      }
-    })();
 
     void Promise.all([import("@capacitor/app"), import("@/lib/onesignal")]).then(([appModule, oneSignal]) => {
       const CapacitorApp = appModule.App;
