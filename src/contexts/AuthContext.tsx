@@ -322,6 +322,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
+      if (nextSession) releaseNativeAuthUpdateHold();
 
       if (nextSession?.user) {
         setRolesLoaded(false);
@@ -534,6 +535,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (nextSession.user) {
             void fetchProfile(nextSession.user.id);
           }
+        } else {
+          releaseNativeAuthUpdateHold();
         }
       }
       return { error, session: signedInSession };
