@@ -58,12 +58,11 @@ const config: CapacitorConfig = {
       resizeOnFullScreen: true,
     },
     CapacitorUpdater: {
-      // Auto-download new web bundles in the background.
-      // The new version is applied on the NEXT app launch.
-      autoUpdate: true,
-      // How often the app pings Capgo to check for updates.
-      autoUpdateUrl: 'https://api.capgo.app/updates',
-      // Tell Capgo to reset to the bundled version if a new one fails.
+      // App Store / TestFlight builds must run the bundled `dist/` code.
+      // Leaving OTA auto-update on can make a fresh TestFlight install keep
+      // launching an older downloaded web bundle from the app container.
+      autoUpdate: false,
+      // Delete previous downloaded bundles when a newer native app is installed.
       resetWhenUpdate: true,
     },
   },
