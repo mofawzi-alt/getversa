@@ -58,11 +58,12 @@ const config: CapacitorConfig = {
       resizeOnFullScreen: true,
     },
     CapacitorUpdater: {
-      // App Store / TestFlight builds must run the bundled `dist/` code.
-      // Leaving OTA auto-update on can make a fresh TestFlight install keep
-      // launching an older downloaded web bundle from the app container.
-      autoUpdate: false,
-      // Delete previous downloaded bundles when a newer native app is installed.
+      // OTA auto-update is ON — this is how daily JS updates ship to users
+      // without a new TestFlight/App Store build. Do NOT disable.
+      autoUpdate: true,
+      // When a NEW native app version is installed (new TestFlight/App Store
+      // build), wipe any older downloaded bundles so the fresh bundled JS
+      // runs first. New OTA bundles can then download on top of that.
       resetWhenUpdate: true,
     },
   },
