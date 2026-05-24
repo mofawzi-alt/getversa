@@ -35,17 +35,19 @@ export default function Profile() {
       if (!targetUserId) return null;
 
       const [votesResult, streakResult, comparisonsResult, battlesResult, followersResult, followingResult] = await Promise.all([
-        supabase.from('votes').select('id', { count: 'exact' }).eq('user_id', targetUserId),
+        supabase.from('votes').select('id', { count: 'exact' }).eq('user_id', targetUserId).limit(1),
         supabase.from('users').select('points, current_streak, longest_streak, prediction_accuracy, prediction_total').eq('id', targetUserId).single(),
         // Comparisons = friendships (each accepted friend = a possible compatibility comparison)
         supabase.from('friendships').select('id', { count: 'exact' })
           .eq('status', 'accepted')
-          .or(`requester_id.eq.${targetUserId},recipient_id.eq.${targetUserId}`),
+          .or(`requester_id.eq.${targetUserId},recipient_id.eq.${targetUserId}`)
+          .limit(1),
         // Battles = poll_challenges the user is part of
         supabase.from('poll_challenges').select('id', { count: 'exact' })
-          .or(`challenger_id.eq.${targetUserId},challenged_id.eq.${targetUserId}`),
-        supabase.from('follows').select('id', { count: 'exact' }).eq('following_id', targetUserId),
-        supabase.from('follows').select('id', { count: 'exact' }).eq('follower_id', targetUserId),
+          .or(`challenger_id.eq.${targetUserId},challenged_id.eq.${targetUserId}`)
+          .limit(1),
+        supabase.from('follows').select('id', { count: 'exact' }).eq('following_id', targetUserId).limit(1),
+        supabase.from('follows').select('id', { count: 'exact' }).eq('follower_id', targetUserId).limit(1),
       ]);
 
       return {
