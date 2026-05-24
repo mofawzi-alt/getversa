@@ -15,6 +15,7 @@ import {
 import { clearBiometricUnlocked } from '@/lib/biometric';
 import { hasRecentPasswordRecoveryIntent } from '@/lib/authRedirectCapture';
 import { initOneSignal, logoutOneSignal } from '@/lib/onesignal';
+import { holdNativeUpdatesForAuth, releaseNativeAuthUpdateHold } from '@/lib/nativeUpdateGuards';
 
 const LOGOUT_GUARD_KEY = 'versa.force_logged_out.guard';
 const EXTERNAL_SIGN_IN_INTENT_KEY = 'versa.external_sign_in.intent';
@@ -230,6 +231,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const prepareForExternalSignIn = async () => {
+    holdNativeUpdatesForAuth();
     deliberateSignInRef.current = true;
     markExternalSignInIntent();
     clearLogoutGuard();
@@ -320,6 +322,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
+      if (nextSession) releaseNativeAuthUpdateHold();
 
       if (nextSession?.user) {
         setRolesLoaded(false);
@@ -421,6 +424,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, metadata?: Record<string, string>) => {
     try {
+      holdNativeUpdatesForAuth();
       // On native (iOS/Android Capacitor) window.location.origin resolves to
       // capacitor:// or localhost — Supabase rejects those redirects. Always
       // route email-confirmation links to the production web URL on native.
@@ -447,12 +451,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ]);
 
       if (error) {
+        releaseNativeAuthUpdateHold();
         deliberateSignInRef.current = false;
         return { error, user: null, session: null };
       }
 
       const nextSession = data.session ?? await getSessionWithTimeout(1500);
       if (nextSession) {
+        releaseNativeAuthUpdateHold();
         setSession(nextSession);
         setUser(nextSession.user ?? null);
         void withTimeout(async () => {
@@ -465,11 +471,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           void fetchProfile(nextSession.user.id);
         }
       } else {
+        releaseNativeAuthUpdateHold();
         deliberateSignInRef.current = false;
       }
 
       return { error: null, user: data.user ?? nextSession?.user ?? null, session: nextSession };
     } catch (e) {
+      releaseNativeAuthUpdateHold();
       deliberateSignInRef.current = false;
       return { error: e instanceof Error ? e : new Error('Sign-up failed'), user: null, session: null };
     }
@@ -480,6 +488,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // (WKWebView on iOS can silently drop fetches under low-memory conditions).
     try {
       let signedInSession: Session | null = null;
+      holdNativeUpdatesForAuth();
       deliberateSignInRef.current = true;
       // Clear explicit logout guards before a deliberate new sign-in attempt.
       // Otherwise the auth listener can reject the fresh session as if it were
@@ -501,6 +510,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       const error = authResult.error;
       if (error) {
+        releaseNativeAuthUpdateHold();
         deliberateSignInRef.current = false;
       }
       if (!error) {
@@ -512,6 +522,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const nextSession = authResult.data?.session ?? await getSessionWithTimeout(1500);
         signedInSession = nextSession;
         if (nextSession) {
+          releaseNativeAuthUpdateHold();
           setSession(nextSession);
           setUser(nextSession.user ?? null);
           void withTimeout(async () => {
@@ -524,10 +535,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (nextSession.user) {
             void fetchProfile(nextSession.user.id);
           }
+        } else {
+          releaseNativeAuthUpdateHold();
         }
       }
       return { error, session: signedInSession };
     } catch (e) {
+      releaseNativeAuthUpdateHold();
       deliberateSignInRef.current = false;
       return { error: e instanceof Error ? e : new Error('Sign-in failed'), session: null };
     }
@@ -536,6 +550,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     if (logoutInFlightRef.current) return;
     logoutInFlightRef.current = true;
+
+    holdNativeUpdatesForAuth();
 
     void logoutOneSignal();
 
@@ -591,6 +607,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Release the guard quickly so a second tap never appears stuck. We've
     // already cleared local state; the background tasks will finish on their own.
     window.setTimeout(() => {
+      releaseNativeAuthUpdateHold();
       logoutInFlightRef.current = false;
     }, 400);
   };
