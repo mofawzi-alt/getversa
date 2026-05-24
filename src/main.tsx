@@ -85,8 +85,9 @@ if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
   console.info("[Versa] Native OAuth bridge handled callback before app boot.");
 } else {
 
-// Native iOS boot work — deferred until AFTER first paint so the home screen
-// can render as fast as possible. None of these are needed to draw the UI.
+// Native iOS boot work — keep this intentionally tiny.
+// Xcode showed iOS background-task expiration during launch, so we avoid
+// starting non-essential bridge/network work while WebKit is coalescing launch.
 const runNativeBootTasks = () => {
   if (!Capacitor?.isNativePlatform?.()) return;
 
@@ -104,38 +105,9 @@ const runNativeBootTasks = () => {
   // 2) Keep hiding the native splash from multiple lifecycle moments.
   hideNativeSplash(120);
 
-  // 3) Everything below is pure background work — push it to idle time.
-  const runIdle = (cb: () => void) => {
-    if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(() => cb(), { timeout: 2000 });
-    else setTimeout(cb, 600);
-  };
-
-  runIdle(() => {
-    void import("@/lib/onesignal").then((m) => m.initOneSignal(null)).catch(() => {});
-
-    void Promise.all([import("@capacitor/app"), import("@/lib/onesignal")]).then(([appModule, oneSignal]) => {
-      const CapacitorApp = appModule.App;
-
-      void CapacitorApp.getLaunchUrl().then((launch) => {
-        const route = oneSignal.getNotificationRoute(launch?.url);
-        if (route && route !== "/home") oneSignal.openNotificationRoute(route);
-      }).catch(() => {});
-
-      void CapacitorApp.addListener("appUrlOpen", ({ url }) => {
-        const route = oneSignal.getNotificationRoute(url);
-        if (route && route !== "/home" && !route.startsWith("/auth-callback")) oneSignal.openNotificationRoute(route);
-      });
-    }).catch(() => {});
-
-    void (async () => {
-      try {
-        const { Keyboard } = await import("@capacitor/keyboard");
-        await Keyboard.setAccessoryBarVisible({ isVisible: false });
-      } catch (err) {
-        console.warn("[Keyboard] hide accessory bar failed", err);
-      }
-    })();
-  });
+  // Do not initialize notification/deep-link/keyboard helpers at cold launch.
+  // They are not required to render or sign in, and can keep WebKit active
+  // during iOS launch suspension on real devices.
 };
 
 const isInIframe = (() => {
@@ -178,7 +150,10 @@ createRoot(document.getElementById("root")!).render(
 // so the UI paints first and the user no longer stares at white.
 requestAnimationFrame(() => {
   runNativeBootTasks();
-  // Warm the home feed image cache in the background.
-  import("@/lib/preloadFeedImages").then((m) => m.preloadFeedImages?.(6)).catch(() => {});
+  if (!isNativeApp) {
+    // Warm the home feed image cache on web only. Native iOS should do the
+    // least possible background work during launch.
+    import("@/lib/preloadFeedImages").then((m) => m.preloadFeedImages?.(6)).catch(() => {});
+  }
 });
 }
