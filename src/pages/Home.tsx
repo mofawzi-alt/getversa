@@ -52,7 +52,7 @@ import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/compon
 import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/NotificationPrompt';
 import { isWelcomeTourDone } from '@/components/onboarding/FirstTimeWelcomeTour';
 
-import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import { getNativeSafeImageSrc, getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import PollCardSkeleton from '@/components/poll/PollCardSkeleton';
 import { useDailyQueue } from '@/hooks/useDailyQueue';
@@ -260,7 +260,7 @@ function HomeLiveDebateCard({
           <div
             className="absolute inset-0 scale-125"
             style={{
-              backgroundImage: `url(${poll.image_a_url || poll.image_b_url})`,
+              backgroundImage: `url(${getNativeSafeImageSrc(poll.image_a_url || poll.image_b_url)})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               filter: 'blur(38px) saturate(1.2)',
