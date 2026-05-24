@@ -101,18 +101,6 @@ export default function Profile() {
       <div className="p-4 space-y-6 animate-slide-up">
         {/* Profile Header */}
         <div className="relative bg-card rounded-2xl p-4 text-center border border-border shadow-sm">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-3 top-3 h-9 px-3 gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={handleLogout}
-            disabled={loggingOut}
-            aria-label="Log Out"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="text-xs font-semibold">{loggingOut ? 'Logging out…' : 'Log Out'}</span>
-          </Button>
           {(profile as any)?.avatar_url ? (
             <img
               src={(profile as any).avatar_url}
