@@ -34,16 +34,6 @@ const config: CapacitorConfig = {
     contentInset: 'never',
   },
   plugins: {
-    CapacitorUpdater: {
-      // Stop automatic bundle switching/reloading. The app will still support OTA,
-      // but updates must be applied through controlled code instead of Capgo
-      // forcing a reload on launch/background and creating loops for users.
-      autoUpdate: false,
-      directUpdate: false,
-      appReadyTimeout: 10000,
-      autoDeleteFailed: true,
-      autoDeletePrevious: false,
-    },
     StatusBar: {
       overlaysWebView: true,
       style: 'DARK',
