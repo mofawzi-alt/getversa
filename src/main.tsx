@@ -16,6 +16,22 @@ declare global {
 
 const isNativeApp = Capacitor?.isNativePlatform?.() === true;
 
+let capgoReadyNotified = false;
+
+const notifyCapgoAppReady = () => {
+  if (!isNativeApp || capgoReadyNotified) return;
+  capgoReadyNotified = true;
+  void CapacitorUpdater.notifyAppReady().catch((err) => {
+    capgoReadyNotified = false;
+    console.warn("[CapacitorUpdater] notifyAppReady failed", err);
+  });
+};
+
+// Tell Capgo immediately that the downloaded OTA bundle booted. If this waits
+// behind React/lazy imports, iOS can briefly show the new bundle and then reload
+// back to the previous bundle, which looks like the app "refreshes itself".
+notifyCapgoAppReady();
+
 const hideNativeSplash = (fadeOutDuration = 0) => {
   if (!isNativeApp) return;
   void SplashScreen.hide({ fadeOutDuration }).catch((err) => {
@@ -104,13 +120,7 @@ const runNativeBootTasks = () => {
   })();
 
   // 2) Tell Capgo the OTA bundle loaded OK (prevents auto-rollback).
-  void (async () => {
-    try {
-      await CapacitorUpdater.notifyAppReady();
-    } catch (err) {
-      console.warn("[CapacitorUpdater] notifyAppReady failed", err);
-    }
-  })();
+  notifyCapgoAppReady();
 
   // 3) Keep hiding the native splash from multiple lifecycle moments.
   hideNativeSplash(120);
