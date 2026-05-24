@@ -7,6 +7,7 @@ const checks = [
   ['package.json', 'file'],
   ['src', 'dir'],
   ['capacitor.config.ts', 'file'],
+  ['.env', 'file'],
   ['scripts/capacitor-ios-post-sync.mjs', 'file'],
   ['scripts/ios-sync-verbose.mjs', 'file'],
   ['public/app-icon-1024.png', 'file'],
@@ -34,6 +35,19 @@ try {
   pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 } catch {
   ok = false;
+}
+
+const envPath = path.join(root, '.env');
+if (fs.existsSync(envPath)) {
+  const envText = fs.readFileSync(envPath, 'utf8');
+  const missingEnvKeys = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_PROJECT_ID']
+    .filter((key) => !new RegExp(`^${key}=.+`, 'm').test(envText));
+  if (missingEnvKeys.length === 0) {
+    console.log('✅ Local app configuration .env is present');
+  } else {
+    ok = false;
+    console.log(`❌ .env is missing required keys: ${missingEnvKeys.join(', ')}`);
+  }
 }
 
 if (pkg?.scripts?.['ios:sync'] === 'node scripts/ios-sync-verbose.mjs --open') {
