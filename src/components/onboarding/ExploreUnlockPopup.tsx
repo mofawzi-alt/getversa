@@ -20,7 +20,7 @@ interface ExploreUnlockPopupProps {
 
 export default function ExploreUnlockPopup({ open, onClose }: ExploreUnlockPopupProps) {
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()} modal={false}>
       <DialogContent className="sm:max-w-xs text-center border-primary/20">
         <motion.div
           initial={{ scale: 0 }}
