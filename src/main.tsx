@@ -116,11 +116,9 @@ const runNativeBootTasks = () => {
     void (async () => {
       try {
         const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
-        const current = await CapacitorUpdater.current();
-        if (current.bundle?.id && current.bundle.id !== "builtin") {
-          await CapacitorUpdater.reset({ toLastSuccessful: false });
-          return;
-        }
+        // Tell Capgo the current bundle booted successfully. Without this,
+        // Capgo will auto-rollback to the previous working bundle after a
+        // few seconds, thinking the new one crashed.
         await CapacitorUpdater.notifyAppReady();
       } catch (err) {
         console.warn("[CapacitorUpdater] notifyAppReady failed", err);
