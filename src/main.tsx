@@ -5,6 +5,7 @@ import "./lib/nativeOAuthBridge"; // Must run before anything else
 import "./lib/authRedirectCapture";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";
+import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { SplashScreen } from "@capacitor/splash-screen";
 
 declare global {
@@ -14,6 +15,27 @@ declare global {
 }
 
 const isNativeApp = Capacitor?.isNativePlatform?.() === true;
+
+// CRITICAL: Tell Capgo IMMEDIATELY that the OTA bundle booted successfully.
+// If this is delayed (behind React, lazy imports, etc.), Capgo's watchdog
+// assumes the bundle crashed and auto-rolls back to the previous bundle,
+// which looks like the app "refreshes itself" back to an older version.
+let capgoReadyConfirmed = false;
+const notifyCapgoAppReady = () => {
+  if (!isNativeApp || capgoReadyConfirmed) return;
+  void CapacitorUpdater.notifyAppReady().then(() => {
+    capgoReadyConfirmed = true;
+  }).catch((err) => {
+    console.warn("[CapacitorUpdater] notifyAppReady failed", err);
+  });
+};
+notifyCapgoAppReady();
+// Retry on a schedule in case the first call lost the race with native init.
+if (isNativeApp) {
+  [50, 200, 500, 1000, 2000, 4000].forEach((delay) => {
+    window.setTimeout(notifyCapgoAppReady, delay);
+  });
+}
 
 const hideNativeSplash = (fadeOutDuration = 0) => {
   if (!isNativeApp) return;
