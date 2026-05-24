@@ -5,6 +5,7 @@ import "./lib/nativeOAuthBridge"; // Must run before anything else
 import "./lib/authRedirectCapture";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";
+import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { SplashScreen } from "@capacitor/splash-screen";
 
 declare global {
@@ -105,7 +106,6 @@ const runNativeBootTasks = () => {
   // 2) Tell Capgo the OTA bundle loaded OK (prevents auto-rollback).
   void (async () => {
     try {
-      const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
       await CapacitorUpdater.notifyAppReady();
     } catch (err) {
       console.warn("[CapacitorUpdater] notifyAppReady failed", err);
