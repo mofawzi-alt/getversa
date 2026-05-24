@@ -12,8 +12,8 @@ export function hasSeenNotifPrompt(): boolean {
   if (Notification.permission === 'granted') {
     return true;
   }
-  // For unsubscribed users: only suppress within the same session
-  return sessionStorage.getItem(PROMPT_SESSION_KEY) === '1';
+  // If the user already chose “Maybe later”, do not block them again on app launch.
+  return localStorage.getItem(PROMPT_KEY) === '1' || sessionStorage.getItem(PROMPT_SESSION_KEY) === '1';
 }
 
 export function markNotifPromptSeen(): void {
