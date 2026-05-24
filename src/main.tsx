@@ -15,13 +15,11 @@ declare global {
 
 const isNativeApp = Capacitor?.isNativePlatform?.() === true;
 
-const notifyCapgoAppReady = async () => {
+const notifyCapgoAppReady = () => {
   if (!isNativeApp) return;
-  try {
-    await CapacitorUpdater.notifyAppReady();
-  } catch (err) {
+  void CapacitorUpdater.notifyAppReady().catch((err) => {
     console.warn("[CapacitorUpdater] notifyAppReady failed", err);
-  }
+  });
 };
 
 const hideNativeSplash = (fadeOutDuration = 150) => {
@@ -34,9 +32,9 @@ const hideNativeSplash = (fadeOutDuration = 150) => {
 if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
   console.info("[Versa] Native OAuth bridge handled callback before app boot.");
 } else {
-  void notifyCapgoAppReady().finally(async () => {
-    const { default: App } = await import("./App.tsx");
+  notifyCapgoAppReady();
 
+  void import("./App.tsx").then(({ default: App }) => {
   if (isNativeApp) {
     void import("@capacitor/status-bar")
       .then(({ StatusBar, Style }) =>
