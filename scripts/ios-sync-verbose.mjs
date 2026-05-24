@@ -14,6 +14,10 @@ function assertVersaNativePreflight() {
     'public/app-icon-1024.png',
   ];
   const missingFiles = requiredFiles.filter((relativePath) => !existsSync(path.join(root, relativePath)));
+  const envPath = path.join(root, '.env');
+  const envText = existsSync(envPath) ? readFileSync(envPath, 'utf8') : '';
+  const requiredEnvKeys = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_PROJECT_ID'];
+  const missingEnvKeys = requiredEnvKeys.filter((key) => !new RegExp(`^${key}=.+`, 'm').test(envText));
   const capConfigPath = path.join(root, 'capacitor.config.ts');
   const postSyncPath = path.join(root, 'scripts', 'capacitor-ios-post-sync.mjs');
   const capConfig = existsSync(capConfigPath) ? readFileSync(capConfigPath, 'utf8') : '';
@@ -31,9 +35,10 @@ function assertVersaNativePreflight() {
   const missingPermissionKeys = requiredKeys.filter((key) => !postSync.includes(key));
   const identityMatches = capConfig.includes("appId: 'com.Versa.app'") && capConfig.includes("appName: 'Versa'");
 
-  if (missingFiles.length > 0 || missingPermissionKeys.length > 0 || !identityMatches) {
+  if (missingFiles.length > 0 || missingEnvKeys.length > 0 || missingPermissionKeys.length > 0 || !identityMatches) {
     console.error('\n❌ Refusing to sync iOS from this folder.');
     if (missingFiles.length > 0) console.error(`Missing required files: ${missingFiles.join(', ')}`);
+    if (missingEnvKeys.length > 0) console.error(`Missing .env keys: ${missingEnvKeys.join(', ')}`);
     if (!identityMatches) console.error('Native app identity does not match Versa.');
     if (missingPermissionKeys.length > 0) console.error(`Missing Apple permission keys: ${missingPermissionKeys.join(', ')}`);
     console.error('This prevents stale/wrong folders from overwriting the Apple fixes.');
