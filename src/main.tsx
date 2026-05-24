@@ -1,4 +1,11 @@
+import { createRoot } from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
+import "./lib/nativeOAuthBridge"; // Must run before anything else
+import "./lib/authRedirectCapture";
 import "./index.css";
+import { Capacitor } from "@capacitor/core";
+import { SplashScreen } from "@capacitor/splash-screen";
 
 declare global {
   interface Window {
@@ -6,76 +13,147 @@ declare global {
   }
 }
 
-const notifyCapgoAppReady = async () => {
-  const [{ Capacitor }, { CapacitorUpdater }] = await Promise.all([
-    import("@capacitor/core"),
-    import("@capgo/capacitor-updater"),
-  ]);
+const isNativeApp = Capacitor?.isNativePlatform?.() === true;
 
-  const isNativeApp = Capacitor?.isNativePlatform?.() === true;
+const hideNativeSplash = (fadeOutDuration = 0) => {
   if (!isNativeApp) return;
-
-  void CapacitorUpdater.notifyAppReady().catch((err) => {
-    console.warn("[CapacitorUpdater] notifyAppReady failed", err);
-  });
-};
-
-const hideNativeSplash = async (fadeOutDuration = 150) => {
-  const [{ Capacitor }, { SplashScreen }] = await Promise.all([
-    import("@capacitor/core"),
-    import("@capacitor/splash-screen"),
-  ]);
-
-  const isNativeApp = Capacitor?.isNativePlatform?.() === true;
-  if (!isNativeApp) return;
-
   void SplashScreen.hide({ fadeOutDuration }).catch((err) => {
     console.warn("[SplashScreen] hide failed", err);
   });
 };
 
-const boot = async () => {
-  await notifyCapgoAppReady().catch((err) => {
-    console.warn("[CapacitorUpdater] setup failed", err);
-  });
+// NOTE: we intentionally do NOT hide the splash here. The native splash
+// must stay visible until App.tsx is loaded and React has painted at least
+// one frame, otherwise users see a white flash between splash and UI.
 
-  await import("./lib/nativeOAuthBridge");
-  await import("./lib/authRedirectCapture");
+function NativeSplashFailsafe({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    if (!isNativeApp) return;
+    // Safety net — force-hide after 1.2s so users can never get stuck on the
+    // splash, even on warm relaunches where the import is already cached.
+    const timer = window.setTimeout(() => hideNativeSplash(150), 1200);
+    return () => window.clearTimeout(timer);
+  }, []);
 
-  if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
-    console.info("[Versa] Native OAuth bridge handled callback before app boot.");
-    return;
-  }
+  return <>{children}</>;
+}
 
-  const [{ createRoot }, { HelmetProvider }, { default: App }, { Capacitor }] = await Promise.all([
-    import("react-dom/client"),
-    import("react-helmet-async"),
-    import("./App.tsx"),
-    import("@capacitor/core"),
-  ]);
+function AppLoader() {
+  const [AppComponent, setAppComponent] = useState<ComponentType | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  if (Capacitor?.isNativePlatform?.() === true) {
-    void import("@capacitor/status-bar")
-      .then(({ StatusBar, Style }) =>
-        Promise.all([
-          StatusBar.setOverlaysWebView({ overlay: true }),
-          StatusBar.setStyle({ style: Style.Dark }),
-        ])
-      )
+  useEffect(() => {
+    let active = true;
+
+    void import("./App.tsx")
+      .then((module) => {
+        if (active) setAppComponent(() => module.default);
+        // Hide splash AFTER React commits the first paint of the real App.
+        requestAnimationFrame(() => requestAnimationFrame(() => hideNativeSplash(200)));
+      })
       .catch((err) => {
-        console.warn("[StatusBar] setup failed", err);
+        console.error("[Versa] App boot failed", err);
+        if (active) setLoadFailed(true);
+        hideNativeSplash(0);
       });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loadFailed) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background px-6 text-center text-foreground">
+        <p className="text-base font-semibold">Versa could not start. Please close and reopen the app.</p>
+      </div>
+    );
   }
 
-  createRoot(document.getElementById("root")!).render(
-    <HelmetProvider>
-      <App />
-    </HelmetProvider>
-  );
+  if (!AppComponent) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
-  requestAnimationFrame(() => {
-    void hideNativeSplash();
-  });
+  return <AppComponent />;
+}
+
+if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
+  console.info("[Versa] Native OAuth bridge handled callback before app boot.");
+} else {
+
+// Native iOS boot work — keep this intentionally tiny.
+// Xcode showed iOS background-task expiration during launch, so we avoid
+// starting non-essential bridge/network work while WebKit is coalescing launch.
+const runNativeBootTasks = () => {
+  if (!Capacitor?.isNativePlatform?.()) return;
+
+  // 1) StatusBar first — only thing that affects layout, runs ASAP.
+  void (async () => {
+    try {
+      const { StatusBar, Style } = await import("@capacitor/status-bar");
+      await StatusBar.setOverlaysWebView({ overlay: true });
+      await StatusBar.setStyle({ style: Style.Dark });
+    } catch (err) {
+      console.warn("[StatusBar] setup failed", err);
+    }
+  })();
+
+  // 2) Keep hiding the native splash from multiple lifecycle moments.
+  hideNativeSplash(120);
+
+  // Do not initialize notification/deep-link/keyboard helpers at cold launch.
+  // They are not required to render or sign in, and can keep WebKit active
+  // during iOS launch suspension on real devices.
 };
 
-void boot();
+const isInIframe = (() => {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+})();
+
+const isPreviewHost =
+  window.location.hostname.includes("id-preview--") ||
+  window.location.hostname.includes("lovableproject.com");
+
+const clearServiceWorkersAndCaches = async () => {
+  if (!("serviceWorker" in navigator)) return;
+
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(registrations.map((registration) => registration.unregister()));
+
+  if ("caches" in window) {
+    const cacheKeys = await caches.keys();
+    await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)));
+  }
+};
+
+if (isPreviewHost || isInIframe || isNativeApp) {
+  void clearServiceWorkersAndCaches();
+}
+
+createRoot(document.getElementById("root")!).render(
+  <HelmetProvider>
+    <NativeSplashFailsafe>
+      <AppLoader />
+    </NativeSplashFailsafe>
+  </HelmetProvider>
+);
+
+// Kick off native boot tasks AFTER the first React render is scheduled,
+// so the UI paints first and the user no longer stares at white.
+requestAnimationFrame(() => {
+  runNativeBootTasks();
+  if (!isNativeApp) {
+    // Warm the home feed image cache on web only. Native iOS should do the
+    // least possible background work during launch.
+    import("@/lib/preloadFeedImages").then((m) => m.preloadFeedImages?.(6)).catch(() => {});
+  }
+});
+}
