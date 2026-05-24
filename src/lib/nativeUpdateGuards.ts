@@ -12,7 +12,7 @@ const isNativeApp = () => {
   }
 };
 
-const withUpdater = async (action: (updater: CapacitorUpdaterPlugin) => Promise<void>) => {
+const withUpdater = async (action: (updater: CapacitorUpdaterPlugin) => Promise<unknown>) => {
   if (!isNativeApp()) return;
   try {
     const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
