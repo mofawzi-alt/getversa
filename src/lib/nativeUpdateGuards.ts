@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import type { CapacitorUpdaterPlugin } from '@capgo/capacitor-updater';
 
 const SAFE_BACKGROUND_DELAY_MS = '120000';
 const AUTH_UPDATE_HOLD_MS = 10 * 60 * 1000;
@@ -11,7 +12,7 @@ const isNativeApp = () => {
   }
 };
 
-const withUpdater = async (action: (updater: any) => Promise<void>) => {
+const withUpdater = async (action: (updater: CapacitorUpdaterPlugin) => Promise<void>) => {
   if (!isNativeApp()) return;
   try {
     const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
