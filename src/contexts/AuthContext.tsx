@@ -352,28 +352,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const webSession = await getSessionWithTimeout(onNative ? 1200 : 600);
+      if (onNative && await withTimeout(() => isNativeLoggedOut(), false, 800)) {
+        clearAuthState();
+        finishBoot();
+        return;
+      }
+
+      let webSession: Session | null = null;
+      if (onNative) {
+        // iOS WKWebView can hang in getSession() during cold start. Restore the
+        // Keychain-backed session first, then only fall back to web storage.
+        deliberateSignInRef.current = true;
+        const restoredSession = await withTimeout(() => restoreSessionNative(), null, 1800);
+        if (cancelled) return;
+        if (restoredSession?.user) {
+          deliberateSignInRef.current = false;
+          clearExternalSignInIntent();
+          clearLogoutGuard();
+          setSession(restoredSession);
+          setUser(restoredSession.user);
+          void fetchProfile(restoredSession.user.id);
+          finishBoot();
+          return;
+        }
+        deliberateSignInRef.current = false;
+      }
+
+      webSession = await getSessionWithTimeout(onNative ? 900 : 600);
       if (cancelled) return;
 
       if (hasLogoutGuard() || (onNative && await withTimeout(() => isNativeLoggedOut(), false, 800))) {
         clearAuthState();
         finishBoot();
         return;
-      }
-
-      if (!webSession) {
-        if (onNative) {
-          // Treat a successful native restore as a deliberate sign-in so the
-          // SIGNED_IN listener accepts it and clears any stale logout flags.
-          deliberateSignInRef.current = true;
-          const restored = await withTimeout(() => restoreSessionNative(), false, 1200);
-          if (cancelled) return;
-          if (restored) {
-            // onAuthStateChange will fire and populate state — nothing else to do.
-            return;
-          }
-          deliberateSignInRef.current = false;
-        }
       }
 
       setSession((prev) => prev ?? webSession);
