@@ -3,23 +3,15 @@ self.addEventListener('install', () => {
 });
 
 self.addEventListener('activate', (event) => {
+  // IMPORTANT: Do NOT call client.navigate() here. Forcing a navigate on
+  // every activate causes a reload loop on iOS WKWebView (Capacitor), where
+  // the SW re-activates on cold start, reloads the page, which re-triggers
+  // activation, and so on. Just clear caches and claim clients.
   event.waitUntil(
     (async () => {
       const cacheKeys = await caches.keys();
       await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)));
-
       await self.clients.claim();
-
-      const clients = await self.clients.matchAll({
-        type: 'window',
-        includeUncontrolled: true,
-      });
-
-      await Promise.allSettled(
-        clients
-          .filter((client) => 'navigate' in client && client.url.startsWith(self.location.origin))
-          .map((client) => client.navigate(client.url)),
-      );
     })(),
   );
 });
