@@ -57,6 +57,7 @@ if (args.has('--check-only')) {
 
 const steps = [
   ...(args.has('--install') ? [{ label: 'Installing dependencies', command: 'npm', args: ['install'] }] : []),
+  { label: 'Pruning removed native plugins', command: 'npm', args: ['prune'] },
   { label: 'Clearing stale Xcode package cache', command: 'node', args: ['scripts/repair-ios-spm.mjs'] },
   { label: 'Repairing native build dependency', command: 'npm', args: ['rebuild', 'esbuild'] },
   { label: 'Building web app', command: 'npm', args: ['run', 'build'] },

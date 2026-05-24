@@ -7,6 +7,21 @@ const infoPlistPath = path.join(iosDir, 'Info.plist');
 const assetCatalogDir = path.join(iosDir, 'Assets.xcassets', 'AppIcon.appiconset');
 const sourceIconPath = path.join(root, 'public', 'app-icon-1024.png');
 
+function removeStaleCapgoArtifacts() {
+  const stalePaths = [
+    path.join(root, 'ios', 'capacitor-updater'),
+    path.join(root, 'ios', 'App', 'capacitor-updater'),
+    path.join(root, 'ios', 'App', 'App', 'capacitor-updater'),
+  ];
+
+  for (const target of stalePaths) {
+    if (fs.existsSync(target)) {
+      fs.rmSync(target, { recursive: true, force: true });
+      console.log(`[cap-sync] Removed stale Capgo updater artifact: ${path.relative(root, target)}`);
+    }
+  }
+}
+
 if (!fs.existsSync(path.join(root, 'ios', 'App', 'App.xcodeproj', 'project.pbxproj'))) {
   console.error('[cap-sync] STOP: Xcode project is incomplete. Run npm run ios:update again so generated iOS files can be restored.');
   process.exit(1);
@@ -248,6 +263,7 @@ async function generateSplash() {
   console.log('[cap-sync] Regenerated iOS Splash.imageset with Versa branding');
 }
 
+removeStaleCapgoArtifacts();
 await generateIcons();
 await generateSplash();
 ensureInfoPlistKeys();

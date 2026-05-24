@@ -80,6 +80,15 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReload = () => {
+    if (isNativeApp()) {
+      try {
+        window.location.href = '/home';
+      } catch {
+        // Avoid reload loops in the native iOS WebView.
+      }
+      return;
+    }
+
     try {
       window.location.href = '/';
     } catch {

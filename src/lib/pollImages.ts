@@ -26,7 +26,11 @@ export function getPublicPollImageUrl(fileName: string) {
   return `${POLL_IMAGE_BASE_PATH}/${encodeURIComponent(fileName.toLowerCase())}`;
 }
 
-// Reliable Unsplash fallback images that always load
+const NATIVE_SAFE_FALLBACK_IMAGE = '/polls/lipton-office-fix.jpg';
+
+// Reliable Unsplash fallback images that always load in browsers. In the iOS
+// native WebView we avoid remote fallbacks because CDNs can still negotiate
+// WebP/AVIF even when the URL does not end in .webp.
 const UNSPLASH_FALLBACKS = [
   'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=600&h=600&fit=crop', // nature
   'https://images.unsplash.com/photo-1495195134817-aeb325a55b65?w=600&h=600&fit=crop', // coffee
@@ -1093,6 +1097,7 @@ function getPreferredLocalImage({ question, option, side }: PollImageParams) {
 
 // Deterministic generic fallback from local assets pool
 function getGenericFallback(seed?: string | null): string {
+  if (isNativeWebView()) return NATIVE_SAFE_FALLBACK_IMAGE;
   return getStablePollFallbackImage(seed);
 }
 
@@ -1133,6 +1138,13 @@ export function handlePollImageError(
   params: Omit<PollImageParams, 'imageUrl'>
 ) {
   const target = e.currentTarget;
+  if (isNativeWebView()) {
+    if (target.dataset.fallbackApplied) return;
+    target.dataset.fallbackApplied = 'true';
+    target.src = NATIVE_SAFE_FALLBACK_IMAGE;
+    return;
+  }
+
   const originalSrc = target.dataset.originalSrc;
   if (originalSrc && !target.dataset.originalApplied && target.src !== originalSrc) {
     target.dataset.originalApplied = 'true';
