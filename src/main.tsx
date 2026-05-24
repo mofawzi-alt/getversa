@@ -161,7 +161,10 @@ const clearServiceWorkersAndCaches = async () => {
   }
 };
 
-if (isPreviewHost || isInIframe || isNativeApp) {
+// Never clear caches on native — it wipes the image cache and causes
+// high-res poll/story images to fall back to hazy low-res sources on
+// every cold launch. Only do this in the Lovable preview/iframe.
+if ((isPreviewHost || isInIframe) && !isNativeApp) {
   void clearServiceWorkersAndCaches();
 }
 
