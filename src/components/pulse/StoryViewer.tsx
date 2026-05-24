@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { trackStoryEvent } from '@/lib/storyAnalytics';
 import { markSeenLocally } from '@/lib/pulseTime';
 import { toast } from 'sonner';
+import { getNativeSafeImageSrc } from '@/lib/pollImages';
 
 const isVideoUrl = (url?: string | null) =>
   !!url && /\.(mp4|webm|mov|ogg)(\?|$)/i.test(url);
@@ -236,6 +237,7 @@ export default function StoryViewer({
   const card = cards[safeIndex];
   if (!card) return null;
   const theme = pickTheme(topic, category);
+  const safeBackgroundImage = getNativeSafeImageSrc(card.backgroundImage, null);
 
   const content = (
     <AnimatePresence>
@@ -315,10 +317,10 @@ export default function StoryViewer({
           >
             {/* Solid black base — image carries the visual identity */}
             <div className="absolute inset-0 bg-black" />
-            {card.backgroundImage && (card.backgroundImage.startsWith('/') || /^https?:\/\//i.test(card.backgroundImage)) ? (
-              isVideoUrl(card.backgroundImage) ? (
+            {safeBackgroundImage && (safeBackgroundImage.startsWith('/') || /^https?:\/\//i.test(safeBackgroundImage)) ? (
+              isVideoUrl(safeBackgroundImage) ? (
                 <video
-                  src={card.backgroundImage}
+                  src={safeBackgroundImage}
                   className="absolute inset-0 w-full h-full object-cover"
                   autoPlay
                   loop
@@ -328,7 +330,7 @@ export default function StoryViewer({
                 />
               ) : (
               <img
-                src={card.backgroundImage}
+                src={safeBackgroundImage}
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
