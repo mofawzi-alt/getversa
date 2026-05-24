@@ -1920,6 +1920,10 @@ export default function Home() {
           onClose={() => setShowNotifPrompt(false)}
         />
       <div className="flex flex-col gap-0">
+        {/* OTA TEST BANNER — remove after confirming Capgo delivers updates */}
+        <div className="w-full bg-[#E8392A] text-white text-center text-xs font-semibold py-1.5 tracking-wide">
+          ✅ OTA TEST v1 — if you see this on your iPhone, Capgo works
+        </div>
         <ExploreUnlockPopup open={showUnlockPopup} onClose={() => setShowUnlockPopup(false)} />
 
 
