@@ -12,9 +12,21 @@ let started = false;
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|ogg)(\?|#|$)/i;
 
+const isNativeWebView = () => {
+  try {
+    return window.location.protocol === 'capacitor:';
+  } catch {
+    return false;
+  }
+};
+
 export function preloadFeedImages(limit = 6) {
   if (started) return;
   started = true;
+
+  // Do not warm image cache in the native iOS WebView. Rapid parallel image
+  // decodes are what triggered the WebKit crash / refresh loop in Xcode logs.
+  if (isNativeWebView()) return;
 
   // Defer slightly so it doesn't compete with the initial paint / auth boot.
   setTimeout(async () => {
