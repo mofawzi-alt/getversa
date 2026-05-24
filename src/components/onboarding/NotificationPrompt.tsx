@@ -56,14 +56,14 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-6"
+          className="fixed inset-x-0 bottom-0 z-[90] p-4 pb-safe pointer-events-none"
         >
           <motion.div
-            initial={{ scale: 0.85, opacity: 0, y: 30 }}
+            initial={{ scale: 0.98, opacity: 0, y: 24 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.85, opacity: 0, y: 30 }}
+            exit={{ scale: 0.98, opacity: 0, y: 24 }}
             transition={{ type: 'spring', damping: 22, stiffness: 300 }}
-            className="w-full max-w-sm rounded-3xl bg-card border border-border p-8 text-center space-y-6 shadow-2xl"
+            className="mx-auto w-full max-w-sm rounded-2xl bg-card border border-border p-5 text-center space-y-4 shadow-2xl pointer-events-auto"
           >
             {/* Animated bell icon */}
             <motion.div
@@ -72,9 +72,9 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
                 rotate: [0, -8, 8, -4, 0],
               }}
               transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
-              className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mx-auto"
+              className="w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center mx-auto"
             >
-              <Bell className="h-10 w-10 text-primary" />
+              <Bell className="h-7 w-7 text-primary" />
             </motion.div>
 
             {/* Copy */}
@@ -92,7 +92,7 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
               <Button
                 onClick={handleEnable}
                 disabled={isLoading || !isSupported}
-                className="w-full h-12 text-base font-bold rounded-xl"
+                className="w-full h-11 text-sm font-bold rounded-xl"
               >
                 {isLoading ? (
                   <motion.div

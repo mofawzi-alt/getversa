@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Sparkles } from 'lucide-react';
 
 const EXPLORE_UNLOCKED_KEY = 'versa_explore_unlocked';
@@ -19,16 +19,26 @@ interface ExploreUnlockPopupProps {
 }
 
 export default function ExploreUnlockPopup({ open, onClose }: ExploreUnlockPopupProps) {
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()} modal={false}>
-      <DialogContent className="sm:max-w-xs text-center border-primary/20">
+    createPortal(
+      <div className="fixed inset-x-0 bottom-0 z-[90] p-4 pb-safe pointer-events-none">
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
+          initial={{ opacity: 0, y: 24, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="flex flex-col items-center gap-4 py-4"
+          className="mx-auto flex w-full max-w-xs flex-col items-center gap-4 rounded-2xl border border-primary/20 bg-card p-5 text-center shadow-lg pointer-events-auto"
         >
-          <div className="text-5xl">🎉</div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-7 top-7 text-muted-foreground hover:text-foreground"
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <div className="text-5xl" aria-hidden="true">🎉</div>
           <h2 className="text-xl font-display font-bold text-foreground">
             You've unlocked Explore Mode
           </h2>
@@ -43,7 +53,8 @@ export default function ExploreUnlockPopup({ open, onClose }: ExploreUnlockPopup
             Let's Go
           </Button>
         </motion.div>
-      </DialogContent>
-    </Dialog>
+      </div>,
+      document.body,
+    )
   );
 }
