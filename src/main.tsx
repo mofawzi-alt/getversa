@@ -3,7 +3,6 @@ import { HelmetProvider } from "react-helmet-async";
 import "./lib/nativeOAuthBridge"; // Must run before anything else
 import "./lib/authRedirectCapture";
 import "./index.css";
-import App from "./App.tsx";
 import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { SplashScreen } from "@capacitor/splash-screen";
@@ -16,11 +15,12 @@ declare global {
 
 const isNativeApp = Capacitor?.isNativePlatform?.() === true;
 
-if (isNativeApp) {
+const notifyCapgoAppReady = () => {
+  if (!isNativeApp) return;
   void CapacitorUpdater.notifyAppReady().catch((err) => {
     console.warn("[CapacitorUpdater] notifyAppReady failed", err);
   });
-}
+};
 
 const hideNativeSplash = (fadeOutDuration = 150) => {
   if (!isNativeApp) return;
@@ -32,6 +32,9 @@ const hideNativeSplash = (fadeOutDuration = 150) => {
 if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
   console.info("[Versa] Native OAuth bridge handled callback before app boot.");
 } else {
+  notifyCapgoAppReady();
+
+  void import("./App.tsx").then(({ default: App }) => {
   if (isNativeApp) {
     void import("@capacitor/status-bar")
       .then(({ StatusBar, Style }) =>
@@ -52,4 +55,5 @@ if (window.__VERSA_NATIVE_OAUTH_BRIDGE_ACTIVE__) {
   );
 
   requestAnimationFrame(() => hideNativeSplash());
+  });
 }
