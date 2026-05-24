@@ -14,6 +14,7 @@ const requiredSourceFiles = [
   'package.json',
   'src',
   'capacitor.config.ts',
+  '.env',
   'public/app-icon-1024.png',
   'scripts/capacitor-ios-post-sync.mjs',
   'scripts/ios-sync-verbose.mjs',
@@ -23,6 +24,13 @@ for (const relativePath of requiredSourceFiles) {
   if (!fs.existsSync(path.join(root, relativePath))) {
     fail(`Missing ${relativePath}`);
   }
+}
+
+const envText = fs.readFileSync(path.join(root, '.env'), 'utf8');
+const missingEnvKeys = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_PROJECT_ID']
+  .filter((key) => !new RegExp(`^${key}=.+`, 'm').test(envText));
+if (missingEnvKeys.length > 0) {
+  fail(`Missing local app configuration in .env: ${missingEnvKeys.join(', ')}. Copy .env from the working project folder before building iOS.`);
 }
 
 const capConfig = fs.readFileSync(path.join(root, 'capacitor.config.ts'), 'utf8');
