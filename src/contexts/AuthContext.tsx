@@ -271,6 +271,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // On native, INITIAL_SESSION can arrive as null before the Keychain-backed
+      // restore runs. Do not render the app as logged out/zeroed until the
+      // native fallback has had a chance to restore the real session.
+      if (!nextSession && onNative && event === 'INITIAL_SESSION') {
+        return;
+      }
+
       // Accept SIGNED_IN, INITIAL_SESSION, and TOKEN_REFRESHED as "deliberate"
       // when our ref is set — Supabase can emit any of these after a native
       // session restore on iOS cold-start.
