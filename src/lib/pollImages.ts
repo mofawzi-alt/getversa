@@ -31,7 +31,7 @@ export function getPublicPollImageUrl(fileName: string) {
 
 const NATIVE_SAFE_FALLBACK_IMAGE = '/polls/lipton-office-fix.png';
 
-export function getNativeSafeImageSrc(url?: string | null, fallback = NATIVE_SAFE_FALLBACK_IMAGE) {
+export function getNativeSafeImageSrc(url?: string | null, fallback: string | null = NATIVE_SAFE_FALLBACK_IMAGE) {
   const resolvedUrl = resolvePollMediaUrl(url);
   if (isNativeWebView() && isWebpImageUrl(resolvedUrl)) return fallback;
   return resolvedUrl || fallback;
