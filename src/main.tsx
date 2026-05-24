@@ -102,7 +102,17 @@ const runNativeBootTasks = () => {
     }
   })();
 
-  // 2) Keep hiding the native splash from multiple lifecycle moments.
+  // 2) Tell Capgo the OTA bundle loaded OK (prevents auto-rollback).
+  void (async () => {
+    try {
+      const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
+      await CapacitorUpdater.notifyAppReady();
+    } catch (err) {
+      console.warn("[CapacitorUpdater] notifyAppReady failed", err);
+    }
+  })();
+
+  // 3) Keep hiding the native splash from multiple lifecycle moments.
   hideNativeSplash(120);
 
   // Do not initialize notification/deep-link/keyboard helpers at cold launch.
