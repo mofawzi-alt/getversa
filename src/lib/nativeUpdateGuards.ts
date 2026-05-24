@@ -1,6 +1,5 @@
-// OTA updates are intentionally disabled while debugging iOS freeze loops.
-// Keep these exported functions as no-ops so existing auth/boot code can call
-// them safely without importing Capgo or triggering bundle reload behavior.
+// Native OTA updates are intentionally removed while debugging iOS freeze loops.
+// Keep these exported functions as no-ops so existing auth code can call them safely.
 
 export const markNativeBundleReady = () => {
   return;
