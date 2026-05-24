@@ -26,7 +26,7 @@ export function getPublicPollImageUrl(fileName: string) {
   return `${POLL_IMAGE_BASE_PATH}/${encodeURIComponent(fileName.toLowerCase())}`;
 }
 
-const NATIVE_SAFE_FALLBACK_IMAGE = '/polls/lipton-office-fix.jpg';
+const NATIVE_SAFE_FALLBACK_IMAGE = '/polls/lipton-office-fix.png';
 
 // Reliable Unsplash fallback images that always load in browsers. In the iOS
 // native WebView we avoid remote fallbacks because CDNs can still negotiate
