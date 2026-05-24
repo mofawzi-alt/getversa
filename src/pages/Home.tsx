@@ -52,7 +52,7 @@ import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/compon
 import NotificationPrompt, { hasSeenNotifPrompt } from '@/components/onboarding/NotificationPrompt';
 import { isWelcomeTourDone } from '@/components/onboarding/FirstTimeWelcomeTour';
 
-import { getOptimizedPollImageSrc, getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
+import { getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import PollCardSkeleton from '@/components/poll/PollCardSkeleton';
 import { useDailyQueue } from '@/hooks/useDailyQueue';
@@ -847,19 +847,6 @@ function LiveDebatesList({
       setImmersiveMode(false);
     };
   }, []);
-
-  // Preload first 6 live-debate cards' images so the first scrolls feel instant.
-  useEffect(() => {
-    displayLivePolls.slice(0, 4).forEach((p, idx) => {
-      [p.image_a_url, p.image_b_url].forEach((url) => {
-        if (!url) return;
-        const img = new Image();
-        img.decoding = 'async';
-        if (idx < 2) (img as any).fetchPriority = 'high';
-        img.src = getOptimizedPollImageSrc(url, { width: 900, height: 1200, quality: idx < 2 ? 74 : 68 }) || url;
-      });
-    });
-  }, [displayLivePolls]);
 
   const repeatedPolls = useMemo(() => {
     if (displayLivePolls.length === 0) return [];

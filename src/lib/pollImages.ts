@@ -4,6 +4,24 @@ const POLL_IMAGE_BASE_PATH = '/polls';
 const GENERATED_ASSET_ORIGIN = 'https://getversa.app';
 // Cache version removed — browser caching now relies on natural HTTP cache headers
 
+function isNativeWebView() {
+  try {
+    return window.location.protocol === 'capacitor:';
+  } catch {
+    return false;
+  }
+}
+
+function isWebpImageUrl(url?: string | null) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url, 'https://getversa.app');
+    return /\.webp$/i.test(parsed.pathname) || parsed.searchParams.get('format')?.toLowerCase() === 'webp';
+  } catch {
+    return /\.webp(?:[?#]|$)/i.test(url);
+  }
+}
+
 export function getPublicPollImageUrl(fileName: string) {
   return `${POLL_IMAGE_BASE_PATH}/${encodeURIComponent(fileName.toLowerCase())}`;
 }
@@ -1001,6 +1019,7 @@ function slugify(value?: string | null) {
 function getLocalImageByName(fileName?: string | null) {
   if (!fileName) return undefined;
   const normalizedFileName = fileName.toLowerCase();
+  if (isNativeWebView() && /\.webp$/i.test(normalizedFileName)) return undefined;
   return /\.(png|jpe?g|webp|avif)$/i.test(normalizedFileName)
     ? getPublicPollImageUrl(normalizedFileName)
     : undefined;
@@ -1047,6 +1066,9 @@ export function getOptimizedPollImageSrc(
     parsed.searchParams.set('height', String(options.height ?? 1200));
     parsed.searchParams.set('resize', options.resize ?? 'cover');
     parsed.searchParams.set('quality', String(options.quality ?? 72));
+    // iOS WKWebView is crashing on WebP decode in the native app. The storage
+    // image transformer auto-negotiates WebP unless we explicitly opt out.
+    if (isNativeWebView()) parsed.searchParams.set('format', 'origin');
     return parsed.toString();
   } catch {
     return resolvedUrl;
@@ -1089,6 +1111,9 @@ export function getPollDisplayImageSrc(params: PollImageParams) {
 
   // Any valid absolute URL from the database takes priority — storage, Unsplash, CDN, etc.
   if (resolvedImageUrl && /^https?:\/\//i.test(resolvedImageUrl)) {
+    if (isNativeWebView() && isWebpImageUrl(resolvedImageUrl)) {
+      return params.genericFallback || getGenericFallback(params.option || params.question);
+    }
     // Return URL as-is — let the browser cache naturally.
     // Previously we appended a cache-buster (?v=...) which forced re-downloads
     // on every session and caused images to appear "not loading" on slower connections.
