@@ -63,7 +63,9 @@ function detectCountry(): string {
     if (tz.includes('Gaza') || tz.includes('Hebron')) return 'Palestine';
     if (tz.includes('Aden')) return 'Yemen';
     if (tz.includes('Cairo')) return 'Egypt';
-  } catch {}
+  } catch {
+    // Timezone detection is best-effort only.
+  }
   return '';
 }
 
@@ -77,7 +79,9 @@ const PENDING_SIGNUP_PROFILE_KEY = 'versa.pending_signup_profile';
 const savePendingSignupProfile = (emailAddress: string, metadata: Record<string, string>) => {
   try {
     localStorage.setItem(PENDING_SIGNUP_PROFILE_KEY, JSON.stringify({ email: emailAddress.toLowerCase(), metadata }));
-  } catch {}
+  } catch {
+    // If storage is unavailable, signup can still continue.
+  }
 };
 
 const getPendingSignupProfile = (emailAddress: string) => {
@@ -92,7 +96,9 @@ const getPendingSignupProfile = (emailAddress: string) => {
 };
 
 const clearPendingSignupProfile = () => {
-  try { localStorage.removeItem(PENDING_SIGNUP_PROFILE_KEY); } catch {}
+  try { localStorage.removeItem(PENDING_SIGNUP_PROFILE_KEY); } catch {
+    // Storage cleanup is best-effort.
+  }
 };
 
 const selectClass = "flex h-10 w-full rounded-md border border-input bg-secondary/80 px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-foreground appearance-none cursor-pointer border-border/50 focus:border-accent focus:ring-accent/30";
@@ -288,7 +294,8 @@ export default function Auth() {
       }
 
       if (!createdSession) {
-        const repeatedSignup = Array.isArray((createdUser as any)?.identities) && (createdUser as any).identities.length === 0;
+        const repeatedSignupUser = createdUser as { identities?: unknown[] } | null;
+        const repeatedSignup = Array.isArray(repeatedSignupUser?.identities) && repeatedSignupUser.identities.length === 0;
         if (repeatedSignup) {
           toast.error('This email already has an account. Sign in with Google/Apple or use Forgot password.');
         } else {
