@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Lock, CheckCircle2, Sparkles, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getPollDisplayImageSrc } from '@/lib/pollImages';
 
 interface CampaignInfo {
   id: string;
@@ -105,6 +106,8 @@ export default function FocusGroup() {
   );
   const currentPoll = remainingPolls[currentIdx];
   const progressPct = polls.length > 0 ? Math.round((myVotes.length / polls.length) * 100) : 0;
+  const currentImageA = currentPoll ? getPollDisplayImageSrc({ imageUrl: currentPoll.image_a_url, option: currentPoll.option_a, question: currentPoll.question, side: 'A' }) : null;
+  const currentImageB = currentPoll ? getPollDisplayImageSrc({ imageUrl: currentPoll.image_b_url, option: currentPoll.option_b, question: currentPoll.question, side: 'B' }) : null;
 
   // Auto-mark accepted on first visit if status is 'invited'
   useEffect(() => {
@@ -307,8 +310,8 @@ export default function FocusGroup() {
                 disabled={submitting}
                 className="aspect-[3/4] rounded-2xl border border-border bg-muted/40 overflow-hidden flex flex-col active:scale-95 transition disabled:opacity-50"
               >
-                {currentPoll.image_a_url ? (
-                  <img src={currentPoll.image_a_url} alt={currentPoll.option_a} className="flex-1 w-full object-cover" />
+                {currentImageA ? (
+                  <img src={currentImageA} alt={currentPoll.option_a} className="flex-1 w-full object-cover" />
                 ) : (
                   <div className="flex-1 bg-gradient-to-br from-green-100 to-green-200" />
                 )}
@@ -320,8 +323,8 @@ export default function FocusGroup() {
                 disabled={submitting}
                 className="aspect-[3/4] rounded-2xl border border-border bg-muted/40 overflow-hidden flex flex-col active:scale-95 transition disabled:opacity-50"
               >
-                {currentPoll.image_b_url ? (
-                  <img src={currentPoll.image_b_url} alt={currentPoll.option_b} className="flex-1 w-full object-cover" />
+                {currentImageB ? (
+                  <img src={currentImageB} alt={currentPoll.option_b} className="flex-1 w-full object-cover" />
                 ) : (
                   <div className="flex-1 bg-gradient-to-br from-blue-100 to-blue-200" />
                 )}

@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { resolveTasteStoryEmoji } from '@/lib/archetypeEmoji';
+import { getNativeSafeImageSrc } from '@/lib/pollImages';
 
 interface Props {
   open: boolean;
@@ -352,7 +353,8 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
   const content = storyContent(story, fallbackPoll);
   const timeAgo = formatDistanceToNow(new Date(story.created_at), { addSuffix: true });
   const theme = STORY_THEMES[story.story_type] || STORY_THEMES.poll_result;
-  const hasImage = !!(content.bg || story.image_url);
+  const safeStoryImage = getNativeSafeImageSrc(content.bg || story.image_url, null);
+  const hasImage = !!safeStoryImage;
   const ThemeIcon = theme.icon;
 
   return createPortal(
@@ -425,7 +427,7 @@ export default function UserStoryViewer({ open, group, onClose, onViewed, onDele
         {hasImage ? (
           <>
             <img
-              src={content.bg || story.image_url!}
+              src={safeStoryImage!}
               alt=""
               className="absolute inset-0 w-full h-full object-cover scale-105 blur-[1px]"
             />

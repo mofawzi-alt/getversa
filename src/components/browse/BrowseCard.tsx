@@ -4,6 +4,7 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import { usePollReactions } from '@/hooks/usePollReactions';
 import { getCategoryColorClass, mapToVersaCategory } from '@/lib/categoryMeta';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
+import { getNativeSafeImageSrc } from '@/lib/pollImages';
 
 export interface DemoTag {
   emoji: string;
@@ -188,7 +189,8 @@ export default function BrowseCard({
   const topInset = safeAreaTop ? 'env(safe-area-inset-top, 0px)' : '0px';
 
   // Image used to bleed into the card surface (so the pic feels like the whole card)
-  const surfaceImg = poll.image_a_url || poll.image_b_url || winnerImg;
+  const surfaceImg = getNativeSafeImageSrc(poll.image_a_url || poll.image_b_url || winnerImg, '') || undefined;
+  const safeWinnerImg = getNativeSafeImageSrc(winnerImg, '') || null;
   const categoryColorClass = poll.category ? getCategoryColorClass(mapToVersaCategory(poll.category)) : chipBg;
 
   return (
@@ -442,7 +444,7 @@ export default function BrowseCard({
               <ShareToStoryButton
                 variant="icon"
                 storyType="poll_result"
-                imageUrl={winnerImg}
+                imageUrl={safeWinnerImg}
                 content={{
                   poll_id: poll.id,
                   question: poll.question,

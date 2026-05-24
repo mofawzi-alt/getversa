@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useUserStories, type UserStoryType } from '@/hooks/useUserStories';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { getNativeSafeImageSrc } from '@/lib/pollImages';
 
 interface ShareToStoryButtonProps {
   storyType: UserStoryType;
@@ -27,8 +28,18 @@ export default function ShareToStoryButton({
   if (!user) return null;
 
   const handleShare = () => {
+    const safeImageUrl = getNativeSafeImageSrc(imageUrl, null);
+    const safeContent = {
+      ...content,
+      image_url: getNativeSafeImageSrc(content.image_url, safeImageUrl || null),
+      image_a_url: getNativeSafeImageSrc(content.image_a_url, null),
+      image_b_url: getNativeSafeImageSrc(content.image_b_url, null),
+      card_image: getNativeSafeImageSrc(content.card_image, null),
+      icon_url: getNativeSafeImageSrc(content.icon_url, null),
+    };
+
     postStory(
-      { story_type: storyType, content, image_url: imageUrl },
+      { story_type: storyType, content: safeContent, image_url: safeImageUrl },
       {
         onSuccess: () => setShared(true),
       }
