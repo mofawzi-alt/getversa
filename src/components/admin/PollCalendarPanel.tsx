@@ -117,22 +117,35 @@ export default function PollCalendarPanel() {
       const { rows: parsed, errors } = parseCalendarCsv(text);
       if (errors.length) throw new Error(errors.join(' • '));
       if (!parsed.length) throw new Error('No rows found');
-      // Append mode: keep all existing rows, just add the new ones.
-      // Only protection: skip rows whose date already has a *published* poll
-      // AND that exact question already exists (avoid pure duplicates).
-      const dates = parsed.map((p) => p.release_date);
-      const { data: existing, error: fetchErr } = await supabase
-        .from('poll_calendar')
-        .select('release_date, question, status')
-        .in('release_date', dates);
-      if (fetchErr) throw fetchErr;
 
-      const existingKeys = new Set(
-        (existing || []).map((r) => `${r.release_date}::${r.question.trim().toLowerCase()}`)
-      );
+      const normalize = (s: string) =>
+        (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
 
+      // Dedupe globally:
+      // 1) Against every existing poll_calendar row (any date, any status)
+      // 2) Against every question already in the published polls table
+      const [{ data: existingCal, error: calErr }, { data: existingPolls, error: pollErr }] =
+        await Promise.all([
+          supabase.from('poll_calendar').select('question'),
+          supabase.from('polls').select('question'),
+        ]);
+      if (calErr) throw calErr;
+      if (pollErr) throw pollErr;
+
+      const existingKeys = new Set<string>([
+        ...((existingCal || []).map((r: any) => normalize(r.question))),
+        ...((existingPolls || []).map((r: any) => normalize(r.question))),
+      ]);
+
+      // Also dedupe within the uploaded batch itself
+      const batchSeen = new Set<string>();
       const inserts = parsed
-        .filter((p) => !existingKeys.has(`${p.release_date}::${p.question.trim().toLowerCase()}`))
+        .filter((p) => {
+          const key = normalize(p.question);
+          if (existingKeys.has(key) || batchSeen.has(key)) return false;
+          batchSeen.add(key);
+          return true;
+        })
         .map((p) => ({ ...p, status: 'draft', created_by: user!.id }));
 
       if (inserts.length) {
@@ -150,6 +163,7 @@ export default function PollCalendarPanel() {
     },
     onError: (e: any) => toast.error(e.message),
   });
+
 
   const updateRow = useMutation({
     mutationFn: async (patch: Partial<CalendarRow> & { id: string }) => {
