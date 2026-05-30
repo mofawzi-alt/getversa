@@ -37,11 +37,32 @@ export function useUserStories() {
   const { data: storyGroups = [], isLoading } = useQuery({
     queryKey: ['user-stories-feed', user?.id],
     queryFn: async () => {
-      // Fetch non-expired stories. Database visibility rules decide which public,
-      // followed/friend, and own stories this viewer is allowed to see.
+      if (!user) return [];
+
+      const [{ data: follows }, { data: friendships }] = await Promise.all([
+        supabase
+          .from('follows')
+          .select('following_id')
+          .eq('follower_id', user.id),
+        supabase
+          .from('friendships')
+          .select('requester_id, recipient_id')
+          .eq('status', 'accepted')
+          .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`),
+      ]);
+
+      const followedIds = (follows || []).map((f: any) => f.following_id);
+      const friendIds = (friendships || []).map((f: any) =>
+        f.requester_id === user.id ? f.recipient_id : f.requester_id
+      );
+      const allowedUserIds = [...new Set([user.id, ...followedIds, ...friendIds])];
+
+      // Fetch own + followed/friend stories only. Pulse, editorial, and category
+      // circles are loaded separately and still show for everyone in the row.
       const { data: stories, error } = await supabase
         .from('user_stories')
         .select('*')
+        .in('user_id', allowedUserIds)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false })
         .limit(200);
