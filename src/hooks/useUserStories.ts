@@ -9,12 +9,17 @@ export interface UserStory {
   id: string;
   user_id: string;
   story_type: UserStoryType;
-  content: Record<string, any>;
+  content: Record<string, unknown>;
   image_url: string | null;
   views_count: number;
   created_at: string;
   expires_at: string;
 }
+
+type FollowRow = { following_id: string };
+type FriendshipRow = { requester_id: string; recipient_id: string };
+type PublicProfileRow = { id: string; username?: string | null; avatar_url?: string | null };
+type StoryViewRow = { story_id: string };
 
 export interface UserStoryWithAuthor extends UserStory {
   author_username: string | null;
@@ -51,8 +56,8 @@ export function useUserStories() {
           .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`),
       ]);
 
-      const followedIds = (follows || []).map((f: any) => f.following_id);
-      const friendIds = (friendships || []).map((f: any) =>
+      const followedIds = ((follows || []) as FollowRow[]).map((f) => f.following_id);
+      const friendIds = ((friendships || []) as FriendshipRow[]).map((f) =>
         f.requester_id === user.id ? f.recipient_id : f.requester_id
       );
       const allowedUserIds = [...new Set([user.id, ...followedIds, ...friendIds])];
@@ -71,14 +76,14 @@ export function useUserStories() {
       if (!stories || stories.length === 0) return [];
 
       // Get unique user IDs
-      const userIds = [...new Set(stories.map((s: any) => s.user_id))];
+      const userIds = [...new Set((stories as UserStory[]).map((s) => s.user_id))];
 
       // Fetch author profiles
       const { data: profiles } = await supabase
         .rpc('get_public_profiles', { user_ids: userIds });
 
-      const profileMap = new Map<string, any>();
-      (profiles || []).forEach((p: any) => {
+      const profileMap = new Map<string, PublicProfileRow>();
+      ((profiles || []) as PublicProfileRow[]).forEach((p) => {
         profileMap.set(p.id, p);
       });
 
@@ -89,7 +94,7 @@ export function useUserStories() {
           .from('user_story_views')
           .select('story_id')
           .eq('viewer_id', user.id);
-        viewedIds = new Set((views || []).map((v: any) => v.story_id));
+        viewedIds = new Set(((views || []) as StoryViewRow[]).map((v) => v.story_id));
       }
 
       // Group by user
@@ -131,7 +136,7 @@ export function useUserStories() {
   const postStory = useMutation({
     mutationFn: async (params: {
       story_type: UserStoryType;
-      content: Record<string, any>;
+      content: Record<string, unknown>;
       image_url?: string | null;
     }) => {
       if (!user) throw new Error('Not authenticated');
