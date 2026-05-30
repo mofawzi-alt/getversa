@@ -24,7 +24,7 @@ export default function LiveVoterCount() {
       <Users className="h-3 w-3 text-muted-foreground" />
       <span className="text-[11px] text-muted-foreground">
         <span className="font-bold text-foreground tabular-nums">{count.toLocaleString()}</span>{' '}
-        {count === 1 ? 'person' : 'people'} voted in the last hour
+        {count === 1 ? 'vote' : 'votes'} in the last hour
       </span>
     </motion.div>
   );
