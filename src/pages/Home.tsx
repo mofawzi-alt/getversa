@@ -1976,7 +1976,7 @@ export default function Home() {
         {/* ═══ DAILY PULSE STRIP ═══ */}
         <DailyPulseStrip />
 
-        <PulseStoriesRow />
+        
 
         {/* ═══ LIVE ASKS CARDS ═══ */}
         <LiveAskCards />
@@ -2021,6 +2021,7 @@ export default function Home() {
         </div>
 
         {/* Ask Egypt daily featured question removed */}
+        <PulseStoriesRow />
 
         {/* Live voter count strip — "X people voted in the last hour" */}
         <LiveVoterCount />
