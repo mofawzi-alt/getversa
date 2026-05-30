@@ -37,26 +37,11 @@ export function useUserStories() {
   const { data: storyGroups = [], isLoading } = useQuery({
     queryKey: ['user-stories-feed', user?.id],
     queryFn: async () => {
-      // Build list of user IDs whose stories we can see: self + followed users
-      let allowedUserIds: string[] = [];
-      if (user) {
-        allowedUserIds.push(user.id);
-        const { data: follows } = await supabase
-          .from('follows')
-          .select('following_id')
-          .eq('follower_id', user.id);
-        if (follows?.length) {
-          allowedUserIds.push(...follows.map((f: any) => f.following_id));
-        }
-      }
-
-      if (allowedUserIds.length === 0) return [];
-
-      // Fetch non-expired stories only from followed users + self
+      // Fetch non-expired stories. Database visibility rules decide which public,
+      // followed/friend, and own stories this viewer is allowed to see.
       const { data: stories, error } = await supabase
         .from('user_stories')
         .select('*')
-        .in('user_id', allowedUserIds)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false })
         .limit(200);
