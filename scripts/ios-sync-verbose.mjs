@@ -30,7 +30,7 @@ function assertVersaNativePreflight() {
     'FacebookAppID',
     'FacebookClientToken',
     'FacebookDisplayName',
-    'fb2213580409403160',
+    'fb2007451096553445',
   ];
   const missingPermissionKeys = requiredKeys.filter((key) => !postSync.includes(key));
   const identityMatches = capConfig.includes("appId: 'com.Versa.app'") && capConfig.includes("appName: 'Versa'");
