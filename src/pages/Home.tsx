@@ -2021,6 +2021,7 @@ export default function Home() {
         </div>
 
         {/* Ask Egypt daily featured question removed */}
+        <PulseStoriesRow />
 
         {/* Live voter count strip — "X people voted in the last hour" */}
         <LiveVoterCount />
