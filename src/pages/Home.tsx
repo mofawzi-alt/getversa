@@ -1976,7 +1976,7 @@ export default function Home() {
         {/* ═══ DAILY PULSE STRIP ═══ */}
         <DailyPulseStrip />
 
-        <PulseStoriesRow />
+        
 
         {/* ═══ LIVE ASKS CARDS ═══ */}
         <LiveAskCards />
