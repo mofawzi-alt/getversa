@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +16,11 @@ export interface UserStory {
   created_at: string;
   expires_at: string;
 }
+
+type FollowRow = { following_id: string };
+type FriendshipRow = { requester_id: string; recipient_id: string };
+type PublicProfileRow = { id: string; username?: string | null; avatar_url?: string | null };
+type StoryViewRow = { story_id: string };
 
 export interface UserStoryWithAuthor extends UserStory {
   author_username: string | null;
@@ -37,11 +43,32 @@ export function useUserStories() {
   const { data: storyGroups = [], isLoading } = useQuery({
     queryKey: ['user-stories-feed', user?.id],
     queryFn: async () => {
-      // Fetch non-expired stories. Database visibility rules decide which public,
-      // followed/friend, and own stories this viewer is allowed to see.
+      if (!user) return [];
+
+      const [{ data: follows }, { data: friendships }] = await Promise.all([
+        supabase
+          .from('follows')
+          .select('following_id')
+          .eq('follower_id', user.id),
+        supabase
+          .from('friendships')
+          .select('requester_id, recipient_id')
+          .eq('status', 'accepted')
+          .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`),
+      ]);
+
+      const followedIds = ((follows || []) as FollowRow[]).map((f) => f.following_id);
+      const friendIds = ((friendships || []) as FriendshipRow[]).map((f) =>
+        f.requester_id === user.id ? f.recipient_id : f.requester_id
+      );
+      const allowedUserIds = [...new Set([user.id, ...followedIds, ...friendIds])];
+
+      // Fetch own + followed/friend stories only. Pulse, editorial, and category
+      // circles are loaded separately and still show for everyone in the row.
       const { data: stories, error } = await supabase
         .from('user_stories')
         .select('*')
+        .in('user_id', allowedUserIds)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false })
         .limit(200);
@@ -50,14 +77,14 @@ export function useUserStories() {
       if (!stories || stories.length === 0) return [];
 
       // Get unique user IDs
-      const userIds = [...new Set(stories.map((s: any) => s.user_id))];
+      const userIds = [...new Set((stories as UserStory[]).map((s) => s.user_id))];
 
       // Fetch author profiles
       const { data: profiles } = await supabase
         .rpc('get_public_profiles', { user_ids: userIds });
 
-      const profileMap = new Map<string, any>();
-      (profiles || []).forEach((p: any) => {
+      const profileMap = new Map<string, PublicProfileRow>();
+      ((profiles || []) as PublicProfileRow[]).forEach((p) => {
         profileMap.set(p.id, p);
       });
 
@@ -68,7 +95,7 @@ export function useUserStories() {
           .from('user_story_views')
           .select('story_id')
           .eq('viewer_id', user.id);
-        viewedIds = new Set((views || []).map((v: any) => v.story_id));
+        viewedIds = new Set(((views || []) as StoryViewRow[]).map((v) => v.story_id));
       }
 
       // Group by user
