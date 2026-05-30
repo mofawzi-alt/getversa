@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,7 +10,7 @@ export interface UserStory {
   id: string;
   user_id: string;
   story_type: UserStoryType;
-  content: Record<string, unknown>;
+  content: Record<string, any>;
   image_url: string | null;
   views_count: number;
   created_at: string;
@@ -136,7 +137,7 @@ export function useUserStories() {
   const postStory = useMutation({
     mutationFn: async (params: {
       story_type: UserStoryType;
-      content: Record<string, unknown>;
+      content: Record<string, any>;
       image_url?: string | null;
     }) => {
       if (!user) throw new Error('Not authenticated');
