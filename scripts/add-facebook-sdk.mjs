@@ -6,6 +6,7 @@
  * What it does:
  *   1. Adds `pod 'FBSDKCoreKit'` to ios/App/Podfile
  *   2. Adds Facebook SDK initialization to ios/App/App/AppDelegate.swift
+ *   3. Adds an explicit app activation event so Meta receives "app opened" signals
  *
  * Run from project root:
  *   node scripts/add-facebook-sdk.mjs
@@ -80,6 +81,29 @@ function patchAppDelegate() {
     }
   } else {
     console.log('• Facebook openURL handler already present');
+  }
+
+  // 4. Explicit app activation event for Meta Events Manager
+  if (!src.includes('AppEvents.shared.activateApp()')) {
+    if (src.includes('func applicationDidBecomeActive(_ application: UIApplication)')) {
+      src = src.replace(
+        /(func applicationDidBecomeActive\(_ application: UIApplication\)[^{]*\{\s*\n)/,
+        `$1        AppEvents.shared.activateApp()\n`,
+      );
+      console.log('✓ Added Facebook app activation event to existing applicationDidBecomeActive');
+    } else {
+      const activationMethod = `\n    func applicationDidBecomeActive(_ application: UIApplication) {\n        AppEvents.shared.activateApp()\n    }\n`;
+      const lastClassBrace = src.lastIndexOf('\n}');
+      if (lastClassBrace === -1) {
+        console.log('⚠ Could not find class closing brace — add AppEvents.shared.activateApp() manually');
+      } else {
+        src = `${src.slice(0, lastClassBrace)}${activationMethod}${src.slice(lastClassBrace)}`;
+        console.log('✓ Added Facebook app activation event');
+      }
+    }
+    changed = true;
+  } else {
+    console.log('• Facebook app activation event already present');
   }
 
   if (changed) {
