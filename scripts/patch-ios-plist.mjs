@@ -60,7 +60,14 @@ const fbKeys = {
 };
 
 for (const [key, value] of Object.entries(fbKeys)) {
-  if (!plist.includes(`<key>${key}</key>`)) {
+  const keyRegex = new RegExp(`(<key>${key}<\\/key>\\s*)<string>[^<]*<\\/string>`);
+  if (keyRegex.test(plist)) {
+    if (!plist.includes(`<key>${key}</key>\n\t<string>${value}</string>`)) {
+      plist = plist.replace(keyRegex, `$1<string>${value}</string>`);
+      console.log(`✓ Corrected ${key}`);
+      patched = true;
+    }
+  } else {
     const entry = `\t<key>${key}</key>\n\t<string>${value}</string>\n`;
     plist = plist.replace('</dict>\n</plist>', entry + '</dict>\n</plist>');
     console.log(`✓ Added ${key}`);

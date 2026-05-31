@@ -118,13 +118,20 @@ function ensureInfoPlistKeys() {
   ];
 
   for (const { key, value } of stringKeys) {
-    if (!plist.includes(`<key>${key}</key>`)) {
+    const keyRegex = new RegExp(`(<key>${key}<\\/key>\\s*)<string>[^<]*<\\/string>`);
+    if (keyRegex.test(plist)) {
+      if (!plist.includes(`<key>${key}</key>\n\t<string>${value}</string>`)) {
+        plist = plist.replace(keyRegex, `$1<string>${value}</string>`);
+        changed = true;
+        console.log(`[cap-sync] Corrected ${key} in root of Info.plist`);
+      } else {
+        console.log(`[cap-sync] ${key} already correct`);
+      }
+    } else {
       const insertion = `\t<key>${key}</key>\n\t<string>${value}</string>\n`;
       plist = plist.replace('</dict>\n</plist>', `${insertion}</dict>\n</plist>`);
       changed = true;
       console.log(`[cap-sync] Added ${key} to root of Info.plist`);
-    } else {
-      console.log(`[cap-sync] ${key} already present`);
     }
   }
 

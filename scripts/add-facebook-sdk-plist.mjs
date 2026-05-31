@@ -21,6 +21,25 @@ if (!fs.existsSync(plistPath)) {
 let plist = fs.readFileSync(plistPath, 'utf8');
 let changed = false;
 
+function ensureStringKey(key, value) {
+  const expectedXml = `<string>${value}</string>`;
+  const keyRegex = new RegExp(`(<key>${key}<\\/key>\\s*)<string>[^<]*<\\/string>`);
+  if (keyRegex.test(plist)) {
+    if (!plist.includes(`<key>${key}</key>\n\t${expectedXml}`)) {
+      plist = plist.replace(keyRegex, `$1${expectedXml}`);
+      changed = true;
+      console.log(`✓ Corrected ${key}`);
+    } else {
+      console.log(`• ${key} already correct`);
+    }
+    return;
+  }
+  plist = plist.replace(/<\/dict>\s*<\/plist>\s*$/,
+    `\t<key>${key}</key>\n\t${expectedXml}\n</dict>\n</plist>\n`);
+  changed = true;
+  console.log(`✓ Added ${key}`);
+}
+
 function ensureKey(key, valueXml) {
   if (plist.includes(`<key>${key}</key>`)) {
     console.log(`• ${key} already present`);
@@ -32,9 +51,9 @@ function ensureKey(key, valueXml) {
   console.log(`✓ Added ${key}`);
 }
 
-ensureKey('FacebookAppID', `<string>${FB_APP_ID}</string>`);
-ensureKey('FacebookClientToken', `<string>${FB_CLIENT_TOKEN}</string>`);
-ensureKey('FacebookDisplayName', `<string>${FB_DISPLAY_NAME}</string>`);
+ensureStringKey('FacebookAppID', FB_APP_ID);
+ensureStringKey('FacebookClientToken', FB_CLIENT_TOKEN);
+ensureStringKey('FacebookDisplayName', FB_DISPLAY_NAME);
 ensureKey('FacebookAutoLogAppEventsEnabled', `<true/>`);
 ensureKey('FacebookAdvertiserIDCollectionEnabled', `<true/>`);
 
