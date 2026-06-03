@@ -517,7 +517,20 @@ export default function PollCreationForm({
               <option value="afternoon">Afternoon (2 PM Cairo)</option>
               <option value="evening">Evening (7 PM Cairo)</option>
             </select>
-          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="sendPush"
+            checked={sendPush}
+            onChange={(e) => setSendPush(e.target.checked)}
+            className="h-4 w-4 rounded border-border"
+          />
+          <Label htmlFor="sendPush" className="text-sm">
+            🔔 Send push notification to all users on create
+          </Label>
+        </div>
         </div>
 
         <div className="flex items-center gap-3">
