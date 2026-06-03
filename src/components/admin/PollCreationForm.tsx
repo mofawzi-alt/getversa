@@ -231,11 +231,26 @@ export default function PollCreationForm({
         queryClient.invalidateQueries({ queryKey: ['all-polls-for-campaign'] });
       }
       toast.success(campaignId ? 'Poll created and added to campaign!' : 'Poll created with 24-hour window!');
-      
+
+      // Fire-and-forget push broadcast to all users (bypasses governance cap)
+      if (sendPush && poll) {
+        supabase.functions.invoke('send-push-notification', {
+          body: {
+            title: 'New poll on Versa 🔥',
+            body: poll.question,
+            url: `/home?poll=${poll.id}`,
+            poll_id: poll.id,
+          },
+        }).then(({ error }) => {
+          if (error) toast.error('Poll created, but push failed: ' + error.message);
+          else toast.success('Push sent to all users');
+        });
+      }
+
       if (onSuccess && poll) {
         onSuccess(poll.id, poll.option_a, poll.option_b);
       }
-      
+
       onClose();
     },
     onError: () => {
