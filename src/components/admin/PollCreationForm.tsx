@@ -60,6 +60,7 @@ export default function PollCreationForm({
   const [expiryType, setExpiryType] = useState<'evergreen' | 'trending' | 'campaign'>('trending');
   const [batchSlot, setBatchSlot] = useState<'morning' | 'afternoon' | 'evening' | 'none'>('none');
   const [isHotTake, setIsHotTake] = useState(false);
+  const [sendPush, setSendPush] = useState(true);
   
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
@@ -230,11 +231,26 @@ export default function PollCreationForm({
         queryClient.invalidateQueries({ queryKey: ['all-polls-for-campaign'] });
       }
       toast.success(campaignId ? 'Poll created and added to campaign!' : 'Poll created with 24-hour window!');
-      
+
+      // Fire-and-forget push broadcast to all users (bypasses governance cap)
+      if (sendPush && poll) {
+        supabase.functions.invoke('send-push-notification', {
+          body: {
+            title: 'New poll on Versa 🔥',
+            body: poll.question,
+            url: `/home?poll=${poll.id}`,
+            poll_id: poll.id,
+          },
+        }).then(({ error }) => {
+          if (error) toast.error('Poll created, but push failed: ' + error.message);
+          else toast.success('Push sent to all users');
+        });
+      }
+
       if (onSuccess && poll) {
         onSuccess(poll.id, poll.option_a, poll.option_b);
       }
-      
+
       onClose();
     },
     onError: () => {
@@ -501,7 +517,20 @@ export default function PollCreationForm({
               <option value="afternoon">Afternoon (2 PM Cairo)</option>
               <option value="evening">Evening (7 PM Cairo)</option>
             </select>
-          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="sendPush"
+            checked={sendPush}
+            onChange={(e) => setSendPush(e.target.checked)}
+            className="h-4 w-4 rounded border-border"
+          />
+          <Label htmlFor="sendPush" className="text-sm">
+            🔔 Send push notification to all users on create
+          </Label>
+        </div>
         </div>
 
         <div className="flex items-center gap-3">
