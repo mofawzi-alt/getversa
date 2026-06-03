@@ -60,6 +60,7 @@ export default function PollCreationForm({
   const [expiryType, setExpiryType] = useState<'evergreen' | 'trending' | 'campaign'>('trending');
   const [batchSlot, setBatchSlot] = useState<'morning' | 'afternoon' | 'evening' | 'none'>('none');
   const [isHotTake, setIsHotTake] = useState(false);
+  const [sendPush, setSendPush] = useState(true);
   
   const imageAInputRef = useRef<HTMLInputElement>(null);
   const imageBInputRef = useRef<HTMLInputElement>(null);
