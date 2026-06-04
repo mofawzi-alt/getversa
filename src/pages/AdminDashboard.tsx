@@ -497,10 +497,8 @@ function PollsTab({ showForm, setShowForm, userId, onInsightClick }: { showForm:
       } else if (expiryType === 'campaign') {
         // End of current month (default; campaigns sync via DB trigger when set)
         endsAt = new Date(startsAt.getFullYear(), startsAt.getMonth() + 1, 0, 23, 59, 59);
-      } else if (isDailyPoll) {
-        endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       }
-      // Evergreen: no ends_at
+      // Evergreen: no ends_at (Daily Poll flag controls feed visibility, NOT expiry)
       
       const { error } = await supabase
         .from('polls')
