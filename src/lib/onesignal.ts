@@ -70,7 +70,11 @@ function normalizeNotificationRoute(value: unknown): string | null {
 }
 
 function dispatchNotificationRoute(route: string) {
-  try { localStorage.setItem('versa_pending_notification_route', route); } catch { undefined; }
+  try {
+    localStorage.setItem('versa_pending_notification_route', route);
+  } catch {
+    console.warn('[OneSignal] unable to store pending notification route');
+  }
   window.dispatchEvent(new CustomEvent('versa:navigate', { detail: { url: route } }));
 }
 
