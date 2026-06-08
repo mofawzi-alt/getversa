@@ -70,7 +70,7 @@ export async function initOneSignal(userId: string | null) {
   }
 
   try {
-    const mod = await import('onesignal-cordova-plugin');
+    const mod = await import(/* @vite-ignore */ 'onesignal-cordova-plugin');
     const OneSignal = (mod as any).default ?? mod;
 
     OneSignal.initialize(ONESIGNAL_APP_ID);
