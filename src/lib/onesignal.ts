@@ -6,11 +6,48 @@ const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
 let initialized = false;
 let clickListenerRegistered = false;
 
+type NotificationClickEvent = {
+  notification?: {
+    additionalData?: Record<string, unknown>;
+    launchURL?: unknown;
+    url?: unknown;
+  };
+  result?: { url?: unknown };
+  url?: unknown;
+};
+
+type PushSubscriptionChangeEvent = {
+  current?: { id?: string };
+};
+
+type OneSignalNative = {
+  initialize: (appId: string) => void;
+  Notifications: {
+    requestPermission: (fallbackToSettings: boolean) => Promise<boolean>;
+    addEventListener: (event: 'click', listener: (event: NotificationClickEvent) => void) => void;
+  };
+  User: {
+    pushSubscription: {
+      addEventListener: (event: 'change', listener: (event: PushSubscriptionChangeEvent) => void) => void;
+      getIdAsync?: () => Promise<string | null | undefined>;
+      id?: string | null;
+    };
+  };
+  login: (userId: string) => void;
+  logout: () => void;
+};
+
+type OneSignalModule = OneSignalNative & { default?: OneSignalNative };
+
 // Dynamic, Vite-ignored loader so the web build never tries to resolve the
 // native-only Cordova plugin. Only invoked on native iOS/Android.
 const ONESIGNAL_MODULE_ID = 'onesignal-cordova-plugin';
-async function loadOneSignalModule(): Promise<any> {
-  return await import(/* @vite-ignore */ ONESIGNAL_MODULE_ID);
+async function loadOneSignalModule(): Promise<OneSignalModule> {
+  return await import(/* @vite-ignore */ ONESIGNAL_MODULE_ID) as OneSignalModule;
+}
+
+function getOneSignal(mod: OneSignalModule): OneSignalNative {
+  return mod.default ?? mod;
 }
 
 function normalizeNotificationRoute(value: unknown): string | null {
@@ -33,7 +70,11 @@ function normalizeNotificationRoute(value: unknown): string | null {
 }
 
 function dispatchNotificationRoute(route: string) {
-  try { localStorage.setItem('versa_pending_notification_route', route); } catch {}
+  try {
+    localStorage.setItem('versa_pending_notification_route', route);
+  } catch {
+    console.warn('[OneSignal] unable to store pending notification route');
+  }
   window.dispatchEvent(new CustomEvent('versa:navigate', { detail: { url: route } }));
 }
 
@@ -45,10 +86,10 @@ export function openNotificationRoute(route: string) {
   dispatchNotificationRoute(route);
 }
 
-function registerNotificationClickListener(OneSignal: any) {
+function registerNotificationClickListener(OneSignal: OneSignalNative) {
   if (clickListenerRegistered) return;
   try {
-    OneSignal.Notifications.addEventListener('click', (event: any) => {
+    OneSignal.Notifications.addEventListener('click', (event) => {
       const additionalData = event?.notification?.additionalData ?? {};
       const route = normalizeNotificationRoute(
         additionalData.url ??
@@ -65,6 +106,15 @@ function registerNotificationClickListener(OneSignal: any) {
   }
 }
 
+async function requestPermissionAndSync(OneSignal: OneSignalNative, userId: string | null) {
+  const granted = await OneSignal.Notifications.requestPermission(true);
+  console.log('[OneSignal] permission granted:', granted);
+  if (granted && userId) {
+    await syncSubscription(OneSignal, userId);
+  }
+  return granted === true;
+}
+
 /**
  * Initialize OneSignal on native iOS/Android. No-op on web.
  * Call this once after the user is authenticated.
@@ -78,19 +128,14 @@ export async function initOneSignal(userId: string | null) {
 
   try {
     const mod = await loadOneSignalModule();
-    const OneSignal = (mod as any).default ?? mod;
+    const OneSignal = getOneSignal(mod);
 
     OneSignal.initialize(ONESIGNAL_APP_ID);
     registerNotificationClickListener(OneSignal);
 
-    OneSignal.Notifications.requestPermission(true).then(async (granted: boolean) => {
-      console.log('[OneSignal] permission granted:', granted);
-      if (granted && userId) {
-        await syncSubscription(OneSignal, userId);
-      }
-    });
+    await requestPermissionAndSync(OneSignal, userId);
 
-    OneSignal.User.pushSubscription.addEventListener('change', async (event: any) => {
+    OneSignal.User.pushSubscription.addEventListener('change', async (event) => {
       console.log('[OneSignal] subscription change:', event);
       const id = event?.current?.id;
       if (id && userId) {
@@ -105,10 +150,27 @@ export async function initOneSignal(userId: string | null) {
   }
 }
 
+export async function requestOneSignalPermission(userId: string | null) {
+  if (!Capacitor.isNativePlatform()) return false;
+
+  if (!initialized) {
+    await initOneSignal(userId);
+  }
+
+  try {
+    const mod = await loadOneSignalModule();
+    const OneSignal = getOneSignal(mod);
+    return await requestPermissionAndSync(OneSignal, userId);
+  } catch (err) {
+    console.error('[OneSignal] requestPermission failed:', err);
+    return false;
+  }
+}
+
 async function linkUserId(userId: string) {
   try {
     const mod = await loadOneSignalModule();
-    const OneSignal = (mod as any).default ?? mod;
+    const OneSignal = getOneSignal(mod);
     OneSignal.login(userId);
     await syncSubscription(OneSignal, userId);
   } catch (err) {
@@ -116,7 +178,7 @@ async function linkUserId(userId: string) {
   }
 }
 
-async function syncSubscription(OneSignal: any, userId: string) {
+async function syncSubscription(OneSignal: OneSignalNative, userId: string) {
   try {
     const id = OneSignal.User.pushSubscription.getIdAsync
       ? await OneSignal.User.pushSubscription.getIdAsync()
@@ -149,7 +211,7 @@ export async function logoutOneSignal() {
   if (!Capacitor.isNativePlatform() || !initialized) return;
   try {
     const mod = await loadOneSignalModule();
-    const OneSignal = (mod as any).default ?? mod;
+    const OneSignal = getOneSignal(mod);
     OneSignal.logout();
   } catch (err) {
     console.error('[OneSignal] logout failed:', err);
