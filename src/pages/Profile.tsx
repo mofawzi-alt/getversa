@@ -222,7 +222,6 @@ export default function Profile() {
           )}
         </div>
 
-        <NotificationToggle />
 
         {/* Compatibility Link */}
         <ShareCompatibilityCard />
