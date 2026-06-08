@@ -223,7 +223,7 @@ async function linkUserId(userId: string) {
   }
 }
 
-async function syncSubscription(OneSignal: any, userId: string) {
+async function syncSubscription(OneSignal: OneSignalPlugin, userId: string) {
   try {
     const id = await getPushSubscriptionId(OneSignal);
     if (id) await saveSubscription(userId, id);
