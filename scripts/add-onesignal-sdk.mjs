@@ -54,12 +54,7 @@ const ONESIGNAL_INIT_BLOCK = `        // ---- OneSignal init (added by add-onesi
         }, fallbackToSettings: true)
 
         // Persist player ID so the JS side can read it via Capacitor Preferences.
-        OneSignal.User.pushSubscription.addObserver { state in
-            if let id = state.current.id {
-                let prefs = UserDefaults(suiteName: "CapacitorStorage") ?? UserDefaults.standard
-                prefs.set(id, forKey: "onesignal_player_id")
-            }
-        }
+        OneSignal.User.pushSubscription.addObserver(PushSubObserver.shared)
 
         // If the JS side already wrote a user id before the SDK initialized,
         // call login immediately.
@@ -87,6 +82,20 @@ const ONESIGNAL_INIT_BLOCK = `        // ---- OneSignal init (added by add-onesi
 
 `;
 
+const ONESIGNAL_OBSERVER_CLASS = `
+// ---- OneSignal push subscription observer (added by add-onesignal-sdk.mjs) ----
+class PushSubObserver: NSObject, OSPushSubscriptionObserver {
+    static let shared = PushSubObserver()
+    func onPushSubscriptionDidChange(state: OSPushSubscriptionChangedState) {
+        if let id = state.current.id {
+            let prefs = UserDefaults(suiteName: "CapacitorStorage") ?? UserDefaults.standard
+            prefs.set(id, forKey: "onesignal_player_id")
+        }
+    }
+}
+// ---- end OneSignal observer ----
+`;
+
 function patchAppDelegate() {
   if (!fs.existsSync(appDelegatePath)) {
     console.error('❌ AppDelegate.swift not found.');
@@ -104,22 +113,33 @@ function patchAppDelegate() {
     console.log('• OneSignalFramework import already present');
   }
 
-  // 2. Inject init block into didFinishLaunchingWithOptions
-  if (!src.includes('OneSignal.initialize("' + ONESIGNAL_APP_ID + '"')) {
-    src = src.replace(
-      /func application\(_ application: UIApplication, didFinishLaunchingWithOptions[^{]*\{\s*\n/,
-      (match) => `${match}${ONESIGNAL_INIT_BLOCK}`,
-    );
+  // 2. Remove any previously-injected init block (so we can re-inject the
+  //    corrected version on re-run).
+  const initBlockRegex = /\n? *\/\/ ---- OneSignal init \(added by add-onesignal-sdk\.mjs\) ----[\s\S]*?\/\/ ---- end OneSignal init ----\n?/;
+  if (initBlockRegex.test(src)) {
+    src = src.replace(initBlockRegex, '\n');
     changed = true;
-    console.log('✓ Added OneSignal initialization in didFinishLaunchingWithOptions');
-  } else {
-    console.log('• OneSignal initialization already present');
+    console.log('• Removed previous OneSignal init block');
   }
 
-  if (changed) {
-    fs.writeFileSync(appDelegatePath, src);
-    console.log('✓ AppDelegate.swift patched');
+  // 3. Inject fresh init block into didFinishLaunchingWithOptions
+  src = src.replace(
+    /func application\(_ application: UIApplication, didFinishLaunchingWithOptions[^{]*\{\s*\n/,
+    (match) => `${match}${ONESIGNAL_INIT_BLOCK}`,
+  );
+  changed = true;
+  console.log('✓ Injected OneSignal initialization');
+
+  // 4. Remove any previous observer class then re-append
+  const observerRegex = /\n?\/\/ ---- OneSignal push subscription observer \(added by add-onesignal-sdk\.mjs\) ----[\s\S]*?\/\/ ---- end OneSignal observer ----\n?/;
+  if (observerRegex.test(src)) {
+    src = src.replace(observerRegex, '\n');
   }
+  src = src.trimEnd() + '\n' + ONESIGNAL_OBSERVER_CLASS + '\n';
+  console.log('✓ Injected PushSubObserver class');
+
+  fs.writeFileSync(appDelegatePath, src);
+  console.log('✓ AppDelegate.swift patched');
 }
 
 patchPodfile();
