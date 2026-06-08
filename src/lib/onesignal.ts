@@ -40,8 +40,11 @@ type OneSignalNative = {
 async function getOneSignal(): Promise<OneSignalNative | null> {
   if (!Capacitor.isNativePlatform()) return null;
   try {
-    // Dynamic import so the web bundle never tries to resolve the native-only plugin.
-    const mod = await import(/* @vite-ignore */ 'onesignal-cordova-plugin');
+    // Hide the specifier from Vite's static analyzer so the web bundle
+    // never tries to resolve the native-only Cordova plugin.
+    const pluginName = ['onesignal', 'cordova', 'plugin'].join('-');
+    const dynamicImport = new Function('m', 'return import(m)') as (m: string) => Promise<unknown>;
+    const mod = await dynamicImport(pluginName);
     return ((mod as { default?: unknown }).default ?? mod) as OneSignalNative;
   } catch (err) {
     console.error('[OneSignal] failed to load native plugin:', err);
