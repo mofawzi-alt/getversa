@@ -162,8 +162,12 @@ export async function initOneSignal(userId: string | null) {
   }
 }
 
-export async function requestOneSignalPermission(userId: string | null) {
-  if (!Capacitor.isNativePlatform()) return false;
+export type RequestPermissionResult =
+  | { ok: true }
+  | { ok: false; reason: 'not-native' | 'plugin-missing' | 'denied' | 'error'; message?: string };
+
+export async function requestOneSignalPermission(userId: string | null): Promise<RequestPermissionResult> {
+  if (!Capacitor.isNativePlatform()) return { ok: false, reason: 'not-native' };
 
   if (!initialized) {
     await initOneSignal(userId);
@@ -171,11 +175,19 @@ export async function requestOneSignalPermission(userId: string | null) {
 
   try {
     const OneSignal = await getOneSignal();
-    if (!OneSignal) return false;
-    return await requestPermissionAndSync(OneSignal, userId);
+    if (!OneSignal) {
+      return {
+        ok: false,
+        reason: 'plugin-missing',
+        message: 'OneSignal native plugin not found. Run `npx cap sync ios` and rebuild in Xcode.',
+      };
+    }
+    const granted = await requestPermissionAndSync(OneSignal, userId);
+    return granted ? { ok: true } : { ok: false, reason: 'denied', message: 'Permission denied in iOS Settings.' };
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     console.error('[OneSignal] requestPermission failed:', err);
-    return false;
+    return { ok: false, reason: 'error', message };
   }
 }
 
