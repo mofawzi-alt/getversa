@@ -82,10 +82,10 @@ export function openNotificationRoute(route: string) {
   dispatchNotificationRoute(route);
 }
 
-function registerNotificationClickListener(OneSignal: any) {
+function registerNotificationClickListener(OneSignal: OneSignalNative) {
   if (clickListenerRegistered) return;
   try {
-    OneSignal.Notifications.addEventListener('click', (event: any) => {
+    OneSignal.Notifications.addEventListener('click', (event) => {
       const additionalData = event?.notification?.additionalData ?? {};
       const route = normalizeNotificationRoute(
         additionalData.url ??
@@ -102,7 +102,7 @@ function registerNotificationClickListener(OneSignal: any) {
   }
 }
 
-async function requestPermissionAndSync(OneSignal: any, userId: string | null) {
+async function requestPermissionAndSync(OneSignal: OneSignalNative, userId: string | null) {
   const granted = await OneSignal.Notifications.requestPermission(true);
   console.log('[OneSignal] permission granted:', granted);
   if (granted && userId) {
@@ -124,14 +124,14 @@ export async function initOneSignal(userId: string | null) {
 
   try {
     const mod = await loadOneSignalModule();
-    const OneSignal = (mod as any).default ?? mod;
+    const OneSignal = getOneSignal(mod);
 
     OneSignal.initialize(ONESIGNAL_APP_ID);
     registerNotificationClickListener(OneSignal);
 
     await requestPermissionAndSync(OneSignal, userId);
 
-    OneSignal.User.pushSubscription.addEventListener('change', async (event: any) => {
+    OneSignal.User.pushSubscription.addEventListener('change', async (event) => {
       console.log('[OneSignal] subscription change:', event);
       const id = event?.current?.id;
       if (id && userId) {
@@ -155,7 +155,7 @@ export async function requestOneSignalPermission(userId: string | null) {
 
   try {
     const mod = await loadOneSignalModule();
-    const OneSignal = (mod as any).default ?? mod;
+    const OneSignal = getOneSignal(mod);
     return await requestPermissionAndSync(OneSignal, userId);
   } catch (err) {
     console.error('[OneSignal] requestPermission failed:', err);
@@ -166,7 +166,7 @@ export async function requestOneSignalPermission(userId: string | null) {
 async function linkUserId(userId: string) {
   try {
     const mod = await loadOneSignalModule();
-    const OneSignal = (mod as any).default ?? mod;
+    const OneSignal = getOneSignal(mod);
     OneSignal.login(userId);
     await syncSubscription(OneSignal, userId);
   } catch (err) {
