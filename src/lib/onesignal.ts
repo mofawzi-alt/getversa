@@ -39,17 +39,27 @@ type OneSignalNative = {
 
 async function getOneSignal(): Promise<OneSignalNative | null> {
   if (!Capacitor.isNativePlatform()) return null;
-  try {
-    // Hide the specifier from Vite's static analyzer so the web bundle
-    // never tries to resolve the native-only Cordova plugin.
-    const pluginName = ['onesignal', 'cordova', 'plugin'].join('-');
-    const dynamicImport = new Function('m', 'return import(m)') as (m: string) => Promise<unknown>;
-    const mod = await dynamicImport(pluginName);
-    return ((mod as { default?: unknown }).default ?? mod) as OneSignalNative;
-  } catch (err) {
-    console.error('[OneSignal] failed to load native plugin:', err);
-    return null;
+  // The Cordova plugin injects itself onto the global scope at native runtime
+  // (window.OneSignal / window.cordova.plugins.OneSignal). We read from there
+  // because the web bundle is served from a URL — bare-specifier imports
+  // can't be resolved at runtime inside the WebView.
+  const w = window as unknown as {
+    OneSignal?: OneSignalNative;
+    plugins?: { OneSignal?: OneSignalNative };
+    cordova?: { plugins?: { OneSignal?: OneSignalNative } };
+  };
+  // Wait briefly for cordova_plugins to finish wiring up on cold start.
+  for (let i = 0; i < 20; i++) {
+    const found =
+      w.OneSignal ??
+      w.cordova?.plugins?.OneSignal ??
+      w.plugins?.OneSignal ??
+      null;
+    if (found) return found;
+    await new Promise((r) => setTimeout(r, 100));
   }
+  console.error('[OneSignal] native plugin global not found on window');
+  return null;
 }
 
 function normalizeNotificationRoute(value: unknown): string | null {
