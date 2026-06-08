@@ -65,6 +65,15 @@ function registerNotificationClickListener(OneSignal: any) {
   }
 }
 
+async function requestPermissionAndSync(OneSignal: any, userId: string | null) {
+  const granted = await OneSignal.Notifications.requestPermission(true);
+  console.log('[OneSignal] permission granted:', granted);
+  if (granted && userId) {
+    await syncSubscription(OneSignal, userId);
+  }
+  return granted === true;
+}
+
 /**
  * Initialize OneSignal on native iOS/Android. No-op on web.
  * Call this once after the user is authenticated.
@@ -83,12 +92,7 @@ export async function initOneSignal(userId: string | null) {
     OneSignal.initialize(ONESIGNAL_APP_ID);
     registerNotificationClickListener(OneSignal);
 
-    OneSignal.Notifications.requestPermission(true).then(async (granted: boolean) => {
-      console.log('[OneSignal] permission granted:', granted);
-      if (granted && userId) {
-        await syncSubscription(OneSignal, userId);
-      }
-    });
+    await requestPermissionAndSync(OneSignal, userId);
 
     OneSignal.User.pushSubscription.addEventListener('change', async (event: any) => {
       console.log('[OneSignal] subscription change:', event);
@@ -102,6 +106,23 @@ export async function initOneSignal(userId: string | null) {
     initialized = true;
   } catch (err) {
     console.error('[OneSignal] init failed:', err);
+  }
+}
+
+export async function requestOneSignalPermission(userId: string | null) {
+  if (!Capacitor.isNativePlatform()) return false;
+
+  if (!initialized) {
+    await initOneSignal(userId);
+  }
+
+  try {
+    const mod = await loadOneSignalModule();
+    const OneSignal = (mod as any).default ?? mod;
+    return await requestPermissionAndSync(OneSignal, userId);
+  } catch (err) {
+    console.error('[OneSignal] requestPermission failed:', err);
+    return false;
   }
 }
 
