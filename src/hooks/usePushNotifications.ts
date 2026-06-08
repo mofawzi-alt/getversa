@@ -81,6 +81,15 @@ function isStandaloneMode() {
   return window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 }
 
+function isNativeRuntime() {
+  try {
+    const win = window as Window & { Capacitor?: { isNativePlatform?: () => boolean } };
+    return Capacitor?.isNativePlatform?.() === true || win.Capacitor?.isNativePlatform?.() === true;
+  } catch {
+    return false;
+  }
+}
+
 export function usePushNotifications() {
   const { user } = useAuth();
   const [isSupported, setIsSupported] = useState(false);
@@ -88,7 +97,7 @@ export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isLoading, setIsLoading] = useState(false);
   const [supportMessage, setSupportMessage] = useState('Not supported in this browser');
-  const isNativeApp = Capacitor?.isNativePlatform?.() === true;
+  const isNativeApp = isNativeRuntime();
 
   const checkSubscription = useCallback(async () => {
     if (!user) {
