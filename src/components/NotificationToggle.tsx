@@ -65,16 +65,15 @@ function NativeNotificationToggle() {
       toast.success('Notifications enabled');
       return;
     }
-      const label =
-        result.reason === 'plugin-missing'
-          ? 'OneSignal plugin not installed in iOS build'
-          : result.reason === 'denied'
-            ? 'Permission denied — enable in iOS Settings → Versa → Notifications'
-            : result.reason === 'not-native'
-              ? 'Notifications only work in the iOS app'
-              : 'Notifications were not enabled';
-      toast.error(label, { description: result.message, duration: 8000 });
-    }
+    const label =
+      result.reason === 'plugin-missing'
+        ? 'OneSignal plugin not installed in iOS build'
+        : result.reason === 'denied'
+          ? 'Permission denied — enable in iOS Settings → Versa → Notifications'
+          : result.reason === 'not-native'
+            ? 'Notifications only work in the iOS app'
+            : 'Notifications were not enabled';
+    toast.error(label, { description: result.message, duration: 8000 });
   };
 
   return (
