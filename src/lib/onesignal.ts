@@ -24,6 +24,9 @@ type OneSignalNative = {
   initialize: (appId: string) => void;
   Notifications: {
     requestPermission: (fallbackToSettings: boolean) => Promise<boolean>;
+    getPermissionAsync?: () => Promise<boolean>;
+    canRequestPermission?: () => Promise<boolean>;
+    permissionNative?: () => Promise<number>;
     addEventListener: (event: 'click', listener: (event: NotificationClickEvent) => void) => void;
   };
   User: {
@@ -31,6 +34,7 @@ type OneSignalNative = {
       addEventListener: (event: 'change', listener: (event: PushSubscriptionChangeEvent) => void) => void;
       getIdAsync?: () => Promise<string | null | undefined>;
       id?: string | null;
+      optIn?: () => void;
     };
   };
   login: (userId: string) => void;
@@ -119,7 +123,15 @@ function registerNotificationClickListener(OneSignal: OneSignalNative) {
 }
 
 async function requestPermissionAndSync(OneSignal: OneSignalNative, userId: string | null) {
-  const granted = await OneSignal.Notifications.requestPermission(true);
+  const before = await OneSignal.Notifications.getPermissionAsync?.().catch(() => false);
+  const canPrompt = await OneSignal.Notifications.canRequestPermission?.().catch(() => null);
+  const nativePermission = await OneSignal.Notifications.permissionNative?.().catch(() => null);
+  console.log('[OneSignal] permission before request:', { before, canPrompt, nativePermission });
+
+  const requested = before === true ? true : await OneSignal.Notifications.requestPermission(true);
+  OneSignal.User.pushSubscription.optIn?.();
+
+  const granted = requested === true || await OneSignal.Notifications.getPermissionAsync?.().catch(() => false) === true;
   console.log('[OneSignal] permission granted:', granted);
   if (granted && userId) {
     await syncSubscription(OneSignal, userId);
@@ -144,8 +156,6 @@ export async function initOneSignal(userId: string | null) {
 
     OneSignal.initialize(ONESIGNAL_APP_ID);
     registerNotificationClickListener(OneSignal);
-
-    await requestPermissionAndSync(OneSignal, userId);
 
     OneSignal.User.pushSubscription.addEventListener('change', async (event) => {
       console.log('[OneSignal] subscription change:', event);
