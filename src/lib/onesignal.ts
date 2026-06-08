@@ -1,27 +1,17 @@
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
+import OneSignal, { LogLevel } from '@onesignal/capacitor-plugin';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * OneSignal native bridge for iOS (and Android — same shape).
- *
- * The native OneSignal SDK is initialized in AppDelegate.swift (via
- * scripts/add-onesignal-sdk.mjs). It:
- *   • Requests permission on first launch.
- *   • Writes the subscription/player id to UserDefaults under
- *     `CapacitorStorage` → key `onesignal_player_id`.
- *   • Watches `onesignal_pending_user_id` and calls OneSignal.login/logout
- *     whenever it changes.
- *
- * So the JS side here just:
- *   • Writes the current user id into Capacitor Preferences (native picks it up).
- *   • Polls/reads `onesignal_player_id` and saves it to Supabase.
- *
+ * OneSignal native bridge for iOS/Android.
  * On web, this whole module is a no-op (web push uses usePushNotifications).
  */
 
+const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
 const PLAYER_ID_KEY = 'onesignal_player_id';
 const PENDING_USER_ID_KEY = 'onesignal_pending_user_id';
+let initPromise: Promise<void> | null = null;
 
 function isNative(): boolean {
   return Capacitor?.isNativePlatform?.() === true;
@@ -29,7 +19,21 @@ function isNative(): boolean {
 
 export type RequestPermissionResult =
   | { ok: true }
-  | { ok: false; reason: 'not-native' | 'plugin-missing' | 'denied' | 'error'; message?: string };
+  | { ok: false; reason: 'not-native' | 'denied' | 'error'; message?: string };
+
+async function ensureOneSignalInitialized(userId: string | null): Promise<void> {
+  if (!isNative()) return;
+  initPromise ??= (async () => {
+    OneSignal.Debug.setLogLevel(LogLevel.Warn);
+    await OneSignal.initialize(ONESIGNAL_APP_ID);
+  })();
+  await initPromise;
+
+  if (userId) {
+    await OneSignal.login(userId);
+    await Preferences.set({ key: PENDING_USER_ID_KEY, value: userId });
+  }
+}
 
 /**
  * Initialize the OneSignal link for this user.
@@ -38,10 +42,7 @@ export type RequestPermissionResult =
 export async function initOneSignal(userId: string | null): Promise<void> {
   if (!isNative()) return;
   try {
-    if (userId) {
-      await Preferences.set({ key: PENDING_USER_ID_KEY, value: userId });
-    }
-    // Try to capture the player id if native already produced one.
+    await ensureOneSignalInitialized(userId);
     await syncPlayerIdToSupabase(userId);
   } catch (err) {
     console.error('[OneSignal] initOneSignal failed', err);
