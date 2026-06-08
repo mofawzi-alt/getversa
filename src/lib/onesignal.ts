@@ -234,9 +234,10 @@ export async function getNativeOneSignalStatus(userId: string | null) {
   const granted = await readNativePermission(OneSignal);
   const subscriptionId = await getPushSubscriptionId(OneSignal);
   const optedIn = await isPushOptedIn(OneSignal);
+  const canRequest = await canRequestNativePermission(OneSignal);
   const permission: NotificationPermission = granted
     ? 'granted'
-    : canRequestNativePermission(OneSignal)
+    : canRequest
       ? 'default'
       : 'denied';
 
