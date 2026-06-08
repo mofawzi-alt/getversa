@@ -32,15 +32,8 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: 'never',
-    handleApplicationNotifications: false,
   },
   plugins: {
-    CapacitorUpdater: {
-      appId: 'com.Versa.app',
-      autoUpdate: 'onLaunch',
-      defaultChannel: 'production',
-      appReadyTimeout: 15000,
-    },
     StatusBar: {
       overlaysWebView: true,
       style: 'DARK',

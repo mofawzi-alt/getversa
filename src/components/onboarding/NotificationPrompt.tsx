@@ -1,22 +1,16 @@
-import { useEffect, useState } from 'react';
-import { Capacitor } from '@capacitor/core';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
-const PROMPT_KEY = 'versa_notif_prompt_shown_v2';
-const PROMPT_SESSION_KEY = 'versa_notif_prompt_session_v2';
+const PROMPT_KEY = 'versa_notif_prompt_shown';
+const PROMPT_SESSION_KEY = 'versa_notif_prompt_session';
 
 export function hasSeenNotifPrompt(): boolean {
   // If already subscribed, never show
-  if ('Notification' in window && Notification.permission === 'granted') {
+  if (Notification.permission === 'granted') {
     return true;
-  }
-  // Native app users may have an old "seen" flag from the broken prompt flow.
-  // Only suppress it for the current session so the enable popup can appear again after the OTA update.
-  if (Capacitor.isNativePlatform()) {
-    return sessionStorage.getItem(PROMPT_SESSION_KEY) === '1';
   }
   // If the user already chose “Maybe later”, do not block them again on app launch.
   return localStorage.getItem(PROMPT_KEY) === '1' || sessionStorage.getItem(PROMPT_SESSION_KEY) === '1';
@@ -33,14 +27,8 @@ interface NotificationPromptProps {
 }
 
 export default function NotificationPrompt({ open, onClose }: NotificationPromptProps) {
-  const { subscribe, isLoading, isSupported, isSubscribed, supportMessage } = usePushNotifications();
+  const { subscribe, isLoading, isSupported, supportMessage } = usePushNotifications();
   const [closing, setClosing] = useState(false);
-
-  useEffect(() => {
-    if (!open || !isSubscribed) return;
-    markNotifPromptSeen();
-    onClose();
-  }, [isSubscribed, onClose, open]);
 
   const handleEnable = async () => {
     const enabled = await subscribe();
@@ -126,7 +114,7 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
 
             {/* Platform hint */}
             <p className="text-[10px] text-muted-foreground/60">
-              {isSupported ? 'Works with Versa notifications' : supportMessage}
+              {isSupported ? 'Works on Safari, Chrome & all major browsers' : supportMessage}
             </p>
           </motion.div>
         </motion.div>
