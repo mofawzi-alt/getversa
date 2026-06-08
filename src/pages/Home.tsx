@@ -1404,8 +1404,8 @@ export default function Home() {
 
   // Re-trigger for existing users who haven't enabled push yet (once per session)
   useEffect(() => {
-    if (!user || !('Notification' in window)) return;
-    if (Notification.permission === 'granted') return;
+    if (!user) return;
+    if ('Notification' in window && Notification.permission === 'granted') return;
     if (hasSeenNotifPrompt()) return;
     // Delay so home screen loads first
     const timer = setTimeout(() => setShowNotifPrompt(true), 3000);

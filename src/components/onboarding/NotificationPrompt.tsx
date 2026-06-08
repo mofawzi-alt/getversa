@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ const PROMPT_SESSION_KEY = 'versa_notif_prompt_session';
 
 export function hasSeenNotifPrompt(): boolean {
   // If already subscribed, never show
-  if (Notification.permission === 'granted') {
+  if ('Notification' in window && Notification.permission === 'granted') {
     return true;
   }
   // If the user already chose “Maybe later”, do not block them again on app launch.
@@ -27,8 +27,14 @@ interface NotificationPromptProps {
 }
 
 export default function NotificationPrompt({ open, onClose }: NotificationPromptProps) {
-  const { subscribe, isLoading, isSupported, supportMessage } = usePushNotifications();
+  const { subscribe, isLoading, isSupported, isSubscribed, supportMessage } = usePushNotifications();
   const [closing, setClosing] = useState(false);
+
+  useEffect(() => {
+    if (!open || !isSubscribed) return;
+    markNotifPromptSeen();
+    onClose();
+  }, [isSubscribed, onClose, open]);
 
   const handleEnable = async () => {
     const enabled = await subscribe();
@@ -114,7 +120,7 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
 
             {/* Platform hint */}
             <p className="text-[10px] text-muted-foreground/60">
-              {isSupported ? 'Works on Safari, Chrome & all major browsers' : supportMessage}
+              {isSupported ? 'Works with Versa notifications' : supportMessage}
             </p>
           </motion.div>
         </motion.div>
