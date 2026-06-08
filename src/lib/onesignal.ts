@@ -1,6 +1,5 @@
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
-import OneSignalCordova from 'onesignal-cordova-plugin';
 
 const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
 
@@ -38,8 +37,16 @@ type OneSignalNative = {
   logout: () => void;
 };
 
-function getOneSignal(): OneSignalNative {
-  return OneSignalCordova as OneSignalNative;
+async function getOneSignal(): Promise<OneSignalNative | null> {
+  if (!Capacitor.isNativePlatform()) return null;
+  try {
+    // Dynamic import so the web bundle never tries to resolve the native-only plugin.
+    const mod = await import(/* @vite-ignore */ 'onesignal-cordova-plugin');
+    return ((mod as { default?: unknown }).default ?? mod) as OneSignalNative;
+  } catch (err) {
+    console.error('[OneSignal] failed to load native plugin:', err);
+    return null;
+  }
 }
 
 function normalizeNotificationRoute(value: unknown): string | null {
