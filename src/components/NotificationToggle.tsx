@@ -1,24 +1,17 @@
 import { Bell, BellOff, Loader2 } from 'lucide-react';
-import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
-const isNative = Capacitor?.isNativePlatform?.() === true;
-
 /**
  * Smart notification toggle:
- *  • Web: uses Web Push (existing usePushNotifications hook)
- *  • Native iOS/Android: disabled until the app uses an SPM-ready push plugin.
+ *  • Web: uses Web Push
+ *  • Native iOS/Android: uses OneSignal through usePushNotifications
  */
 export function NotificationToggle() {
-  if (isNative) return <NativeNotificationToggle />;
-  return <WebNotificationToggle />;
+  return <PushNotificationToggle />;
 }
 
-// ─────────────────────────────────────────────────────────────────
-// WEB
-// ─────────────────────────────────────────────────────────────────
-function WebNotificationToggle() {
+function PushNotificationToggle() {
   const { isSupported, isSubscribed, isLoading, supportMessage, subscribe, unsubscribe } = usePushNotifications();
 
   if (!isSupported) {
@@ -45,31 +38,6 @@ function WebNotificationToggle() {
           disabled={isLoading}
         >
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSubscribed ? 'Disable' : 'Enable'}
-        </Button>
-      }
-    />
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────
-// NATIVE (OneSignal)
-// ─────────────────────────────────────────────────────────────────
-function NativeNotificationToggle() {
-  return (
-    <Row
-      icon={<Bell className="h-5 w-5 text-primary" />}
-      title="Push Notifications"
-      subtitle="Managed by iOS — change in Settings › Notifications › Versa"
-      action={
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            // Open the iOS Settings app to the Versa notification screen
-            try { window.open('app-settings:', '_self'); } catch {}
-          }}
-        >
-          Open Settings
         </Button>
       }
     />
