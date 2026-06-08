@@ -6,6 +6,13 @@ const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
 let initialized = false;
 let clickListenerRegistered = false;
 
+// Dynamic, Vite-ignored loader so the web build never tries to resolve the
+// native-only Cordova plugin. Only invoked on native iOS/Android.
+const ONESIGNAL_MODULE_ID = 'onesignal-cordova-plugin';
+async function loadOneSignalModule(): Promise<any> {
+  return await import(/* @vite-ignore */ ONESIGNAL_MODULE_ID);
+}
+
 function normalizeNotificationRoute(value: unknown): string | null {
   if (typeof value !== 'string' || !value.trim()) return null;
   const raw = value.trim();
@@ -70,7 +77,7 @@ export async function initOneSignal(userId: string | null) {
   }
 
   try {
-    const mod = await import(/* @vite-ignore */ 'onesignal-cordova-plugin');
+    const mod = await loadOneSignalModule();
     const OneSignal = (mod as any).default ?? mod;
 
     OneSignal.initialize(ONESIGNAL_APP_ID);
@@ -100,7 +107,7 @@ export async function initOneSignal(userId: string | null) {
 
 async function linkUserId(userId: string) {
   try {
-    const mod = await import('onesignal-cordova-plugin');
+    const mod = await loadOneSignalModule();
     const OneSignal = (mod as any).default ?? mod;
     OneSignal.login(userId);
     await syncSubscription(OneSignal, userId);
@@ -141,7 +148,7 @@ async function saveSubscription(userId: string, playerId: string) {
 export async function logoutOneSignal() {
   if (!Capacitor.isNativePlatform() || !initialized) return;
   try {
-    const mod = await import('onesignal-cordova-plugin');
+    const mod = await loadOneSignalModule();
     const OneSignal = (mod as any).default ?? mod;
     OneSignal.logout();
   } catch (err) {
