@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
-import OneSignal, { type PushSubscriptionChangedState } from '@onesignal/capacitor-plugin';
+import type OneSignalDefault from '@onesignal/capacitor-plugin';
+import type { PushSubscriptionChangedState } from '@onesignal/capacitor-plugin';
 import { supabase } from '@/integrations/supabase/client';
 
 const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
@@ -14,7 +15,7 @@ type OneSignalClickEvent = {
   url?: string;
 };
 
-type OneSignalPlugin = typeof OneSignal;
+type OneSignalPlugin = typeof OneSignalDefault;
 
 declare global {
   interface Window {
@@ -26,6 +27,7 @@ let initialized = false;
 let clickListenerRegistered = false;
 let subscriptionListenerRegistered = false;
 let activeUserId: string | null = null;
+let cachedPlugin: OneSignalPlugin | null = null;
 
 function isNativeRuntime() {
   try {
@@ -40,7 +42,15 @@ function isNativeRuntime() {
 
 async function loadOneSignal(): Promise<OneSignalPlugin | null> {
   if (!isNativeRuntime()) return null;
-  return OneSignal;
+  if (cachedPlugin) return cachedPlugin;
+  try {
+    const mod = await import('@onesignal/capacitor-plugin');
+    cachedPlugin = (mod.default ?? (mod as unknown as OneSignalPlugin)) as OneSignalPlugin;
+    return cachedPlugin;
+  } catch (err) {
+    console.error('[OneSignal] dynamic import failed:', err);
+    return null;
+  }
 }
 
 function normalizeNotificationRoute(value: unknown): string | null {
