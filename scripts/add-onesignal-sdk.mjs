@@ -54,12 +54,7 @@ const ONESIGNAL_INIT_BLOCK = `        // ---- OneSignal init (added by add-onesi
         }, fallbackToSettings: true)
 
         // Persist player ID so the JS side can read it via Capacitor Preferences.
-        OneSignal.User.pushSubscription.addObserver { state in
-            if let id = state.current.id {
-                let prefs = UserDefaults(suiteName: "CapacitorStorage") ?? UserDefaults.standard
-                prefs.set(id, forKey: "onesignal_player_id")
-            }
-        }
+        OneSignal.User.pushSubscription.addObserver(PushSubObserver.shared)
 
         // If the JS side already wrote a user id before the SDK initialized,
         // call login immediately.
@@ -85,6 +80,20 @@ const ONESIGNAL_INIT_BLOCK = `        // ---- OneSignal init (added by add-onesi
         }
         // ---- end OneSignal init ----
 
+`;
+
+const ONESIGNAL_OBSERVER_CLASS = `
+// ---- OneSignal push subscription observer (added by add-onesignal-sdk.mjs) ----
+class PushSubObserver: NSObject, OSPushSubscriptionObserver {
+    static let shared = PushSubObserver()
+    func onPushSubscriptionDidChange(state: OSPushSubscriptionChangedState) {
+        if let id = state.current.id {
+            let prefs = UserDefaults(suiteName: "CapacitorStorage") ?? UserDefaults.standard
+            prefs.set(id, forKey: "onesignal_player_id")
+        }
+    }
+}
+// ---- end OneSignal observer ----
 `;
 
 function patchAppDelegate() {
