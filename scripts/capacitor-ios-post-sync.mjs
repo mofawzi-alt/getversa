@@ -6,6 +6,8 @@ const iosDir = path.join(root, 'ios', 'App', 'App');
 const infoPlistPath = path.join(iosDir, 'Info.plist');
 const assetCatalogDir = path.join(iosDir, 'Assets.xcassets', 'AppIcon.appiconset');
 const sourceIconPath = path.join(root, 'public', 'app-icon-1024.png');
+const pbxprojPath = path.join(root, 'ios', 'App', 'App.xcodeproj', 'project.pbxproj');
+const entitlementsPath = path.join(iosDir, 'App.entitlements');
 
 function removeStaleCapgoArtifacts() {
   const stalePaths = [
@@ -187,6 +189,63 @@ function ensureInfoPlistKeys() {
   }
 }
 
+function ensurePushEntitlements() {
+  const entitlements = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>aps-environment</key>
+	<string>production</string>
+</dict>
+</plist>
+`;
+
+  if (!fs.existsSync(entitlementsPath) || fs.readFileSync(entitlementsPath, 'utf8') !== entitlements) {
+    fs.writeFileSync(entitlementsPath, entitlements, 'utf8');
+    console.log('[cap-sync] Restored iOS push notification entitlement');
+  }
+
+  let pbx = fs.readFileSync(pbxprojPath, 'utf8');
+  let changed = false;
+
+  if (!pbx.includes('SystemCapabilities = {')) {
+    pbx = pbx.replace(
+      /TargetAttributes = \{\n\s*([A-F0-9]{24}) = \{\n/,
+      (match) => `${match}					SystemCapabilities = {
+						com.apple.Push = {
+							enabled = 1;
+						};
+					};
+`,
+    );
+    changed = true;
+  } else if (!pbx.includes('com.apple.Push')) {
+    pbx = pbx.replace(
+      /SystemCapabilities = \{\n/,
+      `SystemCapabilities = {
+						com.apple.Push = {
+							enabled = 1;
+						};
+`,
+    );
+    changed = true;
+  }
+
+  if (!pbx.includes('CODE_SIGN_ENTITLEMENTS = App/App.entitlements;')) {
+    pbx = pbx.replace(
+      /(INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;\n)/g,
+      `$1				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
+`,
+    );
+    changed = true;
+  }
+
+  if (changed) {
+    fs.writeFileSync(pbxprojPath, pbx, 'utf8');
+    console.log('[cap-sync] Enabled iOS Push Notifications capability in Xcode project');
+  }
+}
+
 async function generateIcons() {
   if (!fs.existsSync(sourceIconPath)) {
     console.log('[cap-sync] Source app icon not found, skipping icon generation');
@@ -274,3 +333,4 @@ removeStaleCapgoArtifacts();
 await generateIcons();
 await generateSplash();
 ensureInfoPlistKeys();
+ensurePushEntitlements();
