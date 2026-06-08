@@ -122,16 +122,35 @@ function registerNotificationClickListener(OneSignal: OneSignalNative) {
   }
 }
 
+async function safeCall<T>(fn: (() => T | Promise<T>) | undefined): Promise<T | null> {
+  try {
+    if (typeof fn !== 'function') return null;
+    return await fn();
+  } catch {
+    return null;
+  }
+}
+
 async function requestPermissionAndSync(OneSignal: OneSignalNative, userId: string | null) {
-  const before = await OneSignal.Notifications.getPermissionAsync?.().catch(() => false);
-  const canPrompt = await OneSignal.Notifications.canRequestPermission?.().catch(() => null);
-  const nativePermission = await OneSignal.Notifications.permissionNative?.().catch(() => null);
+  const Notifications = OneSignal?.Notifications;
+  if (!Notifications || typeof Notifications.requestPermission !== 'function') {
+    console.error('[OneSignal] Notifications API not available on plugin global', {
+      hasNotifications: !!Notifications,
+      keys: Notifications ? Object.keys(Notifications) : [],
+    });
+    throw new Error('OneSignal Notifications API unavailable. Rebuild iOS app after `npx cap sync ios`.');
+  }
+
+  const before = await safeCall(Notifications.getPermissionAsync?.bind(Notifications));
+  const canPrompt = await safeCall(Notifications.canRequestPermission?.bind(Notifications));
+  const nativePermission = await safeCall(Notifications.permissionNative?.bind(Notifications));
   console.log('[OneSignal] permission before request:', { before, canPrompt, nativePermission });
 
-  const requested = before === true ? true : await OneSignal.Notifications.requestPermission(true);
-  OneSignal.User.pushSubscription.optIn?.();
+  const requested = before === true ? true : await Notifications.requestPermission(true);
+  try { OneSignal.User?.pushSubscription?.optIn?.(); } catch { /* noop */ }
 
-  const granted = requested === true || await OneSignal.Notifications.getPermissionAsync?.().catch(() => false) === true;
+  const after = await safeCall(Notifications.getPermissionAsync?.bind(Notifications));
+  const granted = requested === true || after === true;
   console.log('[OneSignal] permission granted:', granted);
   if (granted && userId) {
     await syncSubscription(OneSignal, userId);
