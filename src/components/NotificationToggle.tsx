@@ -57,13 +57,25 @@ function WebNotificationToggle() {
 function NativeNotificationToggle() {
   return (
     <Row
-      icon={<BellOff className="h-5 w-5 text-muted-foreground" />}
+      icon={<Bell className="h-5 w-5 text-primary" />}
       title="Push Notifications"
-      subtitle="Not available in this build"
-      action={<Button variant="outline" size="sm" disabled>Unavailable</Button>}
+      subtitle="Managed by iOS — change in Settings › Notifications › Versa"
+      action={
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            // Open the iOS Settings app to the Versa notification screen
+            try { window.open('app-settings:', '_self'); } catch {}
+          }}
+        >
+          Open Settings
+        </Button>
+      }
     />
   );
 }
+
 
 // ─────────────────────────────────────────────────────────────────
 function Row({
