@@ -2,8 +2,9 @@ import { Bell, BellOff, Loader2 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
-
-const isNative = Capacitor?.isNativePlatform?.() === true;
+import { useAuth } from '@/contexts/AuthContext';
+import { requestOneSignalPermission } from '@/lib/onesignal';
+import { toast } from 'sonner';
 
 /**
  * Smart notification toggle:
@@ -11,6 +12,7 @@ const isNative = Capacitor?.isNativePlatform?.() === true;
  *  • Native iOS/Android: disabled until the app uses an SPM-ready push plugin.
  */
 export function NotificationToggle() {
+  const isNative = Capacitor?.isNativePlatform?.() === true;
   if (isNative) return <NativeNotificationToggle />;
   return <WebNotificationToggle />;
 }
@@ -55,21 +57,27 @@ function WebNotificationToggle() {
 // NATIVE (OneSignal)
 // ─────────────────────────────────────────────────────────────────
 function NativeNotificationToggle() {
+  const { user } = useAuth();
+
+  const enableNotifications = async () => {
+    const granted = await requestOneSignalPermission(user?.id ?? null);
+    toast[granted ? 'success' : 'error'](
+      granted ? 'Notifications enabled' : 'Notifications were not enabled',
+    );
+  };
+
   return (
     <Row
       icon={<Bell className="h-5 w-5 text-primary" />}
       title="Push Notifications"
-      subtitle="Managed by iOS — change in Settings › Notifications › Versa"
+      subtitle="Enable alerts for new polls and updates"
       action={
         <Button
-          variant="outline"
+          variant="default"
           size="sm"
-          onClick={() => {
-            // Open the iOS Settings app to the Versa notification screen
-            try { window.open('app-settings:', '_self'); } catch {}
-          }}
+          onClick={enableNotifications}
         >
-          Open Settings
+          Enable
         </Button>
       }
     />
