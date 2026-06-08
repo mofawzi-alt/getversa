@@ -3,6 +3,11 @@ import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import {
+  disableNativeOneSignalPush,
+  getNativeOneSignalStatus,
+  requestNativeOneSignalPush,
+} from '@/lib/onesignal';
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BDYNC1YHcRfHX-4KpkSunIiQmXPLwjZkwH3KYjUrRD9aGo0DA9i1Rg9EdulqmMYlFEO-rVizI-HpC8EkVkKQlz8';
 
@@ -84,7 +89,6 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
   const [supportMessage, setSupportMessage] = useState('Not supported in this browser');
   const isNativeApp = Capacitor?.isNativePlatform?.() === true;
-  const nativeNotificationsImplemented = false;
 
   const checkSubscription = useCallback(async () => {
     if (!user) {
@@ -93,6 +97,19 @@ export function usePushNotifications() {
     }
 
     try {
+      if (isNativeApp) {
+        const status = await getNativeOneSignalStatus(user.id);
+        setIsSupported(status.supported);
+        setPermission(status.permission);
+        setIsSubscribed(status.subscribed);
+        setSupportMessage(
+          status.supported
+            ? 'Enable notifications to stay updated'
+            : 'Push notifications are not supported on this device',
+        );
+        return;
+      }
+
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
 
@@ -131,13 +148,13 @@ export function usePushNotifications() {
       console.error('Error checking subscription:', error);
       setIsSubscribed(false);
     }
-  }, [user]);
+  }, [user, isNativeApp]);
 
   useEffect(() => {
-    if (isNativeApp && !nativeNotificationsImplemented) {
-      setIsSupported(false);
-      setIsSubscribed(false);
-      setSupportMessage('Native app notifications are not active in this build yet');
+    if (isNativeApp) {
+      setIsSupported(true);
+      setSupportMessage('Enable notifications to stay updated');
+      void checkSubscription();
       return;
     }
 
@@ -160,9 +177,9 @@ export function usePushNotifications() {
     void checkSubscription();
   }, [checkSubscription, user, isNativeApp]);
 
-  const registerServiceWorker = async (): Promise<ServiceWorkerRegistration> => {
+  const registerServiceWorker = useCallback(async (): Promise<ServiceWorkerRegistration> => {
     if (isNativeApp) {
-      throw new Error('Native app notifications are not active in this build yet');
+      throw new Error('Native notifications use OneSignal and do not register a web service worker');
     }
 
     await navigator.serviceWorker.register('/sw.js', {
@@ -170,7 +187,7 @@ export function usePushNotifications() {
     });
 
     return navigator.serviceWorker.ready;
-  };
+  }, [isNativeApp]);
 
   const subscribe = useCallback(async () => {
     if (!user) {
@@ -179,8 +196,32 @@ export function usePushNotifications() {
     }
 
     if (!isSupported) {
-      toast.error(isNativeApp ? 'Native app notifications are not active in this build yet' : supportMessage);
+      toast.error(supportMessage);
       return false;
+    }
+
+    if (isNativeApp) {
+      setIsLoading(true);
+      try {
+        const subscribed = await requestNativeOneSignalPush(user.id);
+        const status = await getNativeOneSignalStatus(user.id);
+        setPermission(status.permission);
+        setIsSubscribed(status.subscribed);
+
+        if (!subscribed) {
+          toast.error(status.permission === 'denied' ? 'Notification permission denied' : 'Failed to enable notifications');
+          return false;
+        }
+
+        toast.success('Notifications enabled!');
+        return true;
+      } catch (error) {
+        console.error('Error subscribing to native push:', error);
+        toast.error('Failed to enable notifications');
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     if (isIosDevice() && !isStandaloneMode()) {
@@ -231,7 +272,7 @@ export function usePushNotifications() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, isSupported, isNativeApp, supportMessage]);
+  }, [user, isSupported, isNativeApp, supportMessage, registerServiceWorker]);
 
   const unsubscribe = useCallback(async () => {
     if (!user) {
@@ -242,6 +283,15 @@ export function usePushNotifications() {
     setIsLoading(true);
 
     try {
+      if (isNativeApp) {
+        await disableNativeOneSignalPush(user.id);
+        const status = await getNativeOneSignalStatus(user.id);
+        setPermission(status.permission);
+        setIsSubscribed(false);
+        toast.success('Notifications disabled');
+        return true;
+      }
+
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
 
@@ -267,7 +317,7 @@ export function usePushNotifications() {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, isNativeApp]);
 
   return {
     isSupported,
