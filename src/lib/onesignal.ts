@@ -174,7 +174,7 @@ async function linkUserId(userId: string) {
   }
 }
 
-async function syncSubscription(OneSignal: any, userId: string) {
+async function syncSubscription(OneSignal: OneSignalNative, userId: string) {
   try {
     const id = OneSignal.User.pushSubscription.getIdAsync
       ? await OneSignal.User.pushSubscription.getIdAsync()
@@ -207,7 +207,7 @@ export async function logoutOneSignal() {
   if (!Capacitor.isNativePlatform() || !initialized) return;
   try {
     const mod = await loadOneSignalModule();
-    const OneSignal = (mod as any).default ?? mod;
+    const OneSignal = getOneSignal(mod);
     OneSignal.logout();
   } catch (err) {
     console.error('[OneSignal] logout failed:', err);
