@@ -15,6 +15,7 @@ const privacyKeys = {
   NSPhotoLibraryUsageDescription: 'Versa needs photo library access to select images',
   NSPhotoLibraryAddUsageDescription: 'Versa needs access to save images to your photo library',
   NSFaceIDUsageDescription: 'Versa uses Face ID for secure authentication',
+  NSLocationWhenInUseUsageDescription: 'Versa may use your location to show regional polls and trends relevant to you.',
 };
 
 if (!existsSync(plistPath)) {
