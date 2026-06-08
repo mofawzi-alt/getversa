@@ -60,16 +60,25 @@ export async function requestOneSignalPermission(
   if (!isNative()) return { ok: false, reason: 'not-native' };
 
   try {
-    if (userId) {
-      await Preferences.set({ key: PENDING_USER_ID_KEY, value: userId });
+    await ensureOneSignalInitialized(userId);
+    const accepted = await OneSignal.Notifications.requestPermission(true);
+    await OneSignal.User.pushSubscription.optIn();
+
+    if (!accepted) {
+      return {
+        ok: false,
+        reason: 'denied',
+        message: 'Turn on notifications in Settings → Versa → Notifications.',
+      };
     }
 
-    // Give the native SDK a moment to produce a player id if it hasn't yet.
+    // Give OneSignal/APNs a moment to produce a subscription id if it hasn't yet.
     let playerId: string | null = null;
     for (let i = 0; i < 20; i++) {
-      const { value } = await Preferences.get({ key: PLAYER_ID_KEY });
-      if (value) {
-        playerId = value;
+      const id = await OneSignal.User.pushSubscription.getIdAsync();
+      if (id) {
+        playerId = id;
+        await Preferences.set({ key: PLAYER_ID_KEY, value: id });
         break;
       }
       await new Promise((r) => setTimeout(r, 250));
@@ -101,6 +110,8 @@ export async function requestOneSignalPermission(
 export async function logoutOneSignal(): Promise<void> {
   if (!isNative()) return;
   try {
+    await ensureOneSignalInitialized(null);
+    await OneSignal.logout();
     await Preferences.set({ key: PENDING_USER_ID_KEY, value: '' });
   } catch (err) {
     console.error('[OneSignal] logoutOneSignal failed', err);
@@ -109,9 +120,10 @@ export async function logoutOneSignal(): Promise<void> {
 
 async function syncPlayerIdToSupabase(userId: string | null): Promise<void> {
   if (!userId) return;
-  const { value } = await Preferences.get({ key: PLAYER_ID_KEY });
-  if (value) {
-    await saveSubscription(userId, value);
+  const playerId = await OneSignal.User.pushSubscription.getIdAsync();
+  if (playerId) {
+    await Preferences.set({ key: PLAYER_ID_KEY, value: playerId });
+    await saveSubscription(userId, playerId);
   }
 }
 
