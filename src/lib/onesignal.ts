@@ -43,8 +43,7 @@ type OneSignalPlugin = {
 
 declare global {
   interface Window {
-    OneSignal?: OneSignalPlugin;
-    plugins?: { OneSignal?: OneSignalPlugin };
+    OneSignal?: unknown;
     Capacitor?: { isNativePlatform?: () => boolean };
   }
 }
@@ -63,7 +62,8 @@ function isNativeRuntime() {
 }
 
 function getWindowOneSignal(): OneSignalPlugin | null {
-  return window.OneSignal ?? window.plugins?.OneSignal ?? null;
+  const win = window as Window & { plugins?: { OneSignal?: unknown } };
+  return (win.OneSignal ?? win.plugins?.OneSignal ?? null) as OneSignalPlugin | null;
 }
 
 async function waitForOneSignalPlugin(timeoutMs = 2500): Promise<OneSignalPlugin | null> {
@@ -91,8 +91,8 @@ async function loadOneSignal(): Promise<OneSignalPlugin | null> {
   if (windowPlugin) return windowPlugin;
 
   try {
-    const mod = await import('onesignal-cordova-plugin') as unknown as OneSignalPlugin & { default?: OneSignalPlugin };
-    return mod.default ?? mod ?? await waitForOneSignalPlugin();
+    const mod = await import('onesignal-cordova-plugin') as unknown as { default?: unknown };
+    return (mod.default ?? mod ?? await waitForOneSignalPlugin()) as OneSignalPlugin | null;
   } catch (err) {
     console.warn('[OneSignal] plugin import unavailable, checking native bridge:', err);
     return await waitForOneSignalPlugin();
