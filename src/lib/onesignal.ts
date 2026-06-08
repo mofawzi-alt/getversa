@@ -209,7 +209,8 @@ async function saveSubscription(userId: string, playerId: string) {
 export async function logoutOneSignal() {
   if (!Capacitor.isNativePlatform() || !initialized) return;
   try {
-    const OneSignal = getOneSignal();
+    const OneSignal = await getOneSignal();
+    if (!OneSignal) return;
     OneSignal.logout();
   } catch (err) {
     console.error('[OneSignal] logout failed:', err);
