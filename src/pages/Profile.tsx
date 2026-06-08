@@ -19,6 +19,7 @@ import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
 import SuggestPollDialog from '@/components/profile/SuggestPollDialog';
 import BiometricToggle from '@/components/profile/BiometricToggle';
 import DeleteAccountButton from '@/components/profile/DeleteAccountButton';
+import { NotificationToggle } from '@/components/NotificationToggle';
 
 export default function Profile() {
   const { profile, isAdmin, signOut, user } = useAuth();
@@ -220,6 +221,8 @@ export default function Profile() {
             </div>
           )}
         </div>
+
+        <NotificationToggle />
 
         {/* Compatibility Link */}
         <ShareCompatibilityCard />
