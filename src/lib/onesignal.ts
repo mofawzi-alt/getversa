@@ -41,15 +41,62 @@ type OneSignalPlugin = {
   };
 };
 
+declare global {
+  interface Window {
+    OneSignal?: unknown;
+    Capacitor?: { isNativePlatform?: () => boolean };
+  }
+}
+
 let initialized = false;
 let clickListenerRegistered = false;
 let subscriptionListenerRegistered = false;
 let activeUserId: string | null = null;
 
+function isNativeRuntime() {
+  try {
+    return Capacitor?.isNativePlatform?.() === true || window.Capacitor?.isNativePlatform?.() === true;
+  } catch {
+    return false;
+  }
+}
+
+function getWindowOneSignal(): OneSignalPlugin | null {
+  const win = window as Window & { plugins?: { OneSignal?: unknown } };
+  return (win.OneSignal ?? win.plugins?.OneSignal ?? null) as OneSignalPlugin | null;
+}
+
+async function waitForOneSignalPlugin(timeoutMs = 2500): Promise<OneSignalPlugin | null> {
+  const existing = getWindowOneSignal();
+  if (existing) return existing;
+
+  return new Promise((resolve) => {
+    const startedAt = Date.now();
+    const tick = () => {
+      const plugin = getWindowOneSignal();
+      if (plugin || Date.now() - startedAt >= timeoutMs) {
+        resolve(plugin);
+        return;
+      }
+      window.setTimeout(tick, 100);
+    };
+    tick();
+  });
+}
+
 async function loadOneSignal(): Promise<OneSignalPlugin | null> {
-  if (!Capacitor.isNativePlatform()) return null;
-  const mod = await import('onesignal-cordova-plugin') as unknown as OneSignalPlugin & { default?: OneSignalPlugin };
-  return mod.default ?? mod;
+  if (!isNativeRuntime()) return null;
+
+  const windowPlugin = getWindowOneSignal();
+  if (windowPlugin) return windowPlugin;
+
+  try {
+    const mod = await import('onesignal-cordova-plugin') as unknown as { default?: unknown };
+    return (mod.default ?? mod ?? await waitForOneSignalPlugin()) as OneSignalPlugin | null;
+  } catch (err) {
+    console.warn('[OneSignal] plugin import unavailable, checking native bridge:', err);
+    return await waitForOneSignalPlugin();
+  }
 }
 
 function normalizeNotificationRoute(value: unknown): string | null {
@@ -181,7 +228,7 @@ async function optInNativePush(OneSignal: OneSignalPlugin) {
  * Call this once after the user is authenticated.
  */
 export async function initOneSignal(userId: string | null) {
-  if (!Capacitor.isNativePlatform()) return;
+  if (!isNativeRuntime()) return;
   activeUserId = userId;
   if (initialized) {
     if (userId) await linkUserId(userId);
@@ -248,7 +295,7 @@ async function saveSubscription(userId: string, playerId: string) {
 }
 
 export async function getNativeOneSignalStatus(userId: string | null) {
-  if (!Capacitor.isNativePlatform()) {
+  if (!isNativeRuntime()) {
     return { supported: false, permission: 'default' as NotificationPermission, subscribed: false };
   }
 
@@ -279,7 +326,7 @@ export async function getNativeOneSignalStatus(userId: string | null) {
 }
 
 export async function requestNativeOneSignalPush(userId: string) {
-  if (!Capacitor.isNativePlatform()) return false;
+  if (!isNativeRuntime()) return false;
 
   await initOneSignal(userId);
   const OneSignal = await loadOneSignal();
@@ -296,7 +343,7 @@ export async function requestNativeOneSignalPush(userId: string) {
 }
 
 export async function disableNativeOneSignalPush(userId: string) {
-  if (!Capacitor.isNativePlatform()) return;
+  if (!isNativeRuntime()) return;
 
   const OneSignal = await loadOneSignal();
   const pushSubscription = OneSignal?.User?.pushSubscription;
@@ -315,7 +362,7 @@ export async function disableNativeOneSignalPush(userId: string) {
  * Logout — call on sign-out to disassociate the device from this user.
  */
 export async function logoutOneSignal() {
-  if (!Capacitor.isNativePlatform() || !initialized) return;
+  if (!isNativeRuntime() || !initialized) return;
   try {
     activeUserId = null;
     const OneSignal = await loadOneSignal();
