@@ -157,7 +157,8 @@ export async function requestOneSignalPermission(userId: string | null) {
   }
 
   try {
-    const OneSignal = getOneSignal();
+    const OneSignal = await getOneSignal();
+    if (!OneSignal) return false;
     return await requestPermissionAndSync(OneSignal, userId);
   } catch (err) {
     console.error('[OneSignal] requestPermission failed:', err);
@@ -167,7 +168,8 @@ export async function requestOneSignalPermission(userId: string | null) {
 
 async function linkUserId(userId: string) {
   try {
-    const OneSignal = getOneSignal();
+    const OneSignal = await getOneSignal();
+    if (!OneSignal) return;
     OneSignal.login(userId);
     await syncSubscription(OneSignal, userId);
   } catch (err) {
