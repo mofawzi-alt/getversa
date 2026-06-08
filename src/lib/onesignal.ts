@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import OneSignal, { type PushSubscriptionChangedState } from '@onesignal/capacitor-plugin';
 import { supabase } from '@/integrations/supabase/client';
 
 const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
@@ -13,38 +14,11 @@ type OneSignalClickEvent = {
   url?: string;
 };
 
-type OneSignalSubscriptionChangeEvent = {
-  current?: { id?: string | null };
-};
-
-type OneSignalPlugin = {
-  initialize: (appId: string) => void;
-  login: (userId: string) => void;
-  logout: () => void;
-  Notifications: {
-    addEventListener?: (eventName: 'click', listener: (event: OneSignalClickEvent) => void) => void;
-    getPermissionAsync?: () => Promise<boolean>;
-    permission?: boolean;
-    canRequestPermission?: boolean;
-    requestPermission?: (fallbackToSettings?: boolean) => Promise<boolean>;
-  };
-  User: {
-    pushSubscription: {
-      addEventListener?: (eventName: 'change', listener: (event: OneSignalSubscriptionChangeEvent) => void) => void;
-      getIdAsync?: () => Promise<string | null>;
-      id?: string | null;
-      getOptedInAsync?: () => Promise<boolean>;
-      optedIn?: boolean;
-      optIn?: () => Promise<void> | void;
-      optOut?: () => Promise<void> | void;
-    };
-  };
-};
+type OneSignalPlugin = typeof OneSignal;
 
 declare global {
   interface Window {
-    OneSignal?: unknown;
-    Capacitor?: { isNativePlatform?: () => boolean };
+    Capacitor?: { isNativePlatform?: () => boolean; getPlatform?: () => string };
   }
 }
 
@@ -55,48 +29,18 @@ let activeUserId: string | null = null;
 
 function isNativeRuntime() {
   try {
-    return Capacitor?.isNativePlatform?.() === true || window.Capacitor?.isNativePlatform?.() === true;
+    const capacitorNative = Capacitor?.isNativePlatform?.() === true;
+    const windowNative = window.Capacitor?.isNativePlatform?.() === true;
+    const platform = Capacitor?.getPlatform?.() ?? window.Capacitor?.getPlatform?.();
+    return capacitorNative || windowNative || platform === 'ios' || platform === 'android';
   } catch {
     return false;
   }
 }
 
-function getWindowOneSignal(): OneSignalPlugin | null {
-  const win = window as Window & { plugins?: { OneSignal?: unknown } };
-  return (win.OneSignal ?? win.plugins?.OneSignal ?? null) as OneSignalPlugin | null;
-}
-
-async function waitForOneSignalPlugin(timeoutMs = 2500): Promise<OneSignalPlugin | null> {
-  const existing = getWindowOneSignal();
-  if (existing) return existing;
-
-  return new Promise((resolve) => {
-    const startedAt = Date.now();
-    const tick = () => {
-      const plugin = getWindowOneSignal();
-      if (plugin || Date.now() - startedAt >= timeoutMs) {
-        resolve(plugin);
-        return;
-      }
-      window.setTimeout(tick, 100);
-    };
-    tick();
-  });
-}
-
 async function loadOneSignal(): Promise<OneSignalPlugin | null> {
   if (!isNativeRuntime()) return null;
-
-  const windowPlugin = getWindowOneSignal();
-  if (windowPlugin) return windowPlugin;
-
-  try {
-    const mod = await import('onesignal-cordova-plugin') as unknown as { default?: unknown };
-    return (mod.default ?? mod ?? await waitForOneSignalPlugin()) as OneSignalPlugin | null;
-  } catch (err) {
-    console.warn('[OneSignal] plugin import unavailable, checking native bridge:', err);
-    return await waitForOneSignalPlugin();
-  }
+  return OneSignal;
 }
 
 function normalizeNotificationRoute(value: unknown): string | null {
