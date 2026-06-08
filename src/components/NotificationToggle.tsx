@@ -61,16 +61,17 @@ function NativeNotificationToggle() {
 
   const enableNotifications = async () => {
     const result = await requestOneSignalPermission(user?.id ?? null);
-    if (result.ok) {
+    if (result.ok === true) {
       toast.success('Notifications enabled');
       return;
     }
+    const reason = result.reason;
     const label =
-      result.reason === 'plugin-missing'
+      reason === 'plugin-missing'
         ? 'OneSignal plugin not installed in iOS build'
-        : result.reason === 'denied'
+        : reason === 'denied'
           ? 'Permission denied — enable in iOS Settings → Versa → Notifications'
-          : result.reason === 'not-native'
+          : reason === 'not-native'
             ? 'Notifications only work in the iOS app'
             : 'Notifications were not enabled';
     toast.error(label, { description: result.message, duration: 8000 });
