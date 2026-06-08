@@ -83,8 +83,14 @@ function isStandaloneMode() {
 
 function isNativeRuntime() {
   try {
-    const win = window as Window & { Capacitor?: { isNativePlatform?: () => boolean } };
-    return Capacitor?.isNativePlatform?.() === true || win.Capacitor?.isNativePlatform?.() === true;
+    const win = window as Window & { Capacitor?: { isNativePlatform?: () => boolean; getPlatform?: () => string } };
+    const platform = Capacitor?.getPlatform?.() ?? win.Capacitor?.getPlatform?.();
+    return (
+      Capacitor?.isNativePlatform?.() === true ||
+      win.Capacitor?.isNativePlatform?.() === true ||
+      platform === 'ios' ||
+      platform === 'android'
+    );
   } catch {
     return false;
   }
