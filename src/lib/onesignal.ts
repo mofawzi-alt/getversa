@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
+import OneSignalCordova from 'onesignal-cordova-plugin';
 
 const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
 
@@ -37,17 +38,8 @@ type OneSignalNative = {
   logout: () => void;
 };
 
-type OneSignalModule = OneSignalNative & { default?: OneSignalNative };
-
-// Dynamic, Vite-ignored loader so the web build never tries to resolve the
-// native-only Cordova plugin. Only invoked on native iOS/Android.
-const ONESIGNAL_MODULE_ID = 'onesignal-cordova-plugin';
-async function loadOneSignalModule(): Promise<OneSignalModule> {
-  return await import(/* @vite-ignore */ ONESIGNAL_MODULE_ID) as OneSignalModule;
-}
-
-function getOneSignal(mod: OneSignalModule): OneSignalNative {
-  return mod.default ?? mod;
+function getOneSignal(): OneSignalNative {
+  return OneSignalCordova as OneSignalNative;
 }
 
 function normalizeNotificationRoute(value: unknown): string | null {
@@ -127,8 +119,7 @@ export async function initOneSignal(userId: string | null) {
   }
 
   try {
-    const mod = await loadOneSignalModule();
-    const OneSignal = getOneSignal(mod);
+    const OneSignal = getOneSignal();
 
     OneSignal.initialize(ONESIGNAL_APP_ID);
     registerNotificationClickListener(OneSignal);
@@ -158,8 +149,7 @@ export async function requestOneSignalPermission(userId: string | null) {
   }
 
   try {
-    const mod = await loadOneSignalModule();
-    const OneSignal = getOneSignal(mod);
+    const OneSignal = getOneSignal();
     return await requestPermissionAndSync(OneSignal, userId);
   } catch (err) {
     console.error('[OneSignal] requestPermission failed:', err);
@@ -169,8 +159,7 @@ export async function requestOneSignalPermission(userId: string | null) {
 
 async function linkUserId(userId: string) {
   try {
-    const mod = await loadOneSignalModule();
-    const OneSignal = getOneSignal(mod);
+    const OneSignal = getOneSignal();
     OneSignal.login(userId);
     await syncSubscription(OneSignal, userId);
   } catch (err) {
@@ -210,8 +199,7 @@ async function saveSubscription(userId: string, playerId: string) {
 export async function logoutOneSignal() {
   if (!Capacitor.isNativePlatform() || !initialized) return;
   try {
-    const mod = await loadOneSignalModule();
-    const OneSignal = getOneSignal(mod);
+    const OneSignal = getOneSignal();
     OneSignal.logout();
   } catch (err) {
     console.error('[OneSignal] logout failed:', err);
