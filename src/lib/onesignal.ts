@@ -3,15 +3,53 @@ import { supabase } from '@/integrations/supabase/client';
 
 const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
 
+type OneSignalClickEvent = {
+  notification?: {
+    additionalData?: Record<string, unknown>;
+    launchURL?: string;
+    url?: string;
+  };
+  result?: { url?: string };
+  url?: string;
+};
+
+type OneSignalSubscriptionChangeEvent = {
+  current?: { id?: string | null };
+};
+
+type OneSignalPlugin = {
+  initialize: (appId: string) => void;
+  login: (userId: string) => void;
+  logout: () => void;
+  Notifications: {
+    addEventListener?: (eventName: 'click', listener: (event: OneSignalClickEvent) => void) => void;
+    getPermissionAsync?: () => Promise<boolean>;
+    permission?: boolean;
+    canRequestPermission?: boolean;
+    requestPermission?: (fallbackToSettings?: boolean) => Promise<boolean>;
+  };
+  User: {
+    pushSubscription: {
+      addEventListener?: (eventName: 'change', listener: (event: OneSignalSubscriptionChangeEvent) => void) => void;
+      getIdAsync?: () => Promise<string | null>;
+      id?: string | null;
+      getOptedInAsync?: () => Promise<boolean>;
+      optedIn?: boolean;
+      optIn?: () => Promise<void> | void;
+      optOut?: () => Promise<void> | void;
+    };
+  };
+};
+
 let initialized = false;
 let clickListenerRegistered = false;
 let subscriptionListenerRegistered = false;
 let activeUserId: string | null = null;
 
-async function loadOneSignal() {
+async function loadOneSignal(): Promise<OneSignalPlugin | null> {
   if (!Capacitor.isNativePlatform()) return null;
-  const mod = await import('onesignal-cordova-plugin');
-  return (mod as any).default ?? mod;
+  const mod = await import('onesignal-cordova-plugin') as unknown as OneSignalPlugin & { default?: OneSignalPlugin };
+  return mod.default ?? mod;
 }
 
 function normalizeNotificationRoute(value: unknown): string | null {
@@ -34,7 +72,7 @@ function normalizeNotificationRoute(value: unknown): string | null {
 }
 
 function dispatchNotificationRoute(route: string) {
-  try { localStorage.setItem('versa_pending_notification_route', route); } catch {}
+  try { localStorage.setItem('versa_pending_notification_route', route); } catch { console.warn('[OneSignal] could not store pending route'); }
   window.dispatchEvent(new CustomEvent('versa:navigate', { detail: { url: route } }));
 }
 
@@ -46,10 +84,10 @@ export function openNotificationRoute(route: string) {
   dispatchNotificationRoute(route);
 }
 
-function registerNotificationClickListener(OneSignal: any) {
+function registerNotificationClickListener(OneSignal: OneSignalPlugin) {
   if (clickListenerRegistered) return;
   try {
-    OneSignal.Notifications.addEventListener('click', (event: any) => {
+    OneSignal.Notifications.addEventListener?.('click', (event) => {
       const additionalData = event?.notification?.additionalData ?? {};
       const route = normalizeNotificationRoute(
         additionalData.url ??
@@ -66,10 +104,10 @@ function registerNotificationClickListener(OneSignal: any) {
   }
 }
 
-function registerPushSubscriptionListener(OneSignal: any) {
+function registerPushSubscriptionListener(OneSignal: OneSignalPlugin) {
   if (subscriptionListenerRegistered) return;
   try {
-    OneSignal.User.pushSubscription.addEventListener('change', async (event: any) => {
+    OneSignal.User.pushSubscription.addEventListener?.('change', async (event) => {
       console.log('[OneSignal] subscription change:', event);
       const id = event?.current?.id;
       if (id && activeUserId) {
@@ -82,19 +120,19 @@ function registerPushSubscriptionListener(OneSignal: any) {
   }
 }
 
-async function readNativePermission(OneSignal: any): Promise<boolean> {
+async function readNativePermission(OneSignal: OneSignalPlugin): Promise<boolean> {
   if (typeof OneSignal.Notifications?.getPermissionAsync === 'function') {
     return Boolean(await OneSignal.Notifications.getPermissionAsync());
   }
   return Boolean(OneSignal.Notifications?.permission);
 }
 
-function canRequestNativePermission(OneSignal: any): boolean {
+function canRequestNativePermission(OneSignal: OneSignalPlugin): boolean {
   const canRequest = OneSignal.Notifications?.canRequestPermission;
   return typeof canRequest === 'boolean' ? canRequest : true;
 }
 
-async function requestOneSignalPermission(OneSignal: any): Promise<boolean> {
+async function requestOneSignalPermission(OneSignal: OneSignalPlugin): Promise<boolean> {
   if (await readNativePermission(OneSignal)) return true;
 
   if (typeof OneSignal.Notifications?.requestPermission === 'function') {
@@ -105,7 +143,7 @@ async function requestOneSignalPermission(OneSignal: any): Promise<boolean> {
   return false;
 }
 
-async function getPushSubscriptionId(OneSignal: any): Promise<string | null> {
+async function getPushSubscriptionId(OneSignal: OneSignalPlugin): Promise<string | null> {
   const pushSubscription = OneSignal.User?.pushSubscription;
   if (!pushSubscription) return null;
 
@@ -116,7 +154,7 @@ async function getPushSubscriptionId(OneSignal: any): Promise<string | null> {
   return pushSubscription.id ?? null;
 }
 
-async function isPushOptedIn(OneSignal: any): Promise<boolean> {
+async function isPushOptedIn(OneSignal: OneSignalPlugin): Promise<boolean> {
   const pushSubscription = OneSignal.User?.pushSubscription;
   if (!pushSubscription) return false;
 
@@ -131,7 +169,7 @@ async function isPushOptedIn(OneSignal: any): Promise<boolean> {
   return true;
 }
 
-async function optInNativePush(OneSignal: any) {
+async function optInNativePush(OneSignal: OneSignalPlugin) {
   const pushSubscription = OneSignal.User?.pushSubscription;
   if (typeof pushSubscription?.optIn === 'function') {
     await pushSubscription.optIn();
