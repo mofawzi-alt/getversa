@@ -6,11 +6,48 @@ const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
 let initialized = false;
 let clickListenerRegistered = false;
 
+type NotificationClickEvent = {
+  notification?: {
+    additionalData?: Record<string, unknown>;
+    launchURL?: unknown;
+    url?: unknown;
+  };
+  result?: { url?: unknown };
+  url?: unknown;
+};
+
+type PushSubscriptionChangeEvent = {
+  current?: { id?: string };
+};
+
+type OneSignalNative = {
+  initialize: (appId: string) => void;
+  Notifications: {
+    requestPermission: (fallbackToSettings: boolean) => Promise<boolean>;
+    addEventListener: (event: 'click', listener: (event: NotificationClickEvent) => void) => void;
+  };
+  User: {
+    pushSubscription: {
+      addEventListener: (event: 'change', listener: (event: PushSubscriptionChangeEvent) => void) => void;
+      getIdAsync?: () => Promise<string | null | undefined>;
+      id?: string | null;
+    };
+  };
+  login: (userId: string) => void;
+  logout: () => void;
+};
+
+type OneSignalModule = OneSignalNative & { default?: OneSignalNative };
+
 // Dynamic, Vite-ignored loader so the web build never tries to resolve the
 // native-only Cordova plugin. Only invoked on native iOS/Android.
 const ONESIGNAL_MODULE_ID = 'onesignal-cordova-plugin';
-async function loadOneSignalModule(): Promise<any> {
-  return await import(/* @vite-ignore */ ONESIGNAL_MODULE_ID);
+async function loadOneSignalModule(): Promise<OneSignalModule> {
+  return await import(/* @vite-ignore */ ONESIGNAL_MODULE_ID) as OneSignalModule;
+}
+
+function getOneSignal(mod: OneSignalModule): OneSignalNative {
+  return mod.default ?? mod;
 }
 
 function normalizeNotificationRoute(value: unknown): string | null {
@@ -33,7 +70,7 @@ function normalizeNotificationRoute(value: unknown): string | null {
 }
 
 function dispatchNotificationRoute(route: string) {
-  try { localStorage.setItem('versa_pending_notification_route', route); } catch {}
+  try { localStorage.setItem('versa_pending_notification_route', route); } catch { undefined; }
   window.dispatchEvent(new CustomEvent('versa:navigate', { detail: { url: route } }));
 }
 
