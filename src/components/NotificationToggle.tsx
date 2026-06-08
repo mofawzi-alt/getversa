@@ -63,7 +63,8 @@ function NativeNotificationToggle() {
     const result = await requestOneSignalPermission(user?.id ?? null);
     if (result.ok) {
       toast.success('Notifications enabled');
-    } else {
+      return;
+    }
       const label =
         result.reason === 'plugin-missing'
           ? 'OneSignal plugin not installed in iOS build'
