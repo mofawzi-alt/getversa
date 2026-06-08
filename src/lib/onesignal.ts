@@ -126,7 +126,8 @@ export async function initOneSignal(userId: string | null) {
   }
 
   try {
-    const OneSignal = getOneSignal();
+    const OneSignal = await getOneSignal();
+    if (!OneSignal) return;
 
     OneSignal.initialize(ONESIGNAL_APP_ID);
     registerNotificationClickListener(OneSignal);
