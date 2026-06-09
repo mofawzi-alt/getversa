@@ -39,15 +39,16 @@ function WebNotificationToggle() {
     <Row
       icon={<Bell className={`h-5 w-5 ${isSubscribed ? 'text-primary' : 'text-muted-foreground'}`} />}
       title="Push Notifications"
-      subtitle={isSubscribed ? 'Get notified for new polls' : 'Enable to stay updated'}
+      subtitle={isSubscribed ? 'ON · Get notified for new polls' : 'OFF · Enable to stay updated'}
       action={
         <Button
           variant={isSubscribed ? 'outline' : 'default'}
           size="sm"
           onClick={isSubscribed ? unsubscribe : subscribe}
           disabled={isLoading}
+          className="min-w-16"
         >
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSubscribed ? 'Disable' : 'Enable'}
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSubscribed ? 'ON' : 'OFF'}
         </Button>
       }
     />
@@ -61,7 +62,7 @@ function NativeNotificationToggle() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
-  const [statusLabel, setStatusLabel] = useState('Status: checking…');
+  const [statusLabel, setStatusLabel] = useState('checking…');
   const [didCheck, setDidCheck] = useState(false);
 
   const refreshState = useCallback(async () => {
@@ -72,10 +73,10 @@ function NativeNotificationToggle() {
       const isOptedIn = await OneSignal.User.pushSubscription.getOptedInAsync();
       const enabled = !!hasPermission && !!isOptedIn;
       setIsEnabled(enabled);
-      setStatusLabel(enabled ? 'Status: ON' : 'Status: OFF');
+      setStatusLabel(enabled ? 'ON' : 'OFF');
     } catch {
       setIsEnabled(false);
-      setStatusLabel('Status: OFF');
+      setStatusLabel('OFF');
     } finally {
       setDidCheck(true);
     }
@@ -102,7 +103,7 @@ function NativeNotificationToggle() {
       if (result.ok === true) {
         toast.success('Notifications enabled', { id: 'native-notifications' });
         setIsEnabled(true);
-        setStatusLabel('Status: ON');
+        setStatusLabel('ON');
         return;
       }
       const reason = result.reason;
@@ -136,22 +137,23 @@ function NativeNotificationToggle() {
       onClick={isEnabled ? undefined : enableNotifications}
       action={
         isEnabled ? (
-          <div className="flex items-center gap-1.5 text-primary text-sm font-medium px-3 py-1.5">
+          <div className="flex min-w-16 items-center justify-center gap-1.5 rounded-md border border-primary px-3 py-2 text-sm font-semibold text-primary">
             <CheckCircle2 className="h-4 w-4" />
-            <span>Enabled</span>
+            <span>ON</span>
           </div>
         ) : (
           <Button
             type="button"
             variant="default"
             size="sm"
+            className="min-w-16"
             onClick={(event) => {
               event.stopPropagation();
               void enableNotifications();
             }}
             disabled={isLoading || !didCheck}
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enable'}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'OFF'}
           </Button>
         )
       }
