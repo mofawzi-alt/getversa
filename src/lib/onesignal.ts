@@ -188,9 +188,11 @@ export async function requestOneSignalPermission(
     }
 
     // Give OneSignal/APNs a moment to produce a subscription id if it hasn't yet.
-    const playerId = await waitForPushSubscriptionId();
+    const playerId = await waitForPushSubscriptionId(8_000);
 
     if (!playerId) {
+      // Keep trying in the background — APNs first-token can take 30s+ on a fresh install.
+      if (userId) scheduleBackgroundSave(userId);
       return { ok: true };
     }
 
