@@ -101,6 +101,20 @@ serve(async (req: Request): Promise<Response> => {
     let oneSignalSent = 0;
     if (ONESIGNAL_APP_ID && ONESIGNAL_REST_API_KEY) {
       try {
+        let subscriptionIds: string[] = [];
+        if (payload.user_ids?.length) {
+          const { data: osSubs } = await supabase
+            .from("onesignal_subscriptions")
+            .select("player_id")
+            .in("user_id", payload.user_ids);
+          subscriptionIds = [...new Set((osSubs ?? []).map((r: any) => r.player_id))].filter(Boolean);
+        } else {
+          const { data: osSubs } = await supabase
+            .from("onesignal_subscriptions")
+            .select("player_id");
+          subscriptionIds = [...new Set((osSubs ?? []).map((r: any) => r.player_id))].filter(Boolean);
+        }
+
         const osBody: Record<string, unknown> = {
           app_id: ONESIGNAL_APP_ID,
           headings: { en: payload.title },
@@ -116,19 +130,32 @@ serve(async (req: Request): Promise<Response> => {
           osBody.included_segments = ["Subscribed Users"];
         }
 
-        const osRes = await fetch("https://api.onesignal.com/notifications", {
+        const sendOneSignal = async (body: Record<string, unknown>) => fetch("https://api.onesignal.com/notifications", {
           method: "POST",
           headers: {
             Authorization: `Key ${ONESIGNAL_REST_API_KEY}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(osBody),
+          body: JSON.stringify(body),
         });
+
+        const osRes = await sendOneSignal(osBody);
         const osJson = await osRes.json();
         if (osRes.ok) {
           oneSignalSent = payload.user_ids?.length ?? 0;
         }
         console.log(`OneSignal sent via ${payload.user_ids?.length ? "external_id aliases" : "subscribed segment"}:`, osRes.status, osJson);
+
+        if (subscriptionIds.length > 0) {
+          const fallbackRes = await sendOneSignal({
+            ...osBody,
+            include_aliases: undefined,
+            included_segments: undefined,
+            include_subscription_ids: subscriptionIds,
+          });
+          const fallbackJson = await fallbackRes.json();
+          console.log(`OneSignal fallback sent (${subscriptionIds.length} saved native subscriptions):`, fallbackRes.status, fallbackJson);
+        }
       } catch (osErr) {
         console.error("OneSignal forward failed:", osErr);
       }
