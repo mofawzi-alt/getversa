@@ -114,6 +114,7 @@ function ensureInfoPlistKeys() {
     { key: 'NSCameraUsageDescription', value: 'Versa needs access to your camera to take a profile photo.' },
     { key: 'NSPhotoLibraryUsageDescription', value: 'Versa needs access to your photo library to choose a profile picture.' },
     { key: 'NSPhotoLibraryAddUsageDescription', value: 'Versa needs access to save updated profile pictures to your photo library.' },
+    { key: 'NSLocationWhenInUseUsageDescription', value: 'Versa may use your location to show regional polls and trends relevant to you.' },
     { key: 'FacebookAppID', value: '2007451096553445' },
     { key: 'FacebookClientToken', value: 'c56baa88249df62d7b4a19c3c067a54c' },
     { key: 'FacebookDisplayName', value: 'getversa' },
