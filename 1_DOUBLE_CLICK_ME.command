@@ -15,17 +15,7 @@ if ! command -v npm >/dev/null 2>&1; then
   exit 1
 fi
 
-npm install
-
-if [ ! -d "ios/App" ]; then
-  npx cap add ios
-fi
-
-npm run build
-npx cap sync ios
-node scripts/capacitor-ios-post-sync.mjs
-node scripts/apple-release-ready.mjs
-npx cap open ios
+npm run ios:update
 
 echo ""
 echo "DONE: Xcode is opening with the fixed iOS project."

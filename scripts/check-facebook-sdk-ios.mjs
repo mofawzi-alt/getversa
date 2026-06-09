@@ -7,10 +7,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const podfilePath = path.join(root, 'ios/App/Podfile');
-const lockfilePath = path.join(root, 'ios/App/Podfile.lock');
 const plistPath = path.join(root, 'ios/App/App/Info.plist');
 const appDelegatePath = path.join(root, 'ios/App/App/AppDelegate.swift');
+const capAppSpmPackagePath = path.join(root, 'ios/App/CapApp-SPM/Package.swift');
 
 const FB_APP_ID = '2007451096553445';
 const FB_CLIENT_TOKEN = 'c56baa88249df62d7b4a19c3c067a54c';
@@ -26,15 +25,13 @@ function check(label, passed, fix) {
   checks.push({ label, passed, fix });
 }
 
-const podfile = read(podfilePath);
-const lockfile = read(lockfilePath);
 const plist = read(plistPath);
 const appDelegate = read(appDelegatePath);
+const capAppSpmPackage = read(capAppSpmPackagePath);
 
-check('ios/App/Podfile exists', Boolean(podfile), 'Run: cd ~/Desktop/versa && npx cap sync ios');
-check('ios/App/Podfile has FBSDKCoreKit', Boolean(podfile?.includes('FBSDKCoreKit')), 'Run: cd ~/Desktop/versa && node scripts/add-facebook-sdk.mjs');
-check('ios/App/Podfile.lock exists after pod install', Boolean(lockfile), 'Run: cd ~/Desktop/versa/ios/App && pod install');
-check('Installed pods include FBSDKCoreKit', Boolean(lockfile?.includes('FBSDKCoreKit')), 'Run: cd ~/Desktop/versa/ios/App && pod install');
+check('ios/App/CapApp-SPM/Package.swift exists', Boolean(capAppSpmPackage), 'Run: cd ~/Desktop/versa && npm run ios:update');
+check('Swift package includes Facebook plugin', Boolean(capAppSpmPackage?.includes('CapacitorCommunityFacebookLogin')), 'Run: cd ~/Desktop/versa && npm run ios:update');
+check('Swift package exposes FacebookCore to AppDelegate', Boolean(capAppSpmPackage?.includes('FacebookCore')), 'Run: cd ~/Desktop/versa && npm run ios:update');
 
 check('Info.plist exists', Boolean(plist), 'Run: cd ~/Desktop/versa && npx cap sync ios');
 check('Info.plist has correct FacebookAppID', Boolean(plist?.includes('<key>FacebookAppID</key>') && plist.includes(`<string>${FB_APP_ID}</string>`)), 'Run: cd ~/Desktop/versa && node scripts/add-facebook-sdk-plist.mjs');
@@ -44,7 +41,7 @@ check('Info.plist has FacebookAdvertiserIDCollectionEnabled true', Boolean(plist
 check(`Info.plist has URL scheme ${FB_SCHEME}`, Boolean(plist?.includes(`<string>${FB_SCHEME}</string>`)), 'Run: cd ~/Desktop/versa && node scripts/add-facebook-sdk-plist.mjs');
 
 check('AppDelegate.swift exists', Boolean(appDelegate), 'Run: cd ~/Desktop/versa && npx cap sync ios');
-check('AppDelegate imports FBSDKCoreKit', Boolean(appDelegate?.includes('import FBSDKCoreKit')), 'Run: cd ~/Desktop/versa && node scripts/add-facebook-sdk.mjs');
+check('AppDelegate imports FacebookCore', Boolean(appDelegate?.includes('import FacebookCore')), 'Run: cd ~/Desktop/versa && npm run ios:update');
 check('AppDelegate initializes Facebook SDK on launch', Boolean(appDelegate?.includes('ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)')), 'Run: cd ~/Desktop/versa && node scripts/add-facebook-sdk.mjs');
 
 console.log('\nFacebook iOS SDK check\n');
