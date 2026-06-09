@@ -124,7 +124,11 @@ serve(async (req: Request): Promise<Response> => {
           ...(payload.url ? { app_url: `com.versa.app://${String(payload.url).replace(/^\//, '')}` } : {}),
         };
 
-        if (payload.user_ids?.length) {
+        const sentViaSavedSubscriptionIds = !!payload.user_ids?.length && subscriptionIds.length > 0;
+
+        if (sentViaSavedSubscriptionIds) {
+          osBody.include_subscription_ids = subscriptionIds;
+        } else if (payload.user_ids?.length) {
           osBody.include_aliases = { external_id: payload.user_ids };
         } else {
           osBody.included_segments = ["Subscribed Users"];
@@ -141,14 +145,14 @@ serve(async (req: Request): Promise<Response> => {
 
         const osRes = await sendOneSignal(osBody);
         const osJson = await osRes.json();
-        console.log(`OneSignal sent via ${payload.user_ids?.length ? "external_id aliases" : "subscribed segment"}:`, osRes.status, osJson);
+        console.log(`OneSignal sent via ${payload.user_ids?.length ? (subscriptionIds.length > 0 ? "saved subscription ids" : "external_id aliases") : "subscribed segment"}:`, osRes.status, osJson);
 
         const noAliasRecipients = Array.isArray(osJson?.errors)
           && osJson.errors.some((error: unknown) => String(error).includes("All included players are not subscribed"));
         if (osRes.ok && !noAliasRecipients) {
-          oneSignalSent = payload.user_ids?.length ?? 0;
+          oneSignalSent = sentViaSavedSubscriptionIds ? subscriptionIds.length : (payload.user_ids?.length ?? 0);
         }
-        if (payload.user_ids?.length && noAliasRecipients && subscriptionIds.length > 0) {
+        if (payload.user_ids?.length && noAliasRecipients && subscriptionIds.length > 0 && !sentViaSavedSubscriptionIds) {
           const fallbackRes = await sendOneSignal({
             ...osBody,
             include_aliases: undefined,

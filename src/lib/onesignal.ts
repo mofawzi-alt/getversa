@@ -42,7 +42,7 @@ function registerSubscriptionObserver() {
   });
 }
 
-async function waitForPushSubscriptionId(timeoutMs = 15_000): Promise<string | null> {
+async function waitForPushSubscriptionId(timeoutMs = 5_000): Promise<string | null> {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
     const id = await OneSignal.User.pushSubscription.getIdAsync();
@@ -81,6 +81,9 @@ export async function initOneSignal(userId: string | null): Promise<void> {
     const hasPermission = await OneSignal.Notifications.hasPermission();
     if (hasPermission) {
       await OneSignal.User.pushSubscription.optIn();
+      void waitForPushSubscriptionId(10_000).then((playerId) => {
+        if (playerId && userId) void saveSubscription(userId, playerId);
+      });
     }
     await syncPlayerIdToSupabase(userId);
   } catch (err) {
@@ -163,17 +166,24 @@ async function syncPlayerIdToSupabase(userId: string | null): Promise<void> {
 }
 
 async function saveSubscription(userId: string, playerId: string): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from('onesignal_subscriptions')
-      .upsert(
-        { user_id: userId, player_id: playerId, platform: Capacitor.getPlatform() },
-        { onConflict: 'user_id,player_id' },
-      );
-    if (error) throw error;
-    console.log('[OneSignal] saved subscription', playerId);
-  } catch (err) {
-    console.error('[OneSignal] saveSubscription failed', err);
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      const { error } = await supabase
+        .from('onesignal_subscriptions')
+        .upsert(
+          { user_id: userId, player_id: playerId, platform: Capacitor.getPlatform() },
+          { onConflict: 'user_id,player_id' },
+        );
+      if (error) throw error;
+      console.log('[OneSignal] saved subscription', playerId);
+      return;
+    } catch (err) {
+      if (attempt === 5) {
+        console.error('[OneSignal] saveSubscription failed', err);
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
+    }
   }
 }
 
