@@ -62,6 +62,7 @@ const steps = [
   { label: 'Clearing stale Xcode package cache', command: 'node', args: ['scripts/repair-ios-spm.mjs'] },
   { label: 'Repairing native build dependency', command: 'npm', args: ['rebuild', 'esbuild'] },
   { label: 'Building web app', command: 'npm', args: ['run', 'build'] },
+  { label: 'Updating CocoaPods spec repo', command: 'node', args: ['scripts/update-cocoapods-repo.mjs'] },
   { label: 'Syncing iOS project', command: 'npx', args: ['cap', 'sync', 'ios'] },
   { label: 'Patching iOS permissions & app icon', command: 'node', args: ['scripts/capacitor-ios-post-sync.mjs'] },
   { label: 'Repairing iOS native imports', command: 'node', args: ['scripts/fix-ios-spm-appdelegate.mjs'] },
