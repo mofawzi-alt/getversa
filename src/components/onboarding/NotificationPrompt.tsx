@@ -8,11 +8,11 @@ const PROMPT_KEY = 'versa_notif_prompt_shown';
 const PROMPT_SESSION_KEY = 'versa_notif_prompt_session';
 
 export function hasSeenNotifPrompt(): boolean {
-  // If already subscribed, never show
-  if (Notification.permission === 'granted') {
+  // If already subscribed (web only — native has its own check), never show
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
     return true;
   }
-  // If the user already chose “Maybe later”, do not block them again on app launch.
+  // If the user already chose "Maybe later", do not block them again on app launch.
   return localStorage.getItem(PROMPT_KEY) === '1' || sessionStorage.getItem(PROMPT_SESSION_KEY) === '1';
 }
 
