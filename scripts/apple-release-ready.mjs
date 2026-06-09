@@ -45,6 +45,9 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 
 if (!packageJson.dependencies?.['@capacitor/splash-screen']) {
   fail('Missing @capacitor/splash-screen. Run npm install, then npm run ios:sync before archiving.');
 }
+if (!packageJson.dependencies?.['@onesignal/capacitor-plugin']) {
+  fail('Missing @onesignal/capacitor-plugin. New iOS users cannot enable notifications without this native plugin.');
+}
 
 const postSync = fs.readFileSync(path.join(root, 'scripts/capacitor-ios-post-sync.mjs'), 'utf8');
 const requiredAppleKeys = [
@@ -117,5 +120,6 @@ if (fs.existsSync(pbxPath)) {
 console.log('GOOD: Apple camera crash fix is present.');
 console.log('GOOD: Apple photo permission fix is present.');
 console.log('GOOD: App icon is present.');
+console.log('GOOD: OneSignal native notification plugin is present.');
 console.log('GOOD: Xcode Swift package CapApp-SPM is present.');
 console.log('GOOD: Versa iOS project is ready to open in Xcode.');
