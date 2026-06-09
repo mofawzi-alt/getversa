@@ -83,12 +83,16 @@ function NativeNotificationToggle() {
           ? 'Notifications only work in the iOS app'
           : reason === 'missing-plugin'
             ? 'Update the iOS app first'
+            : reason === 'error'
+              ? 'Notifications need a new app build'
           : 'Turn on notifications in iOS Settings';
       const description =
         reason === 'not-native'
           ? undefined
           : reason === 'missing-plugin'
             ? 'This cannot be fixed by OTA. Install a new TestFlight/App Store build that includes the native notification plugin.'
+            : reason === 'error'
+              ? result.message ?? 'Install a fresh TestFlight/App Store build, then try Enable again.'
           : 'Open Settings → Versa → Notifications and enable Allow Notifications.';
       toast(label, { id: 'native-notifications', description, duration: 8000 });
     } finally {
