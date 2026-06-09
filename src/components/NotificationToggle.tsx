@@ -61,16 +61,21 @@ function NativeNotificationToggle() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
+  const [statusLabel, setStatusLabel] = useState('Status: checking…');
   const [didCheck, setDidCheck] = useState(false);
 
   const refreshState = useCallback(async () => {
     try {
       const mod = await import('@onesignal/capacitor-plugin');
       const OneSignal = mod.default;
-      const has = await OneSignal.Notifications.hasPermission();
-      setIsEnabled(!!has);
+      const hasPermission = await OneSignal.Notifications.hasPermission();
+      const isOptedIn = await OneSignal.User.pushSubscription.getOptedInAsync();
+      const enabled = !!hasPermission && !!isOptedIn;
+      setIsEnabled(enabled);
+      setStatusLabel(enabled ? 'Status: ON' : 'Status: OFF');
     } catch {
-      // plugin missing — leave disabled
+      setIsEnabled(false);
+      setStatusLabel('Status: OFF');
     } finally {
       setDidCheck(true);
     }
@@ -97,6 +102,7 @@ function NativeNotificationToggle() {
       if (result.ok === true) {
         toast.success('Notifications enabled', { id: 'native-notifications' });
         setIsEnabled(true);
+        setStatusLabel('Status: ON');
         return;
       }
       const reason = result.reason;
@@ -126,7 +132,7 @@ function NativeNotificationToggle() {
     <Row
       icon={<Bell className="h-5 w-5 text-primary" />}
       title="Push Notifications"
-      subtitle={isEnabled ? "You're getting alerts for new polls and updates" : 'Enable alerts for new polls and updates'}
+      subtitle={`${statusLabel} · ${isEnabled ? "You're getting alerts for new polls and updates" : 'Enable alerts for new polls and updates'}`}
       onClick={isEnabled ? undefined : enableNotifications}
       action={
         isEnabled ? (
