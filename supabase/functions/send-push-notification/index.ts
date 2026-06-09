@@ -141,13 +141,13 @@ serve(async (req: Request): Promise<Response> => {
 
         const osRes = await sendOneSignal(osBody);
         const osJson = await osRes.json();
-        if (osRes.ok) {
-          oneSignalSent = payload.user_ids?.length ?? 0;
-        }
         console.log(`OneSignal sent via ${payload.user_ids?.length ? "external_id aliases" : "subscribed segment"}:`, osRes.status, osJson);
 
         const noAliasRecipients = Array.isArray(osJson?.errors)
           && osJson.errors.some((error: unknown) => String(error).includes("All included players are not subscribed"));
+        if (osRes.ok && !noAliasRecipients) {
+          oneSignalSent = payload.user_ids?.length ?? 0;
+        }
         if (payload.user_ids?.length && noAliasRecipients && subscriptionIds.length > 0) {
           const fallbackRes = await sendOneSignal({
             ...osBody,
@@ -156,6 +156,9 @@ serve(async (req: Request): Promise<Response> => {
             include_subscription_ids: subscriptionIds,
           });
           const fallbackJson = await fallbackRes.json();
+          if (fallbackRes.ok) {
+            oneSignalSent = subscriptionIds.length;
+          }
           console.log(`OneSignal fallback sent (${subscriptionIds.length} saved native subscriptions):`, fallbackRes.status, fallbackJson);
         }
       } catch (osErr) {
