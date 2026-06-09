@@ -4,33 +4,53 @@ import path from 'node:path';
 const root = process.cwd();
 const appDelegatePath = path.join(root, 'ios', 'App', 'App', 'AppDelegate.swift');
 
-function replaceAll(source, search, replacement) {
-  return source.split(search).join(replacement);
+// Known-good AppDelegate for Versa using Swift Package Manager.
+// Do NOT import OneSignalFramework or FacebookCore here — those are handled
+// by Capacitor plugins. Importing them directly breaks the Xcode build.
+const TEMPLATE = `import UIKit
+import Capacitor
+
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    var window: UIWindow?
+
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        return true
+    }
+
+    func applicationWillResignActive(_ application: UIApplication) {}
+    func applicationDidEnterBackground(_ application: UIApplication) {}
+    func applicationWillEnterForeground(_ application: UIApplication) {}
+    func applicationDidBecomeActive(_ application: UIApplication) {}
+    func applicationWillTerminate(_ application: UIApplication) {}
+
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
+    }
+
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
+    }
+
 }
+`;
 
 function patchAppDelegate() {
-  if (!fs.existsSync(appDelegatePath)) {
-    console.error('[ios-spm] STOP: AppDelegate.swift is missing. Run npm run ios:update again.');
+  const dir = path.dirname(appDelegatePath);
+  if (!fs.existsSync(dir)) {
+    console.error('[ios-spm] STOP: ios/App/App directory is missing. Run npm run ios:update again.');
     process.exit(1);
   }
 
-  let src = fs.readFileSync(appDelegatePath, 'utf8');
-  const original = src;
-
-  src = replaceAll(src, 'import OneSignalFramework\n', '');
-  src = replaceAll(src, 'import FBSDKCoreKit\n', '');
-  src = replaceAll(src, 'import FacebookCore\n', '');
-  src = src.replace(/\n?\s*\/\/ ---- OneSignal init \(added by add-onesignal-sdk\.mjs\) ----[\s\S]*?\/\/ ---- end OneSignal init ----\n?/g, '\n');
-  src = src.replace(/\n?\/\/ ---- OneSignal push subscription observer \(added by add-onesignal-sdk\.mjs\) ----[\s\S]*?\/\/ ---- end OneSignal observer ----\n?/g, '\n');
-  src = src.replace(/\n\s*ApplicationDelegate\.shared\.application\(application, didFinishLaunchingWithOptions: launchOptions\)\n/g, '\n');
-  src = src.replace(/\n\s*if (?:FBSDKCoreKit\.)?ApplicationDelegate\.shared\.application\(app, open: url,[\s\S]*?\n\s*\}\n/g, '\n');
-
-  if (src !== original) {
-    fs.writeFileSync(appDelegatePath, src, 'utf8');
-    console.log('[ios-spm] Normalized AppDelegate.swift for Swift Package Manager');
-  } else {
-    console.log('[ios-spm] AppDelegate.swift already matches Swift Package Manager setup');
+  const current = fs.existsSync(appDelegatePath) ? fs.readFileSync(appDelegatePath, 'utf8') : '';
+  if (current === TEMPLATE) {
+    console.log('[ios-spm] AppDelegate.swift already matches known-good Versa template');
+    return;
   }
+
+  fs.writeFileSync(appDelegatePath, TEMPLATE, 'utf8');
+  console.log('[ios-spm] Rewrote AppDelegate.swift from known-good Versa template');
 }
 
 patchAppDelegate();
