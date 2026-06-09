@@ -64,8 +64,9 @@ const steps = [
   { label: 'Building web app', command: 'npm', args: ['run', 'build'] },
   { label: 'Syncing iOS project', command: 'npx', args: ['cap', 'sync', 'ios'] },
   { label: 'Patching iOS permissions & app icon', command: 'node', args: ['scripts/capacitor-ios-post-sync.mjs'] },
+  { label: 'Repairing iOS Swift package imports', command: 'node', args: ['scripts/fix-ios-spm-appdelegate.mjs'] },
+  { label: 'Resolving iOS Swift packages', command: 'node', args: ['scripts/resolve-ios-packages.mjs'] },
   { label: 'Verifying Xcode project before opening', command: 'node', args: ['scripts/apple-release-ready.mjs'] },
-  { label: 'Clearing stale Xcode package cache', command: 'node', args: ['scripts/repair-ios-spm.mjs'] },
 ];
 
 if (args.has('--open')) {
@@ -79,7 +80,11 @@ function runStep({ label, command, args }) {
     console.log(`\n[${stamp()}] ▶ ${label}`);
     console.log(`$ ${command} ${args.join(' ')}`);
 
-    const timeoutMs = label === 'Opening Xcode' ? 30_000 : 10 * 60_000;
+    const timeoutMs = label === 'Opening Xcode'
+      ? 30_000
+      : label === 'Resolving iOS Swift packages'
+        ? 15 * 60_000
+        : 10 * 60_000;
     const child = spawn(command, args, {
       cwd: root,
       env: process.env,
@@ -109,4 +114,4 @@ for (const step of steps) {
   await runStep(step);
 }
 
-console.log('\n✅ iOS files are synced. If Xcode is already open, press Run ▶️ there.');
+console.log('\n✅ iOS files are synced and native packages are resolved. If Xcode is already open, press Run ▶️ there.');

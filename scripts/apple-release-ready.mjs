@@ -101,6 +101,24 @@ const capAppSpmPackage = path.join(root, 'ios', 'App', 'CapApp-SPM', 'Package.sw
 if (!fs.existsSync(capAppSpmPackage)) {
   fail('iOS Swift package CapApp-SPM is missing. Run npm run ios:update again.');
 }
+const capAppSpmText = fs.readFileSync(capAppSpmPackage, 'utf8');
+const requiredSpmProducts = ['Capacitor', 'CapacitorApp', 'CapacitorSplashScreen', 'OnesignalCapacitorPlugin'];
+if (packageJson.dependencies?.['@capacitor-community/facebook-login']) {
+  requiredSpmProducts.push('CapacitorCommunityFacebookLogin', 'FacebookCore');
+}
+const missingSpmProducts = requiredSpmProducts.filter((product) => !capAppSpmText.includes(`"${product}"`));
+if (missingSpmProducts.length > 0) {
+  fail(`iOS Swift package dependencies are incomplete: ${missingSpmProducts.join(', ')}. Run npm run ios:update again.`);
+}
+
+const appDelegatePath = path.join(root, 'ios', 'App', 'App', 'AppDelegate.swift');
+const appDelegate = fs.readFileSync(appDelegatePath, 'utf8');
+if (appDelegate.includes('import OneSignalFramework')) {
+  fail('AppDelegate.swift imports OneSignalFramework directly. Run npm run ios:update again to use the Capacitor OneSignal plugin instead.');
+}
+if (packageJson.dependencies?.['@capacitor-community/facebook-login'] && !appDelegate.includes('import FacebookCore')) {
+  fail('AppDelegate.swift is missing the FacebookCore import. Run npm run ios:update again.');
+}
 
 const appIconContents = JSON.parse(fs.readFileSync(appIconContentsPath, 'utf8'));
 const marketingIcon = appIconContents.images?.find((image) => image.idiom === 'ios-marketing');
