@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { requestOneSignalPermission } from '@/lib/onesignal';
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BDYNC1YHcRfHX-4KpkSunIiQmXPLwjZkwH3KYjUrRD9aGo0DA9i1Rg9EdulqmMYlFEO-rVizI-HpC8EkVkKQlz8';
 
@@ -84,7 +85,6 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
   const [supportMessage, setSupportMessage] = useState('Not supported in this browser');
   const isNativeApp = Capacitor?.isNativePlatform?.() === true;
-  const nativeNotificationsImplemented = false;
 
   const checkSubscription = useCallback(async () => {
     if (!user) {
@@ -134,10 +134,10 @@ export function usePushNotifications() {
   }, [user]);
 
   useEffect(() => {
-    if (isNativeApp && !nativeNotificationsImplemented) {
-      setIsSupported(false);
+    if (isNativeApp) {
+      setIsSupported(true);
       setIsSubscribed(false);
-      setSupportMessage('Native app notifications are not active in this build yet');
+      setSupportMessage('Enable notifications to stay updated');
       return;
     }
 
@@ -178,8 +178,27 @@ export function usePushNotifications() {
       return false;
     }
 
+    if (isNativeApp) {
+      setIsLoading(true);
+      try {
+        const result = await requestOneSignalPermission(user.id);
+        if (result.ok) {
+          setIsSubscribed(true);
+          toast.success('Notifications enabled!');
+          return true;
+        }
+        toast(result.reason === 'not-native' ? 'Notifications only work in the iOS app' : 'Turn on notifications in iOS Settings', {
+          description: result.reason === 'not-native' ? undefined : 'Open Settings → Versa → Notifications and enable Allow Notifications.',
+          duration: 8000,
+        });
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
     if (!isSupported) {
-      toast.error(isNativeApp ? 'Native app notifications are not active in this build yet' : supportMessage);
+      toast.error(supportMessage);
       return false;
     }
 
