@@ -160,9 +160,9 @@ export function usePushNotifications() {
     void checkSubscription();
   }, [checkSubscription, user, isNativeApp]);
 
-  const registerServiceWorker = async (): Promise<ServiceWorkerRegistration> => {
+  const registerServiceWorker = useCallback(async (): Promise<ServiceWorkerRegistration> => {
     if (isNativeApp) {
-      throw new Error('Native app notifications are not active in this build yet');
+      throw new Error('Native notifications use the native permission flow');
     }
 
     await navigator.serviceWorker.register('/sw.js', {
@@ -170,7 +170,7 @@ export function usePushNotifications() {
     });
 
     return navigator.serviceWorker.ready;
-  };
+  }, [isNativeApp]);
 
   const subscribe = useCallback(async () => {
     if (!user) {
@@ -250,7 +250,7 @@ export function usePushNotifications() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, isSupported, isNativeApp, supportMessage]);
+  }, [user, isSupported, isNativeApp, supportMessage, registerServiceWorker]);
 
   const unsubscribe = useCallback(async () => {
     if (!user) {
