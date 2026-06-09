@@ -25,8 +25,17 @@ import path from 'node:path';
 const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
 
 const root = process.cwd();
+const packageJsonPath = path.join(root, 'package.json');
 const podfilePath = path.join(root, 'ios/App/Podfile');
 const appDelegatePath = path.join(root, 'ios/App/App/AppDelegate.swift');
+
+if (fs.existsSync(packageJsonPath)) {
+  const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  if (pkg.dependencies?.['@onesignal/capacitor-plugin']) {
+    console.log('✓ Official @onesignal/capacitor-plugin is installed; skipping legacy manual OneSignal patch.');
+    process.exit(0);
+  }
+}
 
 function patchPodfile() {
   if (!fs.existsSync(podfilePath)) {
