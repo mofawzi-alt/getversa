@@ -101,11 +101,16 @@ function NativeNotificationToggle() {
       icon={<Bell className="h-5 w-5 text-primary" />}
       title="Push Notifications"
       subtitle="Enable alerts for new polls and updates"
+      onClick={enableNotifications}
       action={
         <Button
+          type="button"
           variant="default"
           size="sm"
-          onClick={enableNotifications}
+          onClick={(event) => {
+            event.stopPropagation();
+            void enableNotifications();
+          }}
           disabled={isLoading}
         >
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enable'}
@@ -122,14 +127,27 @@ function Row({
   title,
   subtitle,
   action,
+  onClick,
 }: {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
   action: React.ReactNode;
+  onClick?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 p-4 glass rounded-xl">
+    <div
+      className={`flex items-center gap-3 p-4 glass rounded-xl ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      } : undefined}
+    >
       {icon}
       <div className="flex-1 min-w-0">
         <p className="font-medium text-card-foreground">{title}</p>
