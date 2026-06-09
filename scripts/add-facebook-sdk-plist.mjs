@@ -103,7 +103,6 @@ if (changed) {
 
 console.log('\nNext on your Mac:');
 console.log('  1. cd ~/Desktop/versa');
-console.log('  2. node scripts/add-facebook-sdk.mjs     # pod + AppDelegate');
+console.log('  2. npm run ios:update');
 console.log('  3. node scripts/add-facebook-sdk-plist.mjs  # this script (Info.plist)');
-console.log('  4. cd ios/App && pod install && cd ../..');
-console.log('  5. Open Xcode → bump build number → Archive → upload to App Store Connect');
+console.log('  4. Open Xcode → Archive → upload to App Store Connect');
