@@ -21,12 +21,30 @@ function isNative(): boolean {
 
 export type RequestPermissionResult =
   | { ok: true }
-  | { ok: false; reason: 'not-native' | 'denied' | 'error'; message?: string };
+  | { ok: false; reason: 'not-native' | 'missing-plugin' | 'denied' | 'error'; message?: string };
 
 function permissionIsEnabled(permission: number): boolean {
   return permission === OSNotificationPermission.Authorized
     || permission === OSNotificationPermission.Provisional
     || permission === OSNotificationPermission.Ephemeral;
+}
+
+function hasOneSignalPlugin(): boolean {
+  return Capacitor?.isPluginAvailable?.('OneSignalCapacitor') === true;
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(label)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
 }
 
 function registerSubscriptionObserver() {
@@ -45,7 +63,7 @@ function registerSubscriptionObserver() {
 async function waitForPushSubscriptionId(timeoutMs = 5_000): Promise<string | null> {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
-    const id = await OneSignal.User.pushSubscription.getIdAsync();
+    const id = await withTimeout(OneSignal.User.pushSubscription.getIdAsync(), 2_000, 'OneSignal subscription id check timed out');
     if (id) return id;
     await new Promise((r) => setTimeout(r, 500));
   }
@@ -56,14 +74,19 @@ async function ensureOneSignalInitialized(userId: string | null): Promise<void> 
   if (!isNative()) return;
   initPromise ??= (async () => {
     OneSignal.Debug.setLogLevel(LogLevel.Warn);
-    await OneSignal.initialize(ONESIGNAL_APP_ID);
+    await withTimeout(OneSignal.initialize(ONESIGNAL_APP_ID), 5_000, 'OneSignal initialize timed out');
     registerSubscriptionObserver();
   })();
-  await initPromise;
+  try {
+    await initPromise;
+  } catch (error) {
+    initPromise = null;
+    throw error;
+  }
 
   if (userId) {
     activeUserId = userId;
-    await OneSignal.login(userId);
+    await withTimeout(OneSignal.login(userId), 5_000, 'OneSignal login timed out');
     await Preferences.set({ key: PENDING_USER_ID_KEY, value: userId });
   } else {
     activeUserId = null;
@@ -76,6 +99,10 @@ async function ensureOneSignalInitialized(userId: string | null): Promise<void> 
  */
 export async function initOneSignal(userId: string | null): Promise<void> {
   if (!isNative()) return;
+  if (!hasOneSignalPlugin()) {
+    console.warn('[OneSignal] Native plugin missing. A new iOS build is required before push can be enabled.');
+    return;
+  }
   try {
     await ensureOneSignalInitialized(userId);
     const hasPermission = await OneSignal.Notifications.hasPermission();
@@ -100,19 +127,42 @@ export async function requestOneSignalPermission(
   userId: string | null,
 ): Promise<RequestPermissionResult> {
   if (!isNative()) return { ok: false, reason: 'not-native' };
+  if (!hasOneSignalPlugin()) {
+    return {
+      ok: false,
+      reason: 'missing-plugin',
+      message: 'This installed iOS build is missing the native notification plugin. Install a fresh TestFlight/App Store build after running npm run ios:update.',
+    };
+  }
 
   try {
     await ensureOneSignalInitialized(userId);
 
-    const nativePermission = await OneSignal.Notifications.permissionNative();
-    let accepted = permissionIsEnabled(nativePermission) || await OneSignal.Notifications.hasPermission();
+    const nativePermission = await withTimeout(
+      OneSignal.Notifications.permissionNative(),
+      3_000,
+      'OneSignal native permission check timed out',
+    );
+    let accepted = permissionIsEnabled(nativePermission) || await withTimeout(
+      OneSignal.Notifications.hasPermission(),
+      3_000,
+      'OneSignal permission check timed out',
+    );
 
     if (!accepted) {
-      accepted = await OneSignal.Notifications.requestPermission(true);
+      accepted = await withTimeout(
+        OneSignal.Notifications.requestPermission(true),
+        15_000,
+        'OneSignal permission request timed out',
+      );
     }
 
-    accepted = accepted || await OneSignal.Notifications.hasPermission();
-    await OneSignal.User.pushSubscription.optIn();
+    accepted = accepted || await withTimeout(
+      OneSignal.Notifications.hasPermission(),
+      3_000,
+      'OneSignal permission recheck timed out',
+    );
+    await withTimeout(OneSignal.User.pushSubscription.optIn(), 5_000, 'OneSignal opt-in timed out');
 
     if (!accepted) {
       return {

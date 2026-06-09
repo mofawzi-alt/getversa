@@ -62,7 +62,10 @@ function NativeNotificationToggle() {
   const [isLoading, setIsLoading] = useState(false);
 
   const enableNotifications = async () => {
+    toast.loading('Checking notifications…', { id: 'native-notifications' });
+
     if (!user?.id) {
+      toast.dismiss('native-notifications');
       toast.error('Please sign in to enable notifications');
       return;
     }
@@ -71,19 +74,27 @@ function NativeNotificationToggle() {
     try {
       const result = await requestOneSignalPermission(user.id);
       if (result.ok === true) {
-        toast.success('Notifications enabled');
+        toast.success('Notifications enabled', { id: 'native-notifications' });
         return;
       }
       const reason = result.reason;
       const label =
         reason === 'not-native'
           ? 'Notifications only work in the iOS app'
+          : reason === 'missing-plugin'
+            ? 'Update the iOS app first'
+            : reason === 'error'
+              ? 'Notifications need a new app build'
           : 'Turn on notifications in iOS Settings';
       const description =
         reason === 'not-native'
           ? undefined
+          : reason === 'missing-plugin'
+            ? 'This cannot be fixed by OTA. Install a new TestFlight/App Store build that includes the native notification plugin.'
+            : reason === 'error'
+              ? result.message ?? 'Install a fresh TestFlight/App Store build, then try Enable again.'
           : 'Open Settings → Versa → Notifications and enable Allow Notifications.';
-      toast(label, { description, duration: 8000 });
+      toast(label, { id: 'native-notifications', description, duration: 8000 });
     } finally {
       setIsLoading(false);
     }
@@ -94,11 +105,16 @@ function NativeNotificationToggle() {
       icon={<Bell className="h-5 w-5 text-primary" />}
       title="Push Notifications"
       subtitle="Enable alerts for new polls and updates"
+      onClick={enableNotifications}
       action={
         <Button
+          type="button"
           variant="default"
           size="sm"
-          onClick={enableNotifications}
+          onClick={(event) => {
+            event.stopPropagation();
+            void enableNotifications();
+          }}
           disabled={isLoading}
         >
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enable'}
@@ -115,14 +131,27 @@ function Row({
   title,
   subtitle,
   action,
+  onClick,
 }: {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
   action: React.ReactNode;
+  onClick?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 p-4 glass rounded-xl">
+    <div
+      className={`flex items-center gap-3 p-4 glass rounded-xl ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      } : undefined}
+    >
       {icon}
       <div className="flex-1 min-w-0">
         <p className="font-medium text-card-foreground">{title}</p>
