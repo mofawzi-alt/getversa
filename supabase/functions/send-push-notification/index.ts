@@ -146,7 +146,9 @@ serve(async (req: Request): Promise<Response> => {
         }
         console.log(`OneSignal sent via ${payload.user_ids?.length ? "external_id aliases" : "subscribed segment"}:`, osRes.status, osJson);
 
-        if (subscriptionIds.length > 0) {
+        const noAliasRecipients = Array.isArray(osJson?.errors)
+          && osJson.errors.some((error: unknown) => String(error).includes("All included players are not subscribed"));
+        if (payload.user_ids?.length && noAliasRecipients && subscriptionIds.length > 0) {
           const fallbackRes = await sendOneSignal({
             ...osBody,
             include_aliases: undefined,
