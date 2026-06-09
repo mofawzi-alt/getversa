@@ -42,7 +42,7 @@ function registerSubscriptionObserver() {
   });
 }
 
-async function waitForPushSubscriptionId(timeoutMs = 15_000): Promise<string | null> {
+async function waitForPushSubscriptionId(timeoutMs = 5_000): Promise<string | null> {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
     const id = await OneSignal.User.pushSubscription.getIdAsync();
@@ -81,6 +81,9 @@ export async function initOneSignal(userId: string | null): Promise<void> {
     const hasPermission = await OneSignal.Notifications.hasPermission();
     if (hasPermission) {
       await OneSignal.User.pushSubscription.optIn();
+      void waitForPushSubscriptionId(10_000).then((playerId) => {
+        if (playerId && userId) void saveSubscription(userId, playerId);
+      });
     }
     await syncPlayerIdToSupabase(userId);
   } catch (err) {
