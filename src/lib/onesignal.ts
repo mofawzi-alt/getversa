@@ -60,14 +60,29 @@ function registerSubscriptionObserver() {
   });
 }
 
-async function waitForPushSubscriptionId(timeoutMs = 5_000): Promise<string | null> {
+async function waitForPushSubscriptionId(timeoutMs = 15_000): Promise<string | null> {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
-    const id = await withTimeout(OneSignal.User.pushSubscription.getIdAsync(), 2_000, 'OneSignal subscription id check timed out');
-    if (id) return id;
+    try {
+      const id = await withTimeout(OneSignal.User.pushSubscription.getIdAsync(), 2_000, 'OneSignal subscription id check timed out');
+      if (id) return id;
+    } catch {
+      // ignore, retry
+    }
     await new Promise((r) => setTimeout(r, 500));
   }
   return null;
+}
+
+// Background save loop — keeps trying after requestOneSignalPermission returns,
+// in case APNs takes longer than the foreground wait window.
+function scheduleBackgroundSave(userId: string) {
+  void (async () => {
+    const playerId = await waitForPushSubscriptionId(60_000);
+    if (!playerId) return;
+    await Preferences.set({ key: PLAYER_ID_KEY, value: playerId });
+    await saveSubscription(userId, playerId);
+  })();
 }
 
 async function ensureOneSignalInitialized(userId: string | null): Promise<void> {
