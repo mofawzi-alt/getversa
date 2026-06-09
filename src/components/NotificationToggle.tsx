@@ -62,7 +62,10 @@ function NativeNotificationToggle() {
   const [isLoading, setIsLoading] = useState(false);
 
   const enableNotifications = async () => {
+    toast.loading('Checking notifications…', { id: 'native-notifications' });
+
     if (!user?.id) {
+      toast.dismiss('native-notifications');
       toast.error('Please sign in to enable notifications');
       return;
     }
@@ -71,19 +74,23 @@ function NativeNotificationToggle() {
     try {
       const result = await requestOneSignalPermission(user.id);
       if (result.ok === true) {
-        toast.success('Notifications enabled');
+        toast.success('Notifications enabled', { id: 'native-notifications' });
         return;
       }
       const reason = result.reason;
       const label =
         reason === 'not-native'
           ? 'Notifications only work in the iOS app'
+          : reason === 'missing-plugin'
+            ? 'Update the iOS app first'
           : 'Turn on notifications in iOS Settings';
       const description =
         reason === 'not-native'
           ? undefined
+          : reason === 'missing-plugin'
+            ? 'This cannot be fixed by OTA. Install a new TestFlight/App Store build that includes the native notification plugin.'
           : 'Open Settings → Versa → Notifications and enable Allow Notifications.';
-      toast(label, { description, duration: 8000 });
+      toast(label, { id: 'native-notifications', description, duration: 8000 });
     } finally {
       setIsLoading(false);
     }
