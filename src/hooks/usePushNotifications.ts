@@ -182,7 +182,7 @@ export function usePushNotifications() {
       setIsLoading(true);
       try {
         const result = await requestOneSignalPermission(user.id);
-        if (result.ok) {
+        if (result.ok === true) {
           setIsSubscribed(true);
           toast.success('Notifications enabled!');
           return true;
