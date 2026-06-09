@@ -330,8 +330,22 @@ async function generateSplash() {
   console.log('[cap-sync] Regenerated iOS Splash.imageset with Versa branding');
 }
 
+function ensureBundleIdentifier() {
+  const targetBundleId = 'com.Versa.app';
+  let pbx = fs.readFileSync(pbxprojPath, 'utf8');
+  const regex = /PRODUCT_BUNDLE_IDENTIFIER = [^;]+;/g;
+  if (!regex.test(pbx)) return;
+  const updated = pbx.replace(/PRODUCT_BUNDLE_IDENTIFIER = [^;]+;/g, `PRODUCT_BUNDLE_IDENTIFIER = ${targetBundleId};`);
+  if (updated !== pbx) {
+    fs.writeFileSync(pbxprojPath, updated, 'utf8');
+    console.log(`[cap-sync] Forced bundle identifier to ${targetBundleId}`);
+  }
+}
+
 removeStaleCapgoArtifacts();
 await generateIcons();
 await generateSplash();
 ensureInfoPlistKeys();
 ensurePushEntitlements();
+ensureBundleIdentifier();
+
