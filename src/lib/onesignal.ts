@@ -166,17 +166,24 @@ async function syncPlayerIdToSupabase(userId: string | null): Promise<void> {
 }
 
 async function saveSubscription(userId: string, playerId: string): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from('onesignal_subscriptions')
-      .upsert(
-        { user_id: userId, player_id: playerId, platform: Capacitor.getPlatform() },
-        { onConflict: 'user_id,player_id' },
-      );
-    if (error) throw error;
-    console.log('[OneSignal] saved subscription', playerId);
-  } catch (err) {
-    console.error('[OneSignal] saveSubscription failed', err);
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      const { error } = await supabase
+        .from('onesignal_subscriptions')
+        .upsert(
+          { user_id: userId, player_id: playerId, platform: Capacitor.getPlatform() },
+          { onConflict: 'user_id,player_id' },
+        );
+      if (error) throw error;
+      console.log('[OneSignal] saved subscription', playerId);
+      return;
+    } catch (err) {
+      if (attempt === 5) {
+        console.error('[OneSignal] saveSubscription failed', err);
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
+    }
   }
 }
 
