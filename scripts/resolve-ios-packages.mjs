@@ -3,15 +3,17 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
-const projectPath = path.join(root, 'ios', 'App', 'App.xcodeproj');
+const iosDir = path.join(root, 'ios', 'App');
+const workspacePath = path.join(iosDir, 'App.xcworkspace');
+const podfilePath = path.join(iosDir, 'Podfile');
 
 if (process.platform !== 'darwin') {
   console.log('[ios-spm] Skipping Xcode package resolution outside macOS.');
   process.exit(0);
 }
 
-if (!fs.existsSync(projectPath)) {
-  console.error('[ios-spm] STOP: ios/App/App.xcodeproj is missing. Run npm run ios:update again.');
+if (!fs.existsSync(podfilePath)) {
+  console.error('[ios] STOP: ios/App/Podfile is missing. Run npm run ios:update again.');
   process.exit(1);
 }
 
@@ -21,19 +23,20 @@ if (xcodebuildCheck.status !== 0) {
   process.exit(1);
 }
 
-console.log('[ios-spm] Resolving Xcode Swift packages before opening Xcode. This can take a few minutes.');
-const result = spawnSync('xcodebuild', [
-  '-resolvePackageDependencies',
-  '-project', projectPath,
-  '-scheme', 'App',
-], {
-  cwd: path.join(root, 'ios', 'App'),
+console.log('[ios] Installing iOS native dependencies before opening Xcode. This can take a few minutes.');
+const podResult = spawnSync('pod', ['install'], {
+  cwd: iosDir,
   stdio: 'inherit',
 });
 
-if (result.status !== 0) {
-  console.error('\n[ios-spm] STOP: Xcode could not resolve native packages. Xcode was not opened because it would show red module errors.');
-  process.exit(result.status ?? 1);
+if (podResult.status !== 0) {
+  console.error('\n[ios] STOP: CocoaPods could not install native dependencies. Xcode was not opened because it would show red module errors.');
+  process.exit(podResult.status ?? 1);
 }
 
-console.log('[ios-spm] Xcode Swift packages resolved successfully.');
+if (!fs.existsSync(workspacePath)) {
+  console.error('[ios] STOP: ios/App/App.xcworkspace was not created. Run npm run ios:update again.');
+  process.exit(1);
+}
+
+console.log('[ios] iOS native dependencies installed successfully.');

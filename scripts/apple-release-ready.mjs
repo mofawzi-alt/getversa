@@ -74,11 +74,12 @@ if (!fs.existsSync(plistPath)) {
 
 const requiredIosWrapperFiles = [
   'ios/App/App.xcodeproj/project.pbxproj',
+  'ios/App/App.xcworkspace',
+  'ios/App/Podfile',
+  'ios/App/Pods/Manifest.lock',
   'ios/App/App/AppDelegate.swift',
   'ios/App/App/Base.lproj/Main.storyboard',
   'ios/App/App/Base.lproj/LaunchScreen.storyboard',
-  'ios/App/CapApp-SPM/Package.swift',
-  'ios/App/debug.xcconfig',
 ];
 const missingIosWrapperFiles = requiredIosWrapperFiles.filter((relativePath) => !fs.existsSync(path.join(root, relativePath)));
 if (missingIosWrapperFiles.length > 0) {
@@ -97,18 +98,11 @@ if (!fs.existsSync(appIconContentsPath)) {
   fail('iOS app icon Contents.json is missing.');
 }
 
-const capAppSpmPackage = path.join(root, 'ios', 'App', 'CapApp-SPM', 'Package.swift');
-if (!fs.existsSync(capAppSpmPackage)) {
-  fail('iOS Swift package CapApp-SPM is missing. Run npm run ios:update again.');
-}
-const capAppSpmText = fs.readFileSync(capAppSpmPackage, 'utf8');
-const requiredSpmProducts = ['Capacitor', 'CapacitorApp', 'CapacitorSplashScreen', 'OnesignalCapacitorPlugin'];
-if (packageJson.dependencies?.['@capacitor-community/facebook-login']) {
-  requiredSpmProducts.push('CapacitorCommunityFacebookLogin');
-}
-const missingSpmProducts = requiredSpmProducts.filter((product) => !capAppSpmText.includes(`"${product}"`));
-if (missingSpmProducts.length > 0) {
-  fail(`iOS Swift package dependencies are incomplete: ${missingSpmProducts.join(', ')}. Run npm run ios:update again.`);
+const podManifest = fs.readFileSync(path.join(root, 'ios', 'App', 'Pods', 'Manifest.lock'), 'utf8');
+const requiredPods = ['Capacitor', 'CapacitorApp', 'CapacitorSplashScreen', 'OneSignalCapacitorPlugin'];
+const missingPods = requiredPods.filter((podName) => !podManifest.includes(`- ${podName}`));
+if (missingPods.length > 0) {
+  fail(`iOS native dependencies are incomplete: ${missingPods.join(', ')}. Run npm run ios:update again.`);
 }
 
 const appDelegatePath = path.join(root, 'ios', 'App', 'App', 'AppDelegate.swift');
@@ -139,5 +133,5 @@ console.log('GOOD: Apple camera crash fix is present.');
 console.log('GOOD: Apple photo permission fix is present.');
 console.log('GOOD: App icon is present.');
 console.log('GOOD: OneSignal native notification plugin is present.');
-console.log('GOOD: Xcode Swift package CapApp-SPM is present.');
+console.log('GOOD: Xcode workspace native dependencies are installed.');
 console.log('GOOD: Versa iOS project is ready to open in Xcode.');
