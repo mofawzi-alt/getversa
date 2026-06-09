@@ -138,15 +138,31 @@ export async function requestOneSignalPermission(
   try {
     await ensureOneSignalInitialized(userId);
 
-    const nativePermission = await OneSignal.Notifications.permissionNative();
-    let accepted = permissionIsEnabled(nativePermission) || await OneSignal.Notifications.hasPermission();
+    const nativePermission = await withTimeout(
+      OneSignal.Notifications.permissionNative(),
+      3_000,
+      'OneSignal native permission check timed out',
+    );
+    let accepted = permissionIsEnabled(nativePermission) || await withTimeout(
+      OneSignal.Notifications.hasPermission(),
+      3_000,
+      'OneSignal permission check timed out',
+    );
 
     if (!accepted) {
-      accepted = await OneSignal.Notifications.requestPermission(true);
+      accepted = await withTimeout(
+        OneSignal.Notifications.requestPermission(true),
+        15_000,
+        'OneSignal permission request timed out',
+      );
     }
 
-    accepted = accepted || await OneSignal.Notifications.hasPermission();
-    await OneSignal.User.pushSubscription.optIn();
+    accepted = accepted || await withTimeout(
+      OneSignal.Notifications.hasPermission(),
+      3_000,
+      'OneSignal permission recheck timed out',
+    );
+    await withTimeout(OneSignal.User.pushSubscription.optIn(), 5_000, 'OneSignal opt-in timed out');
 
     if (!accepted) {
       return {
