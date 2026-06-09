@@ -52,7 +52,9 @@ function restoreMissingGeneratedIosFiles() {
   const templateRoot = path.join(tempDir, 'App');
 
   for (const relativePath of missingGeneratedPaths) {
-    const source = path.join(templateRoot, relativePath);
+    const source = relativePath === 'debug.xcconfig'
+      ? path.join(tempDir, 'debug.xcconfig')
+      : path.join(templateRoot, relativePath);
     const target = path.join(iosRoot, relativePath);
     if (!fs.existsSync(source)) {
       console.log(`[ios-spm] Skipped (not in template): ios/App/${relativePath}`);
