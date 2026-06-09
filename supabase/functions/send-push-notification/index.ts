@@ -98,6 +98,7 @@ serve(async (req: Request): Promise<Response> => {
     // Fire-and-forget: also send via OneSignal for native iOS/Android subscribers.
     const ONESIGNAL_APP_ID = Deno.env.get("ONESIGNAL_APP_ID");
     const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
+    let oneSignalSent = 0;
     if (ONESIGNAL_APP_ID && ONESIGNAL_REST_API_KEY) {
       try {
         let subscriptionIds: string[] = [];
@@ -123,23 +124,42 @@ serve(async (req: Request): Promise<Response> => {
           ...(payload.url ? { app_url: `com.versa.app://${String(payload.url).replace(/^\//, '')}` } : {}),
         };
 
-        if (subscriptionIds.length === 0) {
-          console.log("OneSignal: no native subscription ids found, skipping");
+        if (payload.user_ids?.length) {
+          osBody.include_aliases = { external_id: payload.user_ids };
         } else {
-          osBody.include_subscription_ids = subscriptionIds;
+          osBody.included_segments = ["Subscribed Users"];
         }
 
-        if (osBody.include_subscription_ids) {
-          const osRes = await fetch("https://api.onesignal.com/notifications", {
-            method: "POST",
-            headers: {
-              Authorization: `Key ${ONESIGNAL_REST_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(osBody),
+        const sendOneSignal = async (body: Record<string, unknown>) => fetch("https://api.onesignal.com/notifications", {
+          method: "POST",
+          headers: {
+            Authorization: `Key ${ONESIGNAL_REST_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+
+        const osRes = await sendOneSignal(osBody);
+        const osJson = await osRes.json();
+        console.log(`OneSignal sent via ${payload.user_ids?.length ? "external_id aliases" : "subscribed segment"}:`, osRes.status, osJson);
+
+        const noAliasRecipients = Array.isArray(osJson?.errors)
+          && osJson.errors.some((error: unknown) => String(error).includes("All included players are not subscribed"));
+        if (osRes.ok && !noAliasRecipients) {
+          oneSignalSent = payload.user_ids?.length ?? 0;
+        }
+        if (payload.user_ids?.length && noAliasRecipients && subscriptionIds.length > 0) {
+          const fallbackRes = await sendOneSignal({
+            ...osBody,
+            include_aliases: undefined,
+            included_segments: undefined,
+            include_subscription_ids: subscriptionIds,
           });
-          const osJson = await osRes.json();
-          console.log(`OneSignal sent (${subscriptionIds.length} native subscriptions):`, osRes.status, osJson);
+          const fallbackJson = await fallbackRes.json();
+          if (fallbackRes.ok) {
+            oneSignalSent = subscriptionIds.length;
+          }
+          console.log(`OneSignal fallback sent (${subscriptionIds.length} saved native subscriptions):`, fallbackRes.status, fallbackJson);
         }
       } catch (osErr) {
         console.error("OneSignal forward failed:", osErr);
@@ -164,7 +184,7 @@ serve(async (req: Request): Promise<Response> => {
 
     if (!subscriptions || subscriptions.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, sent: 0, message: "No subscriptions found" }),
+        JSON.stringify({ success: true, sent: oneSignalSent, web_sent: 0, onesignal_sent: oneSignalSent, message: "No web push subscriptions found" }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
@@ -245,7 +265,9 @@ serve(async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({
         success: true,
-        sent,
+        sent: sent + oneSignalSent,
+        web_sent: sent,
+        onesignal_sent: oneSignalSent,
         failed,
         expired_cleaned: expiredEndpoints.length,
       }),

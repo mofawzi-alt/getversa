@@ -1,6 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
-import OneSignal, { LogLevel } from '@onesignal/capacitor-plugin';
+import OneSignal, { LogLevel, OSNotificationPermission, type PushSubscriptionChangedState } from '@onesignal/capacitor-plugin';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -12,6 +12,8 @@ const ONESIGNAL_APP_ID = '0b64a490-9689-42c9-80a3-e84a0e4f1a0b';
 const PLAYER_ID_KEY = 'onesignal_player_id';
 const PENDING_USER_ID_KEY = 'onesignal_pending_user_id';
 let initPromise: Promise<void> | null = null;
+let observerRegistered = false;
+let activeUserId: string | null = null;
 
 function isNative(): boolean {
   return Capacitor?.isNativePlatform?.() === true;
@@ -21,17 +23,50 @@ export type RequestPermissionResult =
   | { ok: true }
   | { ok: false; reason: 'not-native' | 'denied' | 'error'; message?: string };
 
+function permissionIsEnabled(permission: number): boolean {
+  return permission === OSNotificationPermission.Authorized
+    || permission === OSNotificationPermission.Provisional
+    || permission === OSNotificationPermission.Ephemeral;
+}
+
+function registerSubscriptionObserver() {
+  if (observerRegistered) return;
+  observerRegistered = true;
+  OneSignal.User.pushSubscription.addEventListener('change', (event: PushSubscriptionChangedState) => {
+    const playerId = event.current?.id ?? null;
+    if (!playerId) return;
+    void Preferences.set({ key: PLAYER_ID_KEY, value: playerId });
+    if (activeUserId) {
+      void saveSubscription(activeUserId, playerId);
+    }
+  });
+}
+
+async function waitForPushSubscriptionId(timeoutMs = 15_000): Promise<string | null> {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const id = await OneSignal.User.pushSubscription.getIdAsync();
+    if (id) return id;
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  return null;
+}
+
 async function ensureOneSignalInitialized(userId: string | null): Promise<void> {
   if (!isNative()) return;
   initPromise ??= (async () => {
     OneSignal.Debug.setLogLevel(LogLevel.Warn);
     await OneSignal.initialize(ONESIGNAL_APP_ID);
+    registerSubscriptionObserver();
   })();
   await initPromise;
 
   if (userId) {
+    activeUserId = userId;
     await OneSignal.login(userId);
     await Preferences.set({ key: PENDING_USER_ID_KEY, value: userId });
+  } else {
+    activeUserId = null;
   }
 }
 
@@ -43,6 +78,10 @@ export async function initOneSignal(userId: string | null): Promise<void> {
   if (!isNative()) return;
   try {
     await ensureOneSignalInitialized(userId);
+    const hasPermission = await OneSignal.Notifications.hasPermission();
+    if (hasPermission) {
+      await OneSignal.User.pushSubscription.optIn();
+    }
     await syncPlayerIdToSupabase(userId);
   } catch (err) {
     console.error('[OneSignal] initOneSignal failed', err);
@@ -61,7 +100,15 @@ export async function requestOneSignalPermission(
 
   try {
     await ensureOneSignalInitialized(userId);
-    const accepted = await OneSignal.Notifications.requestPermission(true);
+
+    const nativePermission = await OneSignal.Notifications.permissionNative();
+    let accepted = permissionIsEnabled(nativePermission) || await OneSignal.Notifications.hasPermission();
+
+    if (!accepted) {
+      accepted = await OneSignal.Notifications.requestPermission(true);
+    }
+
+    accepted = accepted || await OneSignal.Notifications.hasPermission();
     await OneSignal.User.pushSubscription.optIn();
 
     if (!accepted) {
@@ -73,26 +120,13 @@ export async function requestOneSignalPermission(
     }
 
     // Give OneSignal/APNs a moment to produce a subscription id if it hasn't yet.
-    let playerId: string | null = null;
-    for (let i = 0; i < 20; i++) {
-      const id = await OneSignal.User.pushSubscription.getIdAsync();
-      if (id) {
-        playerId = id;
-        await Preferences.set({ key: PLAYER_ID_KEY, value: id });
-        break;
-      }
-      await new Promise((r) => setTimeout(r, 250));
-    }
+    const playerId = await waitForPushSubscriptionId();
 
     if (!playerId) {
-      return {
-        ok: false,
-        reason: 'denied',
-        message:
-          'Notifications not yet enabled. If iOS asked for permission, choose Allow. Otherwise enable in Settings → Versa → Notifications.',
-      };
+      return { ok: true };
     }
 
+    await Preferences.set({ key: PLAYER_ID_KEY, value: playerId });
     if (userId) {
       await saveSubscription(userId, playerId);
     }
@@ -111,6 +145,7 @@ export async function logoutOneSignal(): Promise<void> {
   if (!isNative()) return;
   try {
     await ensureOneSignalInitialized(null);
+    activeUserId = null;
     await OneSignal.logout();
     await Preferences.set({ key: PENDING_USER_ID_KEY, value: '' });
   } catch (err) {

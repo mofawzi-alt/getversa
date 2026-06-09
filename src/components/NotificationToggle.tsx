@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Bell, BellOff, Loader2 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
@@ -58,23 +59,34 @@ function WebNotificationToggle() {
 // ─────────────────────────────────────────────────────────────────
 function NativeNotificationToggle() {
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const enableNotifications = async () => {
-    const result = await requestOneSignalPermission(user?.id ?? null);
-    if (result.ok === true) {
-      toast.success('Notifications enabled');
+    if (!user?.id) {
+      toast.error('Please sign in to enable notifications');
       return;
     }
-    const reason = result.reason;
-    const label =
-      reason === 'not-native'
-        ? 'Notifications only work in the iOS app'
-        : 'Turn on notifications in iOS Settings';
-    const description =
-      reason === 'not-native'
-        ? undefined
-        : 'Open Settings → Versa → Notifications and enable Allow Notifications.';
-    toast(label, { description, duration: 8000 });
+
+    setIsLoading(true);
+    try {
+      const result = await requestOneSignalPermission(user.id);
+      if (result.ok === true) {
+        toast.success('Notifications enabled');
+        return;
+      }
+      const reason = result.reason;
+      const label =
+        reason === 'not-native'
+          ? 'Notifications only work in the iOS app'
+          : 'Turn on notifications in iOS Settings';
+      const description =
+        reason === 'not-native'
+          ? undefined
+          : 'Open Settings → Versa → Notifications and enable Allow Notifications.';
+      toast(label, { description, duration: 8000 });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -87,8 +99,9 @@ function NativeNotificationToggle() {
           variant="default"
           size="sm"
           onClick={enableNotifications}
+          disabled={isLoading}
         >
-          Enable
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enable'}
         </Button>
       }
     />
