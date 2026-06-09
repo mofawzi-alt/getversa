@@ -99,7 +99,7 @@ if (!fs.existsSync(appIconContentsPath)) {
 }
 
 const podManifest = fs.readFileSync(path.join(root, 'ios', 'App', 'Pods', 'Manifest.lock'), 'utf8');
-const requiredPods = ['Capacitor', 'CapacitorApp', 'CapacitorSplashScreen', 'OneSignalCapacitorPlugin'];
+const requiredPods = ['Capacitor', 'CapacitorApp', 'CapacitorSplashScreen', 'OnesignalCapacitorPlugin'];
 const missingPods = requiredPods.filter((podName) => !podManifest.includes(`- ${podName}`));
 if (missingPods.length > 0) {
   fail(`iOS native dependencies are incomplete: ${missingPods.join(', ')}. Run npm run ios:update again.`);
