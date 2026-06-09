@@ -21,12 +21,16 @@ function isNative(): boolean {
 
 export type RequestPermissionResult =
   | { ok: true }
-  | { ok: false; reason: 'not-native' | 'denied' | 'error'; message?: string };
+  | { ok: false; reason: 'not-native' | 'missing-plugin' | 'denied' | 'error'; message?: string };
 
 function permissionIsEnabled(permission: number): boolean {
   return permission === OSNotificationPermission.Authorized
     || permission === OSNotificationPermission.Provisional
     || permission === OSNotificationPermission.Ephemeral;
+}
+
+function hasOneSignalPlugin(): boolean {
+  return Capacitor?.isPluginAvailable?.('OneSignalCapacitor') === true;
 }
 
 function registerSubscriptionObserver() {
@@ -76,6 +80,10 @@ async function ensureOneSignalInitialized(userId: string | null): Promise<void> 
  */
 export async function initOneSignal(userId: string | null): Promise<void> {
   if (!isNative()) return;
+  if (!hasOneSignalPlugin()) {
+    console.warn('[OneSignal] Native plugin missing. A new iOS build is required before push can be enabled.');
+    return;
+  }
   try {
     await ensureOneSignalInitialized(userId);
     const hasPermission = await OneSignal.Notifications.hasPermission();
@@ -100,6 +108,13 @@ export async function requestOneSignalPermission(
   userId: string | null,
 ): Promise<RequestPermissionResult> {
   if (!isNative()) return { ok: false, reason: 'not-native' };
+  if (!hasOneSignalPlugin()) {
+    return {
+      ok: false,
+      reason: 'missing-plugin',
+      message: 'This installed iOS build is missing the native notification plugin. Install a fresh TestFlight/App Store build after running npm run ios:update.',
+    };
+  }
 
   try {
     await ensureOneSignalInitialized(userId);
