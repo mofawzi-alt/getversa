@@ -27,6 +27,7 @@ function assertVersaNativePreflight() {
     'NSPhotoLibraryUsageDescription',
     'NSPhotoLibraryAddUsageDescription',
     'NSFaceIDUsageDescription',
+    'NSLocationWhenInUseUsageDescription',
     'FacebookAppID',
     'FacebookClientToken',
     'FacebookDisplayName',

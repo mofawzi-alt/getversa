@@ -52,6 +52,7 @@ const requiredAppleKeys = [
   'NSPhotoLibraryUsageDescription',
   'NSPhotoLibraryAddUsageDescription',
   'NSFaceIDUsageDescription',
+  'NSLocationWhenInUseUsageDescription',
 ];
 const missingKeys = requiredAppleKeys.filter((key) => !postSync.includes(key));
 if (missingKeys.length > 0) {
