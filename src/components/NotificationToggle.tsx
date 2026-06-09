@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 /**
  * Smart notification toggle:
  *  • Web: uses Web Push (existing usePushNotifications hook)
- *  • Native iOS/Android: disabled until the app uses an SPM-ready push plugin.
+ *  • Native iOS/Android: uses the OneSignal Capacitor plugin.
  */
 export function NotificationToggle() {
   const isNative = Capacitor?.isNativePlatform?.() === true;
