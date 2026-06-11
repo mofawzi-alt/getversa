@@ -263,6 +263,37 @@ function ReportButton({ liveAskId }: { liveAskId: string }) {
   );
 }
 
+function BlockButton({ askerId, liveAskId, onBlocked }: { askerId: string; liveAskId: string; onBlocked: (uid: string) => void }) {
+  const { user } = useAuth();
+  const block = async () => {
+    if (!user) return;
+    if (user.id === askerId) {
+      toast({ title: "You can't block yourself" });
+      return;
+    }
+    const ok = window.confirm("Block this user? You won't see their Live Asks again, and our team will review their content.");
+    if (!ok) return;
+    const { error } = await (supabase as any)
+      .from("user_blocks")
+      .insert({ blocker_id: user.id, blocked_id: askerId, reason: "blocked_from_live_ask" });
+    if (error && !String(error.message).includes("duplicate")) {
+      toast({ title: error.message, variant: "destructive" });
+      return;
+    }
+    // Also file a report so admins are notified within 24h
+    await supabase.functions.invoke("report-live-ask", {
+      body: { live_ask_id: liveAskId, reason: "user_blocked_author", notes: "User blocked the author from a Live Ask" },
+    }).catch(() => {});
+    onBlocked(askerId);
+    toast({ title: "User blocked. Their content is hidden." });
+  };
+  return (
+    <button onClick={block} className="p-2" aria-label="Block user">
+      <Ban className="h-5 w-5 text-muted-foreground" />
+    </button>
+  );
+}
+
 function AskPage({
   ask, voted, onVoted, onAskUpdate, onNext,
 }: {
