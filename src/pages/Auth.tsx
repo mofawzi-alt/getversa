@@ -118,6 +118,7 @@ export default function Auth() {
   const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const [ageConfirm, setAgeConfirm] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const { user, session, signIn, signUp, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -215,6 +216,7 @@ export default function Auth() {
 
     if (isLogin) {
       // Login — only email + password
+      if (!termsAccepted) { toast.error('Please agree to the Terms first.'); return; }
       const validation = loginSchema.safeParse({ email, password });
       if (!validation.success) {
         toast.error(validation.error.errors[0].message);
@@ -263,6 +265,7 @@ export default function Auth() {
     }
 
     // Signup — validate all fields
+    if (!termsAccepted) { toast.error('Please agree to the Terms first.'); return; }
     const validation = loginSchema.safeParse({ email, password });
     if (!validation.success) { toast.error(validation.error.errors[0].message); return; }
     if (!name.trim()) { toast.error('Please enter your name'); return; }
@@ -347,7 +350,7 @@ export default function Auth() {
         {/* Auth Form */}
         <div className="bg-card/80 backdrop-blur-lg rounded-2xl p-5 shadow-card border border-border/50">
           {/* Social sign-in (Apple required by App Store guideline 4.8) */}
-          <SocialAuthButtons mode={isLogin ? 'signin' : 'signup'} />
+          <SocialAuthButtons mode={isLogin ? 'signin' : 'signup'} disabled={!termsAccepted} />
 
           <div className="my-4 flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
@@ -512,18 +515,31 @@ export default function Auth() {
                     className="mt-0.5"
                   />
                   <label htmlFor="age-confirm" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                    I confirm that I am 18 years of age or older and agree to the{' '}
-                    <Link to="/terms" className="text-accent underline">Terms of Service</Link> and{' '}
-                    <Link to="/privacy" className="text-accent underline">Privacy Policy</Link>
+                    I confirm that I am 18 years of age or older.
                   </label>
                 </div>
               </>
             )}
 
+            <div className="flex items-start gap-2 mt-1">
+              <Checkbox
+                id="terms-accepted"
+                checked={termsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+                disabled={loading}
+                className="mt-0.5"
+              />
+              <label htmlFor="terms-accepted" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                I agree to the{' '}
+                <Link to="/terms" className="text-accent underline">Terms of Service / EULA</Link> and{' '}
+                <Link to="/privacy" className="text-accent underline">Privacy Policy</Link>
+              </label>
+            </div>
+
             <Button
               type="submit"
               className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-12 rounded-full shadow-accent transition-all hover:scale-[1.02] mt-2"
-              disabled={loading || (!isLogin && !ageConfirm)}
+              disabled={loading || !termsAccepted || (!isLogin && !ageConfirm)}
             >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

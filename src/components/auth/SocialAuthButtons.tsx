@@ -13,11 +13,15 @@ import { startNativeOAuth } from '@/lib/nativeOAuth';
  * (Apple App Store guideline 4 compliance).
  * On web: uses Lovable Cloud managed OAuth redirect.
  */
-export default function SocialAuthButtons({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
+export default function SocialAuthButtons({ mode = 'signin', disabled = false }: { mode?: 'signin' | 'signup'; disabled?: boolean }) {
   const [busy, setBusy] = useState<'apple' | 'google' | null>(null);
   const { prepareForExternalSignIn } = useAuth();
 
   const handleOAuth = async (provider: 'apple' | 'google') => {
+    if (disabled) {
+      toast.error('Please agree to the Terms first.');
+      return;
+    }
     setBusy(provider);
     try {
       await prepareForExternalSignIn();
@@ -54,7 +58,7 @@ export default function SocialAuthButtons({ mode = 'signin' }: { mode?: 'signin'
       <button
         type="button"
         onClick={() => handleOAuth('apple')}
-        disabled={busy !== null}
+        disabled={busy !== null || disabled}
         className="w-full h-11 rounded-lg bg-black text-white font-medium text-sm flex items-center justify-center gap-2 active:opacity-80 transition-opacity disabled:opacity-60"
       >
         {busy === 'apple' ? (
@@ -71,7 +75,7 @@ export default function SocialAuthButtons({ mode = 'signin' }: { mode?: 'signin'
       <button
         type="button"
         onClick={() => handleOAuth('google')}
-        disabled={busy !== null}
+        disabled={busy !== null || disabled}
         className="w-full h-11 rounded-lg bg-white text-[#1f1f1f] font-medium text-sm flex items-center justify-center gap-2 border border-border active:bg-gray-50 transition-colors disabled:opacity-60"
       >
         {busy === 'google' ? (

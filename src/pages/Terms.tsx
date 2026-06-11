@@ -71,6 +71,11 @@ export default function Terms() {
 
           <h3 className="font-semibold mt-4 mb-1">4.3 Poll Participation</h3>
           <p>Votes on Versa represent your genuine opinion. You agree to vote honestly and not to systematically vote in a way designed to manipulate aggregate results.</p>
+
+          <h3 className="font-semibold mt-4 mb-1">4.4 User Content and Moderation</h3>
+          <p>If you submit content to Versa, including Live Asks, photos, text, usernames, or profile content, you may not submit objectionable, abusive, harassing, hateful, sexual, violent, illegal, spam, impersonation, or otherwise harmful content.</p>
+          <p className="mt-2">Versa may automatically filter submitted content before it appears. Users can report objectionable content and block abusive users from inside the app. Blocking a user hides that user's content from the blocker immediately and sends the related content to Versa for review.</p>
+          <p className="mt-2">We review objectionable content reports and may remove content, restrict access, suspend accounts, or delete accounts that violate these Terms. Reports of objectionable content are acted on within 24 hours where required by platform safety rules.</p>
         </Section>
 
         <Section title="5. Credits and Ask Versa">
