@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Home, Flag } from "lucide-react";
+import { Loader2, Home, Flag, Ban } from "lucide-react";
 
 interface LiveAsk {
   id: string;
@@ -72,6 +72,18 @@ export default function LiveAskView() {
       .then(({ data }) => setViewer((data as any) ?? null));
   }, [user?.id]);
 
+  const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
+
+  // Load blocked users
+  useEffect(() => {
+    if (!user) { setBlockedIds(new Set()); return; }
+    (supabase as any)
+      .from("user_blocks")
+      .select("blocked_id")
+      .eq("blocker_id", user.id)
+      .then(({ data }: any) => setBlockedIds(new Set((data ?? []).map((r: any) => r.blocked_id))));
+  }, [user?.id]);
+
   const load = useCallback(async () => {
     if (!id) return;
     // Fetch the targeted ask + all active asks
@@ -87,10 +99,11 @@ export default function LiveAskView() {
 
     const all: LiveAsk[] = [];
     const seen = new Set<string>();
-    if (target) { all.push(target as any); seen.add((target as any).id); }
+    if (target && !blockedIds.has((target as any).asker_id)) { all.push(target as any); seen.add((target as any).id); }
     for (const a of (list ?? []) as any[]) {
       if (seen.has(a.id)) continue;
       if (user && a.asker_id === user.id) continue;
+      if (blockedIds.has(a.asker_id)) continue;
       if (new Date(a.reveal_at).getTime() <= Date.now() && a.status === "active") continue;
       if (!matches(a, viewer)) continue;
       all.push(a);
@@ -110,7 +123,7 @@ export default function LiveAskView() {
       setVotes(map);
     }
     setLoading(false);
-  }, [id, user?.id, viewer]);
+  }, [id, user?.id, viewer, blockedIds]);
 
   useEffect(() => { load(); }, [load]);
 
