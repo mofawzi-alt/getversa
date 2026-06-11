@@ -196,7 +196,17 @@ export default function LiveAskView() {
             </span>
           )}
         </div>
-        <ReportButton liveAskId={current.id} />
+        <div className="flex items-center gap-1">
+          <BlockButton
+            askerId={current.asker_id}
+            liveAskId={current.id}
+            onBlocked={(uid) => {
+              setBlockedIds((prev) => new Set(prev).add(uid));
+              setAsks((prev) => prev.filter((a) => a.asker_id !== uid));
+            }}
+          />
+          <ReportButton liveAskId={current.id} />
+        </div>
       </header>
 
       {/* Horizontal swipeable carousel */}
