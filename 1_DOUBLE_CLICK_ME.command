@@ -7,6 +7,7 @@ clear
 echo "Versa Apple Upload Prep"
 echo "This does NOT delete anything."
 echo "This does NOT use Git."
+echo "Use this from a freshly opened ZIP folder, not the old ~/Desktop/versa folder."
 echo ""
 
 if ! command -v npm >/dev/null 2>&1; then
@@ -15,7 +16,12 @@ if ! command -v npm >/dev/null 2>&1; then
   exit 1
 fi
 
-npm run ios:update
+if [ ! -x "node_modules/.bin/vite" ] || [ ! -x "node_modules/.bin/cap" ]; then
+  echo "Installing clean app files. This can take a few minutes."
+  npm ci --no-audit --no-fund
+fi
+
+node scripts/ios-sync-verbose.mjs --no-install --open
 
 echo ""
 echo "DONE: Xcode is opening with the fixed iOS project."
