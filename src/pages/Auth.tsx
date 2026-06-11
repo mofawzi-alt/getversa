@@ -118,6 +118,7 @@ export default function Auth() {
   const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const [ageConfirm, setAgeConfirm] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const { user, session, signIn, signUp, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -215,6 +216,7 @@ export default function Auth() {
 
     if (isLogin) {
       // Login — only email + password
+      if (!termsAccepted) { toast.error('Please agree to the Terms first.'); return; }
       const validation = loginSchema.safeParse({ email, password });
       if (!validation.success) {
         toast.error(validation.error.errors[0].message);
@@ -263,6 +265,7 @@ export default function Auth() {
     }
 
     // Signup — validate all fields
+    if (!termsAccepted) { toast.error('Please agree to the Terms first.'); return; }
     const validation = loginSchema.safeParse({ email, password });
     if (!validation.success) { toast.error(validation.error.errors[0].message); return; }
     if (!name.trim()) { toast.error('Please enter your name'); return; }
