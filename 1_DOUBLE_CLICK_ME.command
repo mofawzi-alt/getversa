@@ -21,7 +21,7 @@ if [ ! -x "node_modules/.bin/vite" ] || [ ! -x "node_modules/.bin/cap" ]; then
   npm ci --no-audit --no-fund
 fi
 
-node scripts/ios-sync-verbose.mjs --no-install --open
+node scripts/ios-sync-verbose.mjs --no-install --copy-only --open
 
 echo ""
 echo "DONE: Xcode is opening with the fixed iOS project."

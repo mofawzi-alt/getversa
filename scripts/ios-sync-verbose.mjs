@@ -57,21 +57,29 @@ if (args.has('--check-only')) {
 }
 
 const skipDependencyWork = args.has('--no-install');
+const copyOnly = args.has('--copy-only') || args.has('--no-native-install') || args.has('--offline');
 const capCommand = process.platform === 'win32'
   ? path.join('node_modules', '.bin', 'cap.cmd')
   : path.join('node_modules', '.bin', 'cap');
+const viteCommand = process.platform === 'win32'
+  ? path.join('node_modules', '.bin', 'vite.cmd')
+  : path.join('node_modules', '.bin', 'vite');
+
+if (copyOnly) {
+  console.log('✅ Copy-only iOS mode: skipping Git, npm install/prune/rebuild, CocoaPods repo update, pod install, and native plugin changes.');
+}
 
 const steps = [
   ...(args.has('--install') && !skipDependencyWork ? [{ label: 'Installing dependencies', command: 'npm', args: ['install'] }] : []),
   ...(!skipDependencyWork ? [{ label: 'Pruning removed native plugins', command: 'npm', args: ['prune'] }] : []),
-  { label: 'Clearing stale Xcode package cache', command: 'node', args: ['scripts/repair-ios-spm.mjs'] },
+  ...(!copyOnly ? [{ label: 'Clearing stale Xcode package cache', command: 'node', args: ['scripts/repair-ios-spm.mjs'] }] : []),
   ...(!skipDependencyWork ? [{ label: 'Repairing native build dependency', command: 'npm', args: ['rebuild', 'esbuild'] }] : []),
-  { label: 'Building web app', command: 'npm', args: ['run', 'build'] },
-  { label: 'Updating CocoaPods spec repo', command: 'node', args: ['scripts/update-cocoapods-repo.mjs'] },
-  { label: 'Syncing iOS project', command: skipDependencyWork ? capCommand : 'npx', args: skipDependencyWork ? ['sync', 'ios'] : ['cap', 'sync', 'ios'] },
+  { label: 'Building web app', command: skipDependencyWork ? viteCommand : 'npm', args: skipDependencyWork ? ['build'] : ['run', 'build'] },
+  ...(!copyOnly ? [{ label: 'Updating CocoaPods spec repo', command: 'node', args: ['scripts/update-cocoapods-repo.mjs'] }] : []),
+  { label: copyOnly ? 'Copying web assets to iOS project' : 'Syncing iOS project', command: (skipDependencyWork || copyOnly) ? capCommand : 'npx', args: copyOnly ? ['copy', 'ios'] : (skipDependencyWork ? ['sync', 'ios'] : ['cap', 'sync', 'ios']) },
   { label: 'Patching iOS permissions & app icon', command: 'node', args: ['scripts/capacitor-ios-post-sync.mjs'] },
   { label: 'Repairing iOS native imports', command: 'node', args: ['scripts/fix-ios-spm-appdelegate.mjs'] },
-  { label: 'Installing iOS native dependencies', command: 'node', args: ['scripts/resolve-ios-packages.mjs'] },
+  ...(!copyOnly ? [{ label: 'Installing iOS native dependencies', command: 'node', args: ['scripts/resolve-ios-packages.mjs'] }] : []),
   { label: 'Verifying Xcode project before opening', command: 'node', args: ['scripts/apple-release-ready.mjs'] },
 ];
 
