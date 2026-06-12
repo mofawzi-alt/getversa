@@ -64,7 +64,7 @@ const capCommand = process.platform === 'win32'
 const viteCommand = process.platform === 'win32'
   ? path.join('node_modules', '.bin', 'vite.cmd')
   : path.join('node_modules', '.bin', 'vite');
-const fastViteBuildArgs = ['build', '--minify=false', '--mode', 'development'];
+const fastViteBuildArgs = ['build', '--minify=false'];
 
 if (copyOnly) {
   console.log('✅ Copy-only iOS mode: skipping Git, npm install/prune/rebuild, CocoaPods repo update, pod install, and native plugin changes.');
@@ -102,7 +102,10 @@ function runStep({ label, command, args }) {
         : 10 * 60_000;
     const child = spawn(command, args, {
       cwd: root,
-      env: process.env,
+      env: {
+        ...process.env,
+        NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=4096',
+      },
       shell: process.platform === 'win32',
       stdio: 'inherit',
     });
