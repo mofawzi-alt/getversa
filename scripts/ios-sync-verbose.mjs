@@ -64,6 +64,7 @@ const capCommand = process.platform === 'win32'
 const viteCommand = process.platform === 'win32'
   ? path.join('node_modules', '.bin', 'vite.cmd')
   : path.join('node_modules', '.bin', 'vite');
+const fastViteBuildArgs = ['build', '--minify=false', '--mode', 'development'];
 
 if (copyOnly) {
   console.log('✅ Copy-only iOS mode: skipping Git, npm install/prune/rebuild, CocoaPods repo update, pod install, and native plugin changes.');
@@ -74,7 +75,7 @@ const steps = [
   ...(!skipDependencyWork ? [{ label: 'Pruning removed native plugins', command: 'npm', args: ['prune'] }] : []),
   ...(!copyOnly ? [{ label: 'Clearing stale Xcode package cache', command: 'node', args: ['scripts/repair-ios-spm.mjs'] }] : []),
   ...(!skipDependencyWork ? [{ label: 'Repairing native build dependency', command: 'npm', args: ['rebuild', 'esbuild'] }] : []),
-  { label: 'Building web app', command: skipDependencyWork ? viteCommand : 'npm', args: skipDependencyWork ? ['build'] : ['run', 'build'] },
+  { label: 'Building web app', command: skipDependencyWork ? viteCommand : 'npm', args: skipDependencyWork ? fastViteBuildArgs : ['run', 'build'] },
   ...(!copyOnly ? [{ label: 'Updating CocoaPods spec repo', command: 'node', args: ['scripts/update-cocoapods-repo.mjs'] }] : []),
   { label: copyOnly ? 'Copying web assets to iOS project' : 'Syncing iOS project', command: (skipDependencyWork || copyOnly) ? capCommand : 'npx', args: copyOnly ? ['copy', 'ios'] : (skipDependencyWork ? ['sync', 'ios'] : ['cap', 'sync', 'ios']) },
   { label: 'Patching iOS permissions & app icon', command: 'node', args: ['scripts/capacitor-ios-post-sync.mjs'] },

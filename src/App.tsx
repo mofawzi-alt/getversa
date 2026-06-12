@@ -61,7 +61,7 @@ const BrandCampaign = lazy(() => import("./pages/BrandCampaign"));
 const BrandClientPortal = lazy(() => import("./pages/BrandClientPortal"));
 const FocusGroup = lazy(() => import("./pages/FocusGroup"));
 const Rewards = lazy(() => import("./pages/Rewards"));
-const Ask = lazy(() => import("./pages/Ask"));
+import Ask from "./pages/Ask";
 const Support = lazy(() => import("./pages/Support"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const DecisionIntelligenceReport = lazy(() => import("./pages/DecisionIntelligenceReport"));
