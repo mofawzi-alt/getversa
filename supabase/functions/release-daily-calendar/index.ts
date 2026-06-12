@@ -56,14 +56,23 @@ Deno.serve(async (req) => {
 
   try {
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-    const today = cairoToday();
+    let dates: string[] = [cairoToday()];
+    try {
+      if (req.method === "POST") {
+        const body = await req.json().catch(() => ({}));
+        if (Array.isArray(body?.dates) && body.dates.length) dates = body.dates;
+        else if (typeof body?.date === "string") dates = [body.date];
+      }
+    } catch (_) {}
 
     const { data: approved, error } = await supabase
       .from("poll_calendar")
       .select("*")
-      .eq("release_date", today)
+      .in("release_date", dates)
       .eq("status", "approved");
     if (error) throw error;
+    const today = dates.join(",");
+
 
     let publishedCount = 0;
 
