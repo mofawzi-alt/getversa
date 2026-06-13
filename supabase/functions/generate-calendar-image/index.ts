@@ -199,7 +199,14 @@ FINAL CHECK: Does this image SCREAM "${optionText}"? If someone saw only the ima
           }
           throw new Error(lastErr);
         }
-        const aiJson = await aiRes.json();
+        const raw = await aiRes.text();
+        let aiJson: any = null;
+        try { aiJson = JSON.parse(raw); } catch {
+          lastErr = `AI gateway returned non-JSON (likely HTML error page): ${raw.slice(0, 120)}`;
+          console.warn(`Attempt ${attempt + 1} for option ${opt}: ${lastErr}`);
+          await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+          continue;
+        }
         dataUrl = aiJson?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
         if (!dataUrl) {
           lastErr = `No image in response (text: ${(aiJson?.choices?.[0]?.message?.content || "").slice(0, 120)})`;
