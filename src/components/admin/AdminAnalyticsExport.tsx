@@ -238,7 +238,7 @@ export default function AdminAnalyticsExport() {
       // Gather all summary stats
       const { data: polls } = await supabase.from('polls').select('id, created_at');
       const { data: votes } = await supabase.from('votes').select('user_id, created_at');
-      const { data: users } = await supabase.from('users').select('id, gender, age_range, country');
+      const { data: users } = await supabase.rpc('admin_list_users_full', { _limit: 100000, _offset: 0 });
 
       if (!polls || !votes || !users) {
         toast.error('No data available');
