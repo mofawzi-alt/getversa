@@ -23,11 +23,14 @@ export default function UserManagement() {
     queryKey: ['admin-users'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('users')
-        .select('id, email, username, verified_public_figure, verified_category, points, created_at')
-        .order('created_at', { ascending: false });
+        .rpc('admin_list_users_full', { _limit: 100000, _offset: 0 });
       if (error) throw error;
-      return data || [];
+      return (data || []).map((u: any) => ({
+        id: u.id, email: u.email, username: u.username,
+        verified_public_figure: u.verified_public_figure,
+        verified_category: u.verified_category,
+        points: u.points, created_at: u.created_at,
+      }));
     },
   });
 
