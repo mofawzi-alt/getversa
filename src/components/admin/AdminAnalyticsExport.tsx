@@ -111,9 +111,7 @@ export default function AdminAnalyticsExport() {
   const exportDemographicsCSV = async () => {
     setExporting('demographics');
     try {
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, gender, age_range, country, city, points, current_streak, created_at');
+      const { data: users } = await supabase.rpc('admin_list_users_full', { _limit: 100000, _offset: 0 });
 
       const { data: votes } = await supabase
         .from('votes')
