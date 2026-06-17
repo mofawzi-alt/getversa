@@ -124,7 +124,8 @@ export default function Explore() {
     queryKey: ['user-profile-explore', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await supabase.from('users').select('age_range, gender').eq('id', user.id).single();
+      const { data: rows } = await supabase.rpc('get_my_profile');
+      const data = rows?.[0] ? { age_range: rows[0].age_range, gender: rows[0].gender } : null;
       return data;
     },
     staleTime: 1000 * 60 * 10,

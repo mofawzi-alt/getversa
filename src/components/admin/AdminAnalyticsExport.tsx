@@ -78,10 +78,7 @@ export default function AdminAnalyticsExport() {
   const exportUsersCSV = async () => {
     setExporting('users');
     try {
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, username, email, gender, age_range, country, city, points, current_streak, longest_streak, created_at, last_vote_date, first_vote_date, total_days_active')
-        .order('created_at', { ascending: false });
+      const { data: users } = await supabase.rpc('admin_list_users_full', { _limit: 100000, _offset: 0 });
 
       if (!users || users.length === 0) {
         toast.error('No users to export');
@@ -114,9 +111,7 @@ export default function AdminAnalyticsExport() {
   const exportDemographicsCSV = async () => {
     setExporting('demographics');
     try {
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, gender, age_range, country, city, points, current_streak, created_at');
+      const { data: users } = await supabase.rpc('admin_list_users_full', { _limit: 100000, _offset: 0 });
 
       const { data: votes } = await supabase
         .from('votes')
@@ -243,7 +238,7 @@ export default function AdminAnalyticsExport() {
       // Gather all summary stats
       const { data: polls } = await supabase.from('polls').select('id, created_at');
       const { data: votes } = await supabase.from('votes').select('user_id, created_at');
-      const { data: users } = await supabase.from('users').select('id, gender, age_range, country');
+      const { data: users } = await supabase.rpc('admin_list_users_full', { _limit: 100000, _offset: 0 });
 
       if (!polls || !votes || !users) {
         toast.error('No data available');

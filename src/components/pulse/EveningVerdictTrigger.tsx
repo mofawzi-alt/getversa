@@ -41,8 +41,8 @@ export default function EveningVerdictTrigger() {
       ]);
       const myPoints = (profile as any)?.points || 0;
       const { count: lessThan } = await supabase.from('users')
-        .select('*', { count: 'exact', head: true }).lt('points', myPoints);
-      const { count: total } = await supabase.from('users').select('*', { count: 'exact', head: true });
+        .select('id', { count: 'exact', head: true }).lt('points', myPoints);
+      const { count: total } = await supabase.from('users').select('id', { count: 'exact', head: true });
       const percentile = total && total > 0
         ? Math.max(1, Math.round(100 - ((lessThan || 0) / total) * 100))
         : 50;

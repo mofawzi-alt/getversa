@@ -76,12 +76,11 @@ export default function InsightHighlights({ onPollSelect }: InsightHighlightsPro
     }
 
     const userIds = [...new Set(votes.map(v => v.user_id))];
-    const { data: users } = await supabase
-      .from('users')
-      .select('id, gender, age_range, country')
-      .in('id', userIds);
+    const userIdSet = new Set(userIds);
+    const { data: allUsers } = await supabase.rpc('admin_list_users_full', { _limit: 100000, _offset: 0 });
+    const users = (allUsers || []).filter((u: any) => userIdSet.has(u.id));
 
-    const userMap = new Map(users?.map(u => [u.id, u]) || []);
+    const userMap = new Map(users.map((u: any) => [u.id, u]));
 
     let mostPolarizing: InsightData['polarizing'] = null;
     let closestToFifty = Infinity;
