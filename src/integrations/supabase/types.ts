@@ -3432,6 +3432,94 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_user_full: {
+        Args: { _user_id: string }
+        Returns: {
+          age_range: string | null
+          ask_credits: number
+          avatar_url: string | null
+          category_interests: string[] | null
+          city: string | null
+          city_of_residence: string | null
+          country: string | null
+          created_at: string | null
+          current_streak: number | null
+          education_level: string | null
+          email: string
+          employment_status: string | null
+          first_vote_date: string | null
+          gender: string | null
+          has_seen_welcome_tour: boolean
+          id: string
+          income_range: string | null
+          industry: string | null
+          is_private: boolean
+          last_daily_credit_date: string | null
+          last_vote_date: string | null
+          live_ask_unlocked_at: string | null
+          live_ask_week_start: string | null
+          live_asks_used_this_week: number
+          longest_streak: number | null
+          nationality: string | null
+          points: number | null
+          prediction_accuracy: number | null
+          prediction_total: number | null
+          total_days_active: number | null
+          username: string | null
+          verified_category: string | null
+          verified_public_figure: boolean
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "users"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_list_users_full: {
+        Args: { _limit?: number; _offset?: number }
+        Returns: {
+          age_range: string | null
+          ask_credits: number
+          avatar_url: string | null
+          category_interests: string[] | null
+          city: string | null
+          city_of_residence: string | null
+          country: string | null
+          created_at: string | null
+          current_streak: number | null
+          education_level: string | null
+          email: string
+          employment_status: string | null
+          first_vote_date: string | null
+          gender: string | null
+          has_seen_welcome_tour: boolean
+          id: string
+          income_range: string | null
+          industry: string | null
+          is_private: boolean
+          last_daily_credit_date: string | null
+          last_vote_date: string | null
+          live_ask_unlocked_at: string | null
+          live_ask_week_start: string | null
+          live_asks_used_this_week: number
+          longest_streak: number | null
+          nationality: string | null
+          points: number | null
+          prediction_accuracy: number | null
+          prediction_total: number | null
+          total_days_active: number | null
+          username: string | null
+          verified_category: string | null
+          verified_public_figure: boolean
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "users"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       apply_campaign_drip_schedule: {
         Args: { p_campaign_id: string }
         Returns: Json
@@ -3701,6 +3789,50 @@ export type Database = {
           release_at: string
           total_votes: number
         }[]
+      }
+      get_my_profile: {
+        Args: never
+        Returns: {
+          age_range: string | null
+          ask_credits: number
+          avatar_url: string | null
+          category_interests: string[] | null
+          city: string | null
+          city_of_residence: string | null
+          country: string | null
+          created_at: string | null
+          current_streak: number | null
+          education_level: string | null
+          email: string
+          employment_status: string | null
+          first_vote_date: string | null
+          gender: string | null
+          has_seen_welcome_tour: boolean
+          id: string
+          income_range: string | null
+          industry: string | null
+          is_private: boolean
+          last_daily_credit_date: string | null
+          last_vote_date: string | null
+          live_ask_unlocked_at: string | null
+          live_ask_week_start: string | null
+          live_asks_used_this_week: number
+          longest_streak: number | null
+          nationality: string | null
+          points: number | null
+          prediction_accuracy: number | null
+          prediction_total: number | null
+          total_days_active: number | null
+          username: string | null
+          verified_category: string | null
+          verified_public_figure: boolean
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "users"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_notification_analytics: {
         Args: { p_days?: number }
