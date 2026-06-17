@@ -78,10 +78,7 @@ export default function AdminAnalyticsExport() {
   const exportUsersCSV = async () => {
     setExporting('users');
     try {
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, username, email, gender, age_range, country, city, points, current_streak, longest_streak, created_at, last_vote_date, first_vote_date, total_days_active')
-        .order('created_at', { ascending: false });
+      const { data: users } = await supabase.rpc('admin_list_users_full', { _limit: 100000, _offset: 0 });
 
       if (!users || users.length === 0) {
         toast.error('No users to export');
