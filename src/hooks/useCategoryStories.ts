@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { VERSA_CATEGORIES } from '@/lib/categoryMeta';
+import { VERSA_CATEGORIES, mapToVersaCategory } from '@/lib/categoryMeta';
 import { localDateKey } from '@/lib/pulseTime';
 
 export type CategoryStoryData = {
@@ -34,7 +34,7 @@ export function useCategoryStories() {
         .eq('is_active', true)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
-        .limit(120);
+        .limit(500);
 
       if (!polls?.length) return [];
 
@@ -58,19 +58,16 @@ export function useCategoryStories() {
         tally.set(v.poll_id, t);
       }
 
-      // Group polls by category (case-insensitive match to VERSA_CATEGORIES)
+      // Group polls by category, mapping legacy/aliased names onto Versa categories
       const catMap = new Map<string, typeof polls>();
       for (const p of polls as any[]) {
-        const catLower = (p.category || '').trim().toLowerCase();
-        for (const vc of VERSA_CATEGORIES) {
-          if (catLower === vc.toLowerCase()) {
-            const list = catMap.get(vc) || [];
-            list.push(p);
-            catMap.set(vc, list);
-            break;
-          }
-        }
+        const vc = mapToVersaCategory(p.category);
+        if (!vc || !VERSA_CATEGORIES.includes(vc as any)) continue;
+        const list = catMap.get(vc) || [];
+        list.push(p);
+        catMap.set(vc, list);
       }
+
 
       // Pick top voted poll per category
       const results: CategoryStoryData[] = [];
@@ -78,11 +75,10 @@ export function useCategoryStories() {
         const catPolls = catMap.get(cat);
         if (!catPolls?.length) continue;
 
+        // Photo first, then recent activity — a quiet category still gets a real photo
         const ranked = catPolls
           .map((p: any) => ({ poll: p, t: tally.get(p.id) || { a: 0, b: 0, total: 0 } }))
-          .filter((x: any) => x.t.total > 0)
           .sort((a: any, b: any) => {
-            // Prefer polls with images so stories aren't blank
             const aHasImg = a.poll.image_a_url || a.poll.image_b_url ? 1 : 0;
             const bHasImg = b.poll.image_a_url || b.poll.image_b_url ? 1 : 0;
             if (bHasImg !== aHasImg) return bHasImg - aHasImg;
