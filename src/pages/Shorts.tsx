@@ -84,7 +84,10 @@ export default function Shorts() {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useLiveDebateFeed(true);
   const [results, setResults] = useState<Record<string, 'A' | 'B'>>({});
   const [tallies, setTallies] = useState<Record<string, { a: number; b: number }>>({});
+  const [liveDeltas, setLiveDeltas] = useState<Record<string, { a: number; b: number }>>({});
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const polls: ShortPoll[] = useMemo(
     () => (data?.pages || []).flatMap((p: any) => p.polls),
@@ -110,6 +113,44 @@ export default function Shorts() {
     obs.observe(el);
     return () => obs.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Live vote updates — every new vote from anyone ticks the counters up in place
+  useEffect(() => {
+    const channel = supabase
+      .channel('shorts-live-votes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'votes' },
+        (payload) => {
+          const row = payload.new as { poll_id?: string; choice?: string; user_id?: string };
+          if (!row?.poll_id || !row?.choice) return;
+          if (user && row.user_id === user.id) return; // own vote already counted optimistically
+          setLiveDeltas((prev) => {
+            const cur = prev[row.poll_id!] || { a: 0, b: 0 };
+            return {
+              ...prev,
+              [row.poll_id!]: {
+                a: cur.a + (row.choice === 'A' ? 1 : 0),
+                b: cur.b + (row.choice === 'B' ? 1 : 0),
+              },
+            };
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const advanceTo = (pollId: string) => {
+    const el = sectionRefs.current[pollId];
+    const next = el?.nextElementSibling as HTMLElement | null;
+    if (next && next.tagName === 'SECTION') {
+      next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   const handleVote = async (poll: ShortPoll, choice: 'A' | 'B') => {
     if (results[poll.id]) return;
@@ -153,6 +194,9 @@ export default function Shorts() {
 
     queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
     queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
+
+    // Reels behaviour: show the result briefly, then glide to the next short
+    window.setTimeout(() => advanceTo(poll.id), 1700);
   };
 
   return (
@@ -167,14 +211,19 @@ export default function Shorts() {
         {polls.map((poll, i) => {
           const choice = results[poll.id];
           const tally = tallies[poll.id];
-          const totalA = tally ? tally.a : poll.votesA || 0;
-          const totalB = tally ? tally.b : poll.votesB || 0;
+          const live = liveDeltas[poll.id] || { a: 0, b: 0 };
+          const totalA = (tally ? tally.a : poll.votesA || 0) + live.a;
+          const totalB = (tally ? tally.b : poll.votesB || 0) + live.b;
           const total = totalA + totalB;
           const pctA = total > 0 ? Math.round((totalA / total) * 100) : 50;
+          const liveCount = live.a + live.b;
 
           return (
             <section
               key={poll.id}
+              ref={(el) => {
+                sectionRefs.current[poll.id] = el;
+              }}
               className="relative h-full w-full snap-start snap-always flex flex-col"
               style={{ height: '100%' }}
             >
@@ -192,7 +241,17 @@ export default function Shorts() {
                     {mapToVersaCategory(poll.category)}
                   </span>
                   {total > 0 && (
-                    <span className="ml-auto text-[12px] font-semibold text-white/80 tabular-nums">{total.toLocaleString()} votes</span>
+                    <span className="ml-auto flex items-center gap-1.5 text-[12px] font-semibold text-white/80 tabular-nums">
+                      {liveCount > 0 && (
+                        <span className="inline-flex items-center gap-1 text-white">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                          +{liveCount}
+                        </span>
+                      )}
+                      <motion.span key={total} initial={{ opacity: 0.5, y: -3 }} animate={{ opacity: 1, y: 0 }}>
+                        {total.toLocaleString()} votes
+                      </motion.span>
+                    </span>
                   )}
                 </div>
                 {poll.subtitle && (
