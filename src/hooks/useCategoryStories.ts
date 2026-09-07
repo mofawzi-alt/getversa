@@ -58,19 +58,16 @@ export function useCategoryStories() {
         tally.set(v.poll_id, t);
       }
 
-      // Group polls by category (case-insensitive match to VERSA_CATEGORIES)
+      // Group polls by category, mapping legacy/aliased names onto Versa categories
       const catMap = new Map<string, typeof polls>();
       for (const p of polls as any[]) {
-        const catLower = (p.category || '').trim().toLowerCase();
-        for (const vc of VERSA_CATEGORIES) {
-          if (catLower === vc.toLowerCase()) {
-            const list = catMap.get(vc) || [];
-            list.push(p);
-            catMap.set(vc, list);
-            break;
-          }
-        }
+        const vc = mapToVersaCategory(p.category);
+        if (!vc || !VERSA_CATEGORIES.includes(vc as any)) continue;
+        const list = catMap.get(vc) || [];
+        list.push(p);
+        catMap.set(vc, list);
       }
+
 
       // Pick top voted poll per category
       const results: CategoryStoryData[] = [];
