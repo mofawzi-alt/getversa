@@ -226,7 +226,10 @@ export default function Shorts() {
 
               {/* % split bar — same red/blue bar used on Browse cards */}
               {choice && (
-                <div className="absolute inset-x-0 bottom-0 z-20 pointer-events-none">
+                <div
+                  className="absolute inset-x-0 z-20 pointer-events-none"
+                  style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}
+                >
                   <div className="flex items-center justify-between px-3 pb-1.5">
                     <span className="text-[13px] font-extrabold tabular-nums text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>
                       <span className="text-option-a">●</span> {pctA}%
