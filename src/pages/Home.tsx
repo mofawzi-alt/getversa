@@ -36,7 +36,7 @@ import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onbo
 import HeroVoteCard from '@/components/home/HeroVoteCard';
 import CategoriesSheet from '@/components/home/CategoriesSheet';
 import HotTopicsStrip from '@/components/home/HotTopicsStrip';
-import CategoryChipsRow from '@/components/home/CategoryChipsRow';
+
 import CategoryStoryCircles from '@/components/home/CategoryStoryCircles';
 import { LayoutGrid } from 'lucide-react';
 import BrandPackBanner from '@/components/home/BrandPackBanner';
@@ -1972,10 +1972,7 @@ export default function Home() {
         <HotTopicsStrip />
 
         {/* ═══ CATEGORY STORY CIRCLES ═══ */}
-        <CategoryStoryCircles active={categoryFilter} onSelect={setCategoryFilter} />
-
-        {/* ═══ CATEGORY CHIPS ═══ */}
-        <CategoryChipsRow
+        <CategoryStoryCircles
           active={categoryFilter}
           onSelect={setCategoryFilter}
           onOpenAll={() => setCategoriesSheetOpen(true)}
