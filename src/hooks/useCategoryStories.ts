@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { VERSA_CATEGORIES } from '@/lib/categoryMeta';
+import { VERSA_CATEGORIES, mapToVersaCategory } from '@/lib/categoryMeta';
 import { localDateKey } from '@/lib/pulseTime';
 
 export type CategoryStoryData = {
