@@ -6,6 +6,8 @@ import { getPollDisplayImageSrc } from '@/lib/pollImages';
 interface CategoryStoryCirclesProps {
   active: string | null;
   onSelect: (category: string | null) => void;
+  /** Opens the full categories sheet; renders an "All" circle at the end. */
+  onOpenAll?: () => void;
 }
 
 /**
