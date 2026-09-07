@@ -34,7 +34,7 @@ export function useCategoryStories() {
         .eq('is_active', true)
         .order('weight_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
-        .limit(120);
+        .limit(500);
 
       if (!polls?.length) return [];
 
