@@ -1976,8 +1976,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* ═══ HOT RIGHT NOW ═══ */}
-        <HotTopicsStrip />
+
+
 
         {/* ═══ CATEGORY STORY CIRCLES ═══ */}
         <CategoryStoryCircles
