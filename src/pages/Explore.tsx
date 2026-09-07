@@ -18,6 +18,7 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
 import { useCelebrityPresence } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import { getCategoryIcon, mapToVersaCategory } from '@/lib/categoryMeta';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
@@ -42,7 +43,19 @@ const CATEGORY_STYLE: Record<string, { icon: React.ReactNode; gradient: string; 
 };
 
 function getCategoryStyle(name: string) {
-  return CATEGORY_STYLE[name] || { icon: <LayoutGrid className="h-5 w-5" />, gradient: 'from-slate-500 to-slate-400', accent: 'text-muted-foreground' };
+  const exact = CATEGORY_STYLE[name];
+  if (exact) return exact;
+
+  // Unknown / legacy category name (e.g. "Education", "Transport", "Work & Career"):
+  // borrow the gradient of the closest Versa category and a keyword-matched icon
+  // so the tile never renders as an empty grey square.
+  const mapped = CATEGORY_STYLE[mapToVersaCategory(name)];
+  const Icon = getCategoryIcon(name);
+  return {
+    icon: <Icon className="h-5 w-5" />,
+    gradient: mapped?.gradient || 'from-slate-500 to-slate-400',
+    accent: mapped?.accent || 'text-muted-foreground',
+  };
 }
 
 type CategoryData = {
