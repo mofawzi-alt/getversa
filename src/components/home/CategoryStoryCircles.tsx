@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { LayoutGrid, Sparkles } from 'lucide-react';
 import { useCategoryStories } from '@/hooks/useCategoryStories';
 import { getCategoryIcon } from '@/lib/categoryMeta';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
@@ -14,7 +15,7 @@ interface CategoryStoryCirclesProps {
  * Round category thumbnails (story-style) showing each category's
  * top poll of the day. Tapping filters the Home feed to that category.
  */
-export default function CategoryStoryCircles({ active, onSelect }: CategoryStoryCirclesProps) {
+export default function CategoryStoryCircles({ active, onSelect, onOpenAll }: CategoryStoryCirclesProps) {
   const { data: stories = [] } = useCategoryStories();
 
   if (stories.length === 0) return null;
