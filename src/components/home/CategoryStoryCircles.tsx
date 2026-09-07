@@ -72,6 +72,21 @@ export default function CategoryStoryCircles({ active, onSelect, onOpenAll }: Ca
           </motion.button>
         );
       })}
+
+      {/* All — opens the full categories sheet */}
+      {onOpenAll && (
+        <button
+          onClick={onOpenAll}
+          className="flex flex-col items-center gap-1 shrink-0 w-[68px]"
+        >
+          <div className="w-16 h-16 rounded-full p-[2px] bg-border">
+            <div className="w-full h-full rounded-full border-2 border-background bg-muted flex items-center justify-center">
+              <LayoutGrid className="h-5 w-5 text-muted-foreground" />
+            </div>
+          </div>
+          <span className="text-[9px] font-semibold text-foreground text-center leading-tight">All</span>
+        </button>
+      )}
     </div>
   );
 }
