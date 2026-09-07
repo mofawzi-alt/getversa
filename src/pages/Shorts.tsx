@@ -211,14 +211,19 @@ export default function Shorts() {
         {polls.map((poll, i) => {
           const choice = results[poll.id];
           const tally = tallies[poll.id];
-          const totalA = tally ? tally.a : poll.votesA || 0;
-          const totalB = tally ? tally.b : poll.votesB || 0;
+          const live = liveDeltas[poll.id] || { a: 0, b: 0 };
+          const totalA = (tally ? tally.a : poll.votesA || 0) + live.a;
+          const totalB = (tally ? tally.b : poll.votesB || 0) + live.b;
           const total = totalA + totalB;
           const pctA = total > 0 ? Math.round((totalA / total) * 100) : 50;
+          const liveCount = live.a + live.b;
 
           return (
             <section
               key={poll.id}
+              ref={(el) => {
+                sectionRefs.current[poll.id] = el;
+              }}
               className="relative h-full w-full snap-start snap-always flex flex-col"
               style={{ height: '100%' }}
             >
