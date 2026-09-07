@@ -1996,7 +1996,14 @@ export default function Home() {
         <CategoriesSheet
           open={categoriesSheetOpen}
           onOpenChange={setCategoriesSheetOpen}
-          onSelect={setCategoryFilter}
+          onSelect={(cat) => {
+            if (!cat) {
+              setCategoryFilter(null);
+              setHeroPollIndex(savedHeroIndex.current);
+            } else {
+              handleCategoryTap(cat);
+            }
+          }}
           activeCategory={categoryFilter}
         />
 
