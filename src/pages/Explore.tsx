@@ -18,6 +18,7 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
 import { useCelebrityPresence } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import { getCategoryIcon, mapToVersaCategory } from '@/lib/categoryMeta';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
