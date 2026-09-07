@@ -22,6 +22,19 @@ export default function CategoryStoryCircles({ active, onSelect, onOpenAll }: Ca
 
   return (
     <div className="flex gap-3 overflow-x-auto px-3 pb-2 scrollbar-hide">
+      {/* For you — clears the category filter */}
+      <button
+        onClick={() => onSelect(null)}
+        className="flex flex-col items-center gap-1 shrink-0 w-[68px]"
+      >
+        <div className={`w-16 h-16 rounded-full p-[2px] ${!active ? 'bg-primary' : 'bg-border'}`}>
+          <div className="w-full h-full rounded-full overflow-hidden border-2 border-background bg-muted flex items-center justify-center">
+            <Sparkles className={`h-5 w-5 ${!active ? 'text-primary' : 'text-muted-foreground'}`} />
+          </div>
+        </div>
+        <span className="text-[9px] font-semibold text-foreground text-center leading-tight">For you</span>
+      </button>
+
       {stories.map((s, i) => {
         const img =
           getPollDisplayImageSrc({ imageUrl: s.poll.image_a_url, option: s.poll.option_a, question: s.poll.question, side: 'A' }) ||
