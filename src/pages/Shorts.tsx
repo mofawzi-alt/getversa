@@ -47,8 +47,13 @@ function OptionSide({
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/30" />
 
-      <div className="absolute inset-x-0 bottom-0 p-4">
-        <p className="text-base font-extrabold text-primary-foreground drop-shadow">{label}</p>
+      <div className="absolute inset-x-0 bottom-0 px-4 pt-10 pb-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+        <p
+          className="font-display font-bold text-[18px] leading-tight text-white"
+          style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }}
+        >
+          {label}
+        </p>
         {revealed && (
           <div className="mt-2">
             <div className="h-1.5 rounded-full bg-white/25 overflow-hidden">
@@ -56,10 +61,13 @@ function OptionSide({
                 initial={{ width: 0 }}
                 animate={{ width: `${percent}%` }}
                 transition={{ duration: 0.6 }}
-                className="h-full bg-primary-foreground/90"
+                className={`h-full ${side === 'A' ? 'bg-option-a' : 'bg-option-b'}`}
               />
             </div>
-            <p className="mt-1 text-sm font-black text-primary-foreground drop-shadow">
+            <p
+              className="mt-1 font-display font-extrabold text-[15px] text-white tabular-nums"
+              style={{ textShadow: '0 1px 3px rgba(0,0,0,.5)' }}
+            >
               {percent}%{chosen ? ' · your pick' : ''}
             </p>
           </div>
