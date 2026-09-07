@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveDebateFeed } from '@/hooks/useLiveDebateFeed';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
-import { mapToVersaCategory } from '@/lib/categoryMeta';
+import { mapToVersaCategory, getCategoryColorClass } from '@/lib/categoryMeta';
 import BottomNav from '@/components/layout/BottomNav';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
@@ -47,8 +47,13 @@ function OptionSide({
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/30" />
 
-      <div className="absolute inset-x-0 bottom-0 p-4">
-        <p className="text-base font-extrabold text-primary-foreground drop-shadow">{label}</p>
+      <div className="absolute inset-x-0 bottom-0 px-4 pt-10 pb-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+        <p
+          className="font-display font-bold text-[18px] leading-tight text-white"
+          style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }}
+        >
+          {label}
+        </p>
         {revealed && (
           <div className="mt-2">
             <div className="h-1.5 rounded-full bg-white/25 overflow-hidden">
@@ -56,10 +61,13 @@ function OptionSide({
                 initial={{ width: 0 }}
                 animate={{ width: `${percent}%` }}
                 transition={{ duration: 0.6 }}
-                className="h-full bg-primary-foreground/90"
+                className={`h-full ${side === 'A' ? 'bg-option-a' : 'bg-option-b'}`}
               />
             </div>
-            <p className="mt-1 text-sm font-black text-primary-foreground drop-shadow">
+            <p
+              className="mt-1 font-display font-extrabold text-[15px] text-white tabular-nums"
+              style={{ textShadow: '0 1px 3px rgba(0,0,0,.5)' }}
+            >
               {percent}%{chosen ? ' · your pick' : ''}
             </p>
           </div>
@@ -172,18 +180,23 @@ export default function Shorts() {
             >
               {/* Question header */}
               <div className="absolute top-0 left-0 right-0 z-20 px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-3 bg-gradient-to-b from-black/70 to-transparent">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
-                    <Flame className="h-2.5 w-2.5" />
+                <h2
+                  className="font-display font-bold text-[22px] leading-[1.15] text-white"
+                  style={{ letterSpacing: '-0.01em', textShadow: '0 1px 4px rgba(0,0,0,.5)' }}
+                >
+                  {poll.question}
+                </h2>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold tracking-wide ${getCategoryColorClass(mapToVersaCategory(poll.category))}`}>
+                    <Flame className="h-3 w-3" />
                     {mapToVersaCategory(poll.category)}
                   </span>
                   {total > 0 && (
-                    <span className="text-[11px] font-semibold text-white/80">{total.toLocaleString()} votes</span>
+                    <span className="ml-auto text-[12px] font-semibold text-white/80 tabular-nums">{total.toLocaleString()} votes</span>
                   )}
                 </div>
-                <h2 className="text-[19px] font-extrabold leading-tight text-white drop-shadow">{poll.question}</h2>
                 {poll.subtitle && (
-                  <p className="mt-1 text-[12px] font-medium text-white/75">{poll.subtitle}</p>
+                  <p className="mt-1.5 text-[12px] font-medium text-white/75">{poll.subtitle}</p>
                 )}
               </div>
 
@@ -210,6 +223,27 @@ export default function Shorts() {
                   onVote={() => handleVote(poll, 'B')}
                 />
               </div>
+
+              {/* % split bar — same red/blue bar used on Browse cards */}
+              {choice && (
+                <div
+                  className="absolute inset-x-0 z-20 pointer-events-none"
+                  style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}
+                >
+                  <div className="flex items-center justify-between px-3 pb-1.5">
+                    <span className="text-[13px] font-extrabold tabular-nums text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>
+                      <span className="text-option-a">●</span> {pctA}%
+                    </span>
+                    <span className="text-[13px] font-extrabold tabular-nums text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>
+                      {100 - pctA}% <span className="text-option-b">●</span>
+                    </span>
+                  </div>
+                  <div className="h-3 w-full flex overflow-hidden">
+                    <div className="h-full bg-option-a transition-all duration-700" style={{ width: `${pctA}%` }} />
+                    <div className="h-full bg-option-b transition-all duration-700" style={{ width: `${100 - pctA}%` }} />
+                  </div>
+                </div>
+              )}
 
               {/* Swipe hint on the first card */}
               {i === 0 && !choice && (
