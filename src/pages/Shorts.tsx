@@ -224,6 +224,24 @@ export default function Shorts() {
                 />
               </div>
 
+              {/* % split bar — same red/blue bar used on Browse cards */}
+              {choice && (
+                <div className="absolute inset-x-0 bottom-0 z-20 pointer-events-none">
+                  <div className="flex items-center justify-between px-3 pb-1.5">
+                    <span className="text-[13px] font-extrabold tabular-nums text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>
+                      <span className="text-option-a">●</span> {pctA}%
+                    </span>
+                    <span className="text-[13px] font-extrabold tabular-nums text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>
+                      {100 - pctA}% <span className="text-option-b">●</span>
+                    </span>
+                  </div>
+                  <div className="h-3 w-full flex overflow-hidden">
+                    <div className="h-full bg-option-a transition-all duration-700" style={{ width: `${pctA}%` }} />
+                    <div className="h-full bg-option-b transition-all duration-700" style={{ width: `${100 - pctA}%` }} />
+                  </div>
+                </div>
+              )}
+
               {/* Swipe hint on the first card */}
               {i === 0 && !choice && (
                 <div className="absolute bottom-24 left-0 right-0 z-20 flex flex-col items-center gap-1 pointer-events-none">
