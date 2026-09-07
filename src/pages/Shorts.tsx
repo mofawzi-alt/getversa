@@ -114,6 +114,44 @@ export default function Shorts() {
     return () => obs.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  // Live vote updates — every new vote from anyone ticks the counters up in place
+  useEffect(() => {
+    const channel = supabase
+      .channel('shorts-live-votes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'votes' },
+        (payload) => {
+          const row = payload.new as { poll_id?: string; choice?: string; user_id?: string };
+          if (!row?.poll_id || !row?.choice) return;
+          if (user && row.user_id === user.id) return; // own vote already counted optimistically
+          setLiveDeltas((prev) => {
+            const cur = prev[row.poll_id!] || { a: 0, b: 0 };
+            return {
+              ...prev,
+              [row.poll_id!]: {
+                a: cur.a + (row.choice === 'A' ? 1 : 0),
+                b: cur.b + (row.choice === 'B' ? 1 : 0),
+              },
+            };
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const advanceTo = (pollId: string) => {
+    const el = sectionRefs.current[pollId];
+    const next = el?.nextElementSibling as HTMLElement | null;
+    if (next && next.tagName === 'SECTION') {
+      next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const handleVote = async (poll: ShortPoll, choice: 'A' | 'B') => {
     if (results[poll.id]) return;
 
