@@ -75,11 +75,10 @@ export function useCategoryStories() {
         const catPolls = catMap.get(cat);
         if (!catPolls?.length) continue;
 
+        // Photo first, then recent activity — a quiet category still gets a real photo
         const ranked = catPolls
           .map((p: any) => ({ poll: p, t: tally.get(p.id) || { a: 0, b: 0, total: 0 } }))
-          .filter((x: any) => x.t.total > 0)
           .sort((a: any, b: any) => {
-            // Prefer polls with images so stories aren't blank
             const aHasImg = a.poll.image_a_url || a.poll.image_b_url ? 1 : 0;
             const bHasImg = b.poll.image_a_url || b.poll.image_b_url ? 1 : 0;
             if (bHasImg !== aHasImg) return bHasImg - aHasImg;
