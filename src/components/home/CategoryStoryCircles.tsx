@@ -18,7 +18,6 @@ interface CategoryStoryCirclesProps {
 export default function CategoryStoryCircles({ active, onSelect, onOpenAll }: CategoryStoryCirclesProps) {
   const { data: stories = [] } = useCategoryStories();
 
-  if (stories.length === 0) return null;
 
   return (
     <div className="flex gap-3 overflow-x-auto px-3 pb-2 scrollbar-hide">
