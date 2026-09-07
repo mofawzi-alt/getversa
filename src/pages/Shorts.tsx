@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveDebateFeed } from '@/hooks/useLiveDebateFeed';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
-import { mapToVersaCategory } from '@/lib/categoryMeta';
+import { mapToVersaCategory, getCategoryColorClass } from '@/lib/categoryMeta';
 import BottomNav from '@/components/layout/BottomNav';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
