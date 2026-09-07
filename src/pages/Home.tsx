@@ -1656,7 +1656,7 @@ export default function Home() {
   }, [allPolls, votedPollIds, skippedPollIds, profile?.age_range, user, queuePollIds, isOnboardingFeed]);
   const newPolls = useMemo(() => {
     if (!categoryFilter) return allNewPolls;
-    return allNewPolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter);
+    return allNewPolls.filter(p => matchesCategoryFilter(p.category, categoryFilter));
   }, [allNewPolls, categoryFilter]);
 
   // Reset hero index when category filter changes
