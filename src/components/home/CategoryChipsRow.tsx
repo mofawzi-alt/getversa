@@ -1,4 +1,4 @@
-import { VERSA_CATEGORIES, getCategoryIcon } from '@/lib/categoryMeta';
+import { VERSA_CATEGORIES, getCategoryIcon, getCategoryColorClass } from '@/lib/categoryMeta';
 import { LayoutGrid, Sparkles } from 'lucide-react';
 
 interface CategoryChipsRowProps {
