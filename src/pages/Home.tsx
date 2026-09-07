@@ -35,7 +35,7 @@ import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/co
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 import HeroVoteCard from '@/components/home/HeroVoteCard';
 import CategoriesSheet from '@/components/home/CategoriesSheet';
-import HotTopicsStrip from '@/components/home/HotTopicsStrip';
+
 
 import CategoryStoryCircles from '@/components/home/CategoryStoryCircles';
 import { LayoutGrid } from 'lucide-react';
