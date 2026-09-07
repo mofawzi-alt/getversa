@@ -84,7 +84,10 @@ export default function Shorts() {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useLiveDebateFeed(true);
   const [results, setResults] = useState<Record<string, 'A' | 'B'>>({});
   const [tallies, setTallies] = useState<Record<string, { a: number; b: number }>>({});
+  const [liveDeltas, setLiveDeltas] = useState<Record<string, { a: number; b: number }>>({});
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const polls: ShortPoll[] = useMemo(
     () => (data?.pages || []).flatMap((p: any) => p.polls),
