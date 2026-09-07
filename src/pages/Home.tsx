@@ -84,6 +84,14 @@ function getDisplayCategoryName(name: string): string {
   return CATEGORY_DISPLAY_NAMES[name] || name;
 }
 
+/** Matches a poll's raw category against the selected filter (raw name or Versa category). */
+function matchesCategoryFilter(rawCategory: string | null | undefined, filter: string): boolean {
+  const raw = rawCategory || 'Other';
+  if (getDisplayCategoryName(raw) === filter) return true;
+  return mapToVersaCategory(raw) === filter;
+}
+
+
 const CATEGORY_META: Record<string, { emoji: string; color: string; bg: string }> = {
   'brands': { emoji: '🏷️', color: 'hsl(15, 80%, 50%)', bg: 'hsl(15, 80%, 93%)' },
   'business & startups': { emoji: '🚀', color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
@@ -1648,7 +1656,7 @@ export default function Home() {
   }, [allPolls, votedPollIds, skippedPollIds, profile?.age_range, user, queuePollIds, isOnboardingFeed]);
   const newPolls = useMemo(() => {
     if (!categoryFilter) return allNewPolls;
-    return allNewPolls.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter);
+    return allNewPolls.filter(p => matchesCategoryFilter(p.category, categoryFilter));
   }, [allNewPolls, categoryFilter]);
 
   // Reset hero index when category filter changes
@@ -1872,7 +1880,7 @@ export default function Home() {
 
   // Smart category tap: unvoted → filter hero, all voted → explore with results
   const handleCategoryTap = (catName: string) => {
-    const catPolls = allPolls.filter(p => getDisplayCategoryName(p.category || 'Other') === catName);
+    const catPolls = allPolls.filter(p => matchesCategoryFilter(p.category, catName));
     const hasUnvoted = catPolls.some(p => !votedPollIds?.has(p.id));
     if (hasUnvoted) {
       // Save current position before filtering
@@ -2099,7 +2107,7 @@ export default function Home() {
               merged.push(p);
             }
             const filteredLivePolls = categoryFilter
-              ? merged.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter)
+              ? merged.filter(p => matchesCategoryFilter(p.category, categoryFilter))
               : merged;
             return filteredLivePolls.length > 0 ? (
               <>
