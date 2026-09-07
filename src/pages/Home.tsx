@@ -1972,10 +1972,7 @@ export default function Home() {
         <HotTopicsStrip />
 
         {/* ═══ CATEGORY STORY CIRCLES ═══ */}
-        <CategoryStoryCircles active={categoryFilter} onSelect={setCategoryFilter} />
-
-        {/* ═══ CATEGORY CHIPS ═══ */}
-        <CategoryChipsRow
+        <CategoryStoryCircles
           active={categoryFilter}
           onSelect={setCategoryFilter}
           onOpenAll={() => setCategoriesSheetOpen(true)}
