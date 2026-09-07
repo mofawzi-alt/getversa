@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, LogIn, Compass, MessageCircle, Camera } from 'lucide-react';
+import { Home, User, LogIn, Compass, MessageCircle, Camera, Play } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations } from '@/hooks/useMessages';
 
@@ -16,6 +16,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
       <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-nav border-t border-border/40 safe-area-bottom z-50">
         <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
           <NavButton path="/" icon={Home} label="Home" active={location.pathname === '/' || location.pathname === '/home'} onClick={() => navigate('/')} />
+          <NavButton path="/shorts" icon={Play} label="Shorts" active={location.pathname === '/shorts'} onClick={() => navigate('/shorts')} />
           <NavButton path="/browse" icon={Compass} label="Browse" active={location.pathname === '/browse'} onClick={() => navigate('/browse')} />
           <NavButton path="/auth" icon={LogIn} label="Sign In" active={location.pathname === '/auth'} onClick={() => navigate('/auth')} />
         </div>
@@ -38,6 +39,13 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
               navigate('/home');
             }
           }}
+        />
+        <NavButton
+          path="/shorts"
+          icon={Play}
+          label="Shorts"
+          active={location.pathname === '/shorts'}
+          onClick={() => navigate('/shorts')}
         />
         <NavButton
           path="/browse"
@@ -84,7 +92,7 @@ function NavButton({ icon: Icon, label, active, onClick, badge }: {
   return (
     <button
       onClick={onClick}
-      className={`relative flex flex-col items-center gap-1 px-3 py-2 transition-all ${
+      className={`relative flex flex-col items-center gap-1 px-2 py-2 transition-all ${
         active ? 'text-primary' : 'text-card-foreground/70 hover:text-card-foreground'
       }`}
     >

@@ -35,6 +35,9 @@ import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/co
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 import HeroVoteCard from '@/components/home/HeroVoteCard';
 import CategoriesSheet from '@/components/home/CategoriesSheet';
+import HotTopicsStrip from '@/components/home/HotTopicsStrip';
+import CategoryChipsRow from '@/components/home/CategoryChipsRow';
+import CategoryStoryCircles from '@/components/home/CategoryStoryCircles';
 import { LayoutGrid } from 'lucide-react';
 import BrandPackBanner from '@/components/home/BrandPackBanner';
 import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
@@ -1964,6 +1967,26 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* ═══ HOT RIGHT NOW ═══ */}
+        <HotTopicsStrip />
+
+        {/* ═══ CATEGORY STORY CIRCLES ═══ */}
+        <CategoryStoryCircles active={categoryFilter} onSelect={setCategoryFilter} />
+
+        {/* ═══ CATEGORY CHIPS ═══ */}
+        <CategoryChipsRow
+          active={categoryFilter}
+          onSelect={setCategoryFilter}
+          onOpenAll={() => setCategoriesSheetOpen(true)}
+        />
+
+        <CategoriesSheet
+          open={categoriesSheetOpen}
+          onOpenChange={setCategoriesSheetOpen}
+          onSelect={setCategoryFilter}
+          activeCategory={categoryFilter}
+        />
 
         {/* ═══ PINNED POLL BANNER ═══ */}
         <PinnedPollBanner />

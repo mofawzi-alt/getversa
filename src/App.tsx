@@ -35,6 +35,7 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 
 const Explore = lazy(() => import("./pages/Explore"));
 const Browse = lazy(() => import("./pages/Browse"));
+const Shorts = lazy(() => import("./pages/Shorts"));
 const LiveDebate = lazy(() => import("./pages/LiveDebate"));
 const SeasonalHub = lazy(() => import("./pages/SeasonalHub"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -172,6 +173,7 @@ function AppInner() {
             <Route path="/home" element={<DemographicsGuard><Home /></DemographicsGuard>} />
             <Route path="/explore" element={<DemographicsGuard><Explore /></DemographicsGuard>} />
             <Route path="/browse" element={<Browse />} />
+            <Route path="/shorts" element={<Shorts />} />
             <Route path="/poll/:id" element={<SharedPoll />} />
             <Route path="/live-debate" element={<DemographicsGuard><LiveDebate /></DemographicsGuard>} />
             <Route path="/seasonal/:slug" element={<SeasonalHub />} />
