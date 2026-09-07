@@ -194,6 +194,9 @@ export default function Shorts() {
 
     queryClient.invalidateQueries({ queryKey: ['user-voted-ids'] });
     queryClient.invalidateQueries({ queryKey: ['user-vote-count'] });
+
+    // Reels behaviour: show the result briefly, then glide to the next short
+    window.setTimeout(() => advanceTo(poll.id), 1700);
   };
 
   return (
