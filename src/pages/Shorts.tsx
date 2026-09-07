@@ -241,7 +241,17 @@ export default function Shorts() {
                     {mapToVersaCategory(poll.category)}
                   </span>
                   {total > 0 && (
-                    <span className="ml-auto text-[12px] font-semibold text-white/80 tabular-nums">{total.toLocaleString()} votes</span>
+                    <span className="ml-auto flex items-center gap-1.5 text-[12px] font-semibold text-white/80 tabular-nums">
+                      {liveCount > 0 && (
+                        <span className="inline-flex items-center gap-1 text-white">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                          +{liveCount}
+                        </span>
+                      )}
+                      <motion.span key={total} initial={{ opacity: 0.5, y: -3 }} animate={{ opacity: 1, y: 0 }}>
+                        {total.toLocaleString()} votes
+                      </motion.span>
+                    </span>
                   )}
                 </div>
                 {poll.subtitle && (
