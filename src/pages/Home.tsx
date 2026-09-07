@@ -1982,14 +1982,28 @@ export default function Home() {
         {/* ═══ CATEGORY STORY CIRCLES ═══ */}
         <CategoryStoryCircles
           active={categoryFilter}
-          onSelect={setCategoryFilter}
+          onSelect={(cat) => {
+            if (!cat) {
+              setCategoryFilter(null);
+              setHeroPollIndex(savedHeroIndex.current);
+            } else {
+              handleCategoryTap(cat);
+            }
+          }}
           onOpenAll={() => setCategoriesSheetOpen(true)}
         />
 
         <CategoriesSheet
           open={categoriesSheetOpen}
           onOpenChange={setCategoriesSheetOpen}
-          onSelect={setCategoryFilter}
+          onSelect={(cat) => {
+            if (!cat) {
+              setCategoryFilter(null);
+              setHeroPollIndex(savedHeroIndex.current);
+            } else {
+              handleCategoryTap(cat);
+            }
+          }}
           activeCategory={categoryFilter}
         />
 
