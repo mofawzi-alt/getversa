@@ -80,29 +80,8 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
             : 'Keep exploring while the next drop lands'}
         </p>
 
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <button
-            onClick={() => navigate('/browse')}
-            className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-background px-2 py-3 transition active:scale-[0.97]"
-          >
-            <Eye className="h-4 w-4 text-primary" />
-            <span className="text-[11px] font-semibold text-foreground">Browse</span>
-          </button>
-          <button
-            onClick={() => navigate('/shorts')}
-            className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-background px-2 py-3 transition active:scale-[0.97]"
-          >
-            <Swords className="h-4 w-4 text-primary" />
-            <span className="text-[11px] font-semibold text-foreground">Shorts</span>
-          </button>
-          <button
-            onClick={() => navigate('/ask')}
-            className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-background px-2 py-3 transition active:scale-[0.97]"
-          >
-            <MessageCircleQuestion className="h-4 w-4 text-primary" />
-            <span className="text-[11px] font-semibold text-foreground text-center leading-tight">{askLabel}</span>
-          </button>
-        </div>
+
+
 
         {!!totalVotes && (
           <div className="mt-3 flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
