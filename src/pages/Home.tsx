@@ -2107,7 +2107,7 @@ export default function Home() {
               merged.push(p);
             }
             const filteredLivePolls = categoryFilter
-              ? merged.filter(p => getDisplayCategoryName(p.category || 'Other') === categoryFilter)
+              ? merged.filter(p => matchesCategoryFilter(p.category, categoryFilter))
               : merged;
             return filteredLivePolls.length > 0 ? (
               <>
