@@ -84,6 +84,14 @@ function getDisplayCategoryName(name: string): string {
   return CATEGORY_DISPLAY_NAMES[name] || name;
 }
 
+/** Matches a poll's raw category against the selected filter (raw name or Versa category). */
+function matchesCategoryFilter(rawCategory: string | null | undefined, filter: string): boolean {
+  const raw = rawCategory || 'Other';
+  if (getDisplayCategoryName(raw) === filter) return true;
+  return mapToVersaCategory(raw) === filter;
+}
+
+
 const CATEGORY_META: Record<string, { emoji: string; color: string; bg: string }> = {
   'brands': { emoji: '🏷️', color: 'hsl(15, 80%, 50%)', bg: 'hsl(15, 80%, 93%)' },
   'business & startups': { emoji: '🚀', color: 'hsl(210, 70%, 50%)', bg: 'hsl(210, 70%, 93%)' },
