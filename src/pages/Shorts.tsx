@@ -180,18 +180,23 @@ export default function Shorts() {
             >
               {/* Question header */}
               <div className="absolute top-0 left-0 right-0 z-20 px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-3 bg-gradient-to-b from-black/70 to-transparent">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
-                    <Flame className="h-2.5 w-2.5" />
+                <h2
+                  className="font-display font-bold text-[22px] leading-[1.15] text-white"
+                  style={{ letterSpacing: '-0.01em', textShadow: '0 1px 4px rgba(0,0,0,.5)' }}
+                >
+                  {poll.question}
+                </h2>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold tracking-wide ${getCategoryColorClass(mapToVersaCategory(poll.category))}`}>
+                    <Flame className="h-3 w-3" />
                     {mapToVersaCategory(poll.category)}
                   </span>
                   {total > 0 && (
-                    <span className="text-[11px] font-semibold text-white/80">{total.toLocaleString()} votes</span>
+                    <span className="ml-auto text-[12px] font-semibold text-white/80 tabular-nums">{total.toLocaleString()} votes</span>
                   )}
                 </div>
-                <h2 className="text-[19px] font-extrabold leading-tight text-white drop-shadow">{poll.question}</h2>
                 {poll.subtitle && (
-                  <p className="mt-1 text-[12px] font-medium text-white/75">{poll.subtitle}</p>
+                  <p className="mt-1.5 text-[12px] font-medium text-white/75">{poll.subtitle}</p>
                 )}
               </div>
 
