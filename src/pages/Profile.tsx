@@ -22,7 +22,7 @@ import BiometricToggle from '@/components/profile/BiometricToggle';
 import DeleteAccountButton from '@/components/profile/DeleteAccountButton';
 
 function LanguageCard() {
-  const { lang, setLang } = useLanguage();
+  const { lang, setLanguage } = useLanguage();
   return (
     <div className="bg-card rounded-2xl p-4 border border-border shadow-sm flex items-center gap-3">
       <Languages className="h-5 w-5 text-primary shrink-0" />
@@ -32,13 +32,13 @@ function LanguageCard() {
       </div>
       <div className="flex rounded-full bg-secondary p-0.5">
         <button
-          onClick={() => setLang('en')}
+          onClick={() => setLanguage('en')}
           className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${lang === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
         >
           EN
         </button>
         <button
-          onClick={() => setLang('ar')}
+          onClick={() => setLanguage('ar')}
           className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${lang === 'ar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
         >
           عربي
