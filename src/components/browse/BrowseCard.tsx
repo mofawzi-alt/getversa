@@ -5,6 +5,8 @@ import { usePollReactions } from '@/hooks/usePollReactions';
 import { getCategoryColorClass, mapToVersaCategory } from '@/lib/categoryMeta';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { getNativeSafeImageSrc } from '@/lib/pollImages';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { pollText } from '@/lib/pollText';
 
 export interface DemoTag {
   icon: LucideIcon;
@@ -17,6 +19,9 @@ export interface BrowsePoll {
   question: string;
   option_a: string;
   option_b: string;
+  question_ar?: string | null;
+  option_a_ar?: string | null;
+  option_b_ar?: string | null;
   image_a_url: string | null;
   image_b_url: string | null;
   category: string | null;
