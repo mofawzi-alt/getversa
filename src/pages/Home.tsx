@@ -1646,17 +1646,7 @@ export default function Home() {
     }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
   }, [allPolls, votedPollIds, skippedPollIds, profile?.age_range, user, queuePollIds, isOnboardingFeed]);
-  const newPolls = useMemo(() => {
-    if (!categoryFilter) return allNewPolls;
-    return allNewPolls.filter(p => matchesCategoryFilter(p.category, categoryFilter));
-  }, [allNewPolls, categoryFilter]);
-
-  // Reset hero index when category filter changes
-  useEffect(() => {
-    if (categoryFilter) {
-      setHeroPollIndex(0);
-    }
-  }, [categoryFilter]);
+  const newPolls = allNewPolls;
 
   // Keep heroPollIndex in bounds — if new polls appear or list shrinks, reset to 0
   useEffect(() => {
@@ -1664,14 +1654,6 @@ export default function Home() {
       setHeroPollIndex(0);
     }
   }, [newPolls.length, heroPollIndex]);
-
-  // Auto-clear category filter when all category polls are voted
-  useEffect(() => {
-    if (categoryFilter && newPolls.length === 0) {
-      setCategoryFilter(null);
-      setHeroPollIndex(savedHeroIndex.current);
-    }
-  }, [categoryFilter, newPolls.length]);
 
 
   // ── Memoized expensive computations ──
