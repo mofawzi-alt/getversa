@@ -243,8 +243,9 @@ export default function BrowseCard({
         <p
           className={`font-display font-bold text-[22px] leading-[1.15] ${titleColor} pr-12`}
           style={{ letterSpacing: '-0.01em' }}
+          dir="auto"
         >
-          {poll.question}
+          {pt.question}
         </p>
         <div className="flex items-center gap-2 mt-2">
           {poll.category && (
@@ -290,8 +291,8 @@ export default function BrowseCard({
                   variant="browse"
                 />
                 <div className="absolute inset-x-0 bottom-0 px-3 pt-12 pb-12 bg-gradient-to-t from-black/95 via-black/65 to-transparent">
-                  <p className="text-white font-semibold text-[15px] line-clamp-2 leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }}>
-                    {poll.option_a}
+                  <p className="text-white font-semibold text-[15px] line-clamp-2 leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }} dir="auto">
+                    {pt.optionA}
                   </p>
                   <p className="text-white font-display font-extrabold text-[34px] leading-none mt-1 tabular-nums" style={{ textShadow: '0 2px 6px rgba(0,0,0,.5)' }}>
                     {poll.percentA}<span className="text-[20px] font-bold">%</span>
@@ -310,8 +311,8 @@ export default function BrowseCard({
                   variant="browse"
                 />
                 <div className="absolute inset-x-0 bottom-0 px-3 pt-12 pb-12 bg-gradient-to-t from-black/95 via-black/65 to-transparent">
-                  <p className="text-white font-semibold text-[15px] line-clamp-2 leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }}>
-                    {poll.option_b}
+                  <p className="text-white font-semibold text-[15px] line-clamp-2 leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }} dir="auto">
+                    {pt.optionB}
                   </p>
                   <p className="text-white font-display font-extrabold text-[34px] leading-none mt-1 tabular-nums" style={{ textShadow: '0 2px 6px rgba(0,0,0,.5)' }}>
                     {poll.percentB}<span className="text-[20px] font-bold">%</span>
