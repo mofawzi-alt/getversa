@@ -341,9 +341,11 @@ export function getPersonalityExplanation(traits: TraitEntry[], result: Personal
 
 interface CompatibilityResult {
   score: number;          // 0-100
-  label: string;          // e.g. "Natural Allies"
+  label: string;          // e.g. "Natural Allies" (English i18n key — translate at render)
   emoji: string;
-  description: string;
+  descriptionKey: string; // i18n key with {a} and {b} placeholders
+  nameA: string;          // English type name (translate at render)
+  nameB: string;
   sharedStrengths: string[];
   tensions: string[];
 }

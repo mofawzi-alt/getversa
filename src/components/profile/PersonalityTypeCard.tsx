@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { computePersonalityType, getPersonalityExplanation, getDataDrivenSummary } from '@/lib/personalityType';
+import { computePersonalityType, getPersonalityExplanation, getDataDrivenSummary, type SummaryLine } from '@/lib/personalityType';
 import { motion } from 'framer-motion';
 import { Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
+import { useT } from '@/hooks/useT';
 
 interface Props {
   userId: string;
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Props) {
+  const { t } = useT();
   const [expanded, setExpanded] = useState(false);
   const MIN_VOTES = 30;
 
@@ -40,6 +42,12 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
   const result = computePersonalityType(traits, voteCount, userId);
   const reasons = getPersonalityExplanation(traits, result);
 
+  const renderLine = (line: SummaryLine) => {
+    const params: Record<string, string | number> = { ...(line.params || {}) };
+    if (typeof params.phrase === 'string') params.phrase = t(params.phrase);
+    return t(line.key, params);
+  };
+
   // Not ready state — show progress
   if (!result.ready) {
     const progress = isCalibrating ? 100 : Math.min((voteCount / MIN_VOTES) * 100, 99);
@@ -47,16 +55,16 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
       <div className="glass rounded-2xl p-5 text-center">
         <div className="flex items-center justify-center gap-2 mb-3">
           <Brain className="h-4 w-4 text-primary" />
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Personality Type</span>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('Personality Type')}</span>
         </div>
         <p className="text-sm text-muted-foreground mb-3">
           {isCalibrating
             ? isOwnProfile
-              ? 'Your votes are recorded, but we do not have enough personality signal yet to reveal your type.'
-              : 'This user has votes, but their personality type is still being calculated.'
+              ? t('Your votes are recorded, but we do not have enough personality signal yet to reveal your type.')
+              : t('This user has votes, but their personality type is still being calculated.')
             : isOwnProfile
-              ? `Vote on ${remainingVotes} more polls to unlock your personality type`
-              : 'This user needs more votes to reveal their type'}
+              ? t('Vote on {n} more polls to unlock your personality type', { n: remainingVotes })
+              : t('This user needs more votes to reveal their type')}
         </p>
         <div className="h-2 rounded-full bg-muted overflow-hidden">
           <div
@@ -65,7 +73,7 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
           />
         </div>
         <p className="text-[10px] text-muted-foreground mt-2">
-          {isCalibrating ? `${voteCount} votes recorded` : `${voteCount}/${MIN_VOTES} votes`}
+          {isCalibrating ? t('{n} votes recorded', { n: voteCount }) : t('{n}/{min} votes', { n: voteCount, min: MIN_VOTES })}
         </p>
       </div>
     );
@@ -77,8 +85,8 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
     return (
       <div className="space-y-1">
         <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
-          <span>{label1}</span>
-          <span>{label2}</span>
+          <span>{t(label1)}</span>
+          <span>{t(label2)}</span>
         </div>
         <div className="h-2 rounded-full bg-muted overflow-hidden relative">
           <div className="absolute left-1/2 top-0 w-px h-full bg-border z-10" />
@@ -103,14 +111,14 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
       <div className="p-5 text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Brain className="h-4 w-4 text-primary" />
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Personality Type</span>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('Personality Type')}</span>
         </div>
 
         <div className="text-4xl mb-1">{result.emoji}</div>
-        <h3 className="text-2xl font-display font-bold text-foreground">{result.name}</h3>
+        <h3 className="text-2xl font-display font-bold text-foreground">{t(result.name)}</h3>
         <div className="mt-3 space-y-1.5 max-w-[300px] mx-auto">
           {getDataDrivenSummary(traits, voteCount).map((line, i) => (
-            <p key={i} className="text-sm text-muted-foreground leading-relaxed">{line}</p>
+            <p key={i} className="text-sm text-muted-foreground leading-relaxed">{renderLine(line)}</p>
           ))}
         </div>
 
@@ -119,7 +127,7 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
           <div className="flex flex-wrap justify-center gap-2 mt-4">
             {result.strengths.map((s) => (
               <span key={s} className="px-3 py-1 rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
-                {s}
+                {t(s)}
               </span>
             ))}
           </div>
@@ -131,7 +139,7 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-t border-border hover:bg-secondary/30 transition-colors"
       >
-        {expanded ? 'Hide' : 'Why this type?'}
+        {expanded ? t('Hide') : t('Why this type?')}
         {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
       </button>
 
@@ -154,13 +162,13 @@ export default function PersonalityTypeCard({ userId, isOwnProfile = false }: Pr
             {reasons.map((r, i) => (
               <div key={i} className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                <p className="text-xs text-foreground/70 leading-relaxed">{r}</p>
+                <p className="text-xs text-foreground/70 leading-relaxed">{t(r)}</p>
               </div>
             ))}
           </div>
 
           <p className="text-[10px] text-muted-foreground/50 text-center">
-            Based on {voteCount} votes · Updates as you vote more
+            {t('Based on {n} votes · Updates as you vote more', { n: voteCount })}
           </p>
         </motion.div>
       )}
