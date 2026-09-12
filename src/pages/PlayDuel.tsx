@@ -9,6 +9,7 @@ import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 interface Poll {
   id: string;
@@ -46,6 +47,7 @@ function parseChoices(raw: string | null): string[] {
 }
 
 export default function PlayDuel() {
+  const { t } = useT();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
@@ -73,7 +75,7 @@ export default function PlayDuel() {
     })();
   }, [user]);
 
-  const seeHowLabel = country ? `See how ${country} voted` : 'See how everyone voted';
+  const seeHowLabel = country ? t('See how {country} voted', { country }) : t('See how everyone voted');
 
   useEffect(() => {
     if (!user || !id) return;
@@ -114,7 +116,7 @@ export default function PlayDuel() {
               prevOther.length < polls.length &&
               newOther.length === polls.length
             ) {
-              toast.success(`${otherName} just finished — results are in! 🏆`);
+              toast.success(t('{name} just finished — results are in! 🏆', { name: otherName }));
             }
             return next;
           });
@@ -156,7 +158,7 @@ export default function PlayDuel() {
       .maybeSingle();
 
     if (error || !d) {
-      toast.error('Duel not found');
+      toast.error(t('Duel not found'));
       navigate('/play/duels');
       return;
     }
@@ -300,7 +302,7 @@ export default function PlayDuel() {
         if (refreshed) setDuel(refreshed as Duel);
       }
     } catch (e) {
-      toast.error('Could not save vote');
+      toast.error(t('Could not save vote'));
     } finally {
       setSubmitting(false);
     }
@@ -341,9 +343,9 @@ export default function PlayDuel() {
       });
 
       setDuel({ ...duel, status: 'accepted' });
-      toast.success('Challenge accepted! 🔥');
+      toast.success(t('Challenge accepted! 🔥'));
     } catch {
-      toast.error('Could not accept');
+      toast.error(t('Could not accept'));
     } finally {
       setAccepting(false);
     }
@@ -386,10 +388,10 @@ export default function PlayDuel() {
         },
       });
 
-      toast.success('Challenge declined');
+      toast.success(t('Challenge declined'));
       navigate('/play/duels');
     } catch {
-      toast.error('Could not decline');
+      toast.error(t('Could not decline'));
     } finally {
       setAccepting(false);
     }
@@ -409,7 +411,7 @@ export default function PlayDuel() {
     return (
       <AppLayout>
         <div className="max-w-lg mx-auto px-4 py-10 text-center">
-          <p className="text-sm text-muted-foreground">Duel unavailable.</p>
+          <p className="text-sm text-muted-foreground">{t('Duel unavailable.')}</p>
         </div>
       </AppLayout>
     );
@@ -422,7 +424,7 @@ export default function PlayDuel() {
       <AppLayout>
         <div className="flex flex-col items-center justify-center py-20 gap-3">
           <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          <p className="text-sm text-muted-foreground">Opening duel from {otherName}…</p>
+          <p className="text-sm text-muted-foreground">{t('Opening duel from {name}…', { name: otherName })}</p>
         </div>
       </AppLayout>
     );
@@ -448,7 +450,7 @@ export default function PlayDuel() {
             onClick={() => navigate('/play/duels')}
             className="flex items-center gap-1 text-sm text-muted-foreground mb-4"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to Duels
+            <ArrowLeft className="h-4 w-4" /> {t('Back to Duels')}
           </button>
 
           <div className="text-center py-8">
@@ -457,16 +459,16 @@ export default function PlayDuel() {
             </div>
             {rate !== null ? (
               <>
-                <h1 className="text-3xl font-bold text-foreground mb-1">{rate}% Match</h1>
+                <h1 className="text-3xl font-bold text-foreground mb-1">{t('{pct}% Match', { pct: rate })}</h1>
                 <p className="text-sm text-muted-foreground">
-                  You matched {matches}/{polls.length} with {otherName}
+                  {t('You matched {matches}/{total} with {name}', { matches, total: polls.length, name: otherName })}
                 </p>
               </>
             ) : (
               <>
-                <h1 className="text-2xl font-bold text-foreground mb-1">Waiting for {otherName}…</h1>
+                <h1 className="text-2xl font-bold text-foreground mb-1">{t('Waiting for {name}…', { name: otherName })}</h1>
                 <p className="text-sm text-muted-foreground">
-                  You finished. We'll notify you when {otherName} plays.
+                  {t("You finished. We'll notify you when {name} plays.", { name: otherName })}
                 </p>
               </>
             )}
@@ -492,7 +494,7 @@ export default function PlayDuel() {
                       {p.question}
                     </p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
-                      You: <span className="font-bold text-foreground">{mine === 'A' ? p.option_a : p.option_b}</span>
+                      {t('You picked')}: <span className="font-bold text-foreground">{mine === 'A' ? p.option_a : p.option_b}</span>
                       {theirs && (
                         <>
                           {' '}· {otherName}:{' '}
@@ -517,7 +519,7 @@ export default function PlayDuel() {
                           : 'bg-muted text-muted-foreground'
                       }`}
                     >
-                      {matched ? 'Match' : 'Diff'}
+                      {matched ? t('Match') : t('Diff')}
                     </span>
                   )}
                 </button>
@@ -563,17 +565,17 @@ export default function PlayDuel() {
               className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.99] transition-transform"
             >
               <HomeIcon className="h-4 w-4" />
-              Continue voting
+              {t('Continue voting')}
             </button>
             <button
               onClick={() => navigate('/play/duels')}
               className="w-full py-3 rounded-2xl bg-muted text-foreground font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.99] transition-transform"
             >
               <Swords className="h-4 w-4" />
-              Challenge another friend
+              {t('Challenge another friend')}
             </button>
             <p className="text-center text-[10px] text-muted-foreground mt-2">
-              Tap any poll above to {seeHowLabel.toLowerCase()}.
+              {t('Tap any poll above to {label}.', { label: seeHowLabel.toLowerCase() })}
             </p>
           </div>
         </div>
@@ -614,14 +616,14 @@ export default function PlayDuel() {
           onClick={() => navigate('/play/duels')}
           className="flex items-center gap-1 text-sm text-muted-foreground mb-3"
         >
-          <ArrowLeft className="h-4 w-4" /> Exit duel
+          <ArrowLeft className="h-4 w-4" /> {t('Exit duel')}
         </button>
 
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Swords className="h-4 w-4 text-primary" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-              Duel vs {otherName}
+              {t('Duel vs {name}', { name: otherName })}
             </span>
           </div>
           <span className="text-[11px] font-bold text-muted-foreground">
@@ -673,7 +675,7 @@ export default function PlayDuel() {
 
         <div className="mt-5 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
           <Sparkles className="h-3 w-3" />
-          Your votes still count toward the public results.
+          {t('Your votes still count toward the public results.')}
         </div>
       </div>
     </AppLayout>
