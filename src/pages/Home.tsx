@@ -1995,6 +1995,18 @@ export default function Home() {
           </div>
         )}
 
+        {/* Category picker — opened from the Categories tab in the bottom bar */}
+        <CategoriesSheet
+          open={categoriesSheetOpen}
+          onOpenChange={setCategoriesSheetOpen}
+          activeCategory={categoryFilter}
+          onSelect={(cat) => {
+            setCategoryFilter(cat);
+            setHeroPollIndex(0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
+
 
         {/* Live voter count strip — "X people voted in the last hour" */}
         <LiveVoterCount />
