@@ -4,6 +4,7 @@ import { computePersonalityType, computeTypeCompatibility, PERSONALITY_TYPES } f
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { Brain, Sparkles } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 interface Props {
   targetUserId: string;
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function PersonalityCompatibility({ targetUserId, targetUsername }: Props) {
+  const { t } = useT();
   const { user } = useAuth();
 
   // Own traits + vote count
@@ -69,11 +71,11 @@ export default function PersonalityCompatibility({ targetUserId, targetUsername 
           <div className="flex items-center justify-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              Type Compatibility
+              {t('Type Compatibility')}
             </span>
           </div>
           <p className="text-[10px] text-muted-foreground/80 text-center max-w-[260px] leading-tight">
-            Based on personality archetypes — not the same as your Vote Match %.
+            {t('Based on personality archetypes — not the same as your Vote Match %.')}
           </p>
         </div>
 
