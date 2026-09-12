@@ -51,6 +51,49 @@ async function notifyAdmins(supabase: any, title: string, body: string, data: Re
   await supabase.from("notifications").insert(rows);
 }
 
+// Fill in a missing Egyptian Arabic version for a calendar row via the AI gateway.
+async function translateToArabic(row: any): Promise<{ question_ar: string; option_a_ar: string; option_b_ar: string; subtitle_ar: string | null } | null> {
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!apiKey) return null;
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content:
+              'Translate this poll into natural spoken Egyptian Arabic (not formal fusha). Keep brand and celebrity names as-is. Keep the same tone and energy. Reply with VALID JSON only: {"question_ar": "...", "option_a_ar": "...", "option_b_ar": "...", "subtitle_ar": "..."} where subtitle_ar is a short catchy Egyptian Arabic hook like "بجدارة؟ اختار".',
+          },
+          {
+            role: "user",
+            content: JSON.stringify({ question: row.question, option_a: row.option_a, option_b: row.option_b, subtitle: row.subtitle || "" }),
+          },
+        ],
+        temperature: 0.3,
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content || "";
+    const match = content.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    const parsed = JSON.parse(match[0]);
+    if (!parsed.question_ar || !parsed.option_a_ar || !parsed.option_b_ar) return null;
+    return {
+      question_ar: String(parsed.question_ar).trim(),
+      option_a_ar: String(parsed.option_a_ar).trim(),
+      option_b_ar: String(parsed.option_b_ar).trim(),
+      subtitle_ar: parsed.subtitle_ar ? String(parsed.subtitle_ar).trim() : null,
+    };
+  } catch (e) {
+    console.error("translateToArabic failed", e);
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -81,12 +124,40 @@ Deno.serve(async (req) => {
         // Auto-generate hook subtitle if not manually set
         const subtitle = row.subtitle || generateHook(row.category || '');
 
+        // Arabic version: keep admin-provided wording, otherwise auto-translate
+        let ar = {
+          question_ar: row.question_ar || null,
+          option_a_ar: row.option_a_ar || null,
+          option_b_ar: row.option_b_ar || null,
+          subtitle_ar: row.subtitle_ar || null,
+        };
+        if (!ar.question_ar || !ar.option_a_ar || !ar.option_b_ar) {
+          const translated = await translateToArabic(row);
+          if (translated) {
+            ar = {
+              question_ar: ar.question_ar || translated.question_ar,
+              option_a_ar: ar.option_a_ar || translated.option_a_ar,
+              option_b_ar: ar.option_b_ar || translated.option_b_ar,
+              subtitle_ar: ar.subtitle_ar || translated.subtitle_ar,
+            };
+            // Persist back to the calendar row so it is reviewable
+            await supabase
+              .from("poll_calendar")
+              .update(ar)
+              .eq("id", row.id);
+          }
+        }
+
         const { data: poll, error: pErr } = await supabase
           .from("polls")
           .insert({
             question: row.question,
             option_a: row.option_a,
             option_b: row.option_b,
+            question_ar: ar.question_ar,
+            option_a_ar: ar.option_a_ar,
+            option_b_ar: ar.option_b_ar,
+            subtitle_ar: ar.subtitle_ar,
             image_a_url: row.image_a_url || null,
             image_b_url: row.image_b_url || null,
             category: row.category || null,

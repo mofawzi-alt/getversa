@@ -269,11 +269,21 @@ The format is: "Option A vs Option B" but the OPTIONS themselves carry emotional
 ## VISUAL DIRECTION (MANDATORY)
 You MUST also output a visual_direction object for image generation:
 
+## ARABIC VERSION (MANDATORY)
+You MUST also output an Egyptian Arabic version (spoken Egyptian dialect, not formal fusha):
+- question_ar: same question in natural Egyptian Arabic
+- option_a_ar / option_b_ar: same options, translated; keep brand/celebrity names as-is
+- subtitle_ar: a short hook line in Egyptian Arabic (e.g. "بجدارة؟ اختار")
+
 {
   "question": "Option A vs Option B",
   "option_a": "Choice A — meaning",
   "option_b": "Choice B — meaning",
   "category": "<category>",
+  "question_ar": "Arabic question",
+  "option_a_ar": "Arabic option A",
+  "option_b_ar": "Arabic option B",
+  "subtitle_ar": "Arabic hook",
   "visual_direction": {
     "option_a_scene": "WHO + WHERE + EXACT ACTION + lighting and mood",
     "option_b_scene": "WHO + WHERE + EXACT ACTION + lighting and mood",
@@ -426,6 +436,10 @@ Respond with a VALID JSON object only.`;
           question: pollData.question,
           option_a: pollData.option_a,
           option_b: pollData.option_b,
+          question_ar: typeof pollData.question_ar === 'string' && pollData.question_ar.trim() ? pollData.question_ar.trim() : null,
+          option_a_ar: typeof pollData.option_a_ar === 'string' && pollData.option_a_ar.trim() ? pollData.option_a_ar.trim() : null,
+          option_b_ar: typeof pollData.option_b_ar === 'string' && pollData.option_b_ar.trim() ? pollData.option_b_ar.trim() : null,
+          subtitle_ar: typeof pollData.subtitle_ar === 'string' && pollData.subtitle_ar.trim() ? pollData.subtitle_ar.trim() : null,
           category: pollData.category || category || 'General',
           created_by: userId,
           is_daily_poll: true,
