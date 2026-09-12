@@ -1852,23 +1852,6 @@ export default function Home() {
     );
   }
 
-  // Smart category tap: unvoted → filter hero, all voted → explore with results
-  const handleCategoryTap = (catName: string) => {
-    const catPolls = allPolls.filter(p => matchesCategoryFilter(p.category, catName));
-    const hasUnvoted = catPolls.some(p => !votedPollIds?.has(p.id));
-    if (hasUnvoted) {
-      // Save current position before filtering
-      if (!categoryFilter) {
-        savedHeroIndex.current = heroPollIndex;
-      }
-      setCategoryFilter(catName);
-      setHeroPollIndex(0);
-      heroRef.current?.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      navigate(`/explore?category=${encodeURIComponent(catName)}`);
-    }
-  };
-
   const handlePollTap = (poll: PollCard) => {
     const hasVoted = votedPollIds?.has(poll.id);
     const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
