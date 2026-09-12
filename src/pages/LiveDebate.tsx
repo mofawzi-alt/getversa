@@ -14,6 +14,7 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import VerdictResultCard from '@/components/poll/VerdictResultCard';
 import { useSkippedPollIds } from '@/hooks/useSkippedPollIds';
+import { useT } from '@/hooks/useT';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
@@ -66,6 +67,7 @@ interface VoteResult {
 }
 
 export default function LiveDebate() {
+  const { t } = useT();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -368,7 +370,7 @@ export default function LiveDebate() {
           transition={{ duration: 1.5, repeat: Infinity }}
           className="text-sm font-display font-bold text-muted-foreground"
         >
-          Loading debates...
+          {t('Loading debates...')}
         </motion.div>
       </div>
     );
@@ -377,10 +379,10 @@ export default function LiveDebate() {
   if (!currentPoll) {
     return (
       <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center gap-4 px-6">
-        <p className="text-lg font-display font-bold text-foreground">No live debates right now</p>
-        <p className="text-sm text-muted-foreground text-center">Check back soon for new ones.</p>
+        <p className="text-lg font-display font-bold text-foreground">{t('No live debates right now')}</p>
+        <p className="text-sm text-muted-foreground text-center">{t('Check back soon for new ones.')}</p>
         <button onClick={handleExit} className="mt-4 px-6 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm">
-          Back to Home
+          {t('Back to Home')}
         </button>
       </div>
     );
@@ -456,7 +458,7 @@ export default function LiveDebate() {
             exit={{ opacity: 0 }}
             className="absolute top-20 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md"
           >
-            <span className="text-white text-xs font-bold">↓ Release to exit</span>
+            <span className="text-white text-xs font-bold">{t('↓ Release to exit')}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -489,7 +491,7 @@ export default function LiveDebate() {
                 ← {currentPoll.option_a.slice(0, 10)}{currentPoll.option_a.length > 10 ? '…' : ''} · {currentPoll.option_b.slice(0, 10)}{currentPoll.option_b.length > 10 ? '…' : ''} →
               </span>
               <span className="text-white/20 text-[8px]">
-                {polls.length - currentIndex - 1} more debates
+                {t('{n} more debates', { n: polls.length - currentIndex - 1 })}
               </span>
             </div>
 
@@ -500,7 +502,7 @@ export default function LiveDebate() {
                   onClick={() => { setCurrentIndex(prev => prev - 1); setResult(null); setPhase('swipe'); }}
                   className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
                 >
-                  ← Previous
+                  {t('← Previous')}
                 </motion.button>
               )}
               {hasMore ? (
@@ -509,11 +511,11 @@ export default function LiveDebate() {
                   onClick={() => { setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe'); }}
                   className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
                 >
-                  Next Debate →
+                  {t('Next Debate →')}
                 </motion.button>
               ) : (
                 <button onClick={handleExit} className="px-5 py-2 rounded-full bg-white/15 text-white text-xs font-bold backdrop-blur-md">
-                  Back to Home
+                  {t('Back to Home')}
                 </button>
               )}
             </div>
@@ -534,7 +536,7 @@ export default function LiveDebate() {
                   onClick={() => { setCurrentIndex(prev => prev - 1); setResult(null); setPhase('swipe'); }}
                   className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
                 >
-                  ← Previous
+                  {t('← Previous')}
                 </motion.button>
               )}
               {hasMore ? (
@@ -543,16 +545,16 @@ export default function LiveDebate() {
                   onClick={() => { setCurrentIndex(prev => prev + 1); setResult(null); setPhase('swipe'); }}
                   className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shadow-glow tracking-wide"
                 >
-                  Next Insight →
+                  {t('Next Insight →')}
                 </motion.button>
               ) : (
                 <button onClick={handleExit} className="px-5 py-2 rounded-full bg-white/15 text-white text-xs font-bold backdrop-blur-md">
-                  Back to Home
+                  {t('Back to Home')}
                 </button>
               )}
             </div>
             <span className="text-white/30 text-[8px]">
-              {currentIndex > 0 ? '← swipe right for previous' : ''}{currentIndex > 0 && hasMore ? ' · ' : ''}{hasMore ? 'swipe left for next →' : ''}
+              {currentIndex > 0 ? t('← swipe right for previous') : ''}{currentIndex > 0 && hasMore ? ' · ' : ''}{hasMore ? t('swipe left for next →') : ''}
             </span>
           </motion.div>
         )}
@@ -567,9 +569,9 @@ export default function LiveDebate() {
             transition={{ delay: RESULT_MS / 1000 }}
             className="absolute bottom-20 inset-x-0 z-40 flex flex-col items-center gap-2"
           >
-            <p className="text-white text-sm font-display font-bold">All caught up! 🎉</p>
+            <p className="text-white text-sm font-display font-bold">{t('All caught up! 🎉')}</p>
             <button onClick={handleExit} className="px-5 py-2 rounded-full bg-white/15 text-white text-xs font-bold backdrop-blur-md">
-              Back to Home
+              {t('Back to Home')}
             </button>
           </motion.div>
         )}
@@ -802,7 +804,7 @@ function FullScreenCard({
                       <AnimatedPercent target={result!.percentA} delay={0} />
                     </span>
                     <span className="text-white/50 text-xs mt-1">{poll.option_a}</span>
-                    {result!.choice === 'A' && <span className="text-option-a text-[10px] font-bold mt-0.5">Your vote</span>}
+                    {result!.choice === 'A' && <span className="text-option-a text-[10px] font-bold mt-0.5">{t('Your vote')}</span>}
                   </div>
                   <div className="w-px h-16 bg-white/20" />
                   <div className="flex flex-col items-center">
@@ -810,7 +812,7 @@ function FullScreenCard({
                       <AnimatedPercent target={result!.percentB} delay={100} />
                     </span>
                     <span className="text-white/50 text-xs mt-1">{poll.option_b}</span>
-                    {result!.choice === 'B' && <span className="text-option-b text-[10px] font-bold mt-0.5">Your vote</span>}
+                    {result!.choice === 'B' && <span className="text-option-b text-[10px] font-bold mt-0.5">{t('Your vote')}</span>}
                   </div>
                 </div>
 
@@ -832,7 +834,7 @@ function FullScreenCard({
 
                 {/* Vote count */}
                 <span className="text-white/40 text-xs flex items-center gap-1">
-                  <Users className="h-3 w-3" /> {result!.totalVotes} perspectives
+                  <Users className="h-3 w-3" /> {t('{n} perspectives', { n: result!.totalVotes })}
                 </span>
 
                 {/* Minority badge */}
@@ -843,7 +845,7 @@ function FullScreenCard({
                     transition={{ delay: 0.4 }}
                     className="px-4 py-1.5 rounded-full bg-white/10 border border-white/10"
                   >
-                    <span className="text-white text-xs font-bold">You're in the {userPct}% 👀</span>
+                    <span className="text-white text-xs font-bold">{t("You're in the {n}% 👀", { n: userPct })}</span>
                   </motion.div>
                 )}
 
@@ -860,8 +862,8 @@ function FullScreenCard({
                         <VerifiedBadge size="sm" />
                         <span className="text-[10px] font-semibold text-white/80">
                           {celeb.choice === result!.choice
-                            ? `${celeb.username} also chose this`
-                            : `${celeb.username} voted the other way`}
+                            ? t('{name} also chose this', { name: celeb.username })
+                            : t('{name} voted the other way', { name: celeb.username })}
                         </span>
                       </div>
                     ))}

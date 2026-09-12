@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Loader2, ArrowLeft, Clock, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { useT } from '@/hooks/useT';
 
 const CATEGORIES = [
   { key: 'all', label: 'All' },
@@ -31,6 +32,7 @@ interface ExpiredPoll {
 }
 
 export default function PastPerspectives() {
+  const { t } = useT();
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<CategoryKey>('all');
 
@@ -101,9 +103,9 @@ export default function PastPerspectives() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-display font-bold">Past Perspectives</h1>
+            <h1 className="text-2xl font-display font-bold">{t('Past Perspectives')}</h1>
             <p className="text-sm text-muted-foreground">
-              Archived polls · Read-only results
+              {t('Archived polls · Read-only results')}
             </p>
           </div>
         </header>
@@ -129,7 +131,7 @@ export default function PastPerspectives() {
         {filteredPolls.length === 0 ? (
           <div className="rounded-2xl bg-card/50 border border-dashed border-border p-8 text-center space-y-2 mt-4">
             <Clock className="h-8 w-8 text-muted-foreground/40 mx-auto" />
-            <p className="text-sm text-muted-foreground">No archived perspectives in this category</p>
+            <p className="text-sm text-muted-foreground">{t('No archived perspectives in this category')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -145,7 +147,7 @@ export default function PastPerspectives() {
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 text-[10px] font-medium text-destructive/70 bg-destructive/10 px-2 py-0.5 rounded-full">
                       <Clock className="h-3 w-3" />
-                      Expired {formatDistanceToNow(new Date(poll.ends_at), { addSuffix: true })}
+                      {t('Expired {time}', { time: formatDistanceToNow(new Date(poll.ends_at), { addSuffix: true }) })}
                     </span>
                     {poll.index_category && (
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground">

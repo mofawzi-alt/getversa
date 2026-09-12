@@ -394,6 +394,7 @@ function GroupSummary({
   ids: string[];
   friendMap: Map<string, Friend>;
 }) {
+  const { t } = useT();
   const tone = color === 'primary' ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-accent/10 border-accent/30 text-accent-foreground';
   return (
     <div className={`rounded-2xl border p-3 ${tone}`}>
@@ -403,7 +404,7 @@ function GroupSummary({
       </div>
       <p className="text-[11px] truncate text-foreground/80">
         {ids.length === 0
-          ? 'No one yet'
+          ? t('No one yet')
           : ids
               .map((id) => friendMap.get(id)?.friend_username || '?')
               .join(', ')}
@@ -421,6 +422,7 @@ function FriendPickerList({
   onTap: (id: string) => void;
   badgeFor: (id: string) => string | null;
 }) {
+  const { t } = useT();
   return (
     <div className="space-y-1.5">
       {friends.map((f) => {
@@ -439,7 +441,7 @@ function FriendPickerList({
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate text-sm">{f.friend_username || 'Unknown'}</p>
               <p className="text-[11px] text-muted-foreground">
-                {f.compatibility_score ?? 0}% match with you
+                {t('{n}% match with you', { n: f.compatibility_score ?? 0 })}
               </p>
             </div>
             {badge && (
