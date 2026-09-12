@@ -372,16 +372,15 @@ Respond with a VALID JSON object only.`;
         const n = (raw || '').trim().toLowerCase();
         const exact = ALLOWED_CATEGORIES.find((c) => c.toLowerCase() === n);
         if (exact) return exact;
-        if (/(deliver|restaurant|dining|cafe|café|talabat|elmenus)/.test(n)) return 'Food Delivery & Dining';
-        if (/(beauty|makeup|skincare|cosmetic|perfume)/.test(n)) return 'Beauty & Personal Care';
-        if (/(bank|finance|fintech|money|crypto|payment|wallet)/.test(n)) return 'Financial Services';
-        if (/(telecom|mobile|phone|network|internet|tech|app|gadget)/.test(n)) return 'Telco & Tech';
-        if (/(car|auto|mobility|ride|uber|careem)/.test(n)) return 'Automotive & Mobility';
-        if (/(retail|shopping|ecommerce|store|brand|noon)/.test(n)) return 'Retail & E-commerce';
-        if (/(movie|film|series|tv|celeb|music|sport|football|game|entertainment)/.test(n)) return 'Media & Entertainment';
-        if (/(food|drink|snack|beverage|fmcg|coffee|tea|chips)/.test(n)) return 'FMCG & Food';
-        if (/(lifestyle|society|relationship|wellness|fashion|personality|travel)/.test(n)) return 'Lifestyle & Society';
-        return 'The Pulse';
+        if (/(relationship|dating|love|marriage|family|friend)/.test(n)) return 'Relationships';
+        if (/(bank|finance|fintech|money|crypto|payment|wallet|career|work|salary|business|invest)/.test(n)) return 'Money';
+        if (/(education|school|university|study|exam|student|learning)/.test(n)) return 'Education';
+        if (/(telecom|mobile|phone|network|internet|tech|app|gadget|digital|gaming|social media)/.test(n)) return 'Digital Life';
+        if (/(food|drink|snack|beverage|fmcg|coffee|tea|chips|deliver|restaurant|dining|cafe|café)/.test(n)) return 'Food';
+        if (/(movie|film|series|tv|celeb|music|sport|football|entertainment|media)/.test(n)) return 'Entertainment';
+        if (/(lifestyle|beauty|makeup|skincare|perfume|fashion|wellness|health|travel|shopping|retail|ecommerce|store|car|auto|mobility|ride)/.test(n)) return 'Lifestyle';
+        return 'Egypt';
+
       };
       pollData.category = clampCategory(pollData.category || category);
 
