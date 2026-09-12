@@ -8,6 +8,7 @@ import GuardrailCard from './GuardrailCard';
 import EarnCreditsCTA from './EarnCreditsCTA';
 import SuggestPollButton from './SuggestPollButton';
 import type { ResearchPoll } from '@/lib/askExport';
+import { useT } from '@/hooks/useT';
 
 export type Mode = 'decide' | 'research';
 
@@ -104,7 +105,7 @@ function DecideTypingBubble() {
         ))}
       </div>
       <span className="text-[11px] text-primary font-bold ml-0.5">
-        Checking votes…
+        {t('Checking votes…')}
       </span>
     </motion.div>
   );
@@ -128,7 +129,7 @@ function ResearchTypingBubble() {
         />
       </div>
       <span className="text-[11px] text-muted-foreground font-medium">
-        Analyzing data…
+        {t('Analyzing data…')}
       </span>
     </motion.div>
   );
@@ -165,6 +166,7 @@ function ResearchInsightRow({ icon: Icon, label, color, children }: { icon: any;
 }
 
 export default function AskThread({ turns, onPickSuggestion }: Props) {
+  const { t } = useT();
   return (
     <div className="space-y-5 w-full min-w-0">
       <AnimatePresence mode="popLayout">
@@ -217,10 +219,10 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                       <div className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-2.5">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm">🤔</span>
-                          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">No polls on this yet</p>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{t('No polls on this yet')}</p>
                         </div>
                         <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
-                        <p className="text-[11px] text-muted-foreground/70">No credits charged.</p>
+                        <p className="text-[11px] text-muted-foreground/70">{t('No credits charged.')}</p>
                       </div>
                       <div className="mt-2">
                         <SuggestPollButton question={t.question} askQueryId={t.askQueryId} />
@@ -233,7 +235,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     <motion.div {...bubble} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-3">
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm">💡</span>
-                        <p className="text-[10px] uppercase tracking-wider font-bold text-primary">Be more specific</p>
+                        <p className="text-[10px] uppercase tracking-wider font-bold text-primary">{t('Be more specific')}</p>
                       </div>
                       <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
                       {t.clarifications && t.clarifications.length > 0 && (
@@ -253,7 +255,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                           ))}
                         </div>
                       )}
-                      <p className="text-[11px] text-muted-foreground/70">No credits charged.</p>
+                      <p className="text-[11px] text-muted-foreground/70">{t('No credits charged.')}</p>
                     </motion.div>
                   )}
 
@@ -263,11 +265,11 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm">📚</span>
                         <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground break-words">
-                          {t.notice || 'General knowledge — not from Versa votes.'}
+                          {t.notice || t('General knowledge — not from Versa votes.')}
                         </p>
                       </div>
                       <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
-                      <p className="text-[11px] text-muted-foreground/70">No credits charged.</p>
+                      <p className="text-[11px] text-muted-foreground/70">{t('No credits charged.')}</p>
                     </motion.div>
                   )}
 
@@ -277,12 +279,12 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                       <div className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-3">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm">🔍</span>
-                          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">No direct poll data yet</p>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{t('No direct poll data yet')}</p>
                         </div>
                         <p className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words">{t.summary}</p>
                         {t.guardrailPolls && t.guardrailPolls.length > 0 && (
                           <div className="pt-2 border-t border-border space-y-2">
-                            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Vote on related polls to build this data</p>
+                            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{t('Vote on related polls to build this data')}</p>
                             {t.guardrailPolls.map((p) => (
                               <button key={p.id} onClick={() => onPickSuggestion?.(p.question)} className="w-full text-left p-2.5 rounded-xl bg-muted/50 hover:bg-muted transition text-xs font-medium text-foreground break-words">
                                 {p.question}
@@ -290,7 +292,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                             ))}
                           </div>
                         )}
-                        <p className="text-[11px] text-muted-foreground/70">No credits charged.</p>
+                        <p className="text-[11px] text-muted-foreground/70">{t('No credits charged.')}</p>
                       </div>
                       <div className="mt-2">
                         <SuggestPollButton question={t.question} askQueryId={t.askQueryId} />
@@ -335,8 +337,8 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     >
                       <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                       <span className="text-[10px] font-bold text-primary">
-                        {t.verdict.total_votes.toLocaleString()} real votes
-                        {t.verdict.real_votes && t.verdict.real_votes !== t.verdict.total_votes ? ` · ${t.verdict.real_votes.toLocaleString()} organic` : ''}
+                        {t('{n} real votes', { n: t.verdict.total_votes.toLocaleString() })}
+                        {t.verdict.real_votes && t.verdict.real_votes !== t.verdict.total_votes ? ` · ${t('{n} organic', { n: t.verdict.real_votes.toLocaleString() })}` : ''}
                       </span>
                     </motion.div>
                   )}
@@ -350,12 +352,12 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                       className="rounded-2xl bg-card border border-primary/10 shadow-sm overflow-hidden divide-y divide-border/20"
                     >
                       {t.insightParts.why && (
-                        <DecideInsightRow icon={Zap} label="The vibe" color="bg-primary">
+                        <DecideInsightRow icon={Zap} label={t('The vibe')} color="bg-primary">
                           {t.insightParts.why}
                         </DecideInsightRow>
                       )}
                       {t.insightParts.demographic_split && (
-                        <DecideInsightRow icon={Users} label="Plot twist" color="bg-amber-500">
+                        <DecideInsightRow icon={Users} label={t('Plot twist')} color="bg-amber-500">
                           {t.insightParts.demographic_split}
                         </DecideInsightRow>
                       )}
@@ -385,7 +387,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     >
                       <BarChart3 className="h-3 w-3 text-blue-500" />
                       <span className="text-[10px] font-semibold text-blue-600">
-                        Based on {t.verdict.total_votes.toLocaleString()} verified votes
+                        {t('Based on {n} verified votes', { n: t.verdict.total_votes.toLocaleString() })}
                       </span>
                     </motion.div>
                   )}
@@ -400,26 +402,26 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     >
                       {/* Section header */}
                       <div className="px-4 py-2.5 bg-muted/30 border-b border-border">
-                        <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Analysis Breakdown</p>
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{t('Analysis Breakdown')}</p>
                       </div>
                       <div className="divide-y divide-border/30">
                         {t.insightParts.why && (
-                          <ResearchInsightRow icon={Target} label="Main Finding" color="bg-blue-500">
+                          <ResearchInsightRow icon={Target} label={t('Main Finding')} color="bg-blue-500">
                             {t.insightParts.why}
                           </ResearchInsightRow>
                         )}
                         {t.insightParts.demographic_split && (
-                          <ResearchInsightRow icon={Users} label="Demographic Insight" color="bg-violet-500">
+                          <ResearchInsightRow icon={Users} label={t('Demographic Insight')} color="bg-violet-500">
                             {t.insightParts.demographic_split}
                           </ResearchInsightRow>
                         )}
                         {t.insightParts.cultural_context && (
-                          <ResearchInsightRow icon={Globe} label="Cultural Context" color="bg-emerald-500">
+                          <ResearchInsightRow icon={Globe} label={t('Cultural Context')} color="bg-emerald-500">
                             {t.insightParts.cultural_context}
                           </ResearchInsightRow>
                         )}
                         {t.insightParts.action_line && (
-                          <ResearchInsightRow icon={TrendingUp} label="Strategic Takeaway" color="bg-amber-500">
+                          <ResearchInsightRow icon={TrendingUp} label={t('Strategic Takeaway')} color="bg-amber-500">
                             {t.insightParts.action_line}
                           </ResearchInsightRow>
                         )}
@@ -497,7 +499,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                               : 'bg-card border border-border hover:border-blue-200 hover:bg-blue-50/50 text-foreground'
                           }`}
                         >
-                          {f}
+                          {t(f)}
                         </motion.button>
                       ))}
                     </motion.div>

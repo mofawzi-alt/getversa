@@ -2,18 +2,20 @@ import { useState } from 'react';
 import { Copy, FileDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { buildCopyText, downloadResearchPdf, type ResearchPayload } from '@/lib/askExport';
+import { useT } from '@/hooks/useT';
 
 export default function ExportButtons({ payload }: { payload: ResearchPayload }) {
+  const { t } = useT();
   const [copied, setCopied] = useState(false);
 
   const onCopy = async () => {
     try {
       await navigator.clipboard.writeText(buildCopyText(payload));
       setCopied(true);
-      toast.success('Copied to clipboard');
+      toast.success(t('Copied to clipboard'));
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      toast.error('Copy failed');
+      toast.error(t('Copy failed'));
     }
   };
 
@@ -22,7 +24,7 @@ export default function ExportButtons({ payload }: { payload: ResearchPayload })
       downloadResearchPdf(payload);
     } catch (e) {
       console.error(e);
-      toast.error('PDF export failed');
+      toast.error(t('PDF export failed'));
     }
   };
 
@@ -33,14 +35,14 @@ export default function ExportButtons({ payload }: { payload: ResearchPayload })
         className="h-10 rounded-full border border-border bg-card text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
       >
         {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
-        {copied ? 'Copied' : 'Copy summary'}
+        {copied ? t('Copied') : t('Copy summary')}
       </button>
       <button
         onClick={onPdf}
         className="h-10 rounded-full bg-foreground text-background text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
       >
         <FileDown className="h-3.5 w-3.5" />
-        Download PDF
+        {t('Download PDF')}
       </button>
     </div>
   );

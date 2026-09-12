@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import ShareVerdictCard from './ShareVerdictCard';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
+import { useT } from '@/hooks/useT';
 
 export interface Verdict {
   poll_id: string;
@@ -40,12 +41,13 @@ function AnimatedPct({ value, delay = 0 }: { value: number; delay?: number }) {
 /* DECIDE variant — punchy, emotional, fast   */
 /* ═══════════════════════════════════════════ */
 function DecideVerdictCard({ verdict }: { verdict: Verdict }) {
+  const { t } = useT();
   const navigate = useNavigate();
   const winSideA = verdict.winner_side === 'A';
   const landslide = verdict.winner_pct >= 70;
   const closeFight = verdict.winner_pct <= 55;
 
-  const badge = landslide ? '🔥 LANDSLIDE' : closeFight ? '⚡ CLOSE CALL' : '✅ CLEAR PICK';
+  const badge = landslide ? t('🔥 LANDSLIDE') : closeFight ? t('⚡ CLOSE CALL') : t('✅ CLEAR PICK');
 
   return (
     <motion.div
@@ -62,7 +64,7 @@ function DecideVerdictCard({ verdict }: { verdict: Verdict }) {
         className="bg-primary/5 px-4 py-1.5 flex items-center justify-between"
       >
         <span className="text-[11px] font-black tracking-wide">{badge}</span>
-        <span className="text-[10px] font-bold text-muted-foreground">{verdict.total_votes.toLocaleString()} votes</span>
+        <span className="text-[10px] font-bold text-muted-foreground">{t('{n} votes', { n: verdict.total_votes.toLocaleString() })}</span>
       </motion.div>
 
       {/* Big verdict */}
@@ -81,7 +83,7 @@ function DecideVerdictCard({ verdict }: { verdict: Verdict }) {
           transition={{ delay: 0.35 }}
           className="text-sm font-bold text-foreground/60 mt-1"
         >
-          {verdict.winner_pct}% of Egypt chose this
+          {t('{pct}% of Egypt chose this', { pct: verdict.winner_pct })}
         </motion.p>
       </div>
 
@@ -168,7 +170,7 @@ function DecideVerdictCard({ verdict }: { verdict: Verdict }) {
             onClick={() => navigate(`/poll/${verdict.poll_id}`)}
             className="w-full h-11 rounded-full bg-primary text-primary-foreground text-sm font-black flex items-center justify-center gap-1.5 active:scale-[0.97] transition shadow-md"
           >
-            Cast your vote
+            {t('Cast your vote')}
             <ArrowRight className="h-4 w-4" />
           </button>
           <ShareVerdictCard verdict={verdict} />
@@ -197,6 +199,7 @@ function DecideVerdictCard({ verdict }: { verdict: Verdict }) {
 /* RESEARCH variant — structured, analytical, clean   */
 /* ═══════════════════════════════════════════════════ */
 function ResearchVerdictCard({ verdict }: { verdict: Verdict }) {
+  const { t } = useT();
   const navigate = useNavigate();
   const winSideA = verdict.winner_side === 'A';
 
@@ -213,7 +216,7 @@ function ResearchVerdictCard({ verdict }: { verdict: Verdict }) {
           <div className="h-6 w-6 rounded-lg bg-blue-500/10 flex items-center justify-center">
             <BarChart3 className="h-3 w-3 text-blue-500" />
           </div>
-          <span className="text-[10px] uppercase tracking-widest text-blue-500 font-bold">Public Sentiment Analysis</span>
+          <span className="text-[10px] uppercase tracking-widest text-blue-500 font-bold">{t('Public Sentiment Analysis')}</span>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">{verdict.question}</p>
       </div>
@@ -261,12 +264,12 @@ function ResearchVerdictCard({ verdict }: { verdict: Verdict }) {
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground pt-1">
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3" />
-            <span className="font-semibold">n = {verdict.total_votes.toLocaleString()}</span>
+            <span className="font-semibold">{t('n = {n}', { n: verdict.total_votes.toLocaleString() })}</span>
           </div>
           {verdict.baseline_active && (
             <div className="flex items-center gap-1">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Active — sample growing</span>
+              <span>{t('Active — sample growing')}</span>
             </div>
           )}
         </div>
@@ -276,7 +279,7 @@ function ResearchVerdictCard({ verdict }: { verdict: Verdict }) {
       {verdict.reason && (
         <div className="px-4 pb-3">
           <div className="rounded-xl bg-blue-50 border border-blue-100 p-3">
-            <p className="text-[10px] uppercase tracking-wider font-bold text-blue-500 mb-1">Key Finding</p>
+            <p className="text-[10px] uppercase tracking-wider font-bold text-blue-500 mb-1">{t('Key Finding')}</p>
             <p className="text-[13px] text-foreground leading-relaxed">{verdict.reason}</p>
           </div>
         </div>
@@ -298,7 +301,7 @@ function ResearchVerdictCard({ verdict }: { verdict: Verdict }) {
           onClick={() => navigate(`/poll/${verdict.poll_id}`)}
           className="w-full h-10 rounded-full bg-foreground/90 text-background text-sm font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
         >
-          Vote on this poll
+          {t('Vote on this poll')}
           <ArrowRight className="h-4 w-4" />
         </button>
         <ShareVerdictCard verdict={verdict} />

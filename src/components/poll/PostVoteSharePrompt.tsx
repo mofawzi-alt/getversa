@@ -3,6 +3,7 @@ import { Share2, MessageCircle, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/hooks/useT';
 
 interface PostVoteSharePromptProps {
   pollId: string;
@@ -23,6 +24,7 @@ export default function PostVoteSharePrompt({
   percentA,
   percentB,
 }: PostVoteSharePromptProps) {
+  const { t } = useT();
   const { user } = useAuth();
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
   const userPick = userChoice === 'A' ? optionA : optionB;
@@ -45,9 +47,9 @@ export default function PostVoteSharePrompt({
     } else {
       try {
         await navigator.clipboard.writeText(`${shareText}\n${pollUrl}`);
-        toast.success('Copied to clipboard!');
+        toast.success(t('Copied to clipboard!'));
       } catch {
-        toast.error('Failed to copy');
+        toast.error(t('Failed to copy'));
       }
     }
   };
@@ -66,7 +68,7 @@ export default function PostVoteSharePrompt({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary/90 transition-colors"
           >
             <Send className="h-3 w-3" />
-            Send in chat
+            {t('Send in chat')}
           </button>
         )}
         <button
@@ -74,14 +76,14 @@ export default function PostVoteSharePrompt({
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold hover:bg-primary/20 transition-colors"
         >
           <Share2 className="h-3 w-3" />
-          Share link
+          {t('Share link')}
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); handleWhatsApp(); }}
           className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-green-500/10 text-green-600 text-[11px] font-bold hover:bg-green-500/20 transition-colors"
         >
           <MessageCircle className="h-3 w-3" />
-          WhatsApp
+          {t('WhatsApp')}
         </button>
       </div>
 

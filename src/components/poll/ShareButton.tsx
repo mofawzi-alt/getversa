@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 interface ShareButtonProps {
   pollId: string;
@@ -30,6 +31,7 @@ const ShareButton = forwardRef<HTMLButtonElement, ShareButtonProps>(function Sha
   showResults = false,
   variant = 'default',
 }, ref) {
+  const { t } = useT();
   const [copied, setCopied] = useState(false);
 
   const baseUrl = window.location.origin;
@@ -43,10 +45,10 @@ const ShareButton = forwardRef<HTMLButtonElement, ShareButtonProps>(function Sha
     try {
       await navigator.clipboard.writeText(pollUrl);
       setCopied(true);
-      toast.success('Link copied to clipboard!');
+      toast.success(t('Link copied to clipboard!'));
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error('Failed to copy link');
+      toast.error(t('Failed to copy link'));
     }
   };
 
@@ -69,10 +71,10 @@ const ShareButton = forwardRef<HTMLButtonElement, ShareButtonProps>(function Sha
     try {
       await navigator.clipboard.writeText(pollUrl);
       setCopied(true);
-      toast.success('Link copied!');
+      toast.success(t('Link copied!'));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Could not share. Copy link manually.');
+      toast.error(t('Could not share. Copy link manually.'));
     }
   };
 
@@ -95,24 +97,24 @@ const ShareButton = forwardRef<HTMLButtonElement, ShareButtonProps>(function Sha
       <DropdownMenuTrigger asChild>
         <Button ref={ref} variant="outline" size="sm" className="gap-2 h-10 px-3 text-card-foreground border-border">
           <Share2 className="h-4 w-4" />
-          Share
+          {t('Share')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem onClick={handleNativeShare}>
           <Share2 className="h-4 w-4 mr-2" />
-          Share via...
+          {t('Share via...')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleCopyLink}>
           {copied ? (
             <>
               <Check className="h-4 w-4 mr-2 text-green-500" />
-              Copied!
+              {t('Copied!')}
             </>
           ) : (
             <>
               <Copy className="h-4 w-4 mr-2" />
-              Copy Link
+              {t('Copy Link')}
             </>
           )}
         </DropdownMenuItem>

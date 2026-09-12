@@ -4,6 +4,7 @@ import { getInsightTier, getNextUnlock, type InsightTier } from '@/lib/streakGat
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useT } from '@/hooks/useT';
 
 interface StreakInsightTeaserProps {
   pollId: string;
@@ -11,6 +12,7 @@ interface StreakInsightTeaserProps {
 }
 
 export default function StreakInsightTeaser({ pollId, choice }: StreakInsightTeaserProps) {
+  const { t } = useT();
   const { user, profile } = useAuth();
   const streak: number = (profile as any)?.current_streak ?? 0;
   const tier = getInsightTier(streak);
@@ -71,8 +73,8 @@ export default function StreakInsightTeaser({ pollId, choice }: StreakInsightTea
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/5 border border-primary/10">
           <Globe className="w-3.5 h-3.5 text-primary flex-shrink-0" />
           <span className="text-[11px] text-foreground/80">
-            <span className="font-semibold">{profile?.city}</span>: {cityPercent}% chose this vs {nationalPercent}% nationally
-            {cityDiff! > 0 ? ' — your city thinks differently! 🏙️' : ''}
+            <span className="font-semibold">{profile?.city}</span>: {t('{n}% chose this vs {n2}% nationally', { n: cityPercent!, n2: nationalPercent! })}
+            {cityDiff! > 0 ? ` — ${t('your city thinks differently! 🏙️')}` : ''}
           </span>
         </div>
       )}
@@ -82,7 +84,7 @@ export default function StreakInsightTeaser({ pollId, choice }: StreakInsightTea
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/5 border border-primary/10">
           <MapPin className="w-3.5 h-3.5 text-primary flex-shrink-0" />
           <span className="text-[11px] text-foreground/80">
-            In <span className="font-semibold">{profile?.city}</span>: {cityPercent ?? (choice === 'A' ? cityData.demo_percent_a : cityData.demo_percent_b)}% chose your pick
+            {t('In')} <span className="font-semibold">{profile?.city}</span>: {cityPercent ?? (choice === 'A' ? cityData.demo_percent_a : cityData.demo_percent_b)}% {t('chose your pick')}
           </span>
         </div>
       )}
@@ -91,7 +93,7 @@ export default function StreakInsightTeaser({ pollId, choice }: StreakInsightTea
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/5 border border-primary/10">
           <Users className="w-3.5 h-3.5 text-primary flex-shrink-0" />
           <span className="text-[11px] text-foreground/80">
-            Ages <span className="font-semibold">{profile?.age_range}</span>: {choice === 'A' ? ageData.demo_percent_a : ageData.demo_percent_b}% agree with you
+            {t('Ages')} <span className="font-semibold">{profile?.age_range}</span>: {choice === 'A' ? ageData.demo_percent_a : ageData.demo_percent_b}% {t('agree with you')}
           </span>
         </div>
       )}
@@ -100,7 +102,7 @@ export default function StreakInsightTeaser({ pollId, choice }: StreakInsightTea
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/15">
           <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
           <span className="text-[11px] text-foreground/80 font-medium">
-            Full taste insights unlocked! Check your profile →
+            {t('Full taste insights unlocked! Check your profile →')}
           </span>
         </div>
       )}
@@ -111,7 +113,7 @@ export default function StreakInsightTeaser({ pollId, choice }: StreakInsightTea
           <Lock className="w-3 h-3 text-muted-foreground flex-shrink-0" />
           <span className="text-[10px] text-muted-foreground">
             <Flame className="w-3 h-3 inline text-primary mr-0.5" />
-            {nextUnlock.daysNeeded} more day{nextUnlock.daysNeeded !== 1 ? 's' : ''} to unlock <span className="font-semibold">{nextUnlock.label}</span>
+            {t('{n} more days to unlock', { n: nextUnlock.daysNeeded })} <span className="font-semibold">{nextUnlock.label}</span>
           </span>
         </div>
       )}

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 function getWeekRange() {
   const now = new Date();
@@ -154,6 +155,7 @@ function ShareableResultCard({ poll, rank, badge }: { poll: WeeklyPoll; rank?: n
 }
 
 export default function WeeklyTopResults() {
+  const { t } = useT();
   const navigate = useNavigate();
   const { start, end } = getWeekRange();
 
@@ -232,7 +234,7 @@ export default function WeeklyTopResults() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-lg font-display font-bold">This Week on Versa</h1>
+            <h1 className="text-lg font-display font-bold">{t('This Week on Versa')}</h1>
             <p className="text-xs text-muted-foreground">{formatDate(start)} — {formatDate(end)}</p>
           </div>
         </header>
@@ -244,7 +246,7 @@ export default function WeeklyTopResults() {
             </div>
           ) : !weeklyPolls || weeklyPolls.length === 0 ? (
             <div className="text-center py-20 text-muted-foreground">
-              <p>No polls voted on this week yet.</p>
+              <p>{t('No polls voted on this week yet.')}</p>
             </div>
           ) : (
             <>
@@ -254,7 +256,7 @@ export default function WeeklyTopResults() {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <Zap className="h-5 w-5 text-amber-500" />
-                      <span className="text-sm font-bold text-amber-500">Most Debated</span>
+                      <span className="text-sm font-bold text-amber-500">{t('Most Debated')}</span>
                     </div>
                     <ShareableResultCard poll={sorted.mostDebated} badge="⚡ Most Debated This Week" />
                   </div>
@@ -278,7 +280,7 @@ export default function WeeklyTopResults() {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-5 w-5 text-red-500" />
-                      <span className="text-sm font-bold text-red-500">Biggest Upset</span>
+                      <span className="text-sm font-bold text-red-500">{t('Biggest Upset')}</span>
                     </div>
                     <ShareableResultCard poll={sorted.biggestUpset} badge="🔥 Biggest Upset This Week" />
                   </div>
@@ -294,7 +296,7 @@ export default function WeeklyTopResults() {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Trophy className="h-5 w-5 text-primary" />
-                  <h2 className="font-display font-bold">Top 10 Most Voted</h2>
+                  <h2 className="font-display font-bold">{t('Top 10 Most Voted')}</h2>
                 </div>
                 <div className="space-y-3">
                   {sorted.top10.map((poll, i) => (

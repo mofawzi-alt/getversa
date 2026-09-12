@@ -27,6 +27,8 @@ import PWAInstallPrompt, { markFirstVote } from '@/components/PWAInstallPrompt';
 import SwipeOverlay, { isSwipeOverlayDone, markSwipeOverlayDone } from '@/components/onboarding/SwipeOverlay';
 import SwipeHint, { isSwipeHintDone } from '@/components/onboarding/SwipeHint';
 import PersonalityRevealScreen from '@/components/onboarding/PersonalityRevealScreen';
+import { translate } from '@/lib/i18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 
 const GUEST_VOTE_LIMIT = 5;
@@ -161,6 +163,7 @@ function ImmersivePollCard({
   isOnboarding?: boolean;
 }) {
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const [dragX, setDragX] = useState(0);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -291,10 +294,10 @@ function ImmersivePollCard({
     const diff = new Date(poll.ends_at).getTime() - Date.now();
     if (diff <= 0) return null;
     const hours = Math.floor(diff / (1000 * 60 * 60));
-    if (hours >= 24) return `Closes in ${hours}h`;
-    if (hours >= 1) return `Closes in ${hours}h`;
+    if (hours >= 24) return translate('Closes in {h}h', lang, { h: hours });
+    if (hours >= 1) return translate('Closes in {h}h', lang, { h: hours });
     const mins = Math.floor(diff / (1000 * 60));
-    return `Closes in ${mins}m`;
+    return translate('Closes in {m}m', lang, { m: mins });
   }, [poll]);
 
   // During onboarding, never show results — just confirm the choice visually
@@ -674,7 +677,7 @@ function ImmersivePollCard({
                   onClick={(e) => { e.stopPropagation(); onSkip(poll.id); }}
                   className="text-[9px] text-muted-foreground/50 mt-1 hover:text-muted-foreground/70 transition-colors active:scale-95"
                 >
-                  Skip this one ↑
+                  {translate('Skip this one ↑', lang)}
                 </button>
               )}
             </div>
@@ -691,7 +694,7 @@ function ImmersivePollCard({
             animate={{ opacity: Math.min(Math.abs(dragY) / THRESHOLD, 1) }}
             className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-muted-foreground/60"
           >
-            ↑ Skip
+            {translate('↑ Skip', lang)}
           </motion.div>
         )}
       </div>

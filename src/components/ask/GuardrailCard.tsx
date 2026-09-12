@@ -1,6 +1,7 @@
 import { AlertCircle, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import SuggestPollButton from './SuggestPollButton';
+import { useT } from '@/hooks/useT';
 
 interface SuggestedPoll {
   id: string;
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function GuardrailCard({ summary, polls, question, askQueryId }: Props) {
+  const { t } = useT();
   const navigate = useNavigate();
 
   return (
@@ -27,10 +29,10 @@ export default function GuardrailCard({ summary, polls, question, askQueryId }: 
       <div className="rounded-2xl rounded-tl-sm bg-muted/40 border border-border p-3.5 space-y-2">
         <div className="flex items-center gap-1.5">
           <AlertCircle className="h-3.5 w-3.5 text-muted-foreground" />
-          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Not enough data yet</p>
+          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{t('Not enough data yet')}</p>
         </div>
         <p className="text-sm text-foreground leading-relaxed">{summary}</p>
-        <p className="text-[11px] text-muted-foreground">No credits charged.</p>
+        <p className="text-[11px] text-muted-foreground">{t('No credits charged.')}</p>
       </div>
 
       {/* Suggest-a-poll CTA — turns curiosity gaps into earn opportunities */}
@@ -39,7 +41,7 @@ export default function GuardrailCard({ summary, polls, question, askQueryId }: 
       {polls.length > 0 && (
         <div className="space-y-2">
           <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground px-1">
-            Vote on these to build the data
+            {t('Vote on these to build the data')}
           </p>
           {polls.map((p) => (
             <button
@@ -61,7 +63,7 @@ export default function GuardrailCard({ summary, polls, question, askQueryId }: 
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-foreground line-clamp-2">{p.question}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Tap to vote on this poll</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{t('Tap to vote on this poll')}</p>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
             </button>

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
+import { useT } from '@/hooks/useT';
 
 interface Poll {
   id: string;
@@ -38,6 +39,7 @@ export default function VerdictResultCard({
   onClose,
   hasMore,
 }: Props) {
+  const { t } = useT();
   const userPercent = myChoice === 'A' ? percentA : percentB;
   const winnerIsA = percentA >= percentB;
   const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
@@ -47,7 +49,7 @@ export default function VerdictResultCard({
     <div className="fixed inset-0 z-[100] min-h-screen flex flex-col items-center justify-center bg-[#0F172A] px-5 py-8">
       <button
         onClick={onClose}
-        aria-label="Close"
+        aria-label={t('Close')}
         className="absolute top-[max(env(safe-area-inset-top,12px),12px)] left-4 w-9 h-9 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center"
       >
         <X className="h-4 w-4 text-white" />
@@ -61,7 +63,7 @@ export default function VerdictResultCard({
         <div className="rounded-3xl bg-white shadow-2xl overflow-hidden">
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
             <span className="text-[10px] font-bold tracking-[0.25em] text-gray-900">VERSA</span>
-            <span className="text-[10px] font-semibold tracking-wider uppercase text-gray-400">Result</span>
+            <span className="text-[10px] font-semibold tracking-wider uppercase text-gray-400">{t('Result')}</span>
           </div>
 
           <div className="px-5 pb-4">
@@ -82,7 +84,7 @@ export default function VerdictResultCard({
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   {isMine && (
                     <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#2563EB] text-white text-[10px] font-bold px-2 py-1 rounded-full">
-                      <Check className="h-3 w-3" /> YOUR PICK
+                      <Check className="h-3 w-3" /> {t('YOUR PICK')}
                     </div>
                   )}
                   <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -95,11 +97,11 @@ export default function VerdictResultCard({
           </div>
 
           <div className="px-5 py-5 text-center">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-1">You're with</p>
+            <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-1">{t("You're with")}</p>
             <p className="text-4xl font-black text-gray-900 leading-none">
               {userPercent}<span className="text-2xl">%</span>
             </p>
-            <p className="text-xs text-gray-500 mt-1">of {totalVotes.toLocaleString()} voters</p>
+            <p className="text-xs text-gray-500 mt-1">{t('of')} {totalVotes.toLocaleString()} {t('voters')}</p>
           </div>
 
           <div className="px-5 pb-5 flex flex-col gap-2">
@@ -108,14 +110,14 @@ export default function VerdictResultCard({
                 onClick={onNext}
                 className="w-full h-12 rounded-2xl font-bold gap-2 bg-[#2563EB] hover:bg-[#1d4ed8] text-white"
               >
-                Next <ArrowRight className="h-4 w-4" />
+                {t('Next')} <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
               <Button
                 onClick={onClose}
                 className="w-full h-12 rounded-2xl font-bold gap-2 bg-[#2563EB] hover:bg-[#1d4ed8] text-white"
               >
-                Done
+                {t('Done')}
               </Button>
             )}
           </div>

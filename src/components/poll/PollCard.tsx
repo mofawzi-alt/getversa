@@ -7,6 +7,7 @@ import BrandDisclaimer from '@/components/poll/BrandDisclaimer';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 import LiveSocialBuzz from '@/components/poll/LiveSocialBuzz';
+import { useT } from '@/hooks/useT';
 
 interface Poll {
   id: string;
@@ -48,6 +49,7 @@ const MAX_ROTATION = 12;
 const RESULT_DISPLAY_MS = 1200;
 
 export default function PollCard({ poll, onSwipe, isAnimating, result, onResultDone }: PollCardProps) {
+  const { t } = useT();
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [imageALoaded, setImageALoaded] = useState(false);
@@ -236,7 +238,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
             {isLive && !hasResult && <LiveIndicator variant="badge" />}
             {isExpired && !hasResult && (
               <span className="inline-flex items-center gap-1 text-xs text-foreground/50">
-                <Clock className="h-3 w-3" /> Expired
+                <Clock className="h-3 w-3" /> {t('Expired')}
               </span>
             )}
           </div>
@@ -277,7 +279,7 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
               </div>
               <div className="flex items-center justify-between pt-1">
                 <span className={`font-semibold px-2 py-0.5 rounded-full text-[10px] ${userPickedWinner ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                  {userPickedWinner ? 'Majority' : 'Minority'}
+                  {userPickedWinner ? t('Majority') : t('Minority')}
                 </span>
                 <div className="flex-1 mx-2 h-0.5 bg-border rounded-full overflow-hidden">
                   <div className="h-full bg-primary rounded-full" style={{ animation: `progress-fill ${RESULT_DISPLAY_MS}ms linear forwards` }} />
@@ -289,8 +291,8 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           {/* Swipe hint — minimal */}
           {!hasResult && !isExpired && (
             <div className="flex justify-center gap-8 text-[10px] uppercase tracking-wider text-muted-foreground/60 mt-2">
-              <span>← Swipe</span>
-              <span>Swipe →</span>
+              <span>{t('← Swipe')}</span>
+              <span>{t('Swipe →')}</span>
             </div>
           )}
         </div>

@@ -1,6 +1,7 @@
 import { Flame } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useT } from '@/hooks/useT';
 
 interface TrendingBadgeProps {
   className?: string;
@@ -12,6 +13,7 @@ interface TrendingBadgeProps {
  * (>100 votes in the last 2 hours — see useTrendingPolls hook).
  */
 export default function TrendingBadge({ className, size = 'xs' }: TrendingBadgeProps) {
+  const { t } = useT();
   const padding = size === 'sm' ? 'px-2 py-0.5' : 'px-1.5 py-0.5';
   const text = size === 'sm' ? 'text-[11px]' : 'text-[10px]';
   const icon = size === 'sm' ? 'h-3 w-3' : 'h-2.5 w-2.5';
@@ -29,7 +31,7 @@ export default function TrendingBadge({ className, size = 'xs' }: TrendingBadgeP
       )}
     >
       <Flame className={cn(icon, 'fill-white')} />
-      Trending
+      {t('Trending')}
     </motion.span>
   );
 }

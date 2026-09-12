@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import VersaLogo from '@/components/VersaLogo';
+import { useT } from '@/hooks/useT';
 
 const WELCOME_KEY = 'versa_welcome_done';
 
@@ -18,6 +19,7 @@ interface WelcomeFlowProps {
 }
 
 export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
+  const { t } = useT();
   const handleComplete = () => {
     markWelcomeDone();
     onComplete();
@@ -44,7 +46,7 @@ export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
           transition={{ delay: 0.4 }}
           className="text-lg text-muted-foreground max-w-xs"
         >
-          Swipe to choose. See what the world prefers.
+          {t('Swipe to choose. See what the world prefers.')}
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -56,7 +58,7 @@ export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
             onClick={handleComplete}
             className="w-full h-14 bg-gradient-primary hover:opacity-90 text-lg font-display font-bold rounded-2xl"
           >
-            Start Voting <ArrowRight className="ml-2 h-5 w-5" />
+            {t('Start Voting')} <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </motion.div>
       </motion.div>

@@ -2,8 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/hooks/useT';
 
 export default function FloatingAskButton() {
+  const { t } = useT();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -17,10 +19,10 @@ export default function FloatingAskButton() {
       onClick={() => navigate('/ask')}
       className="fixed z-[60] right-4 flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-primary-foreground shadow-md active:scale-95 transition-transform"
       style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}
-      aria-label="Ask Versa"
+      aria-label={t("Ask Versa")}
     >
       <Sparkles className="h-3.5 w-3.5" />
-      <span className="text-[11px] font-bold">Ask</span>
+      <span className="text-[11px] font-bold">{t('Ask')}</span>
     </motion.button>
   );
 }

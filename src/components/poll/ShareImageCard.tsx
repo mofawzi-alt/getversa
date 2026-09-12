@@ -3,6 +3,7 @@ import { Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/hooks/useT';
 
 interface ShareImageCardProps {
   pollId: string;
@@ -27,6 +28,7 @@ export default function ShareImageCard({
   imageBUrl,
   choice,
 }: ShareImageCardProps) {
+  const { t } = useT();
   const { profile } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -265,7 +267,7 @@ export default function ShareImageCard({
           });
         } else {
           await navigator.clipboard.writeText(`${shareText}\n${pollUrl}`);
-          toast.success('Link copied to clipboard!');
+          toast.success(t('Link copied to clipboard!'));
         }
         return;
       }
@@ -300,18 +302,18 @@ export default function ShareImageCard({
 
       try {
         await navigator.clipboard.writeText(shareText);
-        toast.success('Image downloaded and link copied');
+        toast.success(t('Image downloaded and link copied'));
       } catch {
-        toast.success('Image downloaded. Share it with the Versa link.');
+        toast.success(t('Image downloaded. Share it with the Versa link.'));
       }
     } catch (err) {
       if ((err as Error).name !== 'AbortError') {
         // Final fallback: just copy the link
         try {
           await navigator.clipboard.writeText(pollUrl);
-          toast.success('Link copied to clipboard!');
+          toast.success(t('Link copied to clipboard!'));
         } catch {
-          toast.error('Could not share. Try copying the link manually.');
+          toast.error(t('Could not share. Try copying the link manually.'));
         }
       }
     }
@@ -325,7 +327,7 @@ export default function ShareImageCard({
         className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-display font-bold text-base gap-2 shadow-glow"
       >
         <Share2 className="h-5 w-5" />
-        Share Result
+        {t('Share Result')}
       </Button>
     </>
   );

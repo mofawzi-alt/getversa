@@ -4,6 +4,7 @@ import { Users, Heart, Check, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import UserAvatar from '@/components/UserAvatar';
+import { useT } from '@/hooks/useT';
 
 interface FriendVotesSectionProps {
   pollId: string;
@@ -18,6 +19,7 @@ export default function FriendVotesSection({
   optionA, 
   optionB 
 }: FriendVotesSectionProps) {
+  const { t } = useT();
   const { user } = useAuth();
   const { useFriendVotes, friendCount } = useFriends();
   const { data: friendVotes = [], isLoading } = useFriendVotes(pollId);
@@ -35,10 +37,10 @@ export default function FriendVotesSection({
       <div className="mt-4 p-4 rounded-xl bg-secondary/50 border border-border">
         <div className="flex items-center gap-2 mb-2">
           <Users className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Friend Comparison</span>
+          <span className="text-sm font-medium">{t('Friend Comparison')}</span>
         </div>
         <p className="text-xs text-muted-foreground mb-3">
-          Add friends to see how your votes compare!
+          {t('Add friends to see how your votes compare!')}
         </p>
         <Button
           variant="outline"
@@ -46,7 +48,7 @@ export default function FriendVotesSection({
           onClick={() => navigate('/friends')}
           className="w-full"
         >
-          Find Friends
+          {t('Find Friends')}
         </Button>
       </div>
     );
@@ -66,13 +68,13 @@ export default function FriendVotesSection({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium">Friends' Votes</span>
+          <span className="text-sm font-medium">{t("Friends' Votes")}</span>
         </div>
         {votedFriends.length > 0 && (
           <div className="flex items-center gap-1 text-xs">
             <Heart className="h-3 w-3 text-green-500" />
             <span className="text-green-500 font-medium">
-              {matchingVotes.length}/{votedFriends.length} agree
+              {matchingVotes.length}/{votedFriends.length} {t('agree')}
             </span>
           </div>
         )}
@@ -81,8 +83,8 @@ export default function FriendVotesSection({
       {votedFriends.length === 0 ? (
         <p className="text-xs text-muted-foreground">
           {pendingFriends.length > 0 
-            ? `${pendingFriends.length} friend${pendingFriends.length > 1 ? 's' : ''} haven't voted yet`
-            : 'None of your friends have voted on this poll'}
+            ? t('{n} friends haven\'t voted yet', { n: pendingFriends.length })
+            : t('None of your friends have voted on this poll')}
         </p>
       ) : (
         <div className="space-y-2">
@@ -131,14 +133,14 @@ export default function FriendVotesSection({
 
           {votedFriends.length > 5 && (
             <p className="text-xs text-muted-foreground text-center pt-1">
-              +{votedFriends.length - 5} more friends
+              +{votedFriends.length - 5} {t('more friends')}
             </p>
           )}
 
           {pendingFriends.length > 0 && (
             <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
-              {pendingFriends.length} friend{pendingFriends.length > 1 ? 's' : ''} haven't voted yet
+              {t('{n} friends haven\'t voted yet', { n: pendingFriends.length })}
             </div>
           )}
         </div>
@@ -150,7 +152,7 @@ export default function FriendVotesSection({
         onClick={() => navigate('/friends')}
         className="w-full mt-3 text-xs"
       >
-        View All Friends
+        {t('View All Friends')}
       </Button>
     </div>
   );

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 interface Props {
   question: string;
@@ -53,6 +54,7 @@ function incrementNudgeCount() {
 }
 
 export default function PostVoteAskNudge({ question, optionA, optionB, percentA, percentB, visible, onDismiss }: Props) {
+  const { t } = useT();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const askPrompt = buildAskPrompt(question, optionA, optionB, percentA, percentB);
@@ -96,7 +98,7 @@ export default function PostVoteAskNudge({ question, optionA, optionB, percentA,
               <Sparkles className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-background/60 uppercase tracking-wider">Ask Versa</p>
+              <p className="text-[11px] font-bold text-background/60 uppercase tracking-wider">{t('Ask Versa')}</p>
               <p className="text-[13px] font-bold text-background truncate">{askPrompt}</p>
             </div>
             <button

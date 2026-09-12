@@ -3,12 +3,14 @@ import { Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import versaLogoImg from '@/assets/versa-logo.png';
 import type { Verdict } from './VerdictCard';
+import { useT } from '@/hooks/useT';
 
 interface Props {
   verdict: Verdict;
 }
 
 export default function ShareVerdictCard({ verdict }: Props) {
+  const { t } = useT();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [generating, setGenerating] = useState(false);
 
@@ -210,7 +212,7 @@ export default function ShareVerdictCard({ verdict }: Props) {
     try {
       const blob = await generateImage();
       if (!blob) {
-        toast.error('Failed to generate card');
+        toast.error(t('Failed to generate card'));
         return;
       }
       const file = new File([blob], 'versa-verdict.png', { type: 'image/png' });
@@ -228,10 +230,10 @@ export default function ShareVerdictCard({ verdict }: Props) {
         a.download = 'versa-verdict.png';
         a.click();
         URL.revokeObjectURL(url);
-        toast.success('Verdict card saved! Share it 📲');
+        toast.success(t('Verdict card saved! Share it 📲'));
       }
     } catch (e: any) {
-      if (e?.name !== 'AbortError') toast.error('Share failed');
+      if (e?.name !== 'AbortError') toast.error(t('Share failed'));
     } finally {
       setGenerating(false);
     }
@@ -245,7 +247,7 @@ export default function ShareVerdictCard({ verdict }: Props) {
         className="w-full h-10 rounded-full border border-border bg-card text-foreground text-sm font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition disabled:opacity-50"
       >
         <Share2 className="h-4 w-4" />
-        {generating ? 'Generating…' : 'Share verdict'}
+        {generating ? t('Generating…') : t('Share verdict')}
       </button>
       <canvas ref={canvasRef} className="hidden" />
     </>

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Brain, Lock, Loader2, ChevronRight, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 // All 10 personality traits with their poles
 const PERSONALITY_TRAITS = [
@@ -38,12 +39,12 @@ interface Archetype {
   traits: string[];
 }
 
-function computeArchetype(votes: PersonalityVote[]): Archetype {
+function computeArchetype(votes: PersonalityVote[], t: (k: string) => string): Archetype {
   if (votes.length < 5) {
     return {
-      name: 'Emerging',
+      name: t('Emerging'),
       emoji: '🌱',
-      description: 'Keep voting to reveal your full personality archetype.',
+      description: t('Keep voting to reveal your full personality archetype.'),
       traits: [],
     };
   }
@@ -98,57 +99,58 @@ function computeArchetype(votes: PersonalityVote[]): Archetype {
 
   // 16 archetypes from 4 binary dimensions
   if (isExtroverted && isBold && isStructured && isLogical) {
-    return { name: 'The Commander', emoji: '👑', description: 'Bold, social, and strategic — you lead with clarity and confidence.', traits: ['Decisive', 'Strategic', 'Outgoing'] };
+    return { name: t('The Commander'), emoji: '👑', description: t('Bold, social, and strategic — you lead with clarity and confidence.'), traits: ['Decisive', 'Strategic', 'Outgoing'].map((s) => t(s)) };
   }
   if (isExtroverted && isBold && isStructured && !isLogical) {
-    return { name: 'The Champion', emoji: '🏆', description: 'Passionate and driven — you rally people around what matters.', traits: ['Inspirational', 'Organized', 'Heart-led'] };
+    return { name: t('The Champion'), emoji: '🏆', description: t('Passionate and driven — you rally people around what matters.'), traits: ['Inspirational', 'Organized', 'Heart-led'].map((s) => t(s)) };
   }
   if (isExtroverted && isBold && !isStructured && isLogical) {
-    return { name: 'The Maverick', emoji: '⚡', description: 'Quick-thinking and fearless — always first to shake things up.', traits: ['Risk-taker', 'Analytical', 'Dynamic'] };
+    return { name: t('The Maverick'), emoji: '⚡', description: t('Quick-thinking and fearless — always first to shake things up.'), traits: ['Risk-taker', 'Analytical', 'Dynamic'].map((s) => t(s)) };
   }
   if (isExtroverted && isBold && !isStructured && !isLogical) {
-    return { name: 'The Spark', emoji: '✨', description: 'Magnetic and adventurous — you light up every room and every idea.', traits: ['Spontaneous', 'Charismatic', 'Empathetic'] };
+    return { name: t('The Spark'), emoji: '✨', description: t('Magnetic and adventurous — you light up every room and every idea.'), traits: ['Spontaneous', 'Charismatic', 'Empathetic'].map((s) => t(s)) };
   }
   if (isExtroverted && !isBold && isStructured && isLogical) {
-    return { name: 'The Executive', emoji: '📊', description: 'Efficient and reliable — people count on your steady judgment.', traits: ['Dependable', 'Methodical', 'Social'] };
+    return { name: t('The Executive'), emoji: '📊', description: t('Efficient and reliable — people count on your steady judgment.'), traits: ['Dependable', 'Methodical', 'Social'].map((s) => t(s)) };
   }
   if (isExtroverted && !isBold && isStructured && !isLogical) {
-    return { name: 'The Host', emoji: '🎪', description: 'Warm and organized — you create spaces where everyone belongs.', traits: ['Caring', 'Reliable', 'Community-driven'] };
+    return { name: t('The Host'), emoji: '🎪', description: t('Warm and organized — you create spaces where everyone belongs.'), traits: ['Caring', 'Reliable', 'Community-driven'].map((s) => t(s)) };
   }
   if (isExtroverted && !isBold && !isStructured && isLogical) {
-    return { name: 'The Diplomat', emoji: '🤝', description: 'Balanced and adaptable — you find common ground effortlessly.', traits: ['Flexible', 'Fair-minded', 'Sociable'] };
+    return { name: t('The Diplomat'), emoji: '🤝', description: t('Balanced and adaptable — you find common ground effortlessly.'), traits: ['Flexible', 'Fair-minded', 'Sociable'].map((s) => t(s)) };
   }
   if (isExtroverted && !isBold && !isStructured && !isLogical) {
-    return { name: 'The Performer', emoji: '🎭', description: 'Playful and present — you live for the joy of shared moments.', traits: ['Fun-loving', 'Expressive', 'Open'] };
+    return { name: t('The Performer'), emoji: '🎭', description: t('Playful and present — you live for the joy of shared moments.'), traits: ['Fun-loving', 'Expressive', 'Open'].map((s) => t(s)) };
   }
   if (!isExtroverted && isBold && isStructured && isLogical) {
-    return { name: 'The Architect', emoji: '🏗️', description: 'Strategic and independent — you build with precision and vision.', traits: ['Analytical', 'Self-reliant', 'Focused'] };
+    return { name: t('The Architect'), emoji: '🏗️', description: t('Strategic and independent — you build with precision and vision.'), traits: ['Analytical', 'Self-reliant', 'Focused'].map((s) => t(s)) };
   }
   if (!isExtroverted && isBold && isStructured && !isLogical) {
-    return { name: 'The Idealist', emoji: '🌙', description: 'Deep and principled — your choices come from core values.', traits: ['Values-driven', 'Determined', 'Reflective'] };
+    return { name: t('The Idealist'), emoji: '🌙', description: t('Deep and principled — your choices come from core values.'), traits: ['Values-driven', 'Determined', 'Reflective'].map((s) => t(s)) };
   }
   if (!isExtroverted && isBold && !isStructured && isLogical) {
-    return { name: 'The Analyst', emoji: '🔬', description: 'Curious and sharp — you explore every angle before committing.', traits: ['Investigative', 'Open-minded', 'Bold'] };
+    return { name: t('The Analyst'), emoji: '🔬', description: t('Curious and sharp — you explore every angle before committing.'), traits: ['Investigative', 'Open-minded', 'Bold'].map((s) => t(s)) };
   }
   if (!isExtroverted && isBold && !isStructured && !isLogical) {
-    return { name: 'The Dreamer', emoji: '🦋', description: 'Sensitive and creative — you follow what feels authentic.', traits: ['Imaginative', 'Courageous', 'Free-spirited'] };
+    return { name: t('The Dreamer'), emoji: '🦋', description: t('Sensitive and creative — you follow what feels authentic.'), traits: ['Imaginative', 'Courageous', 'Free-spirited'].map((s) => t(s)) };
   }
   if (!isExtroverted && !isBold && isStructured && isLogical) {
-    return { name: 'The Anchor', emoji: '⚓', description: 'Grounded and steady — you trust what works over what is new.', traits: ['Consistent', 'Thoughtful', 'Reliable'] };
+    return { name: t('The Anchor'), emoji: '⚓', description: t('Grounded and steady — you trust what works over what is new.'), traits: ['Consistent', 'Thoughtful', 'Reliable'].map((s) => t(s)) };
   }
   if (!isExtroverted && !isBold && isStructured && !isLogical) {
-    return { name: 'The Guardian', emoji: '🛡️', description: 'Caring and steady — you protect what you value most.', traits: ['Loyal', 'Nurturing', 'Patient'] };
+    return { name: t('The Guardian'), emoji: '🛡️', description: t('Caring and steady — you protect what you value most.'), traits: ['Loyal', 'Nurturing', 'Patient'].map((s) => t(s)) };
   }
   if (!isExtroverted && !isBold && !isStructured && isLogical) {
-    return { name: 'The Craftsman', emoji: '🔧', description: 'Cool and practical — you strip things down to what works.', traits: ['Pragmatic', 'Quiet', 'Efficient'] };
+    return { name: t('The Craftsman'), emoji: '🔧', description: t('Cool and practical — you strip things down to what works.'), traits: ['Pragmatic', 'Quiet', 'Efficient'].map((s) => t(s)) };
   }
   // !isExtroverted && !isBold && !isStructured && !isLogical
-  return { name: 'The Artist', emoji: '🎨', description: 'Gentle and aesthetic — you follow your senses and heart.', traits: ['Creative', 'Reflective', 'Harmonious'] };
+  return { name: t('The Artist'), emoji: '🎨', description: t('Gentle and aesthetic — you follow your senses and heart.'), traits: ['Creative', 'Reflective', 'Harmonious'].map((s) => t(s)) };
 }
 
 export default function PersonalityResults() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useT();
 
   // Fetch personality polls
   const { data: personalityPolls = [] } = useQuery({
@@ -194,7 +196,7 @@ export default function PersonalityResults() {
   const totalPolls = personalityPolls.length;
   const answeredCount = personalityVotes.length;
   const progress = totalPolls > 0 ? (answeredCount / totalPolls) * 100 : 0;
-  const archetype = computeArchetype(personalityVotes);
+  const archetype = computeArchetype(personalityVotes, t);
   const isReady = answeredCount >= 5;
 
   const handleShare = () => {
@@ -203,7 +205,7 @@ export default function PersonalityResults() {
       navigator.share({ text }).catch(() => {});
     } else {
       navigator.clipboard.writeText(text);
-      toast.success('Copied to clipboard!');
+      toast.success(t('Copied to clipboard!'));
     }
   };
 
@@ -213,10 +215,10 @@ export default function PersonalityResults() {
         <header className="mb-6">
           <div className="flex items-center gap-2 mb-1">
             <Brain className="h-5 w-5 text-primary" />
-            <h1 className="text-2xl font-display font-bold text-foreground">Your Personality</h1>
+            <h1 className="text-2xl font-display font-bold text-foreground">{t('Your Personality')}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Based on your choices across {totalPolls} personality polls
+            {t('Based on your choices across {n} personality polls', { n: totalPolls })}
           </p>
         </header>
 
@@ -227,9 +229,9 @@ export default function PersonalityResults() {
         ) : !user ? (
           <div className="mt-12 text-center space-y-4">
             <Lock className="h-10 w-10 text-muted-foreground mx-auto" />
-            <p className="text-sm text-muted-foreground">Sign in to see your personality results.</p>
+            <p className="text-sm text-muted-foreground">{t('Sign in to see your personality results.')}</p>
             <button onClick={() => navigate('/auth')} className="text-sm font-semibold text-primary">
-              Sign In →
+              {t('Sign In →')}
             </button>
           </div>
         ) : (
@@ -268,7 +270,7 @@ export default function PersonalityResults() {
               {/* Progress */}
               <div className="mt-5">
                 <div className="flex justify-between text-[10px] text-muted-foreground mb-1.5">
-                  <span>{answeredCount}/{totalPolls} answered</span>
+                  <span>{answeredCount}/{totalPolls} {t('answered')}</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
@@ -285,7 +287,7 @@ export default function PersonalityResults() {
             {/* Trait breakdown */}
             <div className="space-y-3">
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                Trait Breakdown
+                {t('Trait Breakdown')}
               </h3>
 
               {PERSONALITY_TRAITS.map((trait, i) => {
@@ -304,22 +306,22 @@ export default function PersonalityResults() {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{trait.emoji}</span>
-                        <span className="text-xs font-semibold text-foreground">{trait.dimension}</span>
+                        <span className="text-xs font-semibold text-foreground">{t(trait.dimension)}</span>
                       </div>
                       {isAnswered ? (
                         <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-[10px] font-bold text-primary">
-                          {chosenLabel}
+                          {t(chosenLabel!)}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-muted-foreground">Not answered</span>
+                        <span className="text-[10px] text-muted-foreground">{t('Not answered')}</span>
                       )}
                     </div>
 
                     {/* Spectrum bar */}
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px] text-muted-foreground">
-                        <span>{trait.poleA}</span>
-                        <span>{trait.poleB}</span>
+                        <span>{t(trait.poleA)}</span>
+                        <span>{t(trait.poleB)}</span>
                       </div>
                       <div className="h-2 rounded-full bg-muted overflow-hidden relative">
                         <div className="absolute left-1/2 top-0 w-px h-full bg-border z-10" />
@@ -348,10 +350,10 @@ export default function PersonalityResults() {
               >
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    {totalPolls - answeredCount} personality poll{totalPolls - answeredCount !== 1 ? 's' : ''} remaining
+                    {t(totalPolls - answeredCount !== 1 ? '{n} personality polls remaining' : '{n} personality poll remaining', { n: totalPolls - answeredCount })}
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Answer more to refine your type
+                    {t('Answer more to refine your type')}
                   </p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -359,7 +361,7 @@ export default function PersonalityResults() {
             )}
 
             <p className="text-center text-[10px] text-muted-foreground/60 italic">
-              Your type updates as you answer more polls
+              {t('Your type updates as you answer more polls')}
             </p>
           </div>
         )}
