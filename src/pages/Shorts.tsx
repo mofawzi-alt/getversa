@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLiveDebateFeed } from '@/hooks/useLiveDebateFeed';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
 import { mapToVersaCategory, getCategoryColorClass } from '@/lib/categoryMeta';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { pollText, categoryLabel } from '@/lib/pollText';
 import BottomNav from '@/components/layout/BottomNav';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
@@ -232,8 +234,9 @@ export default function Shorts() {
                 <h2
                   className="font-display font-bold text-[22px] leading-[1.15] text-white"
                   style={{ letterSpacing: '-0.01em', textShadow: '0 1px 4px rgba(0,0,0,.5)' }}
+                  dir="auto"
                 >
-                  {poll.question}
+                  {pt.question}
                 </h2>
                 <div className="flex items-center gap-2 mt-2">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold tracking-wide ${getCategoryColorClass(mapToVersaCategory(poll.category))}`}>
