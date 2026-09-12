@@ -902,7 +902,10 @@ export default function PulseStoriesRow() {
       <CategoriesSheet
         open={categoriesOpen}
         onOpenChange={setCategoriesOpen}
-        onSelect={(cat) => navigate(`/explore?category=${encodeURIComponent(cat)}`)}
+        onSelect={(cat) => {
+          // Filter the Home feed in place instead of leaving for another page
+          window.dispatchEvent(new CustomEvent('versa:home-category', { detail: cat }));
+        }}
       />
     </>
   );
