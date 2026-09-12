@@ -25,7 +25,6 @@ import { EDITORIAL_STORY_META } from '@/lib/editorialStoryTypes';
 import EditorialStoryViewer from './EditorialStoryViewer';
 import { hasSeenLocally as hasSeenLocallyKey } from '@/lib/pulseTime';
 import CategoriesSheet from '@/components/home/CategoriesSheet';
-import { useNavigate } from 'react-router-dom';
 
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
@@ -219,7 +218,6 @@ function breakdownToCard(f: BreakdownFinding): StoryCardData {
 
 export default function PulseStoriesRow() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { data: pulse } = useDailyPulse();
   const { data: settings } = usePulseSettings();
   const lastVisit = useLastVisit();
