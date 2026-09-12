@@ -2024,7 +2024,9 @@ export default function Home() {
               seen.add(p.id);
               merged.push(p);
             }
-            const filteredLivePolls = merged;
+            const filteredLivePolls = categoryFilter
+              ? merged.filter((p) => matchesCategoryFilter(p.category))
+              : merged;
             return filteredLivePolls.length > 0 ? (
               <>
                 {/* Live debates section — no banner, cards speak for themselves */}
