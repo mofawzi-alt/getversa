@@ -38,7 +38,6 @@ import CategoriesSheet from '@/components/home/CategoriesSheet';
 
 
 import CategoryStoryCircles from '@/components/home/CategoryStoryCircles';
-import { LayoutGrid } from 'lucide-react';
 import BrandPackBanner from '@/components/home/BrandPackBanner';
 import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
 
@@ -2052,16 +2051,7 @@ export default function Home() {
           />
         </div>
 
-        {/* Categories shortcut button */}
-        <div className="px-3 mt-2 mb-1 flex justify-center">
-          <button
-            onClick={() => navigate('/explore')}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground shadow-sm hover:bg-muted/50 active:scale-[0.98] transition"
-          >
-            <LayoutGrid className="h-3.5 w-3.5 text-muted-foreground" />
-            Browse categories
-          </button>
-        </div>
+
 
         {/* Ask Egypt daily featured question removed */}
         <PulseStoriesRow />
