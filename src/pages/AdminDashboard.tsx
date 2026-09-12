@@ -26,6 +26,7 @@ import BrandCampaignBuilder from '@/components/admin/BrandCampaignBuilder';
 import CategoryAnalytics from '@/components/admin/CategoryAnalytics';
 import BrandRankingReport from '@/components/admin/BrandRankingReport';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
+import PeriodAnalytics from '@/components/admin/PeriodAnalytics';
 import InsightsReport from '@/components/admin/InsightsReport';
 import BrandIntelligence from '@/components/admin/BrandIntelligence';
 import IndustryReport from '@/components/admin/IndustryReport';
@@ -132,6 +133,7 @@ export default function AdminDashboard() {
           <Tabs defaultValue="dashboard" className="space-y-4">
             <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-secondary/50">
               <TabsTrigger value="dashboard" className="text-xs px-3 py-1.5">Dashboard</TabsTrigger>
+              <TabsTrigger value="period" className="text-xs px-3 py-1.5">By Date</TabsTrigger>
               <TabsTrigger value="overview" className="text-xs px-3 py-1.5">Per Poll</TabsTrigger>
               <TabsTrigger value="brands" className="text-xs px-3 py-1.5">Brands</TabsTrigger>
               <TabsTrigger value="industry" className="text-xs px-3 py-1.5">Industry</TabsTrigger>
@@ -143,6 +145,10 @@ export default function AdminDashboard() {
             
             <TabsContent value="dashboard">
               <AnalyticsDashboard />
+            </TabsContent>
+
+            <TabsContent value="period">
+              <PeriodAnalytics />
             </TabsContent>
 
             <TabsContent value="overview" className="space-y-6">
