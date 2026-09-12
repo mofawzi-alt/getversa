@@ -34,10 +34,6 @@ import VoteProgressIndicator from '@/components/onboarding/VoteProgressIndicator
 import ExploreUnlockPopup, { isExploreUnlocked, markExploreUnlocked } from '@/components/onboarding/ExploreUnlockPopup';
 import AppTutorial, { isTutorialDone, markTutorialDone } from '@/components/onboarding/AppTutorial';
 import HeroVoteCard from '@/components/home/HeroVoteCard';
-import CategoriesSheet from '@/components/home/CategoriesSheet';
-
-
-import CategoryStoryCircles from '@/components/home/CategoryStoryCircles';
 import BrandPackBanner from '@/components/home/BrandPackBanner';
 import FriendsJoinedToday from '@/components/home/FriendsJoinedToday';
 
@@ -75,21 +71,6 @@ const isAuthSessionError = (error: { code?: string; message?: string } | null) =
   const message = error?.message?.toLowerCase() || '';
   return error?.code === '42501' || message.includes('row-level security') || message.includes('jwt') || message.includes('auth');
 };
-
-// Category display name mapping (canonical 8 categories)
-const CATEGORY_DISPLAY_NAMES: Record<string, string> = {};
-
-function getDisplayCategoryName(name: string): string {
-  return CATEGORY_DISPLAY_NAMES[name] || name;
-}
-
-/** Matches a poll's raw category against the selected filter (raw name or Versa category). */
-function matchesCategoryFilter(rawCategory: string | null | undefined, filter: string): boolean {
-  const raw = rawCategory || 'Other';
-  if (getDisplayCategoryName(raw) === filter) return true;
-  return mapToVersaCategory(raw) === filter;
-}
-
 
 const CATEGORY_META: Record<string, { emoji: string; color: string; bg: string }> = {
   'brands': { emoji: '🏷️', color: 'hsl(15, 80%, 50%)', bg: 'hsl(15, 80%, 93%)' },
@@ -1230,9 +1211,6 @@ export default function Home() {
   // (carousel API removed — static scroll now)
   
   // Category filter for hero card
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [categoriesSheetOpen, setCategoriesSheetOpen] = useState(false);
-  const savedHeroIndex = useRef<number>(0);
 
   useEffect(() => {
     const prev = prevExploreVoteCountRef.current;
@@ -1653,17 +1631,7 @@ export default function Home() {
     }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
   }, [allPolls, votedPollIds, skippedPollIds, profile?.age_range, user, queuePollIds, isOnboardingFeed]);
-  const newPolls = useMemo(() => {
-    if (!categoryFilter) return allNewPolls;
-    return allNewPolls.filter(p => matchesCategoryFilter(p.category, categoryFilter));
-  }, [allNewPolls, categoryFilter]);
-
-  // Reset hero index when category filter changes
-  useEffect(() => {
-    if (categoryFilter) {
-      setHeroPollIndex(0);
-    }
-  }, [categoryFilter]);
+  const newPolls = allNewPolls;
 
   // Keep heroPollIndex in bounds — if new polls appear or list shrinks, reset to 0
   useEffect(() => {
@@ -1671,14 +1639,6 @@ export default function Home() {
       setHeroPollIndex(0);
     }
   }, [newPolls.length, heroPollIndex]);
-
-  // Auto-clear category filter when all category polls are voted
-  useEffect(() => {
-    if (categoryFilter && newPolls.length === 0) {
-      setCategoryFilter(null);
-      setHeroPollIndex(savedHeroIndex.current);
-    }
-  }, [categoryFilter, newPolls.length]);
 
 
   // ── Memoized expensive computations ──
@@ -1877,23 +1837,6 @@ export default function Home() {
     );
   }
 
-  // Smart category tap: unvoted → filter hero, all voted → explore with results
-  const handleCategoryTap = (catName: string) => {
-    const catPolls = allPolls.filter(p => matchesCategoryFilter(p.category, catName));
-    const hasUnvoted = catPolls.some(p => !votedPollIds?.has(p.id));
-    if (hasUnvoted) {
-      // Save current position before filtering
-      if (!categoryFilter) {
-        savedHeroIndex.current = heroPollIndex;
-      }
-      setCategoryFilter(catName);
-      setHeroPollIndex(0);
-      heroRef.current?.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      navigate(`/explore?category=${encodeURIComponent(catName)}`);
-    }
-  };
-
   const handlePollTap = (poll: PollCard) => {
     const hasVoted = votedPollIds?.has(poll.id);
     const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
@@ -1957,54 +1900,6 @@ export default function Home() {
 
         {/* NUDGE 1: Welcome banner for guests */}
         {!user && <WelcomeBanner />}
-
-        {/* Category filter banner */}
-        {categoryFilter && (
-          <div className="px-3 mb-1">
-            <div className="flex items-center gap-2 bg-primary/10 rounded-xl px-3 py-2">
-              <span className="text-xs font-bold text-primary flex-1">
-                {getCategoryMeta(categoryFilter).emoji} Showing: {getDisplayCategoryName(categoryFilter)}
-              </span>
-              <button
-                onClick={() => { setCategoryFilter(null); setHeroPollIndex(savedHeroIndex.current); }}
-                className="text-[10px] font-bold text-primary/70 hover:text-primary px-2 py-0.5 rounded-full bg-primary/10"
-              >
-                ✕ Clear
-              </button>
-            </div>
-          </div>
-        )}
-
-
-
-
-        {/* ═══ CATEGORY STORY CIRCLES ═══ */}
-        <CategoryStoryCircles
-          active={categoryFilter}
-          onSelect={(cat) => {
-            if (!cat) {
-              setCategoryFilter(null);
-              setHeroPollIndex(savedHeroIndex.current);
-            } else {
-              handleCategoryTap(cat);
-            }
-          }}
-          onOpenAll={() => setCategoriesSheetOpen(true)}
-        />
-
-        <CategoriesSheet
-          open={categoriesSheetOpen}
-          onOpenChange={setCategoriesSheetOpen}
-          onSelect={(cat) => {
-            if (!cat) {
-              setCategoryFilter(null);
-              setHeroPollIndex(savedHeroIndex.current);
-            } else {
-              handleCategoryTap(cat);
-            }
-          }}
-          activeCategory={categoryFilter}
-        />
 
         {/* ═══ PINNED POLL BANNER ═══ */}
         <PinnedPollBanner />
@@ -2110,9 +2005,7 @@ export default function Home() {
               seen.add(p.id);
               merged.push(p);
             }
-            const filteredLivePolls = categoryFilter
-              ? merged.filter(p => matchesCategoryFilter(p.category, categoryFilter))
-              : merged;
+            const filteredLivePolls = merged;
             return filteredLivePolls.length > 0 ? (
               <>
                 {/* Live debates section — no banner, cards speak for themselves */}
