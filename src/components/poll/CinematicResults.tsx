@@ -14,6 +14,9 @@ import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import { useFirstVoterStatus } from '@/hooks/useFirstVoterStatus';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import FirstVoterBadge from './FirstVoterBadge';
+import { useT } from '@/hooks/useT';
+import { translate } from '@/lib/i18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CinematicResultsProps {
   poll: {
@@ -46,7 +49,7 @@ interface PatternResult {
   line: string;
 }
 
-async function detectPattern(userId: string, currentPollId: string, currentChoice: 'A' | 'B'): Promise<PatternResult | null> {
+async function detectPattern(userId: string, currentPollId: string, currentChoice: 'A' | 'B', lang: 'en' | 'ar'): Promise<PatternResult | null> {
   try {
     const { data: recentVotes } = await supabase
       .from('votes')
@@ -71,7 +74,7 @@ async function detectPattern(userId: string, currentPollId: string, currentChoic
         else break;
       }
       if (minorityStreak >= 3) {
-        return { line: `You've disagreed with the majority ${minorityStreak} polls in a row.` };
+        return { line: translate("You've disagreed with the majority {n} polls in a row.", lang, { n: minorityStreak }) };
       }
 
       // Check: majority agreement streak

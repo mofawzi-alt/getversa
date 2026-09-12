@@ -473,6 +473,7 @@ function ResultsView({
   groupB: string[];
   vibeGroup: string[];
 }) {
+  const { t } = useT();
   if (loading || !stats) {
     return (
       <div className="flex items-center justify-center py-16">
