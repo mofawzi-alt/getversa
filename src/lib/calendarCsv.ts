@@ -83,7 +83,7 @@ export function parseCalendarCsv(text: string): { rows: CalendarCsvRow[]; errors
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length === 0) return { rows, errors: ['Empty file'] };
 
-  const header = parseCsvLine(lines[0]).map((h) => h.trim().toLowerCase());
+  const header = parseCsvLine(lines[0].replace(/^\uFEFF/, '')).map((h) => h.trim().toLowerCase());
   const idx = (k: string) => header.indexOf(k);
 
   const required = ['release_date', 'question', 'option_a', 'option_b'];
