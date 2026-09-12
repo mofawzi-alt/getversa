@@ -64,32 +64,11 @@ export default function HeroCaughtUp({ onPollTap: _onPollTap }: { onPollTap?: (p
   const askLabel = getAskCtaLabel((profile?.country || profile?.nationality) as string | undefined).replace(' →', '');
 
   return (
-    <div className="w-full px-3 py-3 space-y-3">
+    <div className="w-full px-3 py-3">
       {/* Countdown — plain text, no box */}
       <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
         <Clock className="h-3.5 w-3.5" />
         <p className="text-xs font-medium">Next drop in <span className="text-foreground font-bold">{countdown}</span> · New polls at 9 AM</p>
-      </div>
-
-      {/* Keep going — fills the gap while waiting for the next drop */}
-      <div className="rounded-3xl border border-border bg-card p-4 shadow-sm">
-        <p className="text-sm font-bold text-foreground">You're all caught up 🎉</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          {dimensionInfo
-            ? `${dimensionInfo.remaining} more votes to unlock your next insight`
-            : 'Keep exploring while the next drop lands'}
-        </p>
-
-
-
-
-        {!!totalVotes && (
-          <div className="mt-3 flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
-            <Lock className="h-3 w-3" />
-            {totalVotes} votes so far
-            <ChevronRight className="h-3 w-3" />
-          </div>
-        )}
       </div>
     </div>
   );
