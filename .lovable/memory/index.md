@@ -110,3 +110,4 @@ Updated: now
 - [Campaign Visibility Modes](mem://features/campaign-visibility-modes) — poll_campaigns.visibility_mode controls hero/bundle/mixed
 - [Auto-Hook Subtitles](mem://features/auto-hook-subtitles) — Category-based provocative subtitle generation on poll creation
 - [Ask Versa Identity](mem://features/ask-versa-identity) — Public sentiment intelligence principles: data-first, honest, socially insightful
+- [Bilingual Polls](features-bilingual-polls.md) — EN/AR polls, language pref, RTL, translate-polls backfill
