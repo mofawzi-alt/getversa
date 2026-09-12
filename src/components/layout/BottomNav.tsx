@@ -36,7 +36,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
 
   return (
     <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-nav border-t border-border/40 safe-area-bottom z-50">
-      <div className="flex justify-between items-end h-16 max-w-lg mx-auto px-2 pb-2">
+      <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
         <NavButton
           path="/home"
           icon={Home}
@@ -57,7 +57,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           active={false}
           onClick={openCategories}
         />
-        <CenterNavButton
+        <NavButton
           path="/live-ask/new"
           icon={Camera}
           label="Live Ask"
