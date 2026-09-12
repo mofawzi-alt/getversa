@@ -1648,11 +1648,9 @@ export default function Home() {
     if (!raw) return false;
     return raw === categoryFilter || mapToVersaCategory(raw) === categoryFilter;
   }, [categoryFilter]);
-  const newPolls = useMemo(() => {
-    if (!categoryFilter) return allNewPolls;
-    const filtered = allNewPolls.filter(p => matchesCategoryFilter(p.category));
-    return filtered.length > 0 ? filtered : allNewPolls;
-  }, [allNewPolls, categoryFilter, matchesCategoryFilter]);
+  const newPolls = useMemo(() => (
+    categoryFilter ? allNewPolls.filter(p => matchesCategoryFilter(p.category)) : allNewPolls
+  ), [allNewPolls, categoryFilter, matchesCategoryFilter]);
 
   // Keep heroPollIndex in bounds — if new polls appear or list shrinks, reset to 0
   useEffect(() => {
