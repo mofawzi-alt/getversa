@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Loader2, ArrowRight, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { lovable } from '@/integrations/lovable/index';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { pollText } from '@/lib/pollText';
 
 
 interface Poll {
@@ -15,6 +17,9 @@ interface Poll {
   question: string;
   option_a: string;
   option_b: string;
+  question_ar?: string | null;
+  option_a_ar?: string | null;
+  option_b_ar?: string | null;
   image_a_url: string | null;
   image_b_url: string | null;
   category: string | null;
@@ -27,6 +32,7 @@ export default function SharedPoll() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { lang } = useLanguage();
 
   const sharerChoice = searchParams.get('c') as 'A' | 'B' | null;
   const sharerName = searchParams.get('by') || 'Your friend';
