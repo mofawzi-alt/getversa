@@ -159,15 +159,17 @@ export default function BrowseCard({
   safeAreaTop = false,
 }: BrowseCardProps) {
   const imgLoading: 'eager' | 'lazy' = eagerImages ? 'eager' : 'lazy';
-  const winnerLabel = poll.winner === 'A' ? poll.option_a : poll.option_b;
+  const { lang } = useLanguage();
+  const pt = pollText(poll, lang);
+  const winnerLabel = poll.winner === 'A' ? pt.optionA : pt.optionB;
   const winnerImg = poll.winner === 'A' ? poll.image_a_url : poll.image_b_url;
-  const loserLabel = poll.winner === 'A' ? poll.option_b : poll.option_a;
+  const loserLabel = poll.winner === 'A' ? pt.optionB : pt.optionA;
   const loserPct = poll.winner === 'A' ? poll.percentB : poll.percentA;
 
   const userPickedWinner = userChoice ? userChoice === poll.winner : null;
   const userVoted = !!userChoice;
   const userPct = userChoice ? (userChoice === 'A' ? poll.percentA : poll.percentB) : null;
-  const userLabel = userChoice ? (userChoice === 'A' ? poll.option_a : poll.option_b) : null;
+  const userLabel = userChoice ? (userChoice === 'A' ? pt.optionA : pt.optionB) : null;
 
   const independentPct = !userPickedWinner && userPct != null ? Math.max(5, Math.round(userPct / 5) * 5) : null;
 
