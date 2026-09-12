@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
+import CategoriesSheet from '@/components/home/CategoriesSheet';
 import DailyPulseStrip from '@/components/home/DailyPulseStrip';
 import LiveAskCards from '@/components/home/LiveAskCards';
 
@@ -1206,8 +1207,9 @@ export default function Home() {
 
   // Track which hero poll index to show for infinite voting
   const [heroPollIndex, setHeroPollIndex] = useState(0);
-  // ── Category filter (opened from the Categories story circle) ──
+  // ── Category filter (opened from the Categories tab in the bottom bar) ──
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [categoriesSheetOpen, setCategoriesSheetOpen] = useState(false);
   useEffect(() => {
     const handler = (e: Event) => {
       const cat = (e as CustomEvent).detail as string;
@@ -1215,8 +1217,13 @@ export default function Home() {
       setHeroPollIndex(0);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+    const openHandler = () => setCategoriesSheetOpen(true);
     window.addEventListener('versa:home-category', handler);
-    return () => window.removeEventListener('versa:home-category', handler);
+    window.addEventListener('versa:open-categories', openHandler);
+    return () => {
+      window.removeEventListener('versa:home-category', handler);
+      window.removeEventListener('versa:open-categories', openHandler);
+    };
   }, []);
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -1987,6 +1994,18 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Category picker — opened from the Categories tab in the bottom bar */}
+        <CategoriesSheet
+          open={categoriesSheetOpen}
+          onOpenChange={setCategoriesSheetOpen}
+          activeCategory={categoryFilter}
+          onSelect={(cat) => {
+            setCategoryFilter(cat);
+            setHeroPollIndex(0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
 
 
         {/* Live voter count strip — "X people voted in the last hour" */}
