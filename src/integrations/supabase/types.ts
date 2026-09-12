@@ -3231,6 +3231,7 @@ export type Database = {
           industry: string | null
           is_private: boolean
           last_daily_credit_date: string | null
+          last_seen_release: string | null
           last_vote_date: string | null
           live_ask_unlocked_at: string | null
           live_ask_week_start: string | null
@@ -3266,6 +3267,7 @@ export type Database = {
           industry?: string | null
           is_private?: boolean
           last_daily_credit_date?: string | null
+          last_seen_release?: string | null
           last_vote_date?: string | null
           live_ask_unlocked_at?: string | null
           live_ask_week_start?: string | null
@@ -3301,6 +3303,7 @@ export type Database = {
           industry?: string | null
           is_private?: boolean
           last_daily_credit_date?: string | null
+          last_seen_release?: string | null
           last_vote_date?: string | null
           live_ask_unlocked_at?: string | null
           live_ask_week_start?: string | null
@@ -3455,6 +3458,7 @@ export type Database = {
           industry: string | null
           is_private: boolean
           last_daily_credit_date: string | null
+          last_seen_release: string | null
           last_vote_date: string | null
           live_ask_unlocked_at: string | null
           live_ask_week_start: string | null
@@ -3499,6 +3503,7 @@ export type Database = {
           industry: string | null
           is_private: boolean
           last_daily_credit_date: string | null
+          last_seen_release: string | null
           last_vote_date: string | null
           live_ask_unlocked_at: string | null
           live_ask_week_start: string | null
@@ -3814,6 +3819,7 @@ export type Database = {
           industry: string | null
           is_private: boolean
           last_daily_credit_date: string | null
+          last_seen_release: string | null
           last_vote_date: string | null
           live_ask_unlocked_at: string | null
           live_ask_week_start: string | null
