@@ -15,7 +15,7 @@ import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useSkippedPollIds } from '@/hooks/useSkippedPollIds';
 import { useLiveDebateFeed } from '@/hooks/useLiveDebateFeed';
 import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteScoring';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen, X, Play, Search } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import LiveIndicator from '@/components/poll/LiveIndicator';
@@ -1206,6 +1206,18 @@ export default function Home() {
 
   // Track which hero poll index to show for infinite voting
   const [heroPollIndex, setHeroPollIndex] = useState(0);
+  // ── Category filter (opened from the Categories story circle) ──
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const cat = (e as CustomEvent).detail as string;
+      setCategoryFilter(cat || null);
+      setHeroPollIndex(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.addEventListener('versa:home-category', handler);
+    return () => window.removeEventListener('versa:home-category', handler);
+  }, []);
   const heroRef = useRef<HTMLDivElement>(null);
 
   // (carousel API removed — static scroll now)
@@ -1631,7 +1643,14 @@ export default function Home() {
     }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
   }, [allPolls, votedPollIds, skippedPollIds, profile?.age_range, user, queuePollIds, isOnboardingFeed]);
-  const newPolls = allNewPolls;
+  const matchesCategoryFilter = useCallback((raw?: string | null) => {
+    if (!categoryFilter) return true;
+    if (!raw) return false;
+    return raw === categoryFilter || mapToVersaCategory(raw) === categoryFilter;
+  }, [categoryFilter]);
+  const newPolls = useMemo(() => (
+    categoryFilter ? allNewPolls.filter(p => matchesCategoryFilter(p.category)) : allNewPolls
+  ), [allNewPolls, categoryFilter, matchesCategoryFilter]);
 
   // Keep heroPollIndex in bounds — if new polls appear or list shrinks, reset to 0
   useEffect(() => {
@@ -1951,6 +1970,42 @@ export default function Home() {
         {/* Ask Egypt daily featured question removed */}
         <PulseStoriesRow />
 
+        {/* ═══ ACTIVE CATEGORY FILTER ═══ */}
+        {categoryFilter && (
+          <div className="px-3 mb-2">
+            <div className="flex items-center justify-between rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2">
+              <span className="text-xs font-semibold text-foreground">
+                Showing {categoryFilter}
+              </span>
+              <button
+                type="button"
+                onClick={() => { setCategoryFilter(null); setHeroPollIndex(0); }}
+                className="flex items-center gap-1 text-xs font-semibold text-primary"
+              >
+                <X className="h-3.5 w-3.5" /> Clear
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ QUICK ACTIONS: reels + search live inside Home ═══ */}
+        <div className="flex items-center gap-2 px-3 mb-2">
+          <button
+            type="button"
+            onClick={() => navigate('/shorts')}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground active:scale-[0.98] transition-transform"
+          >
+            <Play className="h-3.5 w-3.5 text-primary" /> Shorts
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/explore')}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground active:scale-[0.98] transition-transform"
+          >
+            <Search className="h-3.5 w-3.5 text-primary" /> Search
+          </button>
+        </div>
+
         {/* Live voter count strip — "X people voted in the last hour" */}
         <LiveVoterCount />
 
@@ -2005,7 +2060,9 @@ export default function Home() {
               seen.add(p.id);
               merged.push(p);
             }
-            const filteredLivePolls = merged;
+            const filteredLivePolls = categoryFilter
+              ? merged.filter((p) => matchesCategoryFilter(p.category))
+              : merged;
             return filteredLivePolls.length > 0 ? (
               <>
                 {/* Live debates section — no banner, cards speak for themselves */}
