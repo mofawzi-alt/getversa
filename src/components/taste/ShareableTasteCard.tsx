@@ -1,5 +1,6 @@
 import { useRef, useCallback, useState } from 'react';
 import { Share2 } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import versaLogoImg from '@/assets/versa-wordmark.png';
@@ -17,6 +18,7 @@ interface TasteCardProps {
 
 export default function ShareableTasteCard({ archetype, description, topCategory, totalVotes, streak, personalityCode, personalityName, personalityEmoji }: TasteCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { t } = useT();
   const [generating, setGenerating] = useState(false);
 
   const emoji = personalityEmoji || '✨';
@@ -141,9 +143,9 @@ export default function ShareableTasteCard({ archetype, description, topCategory
     // Stats section — glass cards
     const statsY = y + 100;
     const stats = [
-      { label: 'VOTES', value: String(totalVotes), icon: '🗳️' },
-      { label: 'STREAK', value: `${streak}d`, icon: '🔥' },
-      { label: 'TOP', value: topCategory, icon: '👑' },
+      { label: t('VOTES'), value: String(totalVotes), icon: '🗳️' },
+      { label: t('STREAK'), value: `${streak}d`, icon: '🔥' },
+      { label: t('TOP'), value: topCategory, icon: '👑' },
     ];
 
     const boxW = 270;
@@ -335,7 +337,7 @@ export default function ShareableTasteCard({ archetype, description, topCategory
         className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-base gap-2"
       >
         <Share2 className="h-5 w-5" />
-        {generating ? 'Generating...' : 'Share Taste Profile'}
+        {generating ? t('Generating...') : t('Share Taste Profile')}
       </Button>
 
       <canvas ref={canvasRef} className="hidden" />
