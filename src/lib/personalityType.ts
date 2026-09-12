@@ -435,17 +435,19 @@ export function computeTypeCompatibility(
     }
   }
 
-  // Description
+  // Description (as i18n key — names interpolated at render after translation)
   const typeAInfo = PERSONALITY_TYPES[typeA.code];
   const typeBInfo = PERSONALITY_TYPES[typeB.code];
-  let description: string;
+  const nameA = typeAInfo?.name || typeA.code;
+  const nameB = typeBInfo?.name || typeB.code;
+  let descriptionKey: string;
   if (score >= 85) {
-    description = `${typeAInfo?.name || typeA.code} and ${typeBInfo?.name || typeB.code} naturally click — you bring out the best in each other.`;
+    descriptionKey = '{a} and {b} naturally click — you bring out the best in each other.';
   } else if (score >= 70) {
-    description = `${typeAInfo?.name || typeA.code} meets ${typeBInfo?.name || typeB.code} — a solid match with room to learn from each other.`;
+    descriptionKey = '{a} meets {b} — a solid match with room to learn from each other.';
   } else {
-    description = `${typeAInfo?.name || typeA.code} and ${typeBInfo?.name || typeB.code} see the world differently — that friction can spark growth.`;
+    descriptionKey = '{a} and {b} see the world differently — that friction can spark growth.';
   }
 
-  return { score, label, emoji, description, sharedStrengths, tensions };
+  return { score, label, emoji, descriptionKey, nameA, nameB, sharedStrengths, tensions };
 }
