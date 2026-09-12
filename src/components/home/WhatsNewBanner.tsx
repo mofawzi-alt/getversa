@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, X, ChevronRight, Swords, Users, MessageCircle, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * What's New banner — appears on Home once per release for each user.
@@ -65,8 +67,22 @@ export function markCurrentReleaseSeen() {
   }
 }
 
+// Persist per-account too, so the banner never reappears after reinstalls,
+// device switches, or the app's local storage being cleared.
+async function markReleaseSeenForUser(userId: string) {
+  try {
+    await supabase
+      .from('users')
+      .update({ last_seen_release: CURRENT_RELEASE } as any)
+      .eq('id', userId);
+  } catch {
+    // ignore
+  }
+}
+
 export default function WhatsNewBanner() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
