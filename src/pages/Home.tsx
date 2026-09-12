@@ -15,7 +15,7 @@ import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useSkippedPollIds } from '@/hooks/useSkippedPollIds';
 import { useLiveDebateFeed } from '@/hooks/useLiveDebateFeed';
 import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteScoring';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen, X, Play, Search } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen, X } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import LiveIndicator from '@/components/poll/LiveIndicator';
@@ -1988,23 +1988,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* ═══ QUICK ACTIONS: reels + search live inside Home ═══ */}
-        <div className="flex items-center gap-2 px-3 mb-2">
-          <button
-            type="button"
-            onClick={() => navigate('/shorts')}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground active:scale-[0.98] transition-transform"
-          >
-            <Play className="h-3.5 w-3.5 text-primary" /> Shorts
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/explore')}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground active:scale-[0.98] transition-transform"
-          >
-            <Search className="h-3.5 w-3.5 text-primary" /> Search
-          </button>
-        </div>
 
         {/* Live voter count strip — "X people voted in the last hour" */}
         <LiveVoterCount />
