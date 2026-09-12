@@ -487,13 +487,14 @@ export default function PollCreationForm({
             className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm"
           >
             <option value="">Select a category...</option>
-            <option value="Consumer">Consumer</option>
-            <option value="Brands">Brands</option>
-            <option value="Platforms">Platforms</option>
-            <option value="Lifestyle">Lifestyle</option>
-            <option value="Money">Money</option>
-            <option value="Food">Food</option>
-            <option value="Fashion">Fashion</option>
+            <option value="Relationships">❤️ Relationships</option>
+            <option value="Money">💰 Money</option>
+            <option value="Education">🎓 Education</option>
+            <option value="Digital Life">📱 Digital Life</option>
+            <option value="Food">🍔 Food</option>
+            <option value="Entertainment">🎬 Entertainment</option>
+            <option value="Lifestyle">🌍 Lifestyle</option>
+            <option value="Egypt">🇪🇬 Egypt</option>
           </select>
           {!category && <p className="text-xs text-destructive mt-1">Category is required</p>}
         </div>

@@ -309,8 +309,6 @@ Category guide:
 - Lifestyle: beauty, fashion, wellness, travel, shopping, cars, mobility
 - Egypt: trending national and cultural debates
 
-- The Pulse: trending cultural debates
-
 ${targetAgeRange || targetGender || targetCountry ? `
 AUDIENCE TARGETING:
 ${targetAgeRange ? `- Age: ${targetAgeRange}` : ''}
@@ -428,7 +426,7 @@ Respond with a VALID JSON object only.`;
       const startsAt = new Date();
       const endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-      const autoSubtitle = generateHook(pollData.category || category || 'General', pollData.question);
+      const autoSubtitle = generateHook(pollData.category || category || 'Egypt', pollData.question);
 
       const { data: poll, error: insertError } = await supabase
         .from('polls')
@@ -440,7 +438,7 @@ Respond with a VALID JSON object only.`;
           option_a_ar: typeof pollData.option_a_ar === 'string' && pollData.option_a_ar.trim() ? pollData.option_a_ar.trim() : null,
           option_b_ar: typeof pollData.option_b_ar === 'string' && pollData.option_b_ar.trim() ? pollData.option_b_ar.trim() : null,
           subtitle_ar: typeof pollData.subtitle_ar === 'string' && pollData.subtitle_ar.trim() ? pollData.subtitle_ar.trim() : null,
-          category: pollData.category || category || 'General',
+          category: pollData.category || category || 'Egypt',
           created_by: userId,
           is_daily_poll: true,
           starts_at: startsAt.toISOString(),
