@@ -452,15 +452,6 @@ Respond with a VALID JSON object only.`;
         throw new Error('Failed to save poll to database');
       }
 
-      // Send push notification
-      try {
-        await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseServiceKey}` },
-          body: JSON.stringify({ title: '🔥 New Poll!', body: `${poll.question} - Vote now!`, url: '/', poll_id: poll.id }),
-        });
-      } catch { /* non-critical */ }
-
       return new Response(JSON.stringify({
         success: true,
         poll: { id: poll.id, question: poll.question, option_a: poll.option_a, option_b: poll.option_b, category: poll.category, image_a_url: poll.image_a_url, image_b_url: poll.image_b_url }
