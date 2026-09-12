@@ -573,6 +573,14 @@ export default function PulseStoriesRow() {
     }
     const final = deduped.filter((c) => c.cards.length > 0);
 
+    // ── Categories shortcut: always append so users can browse by topic ──
+    final.push({
+      topic: 'categories',
+      label: 'Categories',
+      cards: [],
+      priority: 100,
+    });
+
     return final;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pulse, settings, battleData, updatesData, friendsData, predictData, closingData, weeklyData, newPollsData, breakdownData, user, bump]);
