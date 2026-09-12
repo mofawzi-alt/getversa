@@ -1,4 +1,4 @@
-import { Share2, Check, X, Send, Trophy, Sparkles, Flame } from 'lucide-react';
+import { Share2, Check, X, Send, Trophy, Sparkles, Flame, MapPin, Zap, Users, type LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import PollOptionImage from '@/components/poll/PollOptionImage';
 import { usePollReactions } from '@/hooks/usePollReactions';
@@ -7,7 +7,7 @@ import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { getNativeSafeImageSrc } from '@/lib/pollImages';
 
 export interface DemoTag {
-  emoji: string;
+  icon: LucideIcon;
   label: string;
   choice: 'A' | 'B';
 }
@@ -58,7 +58,7 @@ export function computeDemoTags(votes: any[], nationalWinnerPct: number, winner:
       bestCity = { name: city, deviation, chose: deviation > 0 ? winner : (winner === 'A' ? 'B' : 'A') };
     }
   }
-  if (bestCity) tags.push({ emoji: '🏙', label: `${bestCity.name} chose this`, choice: bestCity.chose });
+  if (bestCity) tags.push({ icon: MapPin, label: `${bestCity.name} chose this`, choice: bestCity.chose });
 
   const genZ = groupPct(v => ['18-24', '13-17'].includes(v.voter_age_range));
   const older = groupPct(v => ['25-34', '35-44', '45-54', '55+'].includes(v.voter_age_range));
@@ -66,7 +66,7 @@ export function computeDemoTags(votes: any[], nationalWinnerPct: number, winner:
     const dev = genZ.pct - older.pct;
     if (Math.abs(dev) > threshold) {
       tags.push({
-        emoji: '⚡',
+        icon: Zap,
         label: dev > 0 ? 'Gen Z chose this' : '25+ chose this',
         choice: dev > 0 ? winner : (winner === 'A' ? 'B' : 'A'),
       });
@@ -79,7 +79,7 @@ export function computeDemoTags(votes: any[], nationalWinnerPct: number, winner:
     const dev = female.pct - male.pct;
     if (Math.abs(dev) > threshold) {
       tags.push({
-        emoji: dev > 0 ? '👩' : '👨',
+        icon: Users,
         label: dev > 0 ? 'Females chose this' : 'Males chose this',
         choice: dev > 0 ? winner : (winner === 'A' ? 'B' : 'A'),
       });
@@ -425,7 +425,7 @@ export default function BrowseCard({
                     key={i}
                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${tagBg} text-[13px] font-medium leading-snug`}
                   >
-                    <span className="text-[14px]">{tag.emoji}</span>
+                    <tag.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} aria-hidden />
                     {tag.label}
                   </span>
                 ))}
