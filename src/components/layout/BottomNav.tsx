@@ -63,6 +63,7 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
           label="Live Ask"
           active={location.pathname.startsWith('/live-ask')}
           onClick={() => navigate('/live-ask/new')}
+          variant="dark"
         />
         <NavButton
           path="/messages"
