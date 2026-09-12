@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useFriends } from '@/hooks/useFriends';
 import { useOpenConversation, useSendMessage } from '@/hooks/useMessages';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Send, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
@@ -20,16 +22,36 @@ interface Props {
 
 export default function SharePollToFriendSheet({ pollId, pollQuestion, optionA, optionB, percentA, percentB, imageUrl, open, onOpenChange }: Props) {
   const { friends, loadingFriends } = useFriends();
+  const { user } = useAuth();
   const openConv = useOpenConversation();
   const sendMessage = useSendMessage();
   const [sentTo, setSentTo] = useState<Set<string>>(new Set());
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [myChoice, setMyChoice] = useState<'A' | 'B' | null>(null);
+
+  // Look up the sender's own vote so the friend gets the "your friend picked" reveal
+  useEffect(() => {
+    if (!open || !user || !pollId) return;
+    let cancelled = false;
+    supabase
+      .from('votes')
+      .select('choice')
+      .eq('user_id', user.id)
+      .eq('poll_id', pollId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setMyChoice((data?.choice as 'A' | 'B') || null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, user, pollId]);
 
   const handleSend = async (friendId: string) => {
     setPendingId(friendId);
     try {
       const convId = await openConv.mutateAsync(friendId);
-      await sendMessage.mutateAsync({ conversationId: convId, sharedPollId: pollId });
+      await sendMessage.mutateAsync({ conversationId: convId, sharedPollId: pollId, sharedChoice: myChoice });
       setSentTo((prev) => new Set(prev).add(friendId));
       toast.success('Poll sent!');
     } catch {
