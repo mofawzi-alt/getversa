@@ -4,6 +4,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useT } from '@/hooks/useT';
 
 interface GameCardProps {
   icon: React.ReactNode;
@@ -44,6 +45,7 @@ function GameCard({ icon, title, subtitle, badge, available, onClick }: GameCard
 }
 
 export default function Play() {
+  const { t } = useT();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [stats, setStats] = useState({ duels: 0 });
@@ -67,11 +69,11 @@ export default function Play() {
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="h-5 w-5 text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Challenge Mode</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">{t('Challenge Mode')}</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">Versa Arena</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-1">{t('Versa Arena')}</h1>
           <p className="text-sm text-muted-foreground">
-            Turn voting into a game. Every choice still shapes the data.
+            {t('Turn voting into a game. Every choice still shapes the data.')}
           </p>
         </div>
 
@@ -80,7 +82,7 @@ export default function Play() {
           <div className="mb-6">
             <div className="rounded-xl bg-card border border-border/40 p-4 text-center">
               <p className="text-2xl font-bold text-foreground">{stats.duels}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">Total Battles</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">{t('Total Battles')}</p>
             </div>
           </div>
         )}
@@ -89,9 +91,9 @@ export default function Play() {
         <div className="space-y-3">
           <GameCard
             icon={<Swords className="h-6 w-6" />}
-            title="Duels"
-            subtitle="Challenge a friend to 5 polls. Highest match-rate or fastest score wins."
-            badge="Live"
+            title={t('Duels')}
+            subtitle={t('Challenge a friend to 5 polls. Highest match-rate or fastest score wins.')}
+            badge={t('Live')}
             available
             onClick={() => navigate('/play/duels')}
           />
@@ -100,8 +102,7 @@ export default function Play() {
         {/* Why play blurb */}
         <div className="mt-6 rounded-xl bg-muted/40 p-4">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            <span className="font-semibold text-foreground">Every game vote counts.</span> Your picks
-            still flow into Versa's pulse — they just come with a scoreboard.
+            <span className="font-semibold text-foreground">{t('Every game vote counts.')}</span> {t("Your picks still flow into Versa's pulse — they just come with a scoreboard.")}
           </p>
         </div>
       </div>

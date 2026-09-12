@@ -343,6 +343,8 @@ function useShareCard(props: {
 // ── Main component ──
 export default function CinematicResults({ poll, choice, percentA, percentB, totalVotes, onNext, visible }: CinematicResultsProps) {
   const { user, profile } = useAuth();
+  const { t } = useT();
+  const { lang } = useLanguage();
   const userPercent = choice === 'A' ? percentA : percentB;
   const isMinority = userPercent < 25;
 
@@ -380,11 +382,11 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
     }
 
     if (user?.id) {
-      detectPattern(user.id, poll.id, choice).then(p => setPatternLine(p?.line || null));
+      detectPattern(user.id, poll.id, choice, lang).then(p => setPatternLine(p?.line || null));
     }
 
-    generateTeaser(poll.id, percentA, percentB).then(t => setTeaserLine(t));
-  }, [visible, user?.id, poll.id, choice, percentA, percentB]);
+    generateTeaser(poll.id, percentA, percentB, lang).then(res => setTeaserLine(res));
+  }, [visible, user?.id, poll.id, choice, percentA, percentB, lang]);
 
   useEffect(() => {
     if (genderTeaser?.text) {
@@ -421,7 +423,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
   const handleShare = useCallback(async (type: 'instagram' | 'whatsapp' | 'save') => {
     try {
       const blob = await generate();
-      if (!blob) { toast.error('Failed to generate'); return; }
+      if (!blob) { toast.error(t('Failed to generate')); return; }
       const file = new File([blob], 'versa-result.jpg', { type: 'image/jpeg' });
 
       const username = profile?.username || '';
@@ -432,7 +434,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
         const a = document.createElement('a');
         a.href = url; a.download = 'versa-result.jpg'; a.click();
         URL.revokeObjectURL(url);
-        toast.success('Saved to downloads 📸');
+        toast.success(t('Saved to downloads 📸'));
         return;
       }
 
@@ -455,23 +457,23 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           await navigator.clipboard.write([
             new ClipboardItem({ 'image/png': blob })
           ]);
-          toast.success('Image copied! Paste it in your Instagram story 📋');
+          toast.success(t('Image copied! Paste it in your Instagram story 📋'));
         } catch {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url; a.download = 'versa-result.jpg'; a.click();
           URL.revokeObjectURL(url);
-          toast.success('Image saved! Open Instagram and share it 📸');
+          toast.success(t('Image saved! Open Instagram and share it 📸'));
         }
       }
     } catch (err) {
-      if ((err as Error).name !== 'AbortError') toast.error('Share failed');
+      if ((err as Error).name !== 'AbortError') toast.error(t('Share failed'));
     }
   }, [generate, poll.question, poll.id, choice, profile?.username]);
 
   const bgColor = isMinority ? '#020617' : '#0F172A';
   const accentColor = isMinority ? '#F59E0B' : '#ffffff';
-  const statement = getPersonalStatement(userPercent, profile?.city);
+  const statement = getPersonalStatement(userPercent, profile?.city, lang);
 
   const overlay = (
     <AnimatePresence>
@@ -511,7 +513,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   style={{ backgroundColor: '#F59E0B' }}
                 >
                   <span className="text-[9px] font-bold tracking-[0.15em] text-[#020617] uppercase">
-                    Minority Opinion
+                    {t('Minority Opinion')}
                   </span>
                 </motion.div>
               )}
@@ -562,11 +564,11 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   }}
                 >
                   <p className="text-white text-sm font-bold text-center leading-snug">
-                    👀 You're in the {userPercent}% minority on this one
+                    👀 {t("You're in the {n}% minority on this one", { n: userPercent })}
                   </p>
                   {profile?.city && (
                     <p className="text-white/90 text-xs font-semibold text-center mt-1 leading-snug">
-                      — only {userPercent}% of {profile.city} agrees with you.
+                      — {t('only {n}% of {city} agrees with you.', { n: userPercent, city: profile.city })}
                     </p>
                   )}
                 </motion.div>
@@ -580,7 +582,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   className="text-center text-[10px] max-w-[16rem] leading-snug"
                   style={{ color: 'rgba(255,255,255,0.5)' }}
                 >
-                  The most interesting opinions are the ones nobody expects.
+                  {t('The most interesting opinions are the ones nobody expects.')}
                 </motion.p>
               )}
 
@@ -631,8 +633,8 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                       <VerifiedBadge size="sm" />
                       <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>
                         {celeb.choice === choice
-                          ? `${celeb.username} also chose this`
-                          : `${celeb.username} voted the other way`}
+                          ? t('{name} also chose this', { name: celeb.username })
+                          : t('{name} voted the other way', { name: celeb.username })}
                       </span>
                     </div>
                   ))}
@@ -686,7 +688,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 <div className="flex items-center justify-between gap-2 text-[10px] font-bold leading-none">
                   <span style={{ color: choice === 'A' ? '#2563EB' : '#94A3B8' }}>{percentA}%</span>
                   <span className="text-white/50 text-[9px]">
-                    {userPercent >= 50 ? `I voted with the ${userPercent}%` : `I voted with the ${userPercent}% minority`}
+                    {userPercent >= 50 ? t('I voted with the {n}%', { n: userPercent }) : t('I voted with the {n}% minority', { n: userPercent })}
                   </span>
                   <span style={{ color: choice === 'B' ? '#2563EB' : '#94A3B8' }}>{percentB}%</span>
                 </div>
@@ -729,7 +731,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   }}
                 >
                   <Share2 className="h-4 w-4 shrink-0" />
-                  Share to Instagram Stories
+                  {t('Share to Instagram Stories')}
                 </Button>
 
                 <div className="grid grid-cols-4 gap-1.5">
@@ -759,7 +761,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                     className="h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
                   >
                     <MessageCircle className="h-3.5 w-3.5 shrink-0" />
-                    WhatsApp
+                    {t('WhatsApp')}
                   </Button>
 
                   <Button
@@ -768,7 +770,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                     className="h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
                   >
                     <Download className="h-3.5 w-3.5 shrink-0" />
-                    Save
+                    {t('Save')}
                   </Button>
 
                   <Button
@@ -776,7 +778,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                     variant="outline"
                     className="h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/15 text-white bg-white/10 hover:bg-white/15"
                   >
-                    Next
+                    {t('Next')}
                     <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                   </Button>
                 </div>
@@ -798,7 +800,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   variant="outline"
                   className="w-full h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/15 text-white bg-white/10 hover:bg-white/15"
                 >
-                  Next
+                  {t('Next')}
                   <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                 </Button>
               </motion.div>
