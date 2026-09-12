@@ -24,6 +24,8 @@ import { useEditorialStories, type EditorialStory } from '@/hooks/useEditorialSt
 import { EDITORIAL_STORY_META } from '@/lib/editorialStoryTypes';
 import EditorialStoryViewer from './EditorialStoryViewer';
 import { hasSeenLocally as hasSeenLocallyKey } from '@/lib/pulseTime';
+import CategoriesSheet from '@/components/home/CategoriesSheet';
+import { useNavigate } from 'react-router-dom';
 
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
