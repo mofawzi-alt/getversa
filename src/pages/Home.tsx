@@ -1916,54 +1916,6 @@ export default function Home() {
         {/* NUDGE 1: Welcome banner for guests */}
         {!user && <WelcomeBanner />}
 
-        {/* Category filter banner */}
-        {categoryFilter && (
-          <div className="px-3 mb-1">
-            <div className="flex items-center gap-2 bg-primary/10 rounded-xl px-3 py-2">
-              <span className="text-xs font-bold text-primary flex-1">
-                {getCategoryMeta(categoryFilter).emoji} Showing: {getDisplayCategoryName(categoryFilter)}
-              </span>
-              <button
-                onClick={() => { setCategoryFilter(null); setHeroPollIndex(savedHeroIndex.current); }}
-                className="text-[10px] font-bold text-primary/70 hover:text-primary px-2 py-0.5 rounded-full bg-primary/10"
-              >
-                ✕ Clear
-              </button>
-            </div>
-          </div>
-        )}
-
-
-
-
-        {/* ═══ CATEGORY STORY CIRCLES ═══ */}
-        <CategoryStoryCircles
-          active={categoryFilter}
-          onSelect={(cat) => {
-            if (!cat) {
-              setCategoryFilter(null);
-              setHeroPollIndex(savedHeroIndex.current);
-            } else {
-              handleCategoryTap(cat);
-            }
-          }}
-          onOpenAll={() => setCategoriesSheetOpen(true)}
-        />
-
-        <CategoriesSheet
-          open={categoriesSheetOpen}
-          onOpenChange={setCategoriesSheetOpen}
-          onSelect={(cat) => {
-            if (!cat) {
-              setCategoryFilter(null);
-              setHeroPollIndex(savedHeroIndex.current);
-            } else {
-              handleCategoryTap(cat);
-            }
-          }}
-          activeCategory={categoryFilter}
-        />
-
         {/* ═══ PINNED POLL BANNER ═══ */}
         <PinnedPollBanner />
 
