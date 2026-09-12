@@ -15,6 +15,9 @@ const CATEGORIES = [
   { key: 'tech', label: 'Technology' },
   { key: 'cultural', label: 'Culture' },
 ] as const;
+const CATEGORY_LABEL_KEYS: Record<string, string> = {
+  All: 'All', Identity: 'Identity', Social: 'Social', Consumption: 'Consumption', Technology: 'Technology', Culture: 'Culture',
+};
 
 type CategoryKey = (typeof CATEGORIES)[number]['key'];
 
@@ -122,7 +125,7 @@ export default function PastPerspectives() {
                   : 'bg-muted/60 text-muted-foreground hover:bg-muted'
               }`}
             >
-              {label}
+              {t(CATEGORY_LABEL_KEYS[label] || label)}
             </button>
           ))}
         </div>
