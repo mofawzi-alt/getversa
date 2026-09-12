@@ -1428,7 +1428,7 @@ export default function Home() {
       if (user && !isQueueReady) return [];
       return withQueryTimeout(async () => {
         const now = new Date().toISOString();
-        const pollSelect = 'id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries, option_a_tag, option_b_tag, tags, is_hot_take';
+        const pollSelect = 'id, question, subtitle, option_a, option_b, question_ar, option_a_ar, option_b_ar, subtitle_ar, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries, option_a_tag, option_b_tag, tags, is_hot_take';
 
         if (isOnboardingFeed) {
           const { data: onboardingRows, error: onboardingError } = await supabase

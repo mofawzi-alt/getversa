@@ -5,6 +5,8 @@ import { usePollReactions } from '@/hooks/usePollReactions';
 import { getCategoryColorClass, mapToVersaCategory } from '@/lib/categoryMeta';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { getNativeSafeImageSrc } from '@/lib/pollImages';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { pollText } from '@/lib/pollText';
 
 export interface DemoTag {
   icon: LucideIcon;
@@ -17,6 +19,9 @@ export interface BrowsePoll {
   question: string;
   option_a: string;
   option_b: string;
+  question_ar?: string | null;
+  option_a_ar?: string | null;
+  option_b_ar?: string | null;
   image_a_url: string | null;
   image_b_url: string | null;
   category: string | null;
@@ -154,15 +159,17 @@ export default function BrowseCard({
   safeAreaTop = false,
 }: BrowseCardProps) {
   const imgLoading: 'eager' | 'lazy' = eagerImages ? 'eager' : 'lazy';
-  const winnerLabel = poll.winner === 'A' ? poll.option_a : poll.option_b;
+  const { lang } = useLanguage();
+  const pt = pollText(poll, lang);
+  const winnerLabel = poll.winner === 'A' ? pt.optionA : pt.optionB;
   const winnerImg = poll.winner === 'A' ? poll.image_a_url : poll.image_b_url;
-  const loserLabel = poll.winner === 'A' ? poll.option_b : poll.option_a;
+  const loserLabel = poll.winner === 'A' ? pt.optionB : pt.optionA;
   const loserPct = poll.winner === 'A' ? poll.percentB : poll.percentA;
 
   const userPickedWinner = userChoice ? userChoice === poll.winner : null;
   const userVoted = !!userChoice;
   const userPct = userChoice ? (userChoice === 'A' ? poll.percentA : poll.percentB) : null;
-  const userLabel = userChoice ? (userChoice === 'A' ? poll.option_a : poll.option_b) : null;
+  const userLabel = userChoice ? (userChoice === 'A' ? pt.optionA : pt.optionB) : null;
 
   const independentPct = !userPickedWinner && userPct != null ? Math.max(5, Math.round(userPct / 5) * 5) : null;
 
@@ -236,8 +243,9 @@ export default function BrowseCard({
         <p
           className={`font-display font-bold text-[22px] leading-[1.15] ${titleColor} pr-12`}
           style={{ letterSpacing: '-0.01em' }}
+          dir="auto"
         >
-          {poll.question}
+          {pt.question}
         </p>
         <div className="flex items-center gap-2 mt-2">
           {poll.category && (
@@ -283,8 +291,8 @@ export default function BrowseCard({
                   variant="browse"
                 />
                 <div className="absolute inset-x-0 bottom-0 px-3 pt-12 pb-12 bg-gradient-to-t from-black/95 via-black/65 to-transparent">
-                  <p className="text-white font-semibold text-[15px] line-clamp-2 leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }}>
-                    {poll.option_a}
+                  <p className="text-white font-semibold text-[15px] line-clamp-2 leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }} dir="auto">
+                    {pt.optionA}
                   </p>
                   <p className="text-white font-display font-extrabold text-[34px] leading-none mt-1 tabular-nums" style={{ textShadow: '0 2px 6px rgba(0,0,0,.5)' }}>
                     {poll.percentA}<span className="text-[20px] font-bold">%</span>
@@ -303,8 +311,8 @@ export default function BrowseCard({
                   variant="browse"
                 />
                 <div className="absolute inset-x-0 bottom-0 px-3 pt-12 pb-12 bg-gradient-to-t from-black/95 via-black/65 to-transparent">
-                  <p className="text-white font-semibold text-[15px] line-clamp-2 leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }}>
-                    {poll.option_b}
+                  <p className="text-white font-semibold text-[15px] line-clamp-2 leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }} dir="auto">
+                    {pt.optionB}
                   </p>
                   <p className="text-white font-display font-extrabold text-[34px] leading-none mt-1 tabular-nums" style={{ textShadow: '0 2px 6px rgba(0,0,0,.5)' }}>
                     {poll.percentB}<span className="text-[20px] font-bold">%</span>

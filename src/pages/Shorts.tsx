@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLiveDebateFeed } from '@/hooks/useLiveDebateFeed';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
 import { mapToVersaCategory, getCategoryColorClass } from '@/lib/categoryMeta';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { pollText, categoryLabel } from '@/lib/pollText';
 import BottomNav from '@/components/layout/BottomNav';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
@@ -51,6 +53,7 @@ function OptionSide({
         <p
           className="font-display font-bold text-[18px] leading-tight text-white"
           style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }}
+          dir="auto"
         >
           {label}
         </p>
@@ -78,6 +81,7 @@ function OptionSide({
 }
 
 export default function Shorts() {
+  const { lang } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -209,6 +213,7 @@ export default function Shorts() {
         )}
 
         {polls.map((poll, i) => {
+          const pt = pollText(poll, lang);
           const choice = results[poll.id];
           const tally = tallies[poll.id];
           const live = liveDeltas[poll.id] || { a: 0, b: 0 };
@@ -232,13 +237,14 @@ export default function Shorts() {
                 <h2
                   className="font-display font-bold text-[22px] leading-[1.15] text-white"
                   style={{ letterSpacing: '-0.01em', textShadow: '0 1px 4px rgba(0,0,0,.5)' }}
+                  dir="auto"
                 >
-                  {poll.question}
+                  {pt.question}
                 </h2>
                 <div className="flex items-center gap-2 mt-2">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold tracking-wide ${getCategoryColorClass(mapToVersaCategory(poll.category))}`}>
                     <Flame className="h-3 w-3" />
-                    {mapToVersaCategory(poll.category)}
+                    {categoryLabel(mapToVersaCategory(poll.category), lang)}
                   </span>
                   {total > 0 && (
                     <span className="ml-auto flex items-center gap-1.5 text-[12px] font-semibold text-white/80 tabular-nums">
@@ -254,15 +260,15 @@ export default function Shorts() {
                     </span>
                   )}
                 </div>
-                {poll.subtitle && (
-                  <p className="mt-1.5 text-[12px] font-medium text-white/75">{poll.subtitle}</p>
+                {pt.subtitle && (
+                  <p className="mt-1.5 text-[12px] font-medium text-white/75" dir="auto">{pt.subtitle}</p>
                 )}
               </div>
 
               {/* Two stacked halves */}
               <div className="flex-1 min-h-0 flex flex-col">
                 <OptionSide
-                  label={poll.option_a}
+                  label={pt.optionA}
                   image={poll.image_a_url}
                   question={poll.question}
                   side="A"
@@ -272,7 +278,7 @@ export default function Shorts() {
                   onVote={() => handleVote(poll, 'A')}
                 />
                 <OptionSide
-                  label={poll.option_b}
+                  label={pt.optionB}
                   image={poll.image_b_url}
                   question={poll.question}
                   side="B"

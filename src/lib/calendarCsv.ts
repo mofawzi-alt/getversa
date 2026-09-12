@@ -5,6 +5,10 @@ export interface CalendarCsvRow {
   question: string;
   option_a: string;
   option_b: string;
+  question_ar?: string;
+  option_a_ar?: string;
+  option_b_ar?: string;
+  subtitle_ar?: string;
   why_viral?: string;
   source?: string;
   image_a_url?: string;
@@ -20,6 +24,10 @@ export const CSV_HEADERS = [
   'question',
   'option_a',
   'option_b',
+  'question_ar',
+  'option_a_ar',
+  'option_b_ar',
+  'subtitle_ar',
   'why_viral',
   'source',
   'image_a_url',
@@ -31,8 +39,8 @@ export const CSV_HEADERS = [
 
 export const CSV_TEMPLATE = [
   CSV_HEADERS.join(','),
-  '2026-04-21,Money,Do you trust mobile wallets as much as cash?,Yes — fully,No — cash is safer,Instapay fee launch sparked debate,Instapay news,,,Egypt,,',
-  '2026-04-22,Food,Have you switched to a cheaper food brand?,Yes — I changed brands,No — I kept my usual,Food inflation is the daily pain point,CAPMAS data,,,Egypt,,',
+  '2026-04-21,Money,Do you trust mobile wallets as much as cash?,Yes — fully,No — cash is safer,,,,,Instapay fee launch sparked debate,Instapay news,,,Egypt,,',
+  '2026-04-22,Food,Have you switched to a cheaper food brand?,Yes — I changed brands,No — I kept my usual,,,,,Food inflation is the daily pain point,CAPMAS data,,,Egypt,,',
 
 ].join('\n');
 
@@ -111,6 +119,10 @@ export function parseCalendarCsv(text: string): { rows: CalendarCsvRow[]; errors
       question,
       option_a,
       option_b,
+      question_ar: get('question_ar') || undefined,
+      option_a_ar: get('option_a_ar') || undefined,
+      option_b_ar: get('option_b_ar') || undefined,
+      subtitle_ar: get('subtitle_ar') || undefined,
       why_viral: get('why_viral') || undefined,
       source: get('source') || undefined,
       image_a_url: get('image_a_url') || undefined,

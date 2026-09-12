@@ -5,6 +5,8 @@ import CountdownTimer from '@/components/poll/CountdownTimer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { pollText } from '@/lib/pollText';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { hapticVote, hapticSuccess } from '@/lib/haptics';
@@ -30,6 +32,10 @@ interface HeroPoll {
   subtitle?: string | null;
   option_a: string;
   option_b: string;
+  question_ar?: string | null;
+  option_a_ar?: string | null;
+  option_b_ar?: string | null;
+  subtitle_ar?: string | null;
   image_a_url: string | null;
   image_b_url: string | null;
   category: string | null;
@@ -553,7 +559,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     }
     return { lead: q, tail: null };
   };
-  const { lead: qLead, tail: qTail } = splitQuestion(poll.question);
+  const { lang } = useLanguage();
+  const pt = pollText(poll, lang);
+  const isArabic = lang === 'ar' && !!poll.question_ar;
+  const { lead: qLead, tail: qTail } = isArabic ? { lead: pt.question, tail: null } : splitQuestion(pt.question);
   const avatars = recentVoters?.avatars ?? [];
   const extraVoters = recentVoters?.extra ?? 0;
 
@@ -646,7 +655,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               🔥 The Pulse
             </p>
           )}
-          <h2 className="font-display font-bold leading-tight text-foreground text-xl">
+          <h2 className="font-display font-bold leading-tight text-foreground text-xl" dir="auto">
             {qLead}
             {qTail && (
               <>
@@ -654,10 +663,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 <span className="text-success">{qTail}</span>
               </>
             )}
-            {!qTail && '?'}
+            {!qTail && !isArabic && '?'}
           </h2>
-          {poll.subtitle && (
-            <p className="text-xs text-muted-foreground mt-1">{poll.subtitle}</p>
+          {pt.subtitle && (
+            <p className="text-xs text-muted-foreground mt-1" dir="auto">{pt.subtitle}</p>
           )}
         </div>
 
@@ -708,8 +717,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
             {/* Label block */}
             <div className="absolute inset-x-0 bottom-3 px-3 text-center">
-              <p className="text-white text-base font-extrabold drop-shadow-lg leading-tight">
-                {poll.option_a}
+              <p className="text-white text-base font-extrabold drop-shadow-lg leading-tight" dir="auto">
+                {pt.optionA}
               </p>
               {result ? (
                 <motion.span
@@ -773,8 +782,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             )}
 
             <div className="absolute inset-x-0 bottom-3 px-3 text-center">
-              <p className="text-white text-base font-extrabold drop-shadow-lg leading-tight">
-                {poll.option_b}
+              <p className="text-white text-base font-extrabold drop-shadow-lg leading-tight" dir="auto">
+                {pt.optionB}
               </p>
               {result ? (
                 <motion.span

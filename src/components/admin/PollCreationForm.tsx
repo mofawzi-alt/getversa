@@ -37,6 +37,9 @@ export default function PollCreationForm({
   const [question, setQuestion] = useState('');
   const [optionA, setOptionA] = useState('');
   const [optionB, setOptionB] = useState('');
+  const [questionAr, setQuestionAr] = useState('');
+  const [optionAAr, setOptionAAr] = useState('');
+  const [optionBAr, setOptionBAr] = useState('');
   const [imageAUrl, setImageAUrl] = useState('');
   const [imageBUrl, setImageBUrl] = useState('');
   const [imageAFile, setImageAFile] = useState<File | null>(null);
@@ -180,6 +183,9 @@ export default function PollCreationForm({
           question,
           option_a: optionA,
           option_b: optionB,
+          question_ar: questionAr.trim() || null,
+          option_a_ar: optionAAr.trim() || null,
+          option_b_ar: optionBAr.trim() || null,
           image_a_url: finalImageAUrl || null,
           image_b_url: finalImageBUrl || null,
           category: category,
@@ -340,6 +346,30 @@ export default function PollCreationForm({
             />
           </div>
         </div>
+
+        {/* Arabic version — optional */}
+        <details className="rounded-lg border border-border p-3">
+          <summary className="text-xs font-semibold cursor-pointer text-muted-foreground">
+            Arabic version (optional — auto-translated if left empty)
+          </summary>
+          <div className="space-y-3 mt-3" dir="rtl">
+            <div>
+              <Label className="text-xs">السؤال</Label>
+              <Input dir="rtl" value={questionAr} onChange={(e) => setQuestionAr(e.target.value)} className="bg-secondary" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">الاختيار أ</Label>
+                <Input dir="rtl" value={optionAAr} onChange={(e) => setOptionAAr(e.target.value)} className="bg-secondary" />
+              </div>
+              <div>
+                <Label className="text-xs">الاختيار ب</Label>
+                <Input dir="rtl" value={optionBAr} onChange={(e) => setOptionBAr(e.target.value)} className="bg-secondary" />
+              </div>
+            </div>
+          </div>
+        </details>
+
         {/* Behavioral tags per option */}
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -457,13 +487,14 @@ export default function PollCreationForm({
             className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm"
           >
             <option value="">Select a category...</option>
-            <option value="Consumer">Consumer</option>
-            <option value="Brands">Brands</option>
-            <option value="Platforms">Platforms</option>
-            <option value="Lifestyle">Lifestyle</option>
-            <option value="Money">Money</option>
-            <option value="Food">Food</option>
-            <option value="Fashion">Fashion</option>
+            <option value="Relationships">❤️ Relationships</option>
+            <option value="Money">💰 Money</option>
+            <option value="Education">🎓 Education</option>
+            <option value="Digital Life">📱 Digital Life</option>
+            <option value="Food">🍔 Food</option>
+            <option value="Entertainment">🎬 Entertainment</option>
+            <option value="Lifestyle">🌍 Lifestyle</option>
+            <option value="Egypt">🇪🇬 Egypt</option>
           </select>
           {!category && <p className="text-xs text-destructive mt-1">Category is required</p>}
         </div>

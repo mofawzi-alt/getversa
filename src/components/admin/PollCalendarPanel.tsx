@@ -24,6 +24,10 @@ interface CalendarRow {
   question: string;
   option_a: string;
   option_b: string;
+  question_ar: string | null;
+  option_a_ar: string | null;
+  option_b_ar: string | null;
+  subtitle_ar: string | null;
   image_a_url: string | null;
   image_b_url: string | null;
   ai_image_a_preview: string | null;
@@ -554,7 +558,21 @@ function EditForm({
         </div>
         <div>
           <Label>Category</Label>
-          <Input value={form.category || ''} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+          <select
+            value={form.category || ''}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm"
+          >
+            <option value="">Select a category...</option>
+            <option value="Relationships">❤️ Relationships</option>
+            <option value="Money">💰 Money</option>
+            <option value="Education">🎓 Education</option>
+            <option value="Digital Life">📱 Digital Life</option>
+            <option value="Food">🍔 Food</option>
+            <option value="Entertainment">🎬 Entertainment</option>
+            <option value="Lifestyle">🌍 Lifestyle</option>
+            <option value="Egypt">🇪🇬 Egypt</option>
+          </select>
         </div>
       </div>
       <div>
@@ -571,6 +589,33 @@ function EditForm({
           <Input value={form.option_b} onChange={(e) => setForm({ ...form, option_b: e.target.value })} />
         </div>
       </div>
+
+      {/* Arabic version — optional; left blank it is auto-filled on release */}
+      <details className="rounded-lg border p-3">
+        <summary className="text-xs font-semibold cursor-pointer text-muted-foreground">
+          Arabic version (optional — auto-filled on release if empty)
+        </summary>
+        <div className="space-y-3 mt-3" dir="rtl">
+          <div>
+            <Label className="text-xs">السؤال</Label>
+            <Textarea dir="rtl" value={form.question_ar || ''} onChange={(e) => setForm({ ...form, question_ar: e.target.value })} rows={2} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">الاختيار أ</Label>
+              <Input dir="rtl" value={form.option_a_ar || ''} onChange={(e) => setForm({ ...form, option_a_ar: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-xs">الاختيار ب</Label>
+              <Input dir="rtl" value={form.option_b_ar || ''} onChange={(e) => setForm({ ...form, option_b_ar: e.target.value })} />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">الجملة التشويقية (اختياري)</Label>
+            <Input dir="rtl" value={form.subtitle_ar || ''} onChange={(e) => setForm({ ...form, subtitle_ar: e.target.value })} />
+          </div>
+        </div>
+      </details>
 
       {/* Image A */}
       <ImageBlock

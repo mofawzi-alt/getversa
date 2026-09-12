@@ -46,6 +46,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
   const [question, setQuestion] = useState('');
   const [optionA, setOptionA] = useState('');
   const [optionB, setOptionB] = useState('');
+  const [questionAr, setQuestionAr] = useState('');
+  const [optionAAr, setOptionAAr] = useState('');
+  const [optionBAr, setOptionBAr] = useState('');
   const [imageAUrl, setImageAUrl] = useState('');
   const [imageBUrl, setImageBUrl] = useState('');
   const [category, setCategory] = useState('');
@@ -112,6 +115,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
     setQuestion(poll.question);
     setOptionA(poll.option_a);
     setOptionB(poll.option_b);
+    setQuestionAr((poll as any).question_ar || '');
+    setOptionAAr((poll as any).option_a_ar || '');
+    setOptionBAr((poll as any).option_b_ar || '');
     setImageAUrl(poll.image_a_url || '');
     setImageBUrl(poll.image_b_url || '');
     setCategory(poll.category || '');
@@ -199,6 +205,9 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           question,
           option_a: optionA,
           option_b: optionB,
+          question_ar: questionAr.trim() || null,
+          option_a_ar: optionAAr.trim() || null,
+          option_b_ar: optionBAr.trim() || null,
           image_a_url: finalImageA || null,
           image_b_url: finalImageB || null,
           category: category || null,
@@ -256,6 +265,29 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
               <Input value={optionB} onChange={(e) => setOptionB(e.target.value)} className="bg-secondary" />
             </div>
           </div>
+
+          {/* Arabic version — optional */}
+          <details className="rounded-lg border border-border p-3">
+            <summary className="text-xs font-semibold cursor-pointer text-muted-foreground">
+              Arabic version (optional)
+            </summary>
+            <div className="space-y-3 mt-3" dir="rtl">
+              <div>
+                <Label className="text-xs">السؤال</Label>
+                <Input dir="rtl" value={questionAr} onChange={(e) => setQuestionAr(e.target.value)} className="bg-secondary" />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <Label className="text-xs">الاختيار أ</Label>
+                  <Input dir="rtl" value={optionAAr} onChange={(e) => setOptionAAr(e.target.value)} className="bg-secondary" />
+                </div>
+                <div>
+                  <Label className="text-xs">الاختيار ب</Label>
+                  <Input dir="rtl" value={optionBAr} onChange={(e) => setOptionBAr(e.target.value)} className="bg-secondary" />
+                </div>
+              </div>
+            </div>
+          </details>
 
           {/* Images */}
           <div className="flex items-center justify-between gap-2">
@@ -321,7 +353,21 @@ export default function PollEditDialog({ poll, open, onOpenChange }: PollEditDia
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <Label>Category</Label>
-              <Input value={category} onChange={(e) => setCategory(e.target.value)} className="bg-secondary" />
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm"
+              >
+                <option value="">Select a category...</option>
+                <option value="Relationships">❤️ Relationships</option>
+                <option value="Money">💰 Money</option>
+                <option value="Education">🎓 Education</option>
+                <option value="Digital Life">📱 Digital Life</option>
+                <option value="Food">🍔 Food</option>
+                <option value="Entertainment">🎬 Entertainment</option>
+                <option value="Lifestyle">🌍 Lifestyle</option>
+                <option value="Egypt">🇪🇬 Egypt</option>
+              </select>
             </div>
             <div>
               <Label>Intent Tag</Label>

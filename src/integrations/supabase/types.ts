@@ -1682,13 +1682,17 @@ export type Database = {
           image_rejection_count: number
           notes: string | null
           option_a: string
+          option_a_ar: string | null
           option_b: string
+          option_b_ar: string | null
           published_at: string | null
           published_poll_id: string | null
           question: string
+          question_ar: string | null
           release_date: string
           source: string | null
           status: string
+          subtitle_ar: string | null
           target_age_range: string | null
           target_country: string | null
           target_gender: string | null
@@ -1710,13 +1714,17 @@ export type Database = {
           image_rejection_count?: number
           notes?: string | null
           option_a: string
+          option_a_ar?: string | null
           option_b: string
+          option_b_ar?: string | null
           published_at?: string | null
           published_poll_id?: string | null
           question: string
+          question_ar?: string | null
           release_date: string
           source?: string | null
           status?: string
+          subtitle_ar?: string | null
           target_age_range?: string | null
           target_country?: string | null
           target_gender?: string | null
@@ -1738,13 +1746,17 @@ export type Database = {
           image_rejection_count?: number
           notes?: string | null
           option_a?: string
+          option_a_ar?: string | null
           option_b?: string
+          option_b_ar?: string | null
           published_at?: string | null
           published_poll_id?: string | null
           question?: string
+          question_ar?: string | null
           release_date?: string
           source?: string | null
           status?: string
+          subtitle_ar?: string | null
           target_age_range?: string | null
           target_country?: string | null
           target_gender?: string | null
@@ -2200,17 +2212,21 @@ export type Database = {
           needs_image_fix: boolean
           needs_manual_image: boolean
           option_a: string
+          option_a_ar: string | null
           option_a_tag: string | null
           option_b: string
+          option_b_ar: string | null
           option_b_tag: string | null
           organization_id: string | null
           poll_type: string
           question: string
+          question_ar: string | null
           series_id: string | null
           series_order: number | null
           series_title: string | null
           starts_at: string | null
           subtitle: string | null
+          subtitle_ar: string | null
           tags: string[] | null
           target_age_range: string | null
           target_countries: string[] | null
@@ -2245,17 +2261,21 @@ export type Database = {
           needs_image_fix?: boolean
           needs_manual_image?: boolean
           option_a: string
+          option_a_ar?: string | null
           option_a_tag?: string | null
           option_b: string
+          option_b_ar?: string | null
           option_b_tag?: string | null
           organization_id?: string | null
           poll_type?: string
           question: string
+          question_ar?: string | null
           series_id?: string | null
           series_order?: number | null
           series_title?: string | null
           starts_at?: string | null
           subtitle?: string | null
+          subtitle_ar?: string | null
           tags?: string[] | null
           target_age_range?: string | null
           target_countries?: string[] | null
@@ -2290,17 +2310,21 @@ export type Database = {
           needs_image_fix?: boolean
           needs_manual_image?: boolean
           option_a?: string
+          option_a_ar?: string | null
           option_a_tag?: string | null
           option_b?: string
+          option_b_ar?: string | null
           option_b_tag?: string | null
           organization_id?: string | null
           poll_type?: string
           question?: string
+          question_ar?: string | null
           series_id?: string | null
           series_order?: number | null
           series_title?: string | null
           starts_at?: string | null
           subtitle?: string | null
+          subtitle_ar?: string | null
           tags?: string[] | null
           target_age_range?: string | null
           target_countries?: string[] | null
@@ -3244,6 +3268,7 @@ export type Database = {
           points: number | null
           prediction_accuracy: number | null
           prediction_total: number | null
+          preferred_language: string
           total_days_active: number | null
           username: string | null
           verified_category: string | null
@@ -3280,6 +3305,7 @@ export type Database = {
           points?: number | null
           prediction_accuracy?: number | null
           prediction_total?: number | null
+          preferred_language?: string
           total_days_active?: number | null
           username?: string | null
           verified_category?: string | null
@@ -3316,6 +3342,7 @@ export type Database = {
           points?: number | null
           prediction_accuracy?: number | null
           prediction_total?: number | null
+          preferred_language?: string
           total_days_active?: number | null
           username?: string | null
           verified_category?: string | null
@@ -3471,6 +3498,7 @@ export type Database = {
           points: number | null
           prediction_accuracy: number | null
           prediction_total: number | null
+          preferred_language: string
           total_days_active: number | null
           username: string | null
           verified_category: string | null
@@ -3516,6 +3544,7 @@ export type Database = {
           points: number | null
           prediction_accuracy: number | null
           prediction_total: number | null
+          preferred_language: string
           total_days_active: number | null
           username: string | null
           verified_category: string | null
@@ -3832,6 +3861,7 @@ export type Database = {
           points: number | null
           prediction_accuracy: number | null
           prediction_total: number | null
+          preferred_language: string
           total_days_active: number | null
           username: string | null
           verified_category: string | null

@@ -4,12 +4,17 @@ import { Users, Send, Share2, Clock, ChevronUp, BarChart3, CirclePlus, type Luci
 import { getOptimizedPollImageSrc, getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { pollText } from '@/lib/pollText';
 
 export interface LiveDebateStoryPoll {
   id: string;
   question: string;
   option_a: string;
   option_b: string;
+  question_ar?: string | null;
+  option_a_ar?: string | null;
+  option_b_ar?: string | null;
   image_a_url: string | null;
   image_b_url: string | null;
   category: string | null;
@@ -63,6 +68,8 @@ export default function LiveDebateStoryCard({
   eagerImage,
   height,
 }: Props) {
+  const { lang } = useLanguage();
+  const pt = pollText(poll, lang);
   // Pick the dominant image (winning side) as the full-bleed background, fallback to either.
   const dominantSide: 'A' | 'B' = poll.percentA >= poll.percentB ? 'A' : 'B';
   const bgImageSrc = useMemo(() => {
@@ -212,14 +219,15 @@ export default function LiveDebateStoryCard({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className="text-white text-[30px] sm:text-[34px] leading-[1.12] font-extrabold drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
+          dir="auto"
         >
-          {poll.question}
+          {pt.question}
         </motion.h2>
 
         {/* Option labels */}
         <div className="grid grid-cols-2 gap-3 text-white text-[17px] font-bold leading-snug">
-          <div className="line-clamp-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{poll.option_a}</div>
-          <div className="line-clamp-2 text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{poll.option_b}</div>
+          <div className="line-clamp-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]" dir="auto">{pt.optionA}</div>
+          <div className="line-clamp-2 text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]" dir="auto">{pt.optionB}</div>
         </div>
 
         {/* Split bar */}
