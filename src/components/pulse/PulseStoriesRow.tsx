@@ -578,6 +578,7 @@ export default function PulseStoriesRow() {
       topic: 'categories',
       label: 'Categories',
       cards: [],
+      dot: null,
       priority: 100,
     });
 
