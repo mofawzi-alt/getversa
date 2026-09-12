@@ -82,6 +82,7 @@ const fadeUpChild = {
 
 /* ── Decide typing indicator — fast pulse ── */
 function DecideTypingBubble() {
+  const { t } = useT();
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
@@ -113,6 +114,7 @@ function DecideTypingBubble() {
 
 /* ── Research typing indicator — calm, analytical ── */
 function ResearchTypingBubble() {
+  const { t } = useT();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -170,17 +172,17 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
   return (
     <div className="space-y-5 w-full min-w-0">
       <AnimatePresence mode="popLayout">
-        {turns.map((t, idx) => {
+        {turns.map((turn, idx) => {
           const isLast = idx === turns.length - 1;
-          const isDecide = t.mode === 'decide';
+          const isDecide = turn.mode === 'decide';
           const followups = isDecide ? DECIDE_FOLLOWUPS : RESEARCH_FOLLOWUPS;
-          const showFollowups = isLast && !t.loading && !t.lowData &&
-            (t.verdict || (t.polls && t.polls.length > 0));
+          const showFollowups = isLast && !turn.loading && !turn.lowData &&
+            (turn.verdict || (turn.polls && turn.polls.length > 0));
           const bubble = isDecide ? decideBubbleIn : researchBubbleIn;
 
           return (
             <motion.div
-              key={t.id}
+              key={turn.id}
               layout
               className="space-y-3 w-full min-w-0"
             >
@@ -191,7 +193,7 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-foreground/90 text-background'
                 }`}>
-                  {t.question}
+                  {turn.question}
                 </div>
               </motion.div>
 
@@ -211,36 +213,36 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
 
                 <div className="flex-1 min-w-0 space-y-3">
                   {/* Loading / typing */}
-                  {t.loading && (isDecide ? <DecideTypingBubble /> : <ResearchTypingBubble />)}
+                  {turn.loading && (isDecide ? <DecideTypingBubble /> : <ResearchTypingBubble />)}
 
                   {/* Off-scope */}
-                  {!t.loading && t.variant === 'offscope' && t.summary && (
+                  {!turn.loading && turn.variant === 'offscope' && turn.summary && (
                     <motion.div {...bubble}>
                       <div className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-2.5">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm">🤔</span>
                           <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{t('No polls on this yet')}</p>
                         </div>
-                        <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
+                        <p className="text-sm text-foreground leading-relaxed break-words">{turn.summary}</p>
                         <p className="text-[11px] text-muted-foreground/70">{t('No credits charged.')}</p>
                       </div>
                       <div className="mt-2">
-                        <SuggestPollButton question={t.question} askQueryId={t.askQueryId} />
+                        <SuggestPollButton question={turn.question} askQueryId={turn.askQueryId} />
                       </div>
                     </motion.div>
                   )}
 
                   {/* Clarify */}
-                  {!t.loading && t.variant === 'clarify' && t.summary && (
+                  {!turn.loading && turn.variant === 'clarify' && turn.summary && (
                     <motion.div {...bubble} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-3">
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm">💡</span>
                         <p className="text-[10px] uppercase tracking-wider font-bold text-primary">{t('Be more specific')}</p>
                       </div>
-                      <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
-                      {t.clarifications && t.clarifications.length > 0 && (
+                      <p className="text-sm text-foreground leading-relaxed break-words">{turn.summary}</p>
+                      {turn.clarifications && turn.clarifications.length > 0 && (
                         <div className="flex flex-col gap-2 pt-1">
-                          {t.clarifications.map((c, ci) => (
+                          {turn.clarifications.map((c, ci) => (
                             <motion.button
                               key={c.question}
                               initial={{ opacity: 0, x: -8 }}
@@ -260,32 +262,32 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                   )}
 
                   {/* Factual */}
-                  {!t.loading && t.variant === 'factual' && t.summary && (
+                  {!turn.loading && turn.variant === 'factual' && turn.summary && (
                     <motion.div {...bubble} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-2.5">
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm">📚</span>
                         <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground break-words">
-                          {t.notice || t('General knowledge — not from Versa votes.')}
+                          {turn.notice || t('General knowledge — not from Versa votes.')}
                         </p>
                       </div>
-                      <p className="text-sm text-foreground leading-relaxed break-words">{t.summary}</p>
+                      <p className="text-sm text-foreground leading-relaxed break-words">{turn.summary}</p>
                       <p className="text-[11px] text-muted-foreground/70">{t('No credits charged.')}</p>
                     </motion.div>
                   )}
 
                   {/* Smart answer */}
-                  {!t.loading && t.variant === 'smart_answer' && t.summary && (
+                  {!turn.loading && turn.variant === 'smart_answer' && turn.summary && (
                     <motion.div {...bubble}>
                       <div className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4 space-y-3">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm">🔍</span>
                           <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{t('No direct poll data yet')}</p>
                         </div>
-                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words">{t.summary}</p>
-                        {t.guardrailPolls && t.guardrailPolls.length > 0 && (
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words">{turn.summary}</p>
+                        {turn.guardrailPolls && turn.guardrailPolls.length > 0 && (
                           <div className="pt-2 border-t border-border space-y-2">
                             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{t('Vote on related polls to build this data')}</p>
-                            {t.guardrailPolls.map((p) => (
+                            {turn.guardrailPolls.map((p) => (
                               <button key={p.id} onClick={() => onPickSuggestion?.(p.question)} className="w-full text-left p-2.5 rounded-xl bg-muted/50 hover:bg-muted transition text-xs font-medium text-foreground break-words">
                                 {p.question}
                               </button>
@@ -295,40 +297,40 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                         <p className="text-[11px] text-muted-foreground/70">{t('No credits charged.')}</p>
                       </div>
                       <div className="mt-2">
-                        <SuggestPollButton question={t.question} askQueryId={t.askQueryId} />
+                        <SuggestPollButton question={turn.question} askQueryId={turn.askQueryId} />
                       </div>
                     </motion.div>
                   )}
 
                   {/* Guardrail / low data */}
-                  {!t.loading && !t.variant && t.lowData && t.summary && (
+                  {!turn.loading && !turn.variant && turn.lowData && turn.summary && (
                     <motion.div {...bubble}>
-                      <GuardrailCard summary={t.summary} polls={t.guardrailPolls || []} question={t.question} askQueryId={t.askQueryId} />
+                      <GuardrailCard summary={turn.summary} polls={turn.guardrailPolls || []} question={turn.question} askQueryId={turn.askQueryId} />
                     </motion.div>
                   )}
 
                   {/* ════════════════════════════════════════════ */}
                   {/* DECIDE MODE — Verdict card (punchy, fast)   */}
                   {/* ════════════════════════════════════════════ */}
-                  {!t.loading && !t.lowData && !t.variant && isDecide && t.verdict && (
+                  {!turn.loading && !turn.lowData && !turn.variant && isDecide && turn.verdict && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.85, y: 24 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       transition={{ type: 'spring', damping: 14, stiffness: 200 }}
                     >
-                      <VerdictCard verdict={t.verdict} />
+                      <VerdictCard verdict={turn.verdict} />
                     </motion.div>
                   )}
 
                   {/* Decide plain summary (no verdict) */}
-                  {!t.loading && !t.lowData && !t.variant && isDecide && !t.verdict && t.summary && (
+                  {!turn.loading && !turn.lowData && !turn.variant && isDecide && !turn.verdict && turn.summary && (
                     <motion.div {...decideBubbleIn} className="rounded-2xl rounded-tl-md bg-primary/5 border border-primary/20 shadow-sm p-4">
-                      <p className="text-sm text-foreground break-words leading-relaxed font-semibold">{t.summary}</p>
+                      <p className="text-sm text-foreground break-words leading-relaxed font-semibold">{turn.summary}</p>
                     </motion.div>
                   )}
 
                   {/* DECIDE — Data provenance badge (pulse, fast) */}
-                  {!t.loading && !t.lowData && !t.variant && isDecide && t.verdict && (
+                  {!turn.loading && !turn.lowData && !turn.variant && isDecide && turn.verdict && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -337,28 +339,28 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     >
                       <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                       <span className="text-[10px] font-bold text-primary">
-                        {t('{n} real votes', { n: t.verdict.total_votes.toLocaleString() })}
-                        {t.verdict.real_votes && t.verdict.real_votes !== t.verdict.total_votes ? ` · ${t('{n} organic', { n: t.verdict.real_votes.toLocaleString() })}` : ''}
+                        {t('{n} real votes', { n: turn.verdict.total_votes.toLocaleString() })}
+                        {turn.verdict.real_votes && turn.verdict.real_votes !== turn.verdict.total_votes ? ` · ${t('{n} organic', { n: turn.verdict.real_votes.toLocaleString() })}` : ''}
                       </span>
                     </motion.div>
                   )}
 
                   {/* DECIDE — Insight breakdown (max 2 rows, punchy) */}
-                  {!t.loading && !t.lowData && !t.variant && isDecide && t.insightParts && (
+                  {!turn.loading && !turn.lowData && !turn.variant && isDecide && turn.insightParts && (
                     <motion.div
                       variants={staggerContainer}
                       initial="initial"
                       animate="animate"
                       className="rounded-2xl bg-card border border-primary/10 shadow-sm overflow-hidden divide-y divide-border/20"
                     >
-                      {t.insightParts.why && (
+                      {turn.insightParts.why && (
                         <DecideInsightRow icon={Zap} label={t('The vibe')} color="bg-primary">
-                          {t.insightParts.why}
+                          {turn.insightParts.why}
                         </DecideInsightRow>
                       )}
-                      {t.insightParts.demographic_split && (
+                      {turn.insightParts.demographic_split && (
                         <DecideInsightRow icon={Users} label={t('Plot twist')} color="bg-amber-500">
-                          {t.insightParts.demographic_split}
+                          {turn.insightParts.demographic_split}
                         </DecideInsightRow>
                       )}
                     </motion.div>
@@ -367,18 +369,18 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                   {/* ════════════════════════════════════════════════ */}
                   {/* RESEARCH MODE — Structured brief (analytical)   */}
                   {/* ════════════════════════════════════════════════ */}
-                  {!t.loading && !t.lowData && !t.variant && !isDecide && t.verdict && (
+                  {!turn.loading && !turn.lowData && !turn.variant && !isDecide && turn.verdict && (
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
                     >
-                      <VerdictCard verdict={t.verdict} variant="research" />
+                      <VerdictCard verdict={turn.verdict} variant="research" />
                     </motion.div>
                   )}
 
                   {/* RESEARCH — Data provenance (clean, trustworthy) */}
-                  {!t.loading && !t.lowData && !t.variant && !isDecide && t.verdict && (
+                  {!turn.loading && !turn.lowData && !turn.variant && !isDecide && turn.verdict && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -387,13 +389,13 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                     >
                       <BarChart3 className="h-3 w-3 text-blue-500" />
                       <span className="text-[10px] font-semibold text-blue-600">
-                        {t('Based on {n} verified votes', { n: t.verdict.total_votes.toLocaleString() })}
+                        {t('Based on {n} verified votes', { n: turn.verdict.total_votes.toLocaleString() })}
                       </span>
                     </motion.div>
                   )}
 
                   {/* RESEARCH — Full insight breakdown (all sections) */}
-                  {!t.loading && !t.lowData && !t.variant && !isDecide && t.insightParts && (
+                  {!turn.loading && !turn.lowData && !turn.variant && !isDecide && turn.insightParts && (
                     <motion.div
                       variants={staggerContainer}
                       initial="initial"
@@ -405,24 +407,24 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                         <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{t('Analysis Breakdown')}</p>
                       </div>
                       <div className="divide-y divide-border/30">
-                        {t.insightParts.why && (
+                        {turn.insightParts.why && (
                           <ResearchInsightRow icon={Target} label={t('Main Finding')} color="bg-blue-500">
-                            {t.insightParts.why}
+                            {turn.insightParts.why}
                           </ResearchInsightRow>
                         )}
-                        {t.insightParts.demographic_split && (
+                        {turn.insightParts.demographic_split && (
                           <ResearchInsightRow icon={Users} label={t('Demographic Insight')} color="bg-violet-500">
-                            {t.insightParts.demographic_split}
+                            {turn.insightParts.demographic_split}
                           </ResearchInsightRow>
                         )}
-                        {t.insightParts.cultural_context && (
+                        {turn.insightParts.cultural_context && (
                           <ResearchInsightRow icon={Globe} label={t('Cultural Context')} color="bg-emerald-500">
-                            {t.insightParts.cultural_context}
+                            {turn.insightParts.cultural_context}
                           </ResearchInsightRow>
                         )}
-                        {t.insightParts.action_line && (
+                        {turn.insightParts.action_line && (
                           <ResearchInsightRow icon={TrendingUp} label={t('Strategic Takeaway')} color="bg-amber-500">
-                            {t.insightParts.action_line}
+                            {turn.insightParts.action_line}
                           </ResearchInsightRow>
                         )}
                       </div>
@@ -430,51 +432,51 @@ export default function AskThread({ turns, onPickSuggestion }: Props) {
                   )}
 
                   {/* Research brief (polls data) */}
-                  {!t.loading && !t.lowData && !t.variant && !isDecide && t.summary && t.polls && t.polls.length > 0 && (
+                  {!turn.loading && !turn.lowData && !turn.variant && !isDecide && turn.summary && turn.polls && turn.polls.length > 0 && (
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.3 }}
                     >
-                      <ResearchBrief question={t.question} summary={t.summary} polls={t.polls} />
+                      <ResearchBrief question={turn.question} summary={turn.summary} polls={turn.polls} />
                     </motion.div>
                   )}
 
                   {/* Research plain summary */}
-                  {!t.loading && !t.lowData && !t.variant && !isDecide && t.summary && (!t.polls || t.polls.length === 0) && !t.verdict && (
+                  {!turn.loading && !turn.lowData && !turn.variant && !isDecide && turn.summary && (!turn.polls || turn.polls.length === 0) && !turn.verdict && (
                     <motion.div {...researchBubbleIn} className="rounded-2xl rounded-tl-md bg-card border border-border shadow-sm p-4">
-                      <p className="text-sm text-foreground break-words leading-relaxed">{t.summary}</p>
+                      <p className="text-sm text-foreground break-words leading-relaxed">{turn.summary}</p>
                     </motion.div>
                   )}
 
                   {/* Share button */}
-                  {!t.loading && !t.lowData && !t.variant && (t.verdict || t.summary) && (
+                  {!turn.loading && !turn.lowData && !turn.variant && (turn.verdict || turn.summary) && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: isDecide ? 0.4 : 0.7 }}>
                       <ShareToStoryButton
                         storyType="poll_result"
                         content={{
-                          question: t.question,
-                          option_a: t.verdict?.option_a || 'Option A',
-                          option_b: t.verdict?.option_b || 'Option B',
-                          pct_a: t.verdict ? (t.verdict.winner_side === 'A' ? t.verdict.winner_pct : t.verdict.loser_pct) : 50,
-                          pct_b: t.verdict ? (t.verdict.winner_side === 'B' ? t.verdict.winner_pct : t.verdict.loser_pct) : 50,
-                          total_votes: t.verdict?.total_votes || 0,
-                          winning_option: t.verdict?.winner_label || '',
-                          winning_pct: t.verdict?.winner_pct || 0,
-                          image_a_url: t.verdict?.image_a_url,
-                          image_b_url: t.verdict?.image_b_url,
-                          poll_id: t.verdict?.poll_id,
+                          question: turn.question,
+                          option_a: turn.verdict?.option_a || 'Option A',
+                          option_b: turn.verdict?.option_b || 'Option B',
+                          pct_a: turn.verdict ? (turn.verdict.winner_side === 'A' ? turn.verdict.winner_pct : turn.verdict.loser_pct) : 50,
+                          pct_b: turn.verdict ? (turn.verdict.winner_side === 'B' ? turn.verdict.winner_pct : turn.verdict.loser_pct) : 50,
+                          total_votes: turn.verdict?.total_votes || 0,
+                          winning_option: turn.verdict?.winner_label || '',
+                          winning_pct: turn.verdict?.winner_pct || 0,
+                          image_a_url: turn.verdict?.image_a_url,
+                          image_b_url: turn.verdict?.image_b_url,
+                          poll_id: turn.verdict?.poll_id,
                         }}
-                        imageUrl={t.verdict?.image_a_url || t.verdict?.image_b_url}
+                        imageUrl={turn.verdict?.image_a_url || turn.verdict?.image_b_url}
                         variant="compact"
                       />
                     </motion.div>
                   )}
 
                   {/* Earn credits CTA */}
-                  {!t.loading && !t.lowData && !t.variant && typeof t.creditsBalance === 'number' && (t.verdict || (t.polls && t.polls.length > 0) || t.summary) && (
+                  {!turn.loading && !turn.lowData && !turn.variant && typeof turn.creditsBalance === 'number' && (turn.verdict || (turn.polls && turn.polls.length > 0) || turn.summary) && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-                      <EarnCreditsCTA balance={t.creditsBalance} charged={t.creditsCharged ?? 0} />
+                      <EarnCreditsCTA balance={turn.creditsBalance} charged={turn.creditsCharged ?? 0} />
                     </motion.div>
                   )}
 

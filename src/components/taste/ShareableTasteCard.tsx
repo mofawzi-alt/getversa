@@ -1,5 +1,6 @@
 import { useRef, useCallback, useState } from 'react';
 import { Share2 } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import versaLogoImg from '@/assets/versa-wordmark.png';
@@ -17,6 +18,7 @@ interface TasteCardProps {
 
 export default function ShareableTasteCard({ archetype, description, topCategory, totalVotes, streak, personalityCode, personalityName, personalityEmoji }: TasteCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { t } = useT();
   const [generating, setGenerating] = useState(false);
 
   const emoji = personalityEmoji || '✨';
@@ -84,7 +86,7 @@ export default function ShareableTasteCard({ archetype, description, topCategory
     ctx.font = '700 26px "Inter", "SF Pro Display", sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     ctx.letterSpacing = '10px';
-    ctx.fillText('M Y   T A S T E   P R O F I L E', W / 2, 530);
+    ctx.fillText(t('M Y   T A S T E   P R O F I L E'), W / 2, 530);
 
     // Archetype name — big bold
     ctx.font = 'bold 88px "Space Grotesk", "SF Pro Display", sans-serif';
@@ -141,9 +143,9 @@ export default function ShareableTasteCard({ archetype, description, topCategory
     // Stats section — glass cards
     const statsY = y + 100;
     const stats = [
-      { label: 'VOTES', value: String(totalVotes), icon: '🗳️' },
-      { label: 'STREAK', value: `${streak}d`, icon: '🔥' },
-      { label: 'TOP', value: topCategory, icon: '👑' },
+      { label: t('VOTES'), value: String(totalVotes), icon: '🗳️' },
+      { label: t('STREAK'), value: `${streak}d`, icon: '🔥' },
+      { label: t('TOP'), value: topCategory, icon: '👑' },
     ];
 
     const boxW = 270;
@@ -335,7 +337,7 @@ export default function ShareableTasteCard({ archetype, description, topCategory
         className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-base gap-2"
       >
         <Share2 className="h-5 w-5" />
-        {generating ? 'Generating...' : 'Share Taste Profile'}
+        {generating ? t('Generating...') : t('Share Taste Profile')}
       </Button>
 
       <canvas ref={canvasRef} className="hidden" />

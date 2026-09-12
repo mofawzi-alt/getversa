@@ -231,9 +231,17 @@ export function computePersonalityType(
   };
 }
 
+// A translatable sentence: the English source string is the i18n key and
+// params are interpolated by t(). The `phrase` param is itself an English
+// key that callers should translate before interpolation.
+export interface SummaryLine {
+  key: string;
+  params?: Record<string, string | number>;
+}
+
 // Generate a 3-line data-driven summary directly from the user's voting traits
 // Replaces the static flavor description with sentences grounded in actual behavior.
-export function getDataDrivenSummary(traits: TraitEntry[], voteCount: number): string[] {
+export function getDataDrivenSummary(traits: TraitEntry[], voteCount: number): SummaryLine[] {
   if (voteCount < 30 || !traits.length) return [];
 
   const totalTagged = traits.reduce((s, t) => s + (t.vote_count || 0), 0) || 1;
@@ -269,28 +277,28 @@ export function getDataDrivenSummary(traits: TraitEntry[], voteCount: number): s
 
   const phraseFor = (tag: string) => tagPhrase[tag?.toLowerCase()] || tag?.replace(/_/g, ' ');
 
-  const lines: string[] = [];
+  const lines: SummaryLine[] = [];
 
   // Line 1 — top trait
   if (topTrait) {
     const pct = Math.round((topTrait.vote_count / totalTagged) * 100);
-    lines.push(`${pct}% of your votes lean toward ${phraseFor(topTrait.tag)}.`);
+    lines.push({ key: '{pct}% of your votes lean toward {phrase}.', params: { pct, phrase: phraseFor(topTrait.tag) } });
   }
 
   // Line 2 — secondary trait or contrast
   if (secondTrait && secondTrait.vote_count >= 2) {
-    lines.push(`You also gravitate to ${phraseFor(secondTrait.tag)} when it counts.`);
+    lines.push({ key: 'You also gravitate to {phrase} when it counts.', params: { phrase: phraseFor(secondTrait.tag) } });
   }
 
   // Line 3 — axis-derived behavioral signature
   const ei = scoreAxis(traits, AXIS_TAGS.E, AXIS_TAGS.I);
   const jp = scoreAxis(traits, AXIS_TAGS.J, AXIS_TAGS.P);
-  let signature: string;
-  if (ei >= 0 && jp >= 0) signature = `Across ${voteCount} votes you stay loyal to what works for the people around you.`;
-  else if (ei >= 0 && jp < 0) signature = `Across ${voteCount} votes you stay social but open to switching things up.`;
-  else if (ei < 0 && jp >= 0) signature = `Across ${voteCount} votes you stick to your own taste and rarely flinch.`;
-  else signature = `Across ${voteCount} votes you trust your gut and explore freely.`;
-  lines.push(signature);
+  let signatureKey: string;
+  if (ei >= 0 && jp >= 0) signatureKey = 'Across {n} votes you stay loyal to what works for the people around you.';
+  else if (ei >= 0 && jp < 0) signatureKey = 'Across {n} votes you stay social but open to switching things up.';
+  else if (ei < 0 && jp >= 0) signatureKey = 'Across {n} votes you stick to your own taste and rarely flinch.';
+  else signatureKey = 'Across {n} votes you trust your gut and explore freely.';
+  lines.push({ key: signatureKey, params: { n: voteCount } });
 
   return lines.slice(0, 3);
 }
@@ -333,9 +341,11 @@ export function getPersonalityExplanation(traits: TraitEntry[], result: Personal
 
 interface CompatibilityResult {
   score: number;          // 0-100
-  label: string;          // e.g. "Natural Allies"
+  label: string;          // e.g. "Natural Allies" (English i18n key — translate at render)
   emoji: string;
-  description: string;
+  descriptionKey: string; // i18n key with {a} and {b} placeholders
+  nameA: string;          // English type name (translate at render)
+  nameB: string;
   sharedStrengths: string[];
   tensions: string[];
 }
@@ -425,17 +435,19 @@ export function computeTypeCompatibility(
     }
   }
 
-  // Description
+  // Description (as i18n key — names interpolated at render after translation)
   const typeAInfo = PERSONALITY_TYPES[typeA.code];
   const typeBInfo = PERSONALITY_TYPES[typeB.code];
-  let description: string;
+  const nameA = typeAInfo?.name || typeA.code;
+  const nameB = typeBInfo?.name || typeB.code;
+  let descriptionKey: string;
   if (score >= 85) {
-    description = `${typeAInfo?.name || typeA.code} and ${typeBInfo?.name || typeB.code} naturally click — you bring out the best in each other.`;
+    descriptionKey = '{a} and {b} naturally click — you bring out the best in each other.';
   } else if (score >= 70) {
-    description = `${typeAInfo?.name || typeA.code} meets ${typeBInfo?.name || typeB.code} — a solid match with room to learn from each other.`;
+    descriptionKey = '{a} meets {b} — a solid match with room to learn from each other.';
   } else {
-    description = `${typeAInfo?.name || typeA.code} and ${typeBInfo?.name || typeB.code} see the world differently — that friction can spark growth.`;
+    descriptionKey = '{a} and {b} see the world differently — that friction can spark growth.';
   }
 
-  return { score, label, emoji, description, sharedStrengths, tensions };
+  return { score, label, emoji, descriptionKey, nameA, nameB, sharedStrengths, tensions };
 }

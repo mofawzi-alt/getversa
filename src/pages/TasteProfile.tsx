@@ -13,6 +13,7 @@ import { computePersonalityType } from '@/lib/personalityType';
 import TasteRevealCinematic, { hasTasteBeenRevealed } from '@/components/taste/TasteRevealCinematic';
 import { useTasteRarity } from '@/hooks/useTasteRarity';
 import { useT } from '@/hooks/useT';
+import { categoryLabel } from '@/lib/pollText';
 
 // ── Archetype engine ──
 interface TraitEntry { tag: string; vote_count: number }
@@ -39,22 +40,22 @@ const TRAIT_DESCRIPTORS: Record<string, { positive: string; versus: string }> = 
   convenience: { positive: 'convenience', versus: 'ease over effort' },
 };
 
-function computeArchetype(traits: TraitEntry[]): { name: string; description: string; emoji: string } {
-  if (!traits.length) return { name: 'The Newcomer', description: 'Vote on more polls to discover your taste identity', emoji: '🌱' };
+interface ArchetypeResult { name: string; emoji: string; descriptionKey: string; descriptionParams: Record<string, string> }
+
+function computeArchetype(traits: TraitEntry[]): ArchetypeResult {
+  if (!traits.length) return { name: 'The Newcomer', emoji: '🌱', descriptionKey: 'Vote on more polls to discover your taste identity', descriptionParams: {} };
   const topTrait = traits[0]?.tag;
   const secondTrait = traits[1]?.tag;
   const archetype = ARCHETYPE_MAP[topTrait] || { name: 'The Individual', emoji: '💎' };
   const desc1 = TRAIT_DESCRIPTORS[topTrait];
   const desc2 = secondTrait ? TRAIT_DESCRIPTORS[secondTrait] : null;
-  let description = '';
   if (desc1 && desc2) {
-    description = `You prefer ${desc1.versus}, ${desc2.versus}`;
-  } else if (desc1) {
-    description = `You consistently choose ${desc1.positive}`;
-  } else {
-    description = 'Your choices define a unique perspective';
+    return { ...archetype, descriptionKey: 'You prefer {a}, {b}', descriptionParams: { a: desc1.versus, b: desc2.versus } };
   }
-  return { ...archetype, description };
+  if (desc1) {
+    return { ...archetype, descriptionKey: 'You consistently choose {a}', descriptionParams: { a: desc1.positive } };
+  }
+  return { ...archetype, descriptionKey: 'Your choices define a unique perspective', descriptionParams: {} };
 }
 
 // ── Dimensions config ──
@@ -192,6 +193,7 @@ function getMostActiveTime(votes: { created_at: string }[]): string {
 
 // ── Interactive Dimension Card ──
 function DimensionCard({ insight, index }: { insight: { dimension_name: string; tendency: string; score: number; vote_count: number }; index: number }) {
+  const { t } = useT();
   const [expanded, setExpanded] = useState(false);
   const display = getTendencyDisplay(insight.dimension_name, insight.tendency);
   const poles = DIMENSION_POLES[insight.dimension_name] || ['A', 'B'];
@@ -200,13 +202,14 @@ function DimensionCard({ insight, index }: { insight: { dimension_name: string; 
 
   // Compute comparison text
   const pct = scoreToPercent(insight.score);
-  const leaning = pct > 55 ? poles[1] : pct < 45 ? poles[0] : 'balanced';
+  const leaningRaw = pct > 55 ? poles[1] : pct < 45 ? poles[0] : 'balanced';
+  const leaning = t(leaningRaw);
   const strength = Math.abs(pct - 50);
   const comparisonText = strength < 10
-    ? "You're right in the middle — most Versa users lean one way or another here."
+    ? t("You're right in the middle — most Versa users lean one way or another here.")
     : strength < 25
-    ? `You lean ${leaning}. About 40% of users share this tendency.`
-    : `You're strongly ${leaning}. Only ~20% of users are this decisive on this dimension.`;
+    ? t('You lean {leaning}. About 40% of users share this tendency.', { leaning })
+    : t("You're strongly {leaning}. Only ~20% of users are this decisive on this dimension.", { leaning });
 
   return (
     <motion.div
@@ -227,22 +230,22 @@ function DimensionCard({ insight, index }: { insight: { dimension_name: string; 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <span className={`text-xl font-display font-black ${colors.text} leading-tight`}>
-                {display.label}
+                {t(display.label)}
               </span>
               <div className="flex items-center gap-1.5">
                 <span className="text-[9px] font-semibold text-muted-foreground bg-background/70 px-2 py-0.5 rounded-full">
-                  {insight.vote_count} votes
+                  {t('{n} votes', { n: insight.vote_count })}
                 </span>
                 {expanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
               </div>
             </div>
             <p className="text-[12px] text-foreground/60 font-medium mt-0.5 leading-snug">
-              {display.description}
+              {t(display.description)}
             </p>
             <SpectrumBar
               score={insight.score}
-              poleA={poles[0]}
-              poleB={poles[1]}
+              poleA={t(poles[0])}
+              poleB={t(poles[1])}
               barColor={colors.bar}
             />
           </div>
@@ -268,12 +271,9 @@ function DimensionCard({ insight, index }: { insight: { dimension_name: string; 
 
               {/* What shapes this */}
               <div className="bg-background/60 rounded-xl p-3">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">What shapes this</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t('What shapes this')}</p>
                 <p className="text-[11px] text-foreground/60 leading-relaxed">
-                  This dimension is based on {insight.vote_count} of your votes across polls that test
-                  {' '}<span className="font-semibold text-foreground/80">{poles[0].toLowerCase()}</span> vs
-                  {' '}<span className="font-semibold text-foreground/80">{poles[1].toLowerCase()}</span> preferences.
-                  The more you vote, the more precise this gets.
+                  {t('This dimension is based on {n} of your votes across polls that test {a} vs {b} preferences. The more you vote, the more precise this gets.', { n: insight.vote_count, a: t(poles[0]), b: t(poles[1]) })}
                 </p>
               </div>
             </div>
@@ -287,7 +287,7 @@ function DimensionCard({ insight, index }: { insight: { dimension_name: string; 
 // ── Main page ──
 export default function TasteProfile() {
   const { user, profile } = useAuth();
-  const { t } = useT();
+  const { t, lang } = useT();
   const [showReveal, setShowReveal] = useState(() => !hasTasteBeenRevealed());
   const { data: rarityData } = useTasteRarity();
 
@@ -424,16 +424,24 @@ export default function TasteProfile() {
 
   const archetype = computeArchetype(traits || []);
   const personality = computePersonalityType(traits || [], totalVotes, profile?.id);
+  const archetypeName = t(archetype.name);
+  const archetypeDescription = t(
+    archetype.descriptionKey,
+    Object.fromEntries(Object.entries(archetype.descriptionParams).map(([k, v]) => [k, t(v)])),
+  );
 
   const dynamicDescription = (() => {
-    if (!majorityRatio) return archetype.description;
+    if (!majorityRatio) return archetypeDescription;
     if (majorityRatio.minorityPct > 25) return t('You go against the crowd more than most — classic independent thinker.');
     if (majorityRatio.majorityPct > 75) return t('You have your finger on the pulse — you think like the majority.');
     return t("You're unpredictable — half maverick, half mainstream.");
   })();
 
-  const mostActiveDay = getMostActiveDay(allVotes || []);
-  const mostActiveTime = getMostActiveTime(allVotes || []);
+  const mostActiveDayRaw = getMostActiveDay(allVotes || []);
+  const mostActiveDay = mostActiveDayRaw === '—' ? '—' : t(mostActiveDayRaw);
+  const mostActiveTime = getMostActiveTime(allVotes || [])
+    .replace('AM', t('AM'))
+    .replace('PM', t('PM'));
 
   const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
   const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
@@ -442,10 +450,10 @@ export default function TasteProfile() {
     <AppLayout>
       {showReveal && totalVotes >= 20 && (
         <TasteRevealCinematic
-          archetype={archetype}
+          archetype={{ name: archetypeName, emoji: archetype.emoji, description: archetypeDescription }}
           rarityPct={rarityData?.rarityPct ?? null}
           personalityCode={personality.ready ? personality.code : undefined}
-          personalityName={personality.ready ? personality.name : undefined}
+          personalityName={personality.ready ? t(personality.name) : undefined}
           onComplete={() => setShowReveal(false)}
         />
       )}
@@ -462,7 +470,7 @@ export default function TasteProfile() {
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-xs font-bold text-primary uppercase tracking-wider">{t('Your Taste Profile')}</span>
           </div>
-          <h1 className="text-3xl font-display font-black text-foreground">{archetype.emoji} {archetype.name}</h1>
+          <h1 className="text-3xl font-display font-black text-foreground">{archetype.emoji} {archetypeName}</h1>
           <p className="text-muted-foreground text-sm mt-1">{dynamicDescription}</p>
           
           {/* Rarity badge */}
@@ -475,7 +483,7 @@ export default function TasteProfile() {
             >
               <Diamond className="h-3.5 w-3.5" />
               <span className="text-xs font-bold">
-                {rarityData.label} — {t('rarer than {pct}% of users', { pct: rarityData.rarityPct })}
+                {t(rarityData.label)} — {t('rarer than {pct}% of users', { pct: rarityData.rarityPct })}
               </span>
             </motion.div>
           )}
@@ -503,13 +511,13 @@ export default function TasteProfile() {
         {/* ── TASTE IDENTITY ── */}
         <motion.section variants={fadeUp}>
            <ShareableTasteCard
-            archetype={archetype.name}
+            archetype={archetypeName}
             description={dynamicDescription}
             topCategory={topCategory}
             totalVotes={totalVotes}
             streak={currentStreak}
             personalityCode={personality.ready ? personality.code : undefined}
-            personalityName={personality.ready ? personality.name : undefined}
+            personalityName={personality.ready ? t(personality.name) : undefined}
             personalityEmoji={personality.emoji}
           />
           <div className="flex justify-center mt-3">
@@ -616,8 +624,8 @@ export default function TasteProfile() {
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: t('Top Category'), value: topCategory, icon: '⭐' },
-              { label: t('Active Day'), value: mostActiveDay?.slice(0, 3) || '—', icon: '📅' },
+              { label: t('Top Category'), value: topCategory === '—' ? '—' : categoryLabel(topCategory, lang), icon: '⭐' },
+              { label: t('Active Day'), value: mostActiveDay, icon: '📅' },
               { label: t('Peak Time'), value: mostActiveTime, icon: '⏰' },
             ].map((stat) => (
               <motion.div
@@ -706,7 +714,7 @@ export default function TasteProfile() {
                 return (
                   <div key={trait.tag}>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="font-medium capitalize">{label}</span>
+                      <span className="font-medium capitalize">{t(label)}</span>
                       <span className="text-muted-foreground">{trait.vote_count} {t('votes')}</span>
                     </div>
                     <div className="h-2.5 rounded-full bg-secondary overflow-hidden">

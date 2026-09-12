@@ -5,6 +5,7 @@ import arAuth from '@/lib/i18n/ar.auth';
 import arSocial from '@/lib/i18n/ar.social';
 import arDiscover from '@/lib/i18n/ar.discover';
 import arPlay from '@/lib/i18n/ar.play';
+import arTaste from '@/lib/i18n/ar.taste';
 
 /**
  * Lightweight UI translation layer.
@@ -185,6 +186,7 @@ export const AR: Record<string, string> = {
   ...arSocial,
   ...arDiscover,
   ...arPlay,
+  ...arTaste,
   ...BASE_AR,
 };
 
