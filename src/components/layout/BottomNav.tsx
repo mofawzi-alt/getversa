@@ -85,23 +85,37 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   );
 });
 
-function NavButton({ icon: Icon, label, active, onClick, badge }: {
+function NavButton({ icon: Icon, label, active, onClick, badge, variant }: {
   path: string;
   icon: any;
   label: string;
   active: boolean;
   onClick: () => void;
   badge?: number;
+  variant?: 'default' | 'dark';
 }) {
+  const isDark = variant === 'dark';
   return (
     <button
       onClick={onClick}
       className={`relative flex flex-col items-center gap-1 px-2 py-2 transition-all ${
-        active ? 'text-primary' : 'text-card-foreground/70 hover:text-card-foreground'
+        active
+          ? 'text-primary'
+          : isDark
+            ? 'text-card-foreground'
+            : 'text-card-foreground/70 hover:text-card-foreground'
       }`}
     >
       <div className="relative">
-        <Icon className={`h-5 w-5 ${active ? 'scale-110' : ''} transition-transform`} />
+        <div
+          className={`flex items-center justify-center transition-all ${
+            isDark
+              ? `w-9 h-9 rounded-full ${active ? 'bg-primary text-primary-foreground' : 'bg-card-foreground text-background'}`
+              : ''
+          }`}
+        >
+          <Icon className={`h-5 w-5 ${active && !isDark ? 'scale-110' : ''} transition-transform`} />
+        </div>
         {badge && badge > 0 ? (
           <span className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center leading-none ring-2 ring-nav">
             {badge > 9 ? '9+' : badge}
