@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { X, Sparkles } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 const REVEAL_KEY = 'versa_taste_revealed';
 
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export default function TasteRevealCinematic({ archetype, rarityPct, personalityCode, personalityName, onComplete }: Props) {
+  const { t } = useT();
   const [ready, setReady] = useState(false);
 
   // Brief loading beat, then reveal everything at once
@@ -119,7 +121,7 @@ export default function TasteRevealCinematic({ archetype, rarityPct, personality
               <Sparkles className="h-6 w-6 text-purple-300/60" />
             </div>
           </motion.div>
-          <p className="text-white/40 text-sm font-medium tracking-wider uppercase">Reading your taste DNA...</p>
+          <p className="text-white/40 text-sm font-medium tracking-wider uppercase">{t('Reading your taste DNA...')}</p>
         </motion.div>
       )}
 
@@ -154,7 +156,7 @@ export default function TasteRevealCinematic({ archetype, rarityPct, personality
               >
                 <Sparkles className="h-3 w-3 text-purple-300" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.35em] text-white/40">
-                  Your Taste Identity
+                  {t('Your Taste Identity')}
                 </span>
               </motion.div>
 
@@ -205,7 +207,7 @@ export default function TasteRevealCinematic({ archetype, rarityPct, personality
               >
                 {/* Rarity */}
                 <div className="text-center flex-1">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 mb-1">Rarity</p>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 mb-1">{t('Rarity')}</p>
                   <p className="text-2xl font-black text-white">
                     {rarityPct !== null ? (
                       <>
@@ -217,7 +219,7 @@ export default function TasteRevealCinematic({ archetype, rarityPct, personality
                     )}
                   </p>
                   <p className="text-[9px] text-white/25 mt-0.5">
-                    {rarityPct !== null ? 'rarer than most' : 'unique'}
+                    {rarityPct !== null ? t('rarer than most') : t('unique')}
                   </p>
                 </div>
 
@@ -226,7 +228,7 @@ export default function TasteRevealCinematic({ archetype, rarityPct, personality
 
                 {/* Personality */}
                 <div className="text-center flex-1">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 mb-1">Type</p>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 mb-1">{t('Type')}</p>
                   {personalityCode && personalityName ? (
                     <>
                       <p className="text-lg font-black text-white leading-tight">{personalityCode}</p>
@@ -235,7 +237,7 @@ export default function TasteRevealCinematic({ archetype, rarityPct, personality
                   ) : (
                     <>
                       <p className="text-lg">✨</p>
-                      <p className="text-[9px] text-white/25 mt-0.5">Emerging</p>
+                      <p className="text-[9px] text-white/25 mt-0.5">{t('Emerging')}</p>
                     </>
                   )}
                 </div>
@@ -253,7 +255,7 @@ export default function TasteRevealCinematic({ archetype, rarityPct, personality
                   boxShadow: '0 8px 24px -4px rgba(124,58,237,0.4)',
                 }}
               >
-                <span className="relative z-10">Explore My Taste →</span>
+                <span className="relative z-10">{t('Explore My Taste →')}</span>
               </motion.button>
             </div>
 
