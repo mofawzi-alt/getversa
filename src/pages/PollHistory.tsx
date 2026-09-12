@@ -83,8 +83,8 @@ function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: 
       >
         {/* Question */}
         <div className="px-4 pt-4 pb-4">
-          <h3 className="text-[26px] font-extrabold text-foreground leading-[1.1] tracking-tight break-words">
-            {vote.question}
+          <h3 className="text-[26px] font-extrabold text-foreground leading-[1.1] tracking-tight break-words" dir="auto">
+            {vt.question}
           </h3>
         </div>
 
@@ -103,8 +103,8 @@ function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: 
               </div>
             </div>
             <div className="px-3 py-2 bg-card">
-              <p className={`text-[14px] font-bold leading-tight break-words ${chosenA ? 'text-option-a' : 'text-foreground'}`}>
-                {vote.optionA}
+              <p className={`text-[14px] font-bold leading-tight break-words ${chosenA ? 'text-option-a' : 'text-foreground'}`} dir="auto">
+                {vt.optionA}
               </p>
             </div>
           </div>
@@ -122,8 +122,8 @@ function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: 
               </div>
             </div>
             <div className="px-3 py-2 bg-card">
-              <p className={`text-[14px] font-bold leading-tight break-words ${chosenB ? 'text-option-b' : 'text-foreground'}`}>
-                {vote.optionB}
+              <p className={`text-[14px] font-bold leading-tight break-words ${chosenB ? 'text-option-b' : 'text-foreground'}`} dir="auto">
+                {vt.optionB}
               </p>
             </div>
           </div>
