@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ALL_ATTRIBUTES, AttributeKey, CampaignFeedbackConfig, attributeLabel } from '@/hooks/useCampaignFeedbackConfig';
+import { useT } from '@/hooks/useT';
 
 interface Props {
   open: boolean;
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function CampaignFeedbackModal({ open, onClose, pollId, choice, optionLabel, config }: Props) {
+  const { t } = useT();
   const { user, profile } = useAuth();
   const [ratings, setRatings] = useState<Partial<Record<AttributeKey, number>>>({});
   const [verbatim, setVerbatim] = useState('');
@@ -78,12 +80,12 @@ export default function CampaignFeedbackModal({ open, onClose, pollId, choice, o
         const results = await Promise.all(tasks.map((t) => t()));
         const errs = results.filter((r) => r.error).map((r) => r.error.message);
         if (errs.length) throw new Error(errs[0]);
-        toast.success('Thanks for the feedback!');
+        toast.success(t('Thanks for the feedback!'));
       }
       onClose();
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || 'Could not save feedback');
+      toast.error(e?.message || t('Could not save feedback'));
     } finally {
       setSubmitting(false);
     }
@@ -99,10 +101,10 @@ export default function CampaignFeedbackModal({ open, onClose, pollId, choice, o
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Sparkles className="w-4 h-4 text-primary" />
-            Quick brand check
+            {t('Quick brand check')}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Rate <span className="font-semibold text-foreground">{optionLabel}</span> — helps the brand understand why.
+            {t('Rate')} <span className="font-semibold text-foreground">{optionLabel}</span> — {t('helps the brand understand why.')}
           </DialogDescription>
         </DialogHeader>
 
@@ -127,19 +129,19 @@ export default function CampaignFeedbackModal({ open, onClose, pollId, choice, o
                 ))}
               </div>
               <div className="flex justify-between text-[10px] text-muted-foreground mt-1 px-1">
-                <span>Poor</span>
-                <span>Excellent</span>
+                <span>{t('Poor')}</span>
+                <span>{t('Excellent')}</span>
               </div>
             </div>
           ))}
 
           {config.verbatim && (
             <div>
-              <div className="text-xs font-medium mb-1.5">Why did you pick this? (optional)</div>
+              <div className="text-xs font-medium mb-1.5">{t('Why did you pick this? (optional)')}</div>
               <Textarea
                 value={verbatim}
                 onChange={(e) => setVerbatim(e.target.value.slice(0, 500))}
-                placeholder="e.g., great taste, easy to make..."
+                placeholder={t("e.g., great taste, easy to make...")}
                 className="text-sm min-h-[70px]"
                 maxLength={500}
               />
@@ -150,10 +152,10 @@ export default function CampaignFeedbackModal({ open, onClose, pollId, choice, o
 
         <div className="flex gap-2 pt-2">
           <Button variant="ghost" onClick={onClose} className="flex-1" disabled={submitting}>
-            Skip
+            {t('Skip')}
           </Button>
           <Button onClick={submit} className="flex-1" disabled={submitting}>
-            {submitting ? 'Saving...' : 'Submit'}
+            {submitting ? t('Saving...') : t('Submit')}
           </Button>
         </div>
       </DialogContent>
