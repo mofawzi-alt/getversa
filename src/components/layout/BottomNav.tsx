@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, User, LogIn, LayoutGrid, MessageCircle, Camera } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations } from '@/hooks/useMessages';
+import { useT } from '@/hooks/useT';
 
 const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   const location = useLocation();
@@ -94,6 +95,7 @@ function NavButton({ icon: Icon, label, active, onClick, badge, variant }: {
   badge?: number;
   variant?: 'default' | 'dark';
 }) {
+  const { t } = useT();
   const isDark = variant === 'dark';
   return (
     <button
@@ -122,7 +124,7 @@ function NavButton({ icon: Icon, label, active, onClick, badge, variant }: {
           </span>
         ) : null}
       </div>
-      <span className="text-[10px] font-medium">{label}</span>
+      <span className="text-[10px] font-medium">{t(label)}</span>
     </button>
   );
 }
