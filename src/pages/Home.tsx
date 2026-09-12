@@ -1226,9 +1226,6 @@ export default function Home() {
   // (carousel API removed — static scroll now)
   
   // Category filter for hero card
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [categoriesSheetOpen, setCategoriesSheetOpen] = useState(false);
-  const savedHeroIndex = useRef<number>(0);
 
   useEffect(() => {
     const prev = prevExploreVoteCountRef.current;
