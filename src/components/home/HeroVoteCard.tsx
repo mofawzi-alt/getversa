@@ -559,7 +559,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     }
     return { lead: q, tail: null };
   };
-  const { lead: qLead, tail: qTail } = splitQuestion(poll.question);
+  const { lang } = useLanguage();
+  const pt = pollText(poll, lang);
+  const isArabic = lang === 'ar' && !!poll.question_ar;
+  const { lead: qLead, tail: qTail } = isArabic ? { lead: pt.question, tail: null } : splitQuestion(pt.question);
   const avatars = recentVoters?.avatars ?? [];
   const extraVoters = recentVoters?.extra ?? 0;
 
@@ -652,7 +655,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               🔥 The Pulse
             </p>
           )}
-          <h2 className="font-display font-bold leading-tight text-foreground text-xl">
+          <h2 className="font-display font-bold leading-tight text-foreground text-xl" dir="auto">
             {qLead}
             {qTail && (
               <>
@@ -660,10 +663,10 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 <span className="text-success">{qTail}</span>
               </>
             )}
-            {!qTail && '?'}
+            {!qTail && !isArabic && '?'}
           </h2>
-          {poll.subtitle && (
-            <p className="text-xs text-muted-foreground mt-1">{poll.subtitle}</p>
+          {pt.subtitle && (
+            <p className="text-xs text-muted-foreground mt-1" dir="auto">{pt.subtitle}</p>
           )}
         </div>
 
@@ -714,8 +717,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
             {/* Label block */}
             <div className="absolute inset-x-0 bottom-3 px-3 text-center">
-              <p className="text-white text-base font-extrabold drop-shadow-lg leading-tight">
-                {poll.option_a}
+              <p className="text-white text-base font-extrabold drop-shadow-lg leading-tight" dir="auto">
+                {pt.optionA}
               </p>
               {result ? (
                 <motion.span
@@ -779,8 +782,8 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             )}
 
             <div className="absolute inset-x-0 bottom-3 px-3 text-center">
-              <p className="text-white text-base font-extrabold drop-shadow-lg leading-tight">
-                {poll.option_b}
+              <p className="text-white text-base font-extrabold drop-shadow-lg leading-tight" dir="auto">
+                {pt.optionB}
               </p>
               {result ? (
                 <motion.span
