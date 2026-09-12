@@ -24,8 +24,6 @@ import { useEditorialStories, type EditorialStory } from '@/hooks/useEditorialSt
 import { EDITORIAL_STORY_META } from '@/lib/editorialStoryTypes';
 import EditorialStoryViewer from './EditorialStoryViewer';
 import { hasSeenLocally as hasSeenLocallyKey } from '@/lib/pulseTime';
-import { useCategoryStories, getHiddenCategories } from '@/hooks/useCategoryStories';
-import { getCategoryIcon, getCategoryColorClass } from '@/lib/categoryMeta';
 
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
