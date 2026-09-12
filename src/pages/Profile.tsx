@@ -21,6 +21,33 @@ import SuggestPollDialog from '@/components/profile/SuggestPollDialog';
 import BiometricToggle from '@/components/profile/BiometricToggle';
 import DeleteAccountButton from '@/components/profile/DeleteAccountButton';
 
+function LanguageCard() {
+  const { lang, setLang } = useLanguage();
+  return (
+    <div className="bg-card rounded-2xl p-4 border border-border shadow-sm flex items-center gap-3">
+      <Languages className="h-5 w-5 text-primary shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-foreground">Language / اللغة</p>
+        <p className="text-[11px] text-muted-foreground">Poll questions and options</p>
+      </div>
+      <div className="flex rounded-full bg-secondary p-0.5">
+        <button
+          onClick={() => setLang('en')}
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${lang === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
+        >
+          EN
+        </button>
+        <button
+          onClick={() => setLang('ar')}
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${lang === 'ar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
+        >
+          عربي
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Profile() {
   const { profile, isAdmin, signOut, user } = useAuth();
   const navigate = useNavigate();
