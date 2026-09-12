@@ -249,7 +249,7 @@ export default function PulseStoriesRow() {
         topic: 'egypt_today',
         label: 'Egypt Today',
         cards: pulse.egypt_today.map((c, i) =>
-          pulseCardToStory(c, i === 0 ? 'Egypt Today' : 'Today in Egypt', emojiFor(c.category || ''))
+          pulseCardToStory(c, i === 0 ? 'Egypt Today' : 'Today in Egypt')
         ),
         dot: seen ? null : 'blue',
         priority: 0,
