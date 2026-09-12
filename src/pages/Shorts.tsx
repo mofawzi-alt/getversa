@@ -53,6 +53,7 @@ function OptionSide({
         <p
           className="font-display font-bold text-[18px] leading-tight text-white"
           style={{ textShadow: '0 1px 3px rgba(0,0,0,.45)' }}
+          dir="auto"
         >
           {label}
         </p>
