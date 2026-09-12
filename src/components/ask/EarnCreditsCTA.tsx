@@ -1,5 +1,6 @@
 import { Coins, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useT } from '@/hooks/useT';
 
 interface Props {
   balance: number;
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export default function EarnCreditsCTA({ balance, charged }: Props) {
+  const { t } = useT();
   const navigate = useNavigate();
   const nextCost = 3; // cost of a typical medium insight
   const votesNeeded = Math.max(1, nextCost - balance);
@@ -23,13 +25,13 @@ export default function EarnCreditsCTA({ balance, charged }: Props) {
         <div>
           <p className="text-xs font-bold text-foreground">
             {balance > 0
-              ? `${balance} insight${balance === 1 ? '' : 's'} ready to unlock`
-              : 'Unlock insights using your votes'}
+              ? t('{n} insight{s} ready to unlock', { n: balance, s: balance === 1 ? '' : 's' })
+              : t('Unlock insights using your votes')}
           </p>
           <p className="text-[11px] text-muted-foreground">
             {balance >= nextCost
-              ? 'Your votes earned this — tap to explore'
-              : `Vote on ${votesNeeded} more poll${votesNeeded === 1 ? '' : 's'} to unlock →`}
+              ? t('Your votes earned this — tap to explore')
+              : t('Vote on {n} more poll{s} to unlock →', { n: votesNeeded, s: votesNeeded === 1 ? '' : 's' })}
           </p>
         </div>
       </div>

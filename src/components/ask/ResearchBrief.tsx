@@ -4,6 +4,7 @@ import { mapToVersaCategory } from '@/lib/categoryMeta';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import ExportButtons from './ExportButtons';
 import type { ResearchPoll } from '@/lib/askExport';
+import { useT } from '@/hooks/useT';
 
 interface Props {
   question: string;
@@ -17,6 +18,7 @@ const fadeUp = {
 };
 
 export default function ResearchBrief({ question, summary, polls }: Props) {
+  const { t } = useT();
   const totalVotes = polls.reduce((acc, p) => acc + p.total_votes, 0);
 
   return (
@@ -30,7 +32,7 @@ export default function ResearchBrief({ question, summary, polls }: Props) {
         <div className="px-4 py-2.5 bg-muted/30 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <FileText className="h-3 w-3 text-muted-foreground" />
-            <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Research Summary</span>
+            <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{t('Research Summary')}</span>
           </div>
           <span className="text-[10px] font-semibold text-muted-foreground tabular-nums">{polls.length} polls · {totalVotes.toLocaleString()} votes</span>
         </div>
@@ -46,7 +48,7 @@ export default function ResearchBrief({ question, summary, polls }: Props) {
       <div className="pt-1">
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold px-1 mb-2 flex items-center gap-1.5">
           <BarChart3 className="h-3 w-3" />
-          Source Data ({polls.length} polls)
+          {t('Source Data ({n} polls)', { n: polls.length })}
         </p>
         <div className="space-y-2">
           {polls.map((p, idx) => (
@@ -71,7 +73,7 @@ export default function ResearchBrief({ question, summary, polls }: Props) {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-[11px] font-semibold">
                   <span className="truncate max-w-[45%]">{p.option_a}</span>
-                  <span className="text-muted-foreground/40">vs</span>
+                  <span className="text-muted-foreground/40">{t('vs')}</span>
                   <span className="truncate max-w-[45%] text-right">{p.option_b}</span>
                 </div>
                 <div className="flex h-2.5 rounded-full overflow-hidden bg-muted">
