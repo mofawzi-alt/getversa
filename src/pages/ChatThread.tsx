@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import PickPollToShareSheet from '@/components/messages/PickPollToShareSheet';
 import UserAvatar from '@/components/UserAvatar';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 interface PollPreview {
   id: string;
@@ -28,6 +29,7 @@ interface PollPreview {
 function SharedPollBubble({ pollId, sharedChoice, byName }: { pollId: string; sharedChoice?: string | null; byName?: string }) {
   const [poll, setPoll] = useState<PollPreview | null>(null);
   const navigate = useNavigate();
+  const { t } = useT();
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +49,7 @@ function SharedPollBubble({ pollId, sharedChoice, byName }: { pollId: string; sh
   if (!poll) {
     return (
       <div className="rounded-xl border border-border p-3 text-xs text-muted-foreground">
-        Loading poll…
+        {t('Loading poll…')}
       </div>
     );
   }
@@ -72,13 +74,14 @@ function SharedPollBubble({ pollId, sharedChoice, byName }: { pollId: string; sh
       </div>
       <div className="p-2.5">
         <p className="text-xs font-semibold line-clamp-2 leading-snug">{poll.question}</p>
-        <p className="text-[10px] text-muted-foreground mt-1">Tap to vote →</p>
+        <p className="text-[10px] text-muted-foreground mt-1">{t('Tap to vote →')}</p>
       </div>
     </button>
   );
 }
 
 function MessageBubble({ msg, mine, otherUsername }: { msg: Message; mine: boolean; otherUsername?: string }) {
+  const { t } = useT();
   return (
     <div className={`flex ${mine ? 'justify-end' : 'justify-start'} mb-2`}>
       <div className={`flex flex-col ${mine ? 'items-end' : 'items-start'} max-w-[80%]`}>
@@ -86,7 +89,7 @@ function MessageBubble({ msg, mine, otherUsername }: { msg: Message; mine: boole
           <SharedPollBubble
             pollId={msg.shared_poll_id}
             sharedChoice={msg.shared_choice}
-            byName={mine ? 'You' : otherUsername || 'Your friend'}
+            byName={mine ? t('You') : otherUsername || t('Your friend')}
           />
         ) : (
           <div
@@ -117,6 +120,7 @@ export default function ChatThread() {
   const [pollPickerOpen, setPollPickerOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const { t } = useT();
   const { data: messages = [], isLoading } = useConversationMessages(conversationId);
   const sendMessage = useSendMessage();
   const markRead = useMarkConversationRead();
@@ -134,7 +138,7 @@ export default function ChatThread() {
         const otherId = data.user1_id === user.id ? data.user2_id : data.user1_id;
         const { data: profile } = await supabase
           .rpc('get_public_profiles', { user_ids: [otherId] });
-        setOtherUsername(profile?.[0]?.username || 'Friend');
+        setOtherUsername(profile?.[0]?.username || t('Friend'));
         setOtherAvatarUrl((profile?.[0] as any)?.avatar_url || null);
       });
   }, [conversationId, user]);
@@ -176,7 +180,7 @@ export default function ChatThread() {
       }
       await sendMessage.mutateAsync({ conversationId, sharedPollId: pollId, sharedChoice });
       setPollPickerOpen(false);
-      toast.success('Poll sent!');
+      toast.success(t('Poll sent!'));
     } catch {
       // toast handled in hook
     }
@@ -202,7 +206,7 @@ export default function ChatThread() {
           fallbackClassName="bg-primary/10"
         />
         <div className="flex-1 min-w-0">
-          <p className="font-semibold truncate">{otherUsername || 'Loading…'}</p>
+          <p className="font-semibold truncate">{otherUsername || t('Loading…')}</p>
         </div>
       </header>
 
@@ -215,7 +219,7 @@ export default function ChatThread() {
         )}
         {!isLoading && messages.length === 0 && (
           <div className="text-center text-muted-foreground text-sm py-12">
-            Say hi 👋
+            {t('Say hi 👋')}
           </div>
         )}
         {messages.map((m) => (
@@ -233,7 +237,7 @@ export default function ChatThread() {
             type="button"
             onClick={() => setPollPickerOpen(true)}
             className="w-10 h-10 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center shrink-0 text-foreground"
-            aria-label="Share a poll"
+            aria-label={t('Share a poll')}
           >
             <BarChart3 className="h-4 w-4" />
           </button>
@@ -246,7 +250,7 @@ export default function ChatThread() {
                 handleSend();
               }
             }}
-            placeholder="Message…"
+            placeholder={t('Message…')}
             className="flex-1 rounded-full"
           />
           <Button

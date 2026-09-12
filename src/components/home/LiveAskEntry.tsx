@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Camera, Sparkles } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 interface ActiveAsk {
   id: string;
@@ -12,6 +13,7 @@ interface ActiveAsk {
 }
 
 export default function LiveAskEntry() {
+  const { t } = useT();
   const nav = useNavigate();
   const { user } = useAuth();
   const [asks, setAsks] = useState<ActiveAsk[]>([]);
@@ -39,11 +41,11 @@ export default function LiveAskEntry() {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           <Sparkles className="h-4 w-4 text-[#E8392A]" />
-          <span className="text-[13px] font-bold tracking-tight text-foreground">Ask the Crowd</span>
+          <span className="text-[13px] font-bold tracking-tight text-foreground">{t('Ask the Crowd')}</span>
           {asks.length > 0 && (
             <span className="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold text-[#E8392A]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#E8392A] animate-pulse" />
-              LIVE
+              {t('LIVE')}
             </span>
           )}
         </div>
@@ -51,7 +53,7 @@ export default function LiveAskEntry() {
           onClick={() => nav('/live-ask/new')}
           className="text-[11px] font-semibold text-muted-foreground"
         >
-          Start one →
+          {t('Start one')} →
         </button>
       </div>
 
@@ -65,7 +67,7 @@ export default function LiveAskEntry() {
             <Camera className="h-4 w-4 text-white" />
           </div>
           <span className="text-[11px] font-bold text-[#E8392A] leading-tight text-center px-2">
-            Snap & ask
+            {t('Snap & ask')}
           </span>
         </button>
 
@@ -86,7 +88,7 @@ export default function LiveAskEntry() {
               <p className="text-[10px] font-semibold text-white leading-tight line-clamp-2">
                 {a.question}
               </p>
-              <p className="text-[9px] text-white/80 mt-0.5">{a.vote_count} votes</p>
+              <p className="text-[9px] text-white/80 mt-0.5">{a.vote_count} {t('votes')}</p>
             </div>
           </button>
         ))}

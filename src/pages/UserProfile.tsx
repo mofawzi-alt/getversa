@@ -11,6 +11,7 @@ import { useVerifiedUser } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import UserAvatar from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
+import { useT } from '@/hooks/useT';
 
 import PersonalityCompatibility from '@/components/profile/PersonalityCompatibility';
 import { computePersonalityType } from '@/lib/personalityType';
@@ -70,6 +71,7 @@ export default function UserProfile() {
   const { isFollowing, toggleFollow } = useFollows();
   const { isFriend, sendRequest, sendingRequest, hasPendingRequest } = useFriends();
   const { isVerified, category: verifiedCategory } = useVerifiedUser(targetId);
+  const { t } = useT();
   const isOwnProfile = user?.id === targetId;
   const isFriendOfTarget = targetId ? isFriend(targetId) : false;
 
@@ -288,7 +290,7 @@ export default function UserProfile() {
           <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-secondary/50">
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
-          <h1 className="text-lg font-display font-bold text-foreground">Profile</h1>
+          <h1 className="text-lg font-display font-bold text-foreground">{t('Profile')}</h1>
         </div>
 
         {/* Profile Card — IG bio style */}
@@ -304,7 +306,7 @@ export default function UserProfile() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <h2 className="text-base font-display font-bold text-foreground truncate">
-                  @{profileData?.username || 'user'}
+                  @{profileData?.username || t('user')}
                 </h2>
                 {isVerified && <VerifiedBadge size="sm" />}
               </div>
@@ -325,17 +327,17 @@ export default function UserProfile() {
                 <span className="flex items-center gap-1">
                   <BarChart3 className="h-3 w-3 text-muted-foreground" />
                   <span className="font-bold text-foreground">{voteCount}</span>
-                  <span className="text-muted-foreground">votes</span>
+                  <span className="text-muted-foreground">{t('votes')}</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <Target className="h-3 w-3 text-muted-foreground" />
                   <span className="font-bold text-foreground">{comparisonsCount}</span>
-                  <span className="text-muted-foreground">comparisons</span>
+                  <span className="text-muted-foreground">{t('comparisons')}</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <Swords className="h-3 w-3 text-muted-foreground" />
                   <span className="font-bold text-foreground">{battlesCount}</span>
-                  <span className="text-muted-foreground">battles</span>
+                  <span className="text-muted-foreground">{t('battles')}</span>
                 </span>
               </div>
             </div>
@@ -348,7 +350,7 @@ export default function UserProfile() {
               className="w-full rounded-full h-8 text-xs mt-3"
               onClick={() => toggleFollow(targetId)}
             >
-              {isFollowing(targetId) ? 'Following' : 'Follow'}
+              {isFollowing(targetId) ? t('Following') : t('Follow')}
             </Button>
           )}
 
@@ -425,17 +427,17 @@ export default function UserProfile() {
             </div>
             <div>
               <h3 className="font-display font-bold text-foreground">
-                {showPrivateGate ? 'This profile is private' : 'Friends only'}
+                {showPrivateGate ? t('This profile is private') : t('Friends only')}
               </h3>
               <p className="text-xs text-muted-foreground mt-1 px-4">
                 {showPrivateGate
-                  ? `@${profileData?.username || 'This user'} keeps their votes, badges, and patterns private. Send them a friend request to see more.`
-                  : `Add @${profileData?.username || 'this user'} as a friend to see their badges, rank, voting patterns, and recent votes.`}
+                  ? t('@{u} keeps their votes, badges, and patterns private. Send them a friend request to see more.', { u: profileData?.username || t('This user') })
+                  : t('Add @{u} as a friend to see their badges, rank, voting patterns, and recent votes.', { u: profileData?.username || t('this user') })}
               </p>
             </div>
             {hasPendingRequest(targetId) ? (
               <Button variant="outline" className="rounded-full" disabled>
-                Request sent
+                {t('Request sent')}
               </Button>
             ) : (
               <Button
@@ -444,7 +446,7 @@ export default function UserProfile() {
                 disabled={sendingRequest}
               >
                 <UserPlus className="h-4 w-4" />
-                Add friend
+                {t('Add friend')}
               </Button>
             )}
           </div>
@@ -459,14 +461,14 @@ export default function UserProfile() {
             <Heart className="h-3.5 w-3.5 text-primary shrink-0" />
             {compatScore !== null && compatScore !== undefined ? (
               <span className="text-[11px] text-foreground flex-1 text-left truncate">
-                You agree <span className="font-bold text-primary">{compatScore}%</span> with @{profileData?.username}
+                {t('You agree')} <span className="font-bold text-primary">{compatScore}%</span> {t('with')} @{profileData?.username}
               </span>
             ) : (
               <span className="text-[11px] text-foreground flex-1 text-left truncate">
-                Compare votes with @{profileData?.username}
+                {t('Compare votes with')} @{profileData?.username}
               </span>
             )}
-            <span className="text-[11px] font-semibold text-primary shrink-0">Compare →</span>
+            <span className="text-[11px] font-semibold text-primary shrink-0">{t('Compare →')}</span>
           </button>
         )}
 
@@ -477,7 +479,7 @@ export default function UserProfile() {
             className="w-full rounded-full px-3 py-2 flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
           >
             <Swords className="h-3.5 w-3.5" />
-            <span className="text-[11px] font-bold">Challenge @{profileData?.username} to a Duel</span>
+            <span className="text-[11px] font-bold">{t('Challenge @{u} to a Duel', { u: profileData?.username })}</span>
           </button>
         )}
 
@@ -488,7 +490,7 @@ export default function UserProfile() {
             <div className="flex items-center gap-2 mb-3">
               <BarChart3 className="h-4 w-4 text-primary" />
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                Recent Votes
+                {t('Recent Votes')}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -520,7 +522,7 @@ export default function UserProfile() {
                       </p>
                       {showChoice && (
                         <p className="text-white/90 text-[8px] mt-0.5 truncate">
-                          Picked: <span className="font-semibold">{chosenLabel}</span>
+                          {t('Picked:')} <span className="font-semibold">{chosenLabel}</span>
                         </p>
                       )}
                     </div>

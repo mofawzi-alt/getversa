@@ -1,5 +1,6 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { VERSA_CATEGORIES, getCategoryIcon, getCategoryColorClass } from '@/lib/categoryMeta';
+import { useT } from '@/hooks/useT';
 
 interface CategoriesSheetProps {
   open: boolean;
@@ -9,12 +10,13 @@ interface CategoriesSheetProps {
 }
 
 export default function CategoriesSheet({ open, onOpenChange, onSelect, activeCategory }: CategoriesSheetProps) {
+  const { t } = useT();
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="rounded-t-3xl max-h-[80vh] overflow-y-auto">
         <SheetHeader className="mb-4">
-          <SheetTitle className="text-left">Browse by category</SheetTitle>
-          <p className="text-xs text-muted-foreground text-left">Pick a category to filter the feed</p>
+          <SheetTitle className="text-left">{t('Browse by category')}</SheetTitle>
+          <p className="text-xs text-muted-foreground text-left">{t('Pick a category to filter the feed')}</p>
         </SheetHeader>
         <div className="grid grid-cols-2 gap-2 pb-6">
           {VERSA_CATEGORIES.map((cat) => {
@@ -35,7 +37,7 @@ export default function CategoriesSheet({ open, onOpenChange, onSelect, activeCa
                 <span className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${colorClass}`}>
                   <Icon className="h-4 w-4" />
                 </span>
-                <span className="text-sm font-semibold text-foreground leading-tight">{cat}</span>
+                <span className="text-sm font-semibold text-foreground leading-tight">{t(cat)}</span>
               </button>
             );
           })}

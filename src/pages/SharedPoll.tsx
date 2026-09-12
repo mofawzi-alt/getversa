@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { lovable } from '@/integrations/lovable/index';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { pollText } from '@/lib/pollText';
+import { useT } from '@/hooks/useT';
 
 
 interface Poll {
@@ -28,6 +29,7 @@ interface Poll {
 type Phase = 'vote' | 'results' | 'friend-reveal' | 'signup' | 'continue';
 
 export default function SharedPoll() {
+  const { t } = useT();
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -35,7 +37,7 @@ export default function SharedPoll() {
   const { lang } = useLanguage();
 
   const sharerChoice = searchParams.get('c') as 'A' | 'B' | null;
-  const sharerName = searchParams.get('by') || 'Your friend';
+  const sharerName = searchParams.get('by') || t('Your friend');
 
   const [poll, setPoll] = useState<Poll | null>(null);
   const [loading, setLoading] = useState(true);
@@ -139,7 +141,7 @@ export default function SharedPoll() {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      toast.error('Sign in failed');
+      toast.error(t('Sign in failed'));
       return;
     }
     if (result.redirected) return;
@@ -198,8 +200,8 @@ export default function SharedPoll() {
   if (!poll) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6 gap-4">
-        <p className="text-lg font-semibold text-foreground">Poll not found</p>
-        <Button onClick={() => navigate('/')}>Go to Versa</Button>
+        <p className="text-lg font-semibold text-foreground">{t('Poll not found')}</p>
+        <Button onClick={() => navigate('/')}>{t('Go to Versa')}</Button>
       </div>
     );
   }
@@ -216,7 +218,7 @@ export default function SharedPoll() {
         <div className="pt-safe px-4 pt-6 pb-2 text-center">
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-white/40 mb-3">VERSA</p>
           <p className="text-sm text-white/60 italic">
-            {sharerName} voted on this — what would you choose?
+            {t('{n} voted on this — what would you choose?', { n: sharerName })}
           </p>
         </div>
 
@@ -241,7 +243,7 @@ export default function SharedPoll() {
             </div>
           </motion.button>
 
-          <div className="text-center text-white/30 text-xs font-bold tracking-widest">OR</div>
+          <div className="text-center text-white/30 text-xs font-bold tracking-widest">{t('OR')}</div>
 
           {/* Option B */}
           <motion.button
@@ -285,7 +287,7 @@ export default function SharedPoll() {
           <div className="rounded-3xl bg-white shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
               <span className="text-[10px] font-bold tracking-[0.25em] text-gray-900">VERSA</span>
-              <span className="text-[10px] font-semibold tracking-wider uppercase text-gray-400">Result</span>
+              <span className="text-[10px] font-semibold tracking-wider uppercase text-gray-400">{t('Result')}</span>
             </div>
 
             <div className="px-5 pb-4">
@@ -306,7 +308,7 @@ export default function SharedPoll() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     {isMine && (
                       <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#2563EB] text-white text-[10px] font-bold px-2 py-1 rounded-full">
-                        <Check className="h-3 w-3" /> YOUR PICK
+                        <Check className="h-3 w-3" /> {t('YOUR PICK')}
                       </div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -319,11 +321,11 @@ export default function SharedPoll() {
             </div>
 
             <div className="px-5 py-5 text-center">
-              <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-1">You're with</p>
+              <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-1">{t("You're with")}</p>
               <p className="text-4xl font-black text-gray-900 leading-none">
                 {userPercent}<span className="text-2xl">%</span>
               </p>
-              <p className="text-xs text-gray-500 mt-1">of {totalVotes.toLocaleString()} voters</p>
+              <p className="text-xs text-gray-500 mt-1">{t('of {n} voters', { n: totalVotes.toLocaleString() })}</p>
             </div>
 
             <div className="px-5 pb-5">
@@ -331,7 +333,7 @@ export default function SharedPoll() {
                 onClick={handleNextFromResults}
                 className="w-full h-12 rounded-2xl font-bold gap-2 bg-[#2563EB] hover:bg-[#1d4ed8] text-white"
               >
-                Next <ArrowRight className="h-4 w-4" />
+                {t('Next')} <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -360,13 +362,13 @@ export default function SharedPoll() {
               exit={{ opacity: 0, y: -20 }}
               className="text-center"
             >
-              <p className="text-white/60 text-sm mb-6">Curious what they picked?</p>
+              <p className="text-white/60 text-sm mb-6">{t('Curious what they picked?')}</p>
               <Button
                 onClick={() => setShowFriendChoice(true)}
                 className="h-14 px-8 rounded-2xl font-bold text-base gap-2"
                 style={{ backgroundColor: '#2563EB' }}
               >
-                See how {sharerName} voted <ArrowRight className="h-5 w-5" />
+                {t('See how {n} voted', { n: sharerName })} <ArrowRight className="h-5 w-5" />
               </Button>
             </motion.div>
           ) : (
@@ -388,10 +390,10 @@ export default function SharedPoll() {
               </motion.div>
 
               <h2 className="text-2xl font-bold text-white">
-                {sameChoice ? 'You both chose the same!' : 'You chose differently!'}
+                {sameChoice ? t('You both chose the same!') : t('You chose differently!')}
               </h2>
               <p className="text-white/60 text-sm">
-                {sharerName} chose <span className="text-white font-semibold">{friendOption}</span>
+                {t('{n} chose', { n: sharerName })} <span className="text-white font-semibold">{friendOption}</span>
               </p>
 
               <Button
@@ -399,7 +401,7 @@ export default function SharedPoll() {
                 className="mt-8 h-12 px-8 rounded-2xl font-bold gap-2"
                 style={{ backgroundColor: '#2563EB' }}
               >
-                Continue <ArrowRight className="h-5 w-5" />
+                {t('Continue')} <ArrowRight className="h-5 w-5" />
               </Button>
             </motion.div>
           )}
@@ -419,7 +421,7 @@ export default function SharedPoll() {
         >
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-white/40">VERSA</p>
           <h2 className="text-xl font-bold text-white leading-tight">
-            Create a free account to save your votes and see your taste profile.
+            {t('Create a free account to save your votes and see your taste profile.')}
           </h2>
 
           <div className="space-y-3 pt-4">
@@ -428,14 +430,14 @@ export default function SharedPoll() {
               className="w-full h-14 rounded-2xl font-bold text-base gap-3 bg-white text-gray-900 hover:bg-gray-100"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-              Continue with Google
+              {t('Continue with Google')}
             </Button>
             <Button
               onClick={() => handleSocialLogin('apple')}
               className="w-full h-14 rounded-2xl font-bold text-base gap-3 bg-white text-gray-900 hover:bg-gray-100"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-              Continue with Apple
+              {t('Continue with Apple')}
             </Button>
           </div>
 
@@ -443,14 +445,14 @@ export default function SharedPoll() {
             onClick={() => navigate('/auth?mode=signup')}
             className="text-white/70 text-sm font-semibold underline underline-offset-4 hover:text-white transition-colors"
           >
-            Sign up with email
+            {t('Sign up with email')}
           </button>
 
           <button
             onClick={handleSkipSignup}
             className="block mx-auto text-white/40 text-sm font-medium pt-2 hover:text-white/60 transition-colors"
           >
-            Skip for now
+            {t('Skip for now')}
           </button>
         </motion.div>
       </div>
@@ -471,9 +473,9 @@ export default function SharedPoll() {
             className="text-center space-y-5 max-w-sm"
           >
             <p className="text-3xl">🔥</p>
-            <h2 className="text-lg font-bold text-white">You've voted on {guestVoteCount} polls!</h2>
+            <h2 className="text-lg font-bold text-white">{t("You've voted on {n} polls!", { n: guestVoteCount })}</h2>
             <p className="text-white/50 text-sm">
-              Create a free account to save your votes and discover your taste profile.
+              {t('Create a free account to save your votes and discover your taste profile.')}
             </p>
             <div className="space-y-3 pt-2">
               <Button
@@ -481,26 +483,26 @@ export default function SharedPoll() {
                 className="w-full h-12 rounded-2xl font-bold gap-3 bg-white text-gray-900 hover:bg-gray-100"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                Continue with Google
+                {t('Continue with Google')}
               </Button>
               <Button
                 onClick={() => handleSocialLogin('apple')}
                 className="w-full h-12 rounded-2xl font-bold gap-3 bg-white text-gray-900 hover:bg-gray-100"
               >
-                Continue with Apple
+                {t('Continue with Apple')}
               </Button>
             </div>
             <button
               onClick={() => navigate('/auth?mode=signup')}
               className="block mx-auto text-white/70 text-sm font-semibold underline underline-offset-4 hover:text-white transition-colors"
             >
-              Sign up with email
+              {t('Sign up with email')}
             </button>
             <button
               onClick={() => setShowNudge(false)}
               className="block mx-auto text-white/40 text-sm hover:text-white/60"
             >
-              Keep voting
+              {t('Keep voting')}
             </button>
           </motion.div>
         </div>
@@ -510,9 +512,9 @@ export default function SharedPoll() {
     if (!currentPoll) {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#0F172A] px-6 gap-4">
-          <p className="text-white text-lg font-bold">You're all caught up! 🎉</p>
+          <p className="text-white text-lg font-bold">{t("You're all caught up! 🎉")}</p>
           <Button onClick={() => setPhase('signup')} className="rounded-2xl">
-            Create account to continue
+            {t('Create account to continue')}
           </Button>
         </div>
       );
@@ -541,7 +543,7 @@ export default function SharedPoll() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
             <div className="absolute bottom-4 left-4"><p className="text-white font-bold text-lg" dir="auto">{gPt.optionA}</p></div>
           </motion.button>
-          <div className="text-center text-white/30 text-xs font-bold tracking-widest">OR</div>
+          <div className="text-center text-white/30 text-xs font-bold tracking-widest">{t('OR')}</div>
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => handleGuestVote('B')}

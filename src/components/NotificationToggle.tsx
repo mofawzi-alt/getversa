@@ -6,6 +6,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { requestOneSignalPermission } from '@/lib/onesignal';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 /**
  * Smart notification toggle:
@@ -22,15 +23,16 @@ export function NotificationToggle() {
 // WEB
 // ─────────────────────────────────────────────────────────────────
 function WebNotificationToggle() {
+  const { t } = useT();
   const { isSupported, isSubscribed, isLoading, supportMessage, subscribe, unsubscribe } = usePushNotifications();
 
   if (!isSupported) {
     return (
       <Row
         icon={<BellOff className="h-5 w-5 text-muted-foreground" />}
-        title="Push Notifications"
+        title={t("Push Notifications")}
         subtitle={supportMessage}
-        action={<Button variant="outline" size="sm" disabled>Unavailable</Button>}
+        action={<Button variant="outline" size="sm" disabled>{t("Unavailable")}</Button>}
       />
     );
   }
@@ -38,8 +40,8 @@ function WebNotificationToggle() {
   return (
     <Row
       icon={<Bell className={`h-5 w-5 ${isSubscribed ? 'text-primary' : 'text-muted-foreground'}`} />}
-      title="Push Notifications"
-      subtitle={isSubscribed ? 'ON · Get notified for new polls' : 'OFF · Enable to stay updated'}
+      title={t("Push Notifications")}
+      subtitle={isSubscribed ? t('ON · Get notified for new polls') : t('OFF · Enable to stay updated')}
       action={
         <Button
           variant={isSubscribed ? 'outline' : 'default'}
@@ -48,7 +50,7 @@ function WebNotificationToggle() {
           disabled={isLoading}
           className="min-w-16"
         >
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSubscribed ? 'ON' : 'OFF'}
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSubscribed ? t('ON') : t('OFF')}
         </Button>
       }
     />
@@ -59,6 +61,7 @@ function WebNotificationToggle() {
 // NATIVE (OneSignal)
 // ─────────────────────────────────────────────────────────────────
 function NativeNotificationToggle() {
+  const { t } = useT();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -92,7 +95,7 @@ function NativeNotificationToggle() {
 
     if (!user?.id) {
       toast.dismiss('native-notifications');
-      toast.error('Please sign in to enable notifications');
+      toast.error(t('Please sign in to enable notifications'));
       return;
     }
 
@@ -101,7 +104,7 @@ function NativeNotificationToggle() {
       const result = await requestOneSignalPermission(user.id);
       await refreshState();
       if (result.ok === true) {
-        toast.success('Notifications enabled', { id: 'native-notifications' });
+        toast.success(t('Notifications enabled'), { id: 'native-notifications' });
         setIsEnabled(true);
         setStatusLabel('ON');
         return;
@@ -109,20 +112,20 @@ function NativeNotificationToggle() {
       const reason = result.reason;
       const label =
         reason === 'not-native'
-          ? 'Notifications only work in the iOS app'
+          ? t('Notifications only work in the iOS app')
           : reason === 'missing-plugin'
-            ? 'Update the iOS app first'
+            ? t('Update the iOS app first')
             : reason === 'error'
-              ? 'Notifications need a new app build'
-              : 'Turn on notifications in iOS Settings';
+              ? t('Notifications need a new app build')
+              : t('Turn on notifications in iOS Settings');
       const description =
         reason === 'not-native'
           ? undefined
           : reason === 'missing-plugin'
-            ? 'This cannot be fixed by OTA. Install a new TestFlight/App Store build that includes the native notification plugin.'
+            ? t('This cannot be fixed by OTA. Install a new TestFlight/App Store build that includes the native notification plugin.')
             : reason === 'error'
-              ? result.message ?? 'Install a fresh TestFlight/App Store build, then try Enable again.'
-              : 'Open Settings → Versa → Notifications and enable Allow Notifications.';
+              ? result.message ?? t('Install a fresh TestFlight/App Store build, then try Enable again.')
+              : t('Open Settings → Versa → Notifications and enable Allow Notifications.');
       toast(label, { id: 'native-notifications', description, duration: 8000 });
     } finally {
       setIsLoading(false);
@@ -132,14 +135,14 @@ function NativeNotificationToggle() {
   return (
     <Row
       icon={<Bell className="h-5 w-5 text-primary" />}
-      title="Push Notifications"
-      subtitle={`${statusLabel} · ${isEnabled ? "You're getting alerts for new polls and updates" : 'Enable alerts for new polls and updates'}`}
+      title={t("Push Notifications")}
+      subtitle={`${statusLabel} · ${isEnabled ? t("You're getting alerts for new polls and updates") : t('Enable alerts for new polls and updates')}`}
       onClick={isEnabled ? undefined : enableNotifications}
       action={
         isEnabled ? (
           <div className="flex min-w-16 items-center justify-center gap-1.5 rounded-md border border-primary px-3 py-2 text-sm font-semibold text-primary">
             <CheckCircle2 className="h-4 w-4" />
-            <span>ON</span>
+            <span>{t('ON')}</span>
           </div>
         ) : (
           <Button
@@ -153,7 +156,7 @@ function NativeNotificationToggle() {
             }}
             disabled={isLoading || !didCheck}
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'OFF'}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('OFF')}
           </Button>
         )
       }

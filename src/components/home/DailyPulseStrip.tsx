@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/hooks/useT';
 
 const SESSION_KEY = 'versa_pulse_dismissed';
 const FIRST_SESSION_KEY = 'versa_has_session';
@@ -13,6 +14,7 @@ type PulseItem = {
 };
 
 export default function DailyPulseStrip() {
+  const { t } = useT();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [dismissed, setDismissed] = useState(false);
@@ -155,12 +157,12 @@ export default function DailyPulseStrip() {
     const list: PulseItem[] = [];
     if (topChoices && topChoices.length > 0) {
       list.push({
-        text: `🔥 Top now: ${topChoices.join(' · ')}`,
+        text: `🔥 ${t('Top now')}: ${topChoices.join(' · ')}`,
         onClick: () => navigate(`/explore?search=${encodeURIComponent(topChoices[0])}`),
       });
     }
     if (newPollsCount && newPollsCount > 0) {
-      list.push({ text: `${newPollsCount} new poll${newPollsCount !== 1 ? 's' : ''} today` });
+      list.push({ text: `${newPollsCount} ${newPollsCount !== 1 ? t('new polls today') : t('new poll today')}` });
     }
     if (recentDebate) list.push({ text: recentDebate });
     if (hottestPoll) list.push({ text: hottestPoll });
@@ -196,7 +198,7 @@ export default function DailyPulseStrip() {
           onClick={() => navigate('/explore')}
           className="flex-shrink-0 text-[11px] font-semibold text-[#E8392A] hover:text-[#E8392A]/80 transition-colors"
         >
-          see all
+          {t('see all')}
         </button>
       </div>
       <style>{`

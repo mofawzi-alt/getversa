@@ -13,6 +13,7 @@ import {
   UserPlus, X, BarChart3, Swords, Share2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 type Mode = 'battle' | 'vibe';
 
@@ -41,6 +42,7 @@ export default function GroupCompare() {
   const [groupB, setGroupB] = useState<string[]>([]);
   const [vibeGroup, setVibeGroup] = useState<string[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const { t } = useT();
 
   // Build friend lookup
   const friendMap = useMemo(() => {
@@ -232,11 +234,11 @@ export default function GroupCompare() {
 
   function handleRun() {
     if (mode === 'battle' && !canRunBattle()) {
-      toast.error('Pick at least 1 friend in each group');
+      toast.error(t('Pick at least 1 friend in each group'));
       return;
     }
     if (mode === 'vibe' && !canRunVibe()) {
-      toast.error('Pick at least 2 friends for the crew vibe');
+      toast.error(t('Pick at least 2 friends for the crew vibe'));
       return;
     }
     setShowResults(true);
@@ -265,16 +267,16 @@ export default function GroupCompare() {
       <AppLayout>
         <div className="p-4 space-y-4">
           <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back
+            <ArrowLeft className="h-4 w-4 mr-1" /> {t('Back')}
           </Button>
           <div className="glass rounded-3xl p-8 text-center space-y-3">
             <Users className="h-10 w-10 mx-auto text-muted-foreground" />
-            <h2 className="text-xl font-display font-bold">Add more friends first</h2>
+            <h2 className="text-xl font-display font-bold">{t('Add more friends first')}</h2>
             <p className="text-sm text-muted-foreground">
-              You need at least 2 friends to compare crews.
+              {t('You need at least 2 friends to compare crews.')}
             </p>
             <Button onClick={() => navigate('/friends')} className="rounded-full">
-              Find friends
+              {t('Find friends')}
             </Button>
           </div>
         </div>
@@ -291,9 +293,9 @@ export default function GroupCompare() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-display font-bold truncate">Crew Compare</h1>
+            <h1 className="text-xl font-display font-bold truncate">{t('Crew Compare')}</h1>
             <p className="text-xs text-muted-foreground">
-              Compare two groups, or vibe-check one crew
+              {t('Compare two groups, or vibe-check one crew')}
             </p>
           </div>
         </div>
@@ -304,21 +306,21 @@ export default function GroupCompare() {
             <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
               <TabsList className="grid grid-cols-2 w-full">
                 <TabsTrigger value="battle" className="gap-1.5">
-                  <Swords className="h-3.5 w-3.5" /> Group vs Group
+                  <Swords className="h-3.5 w-3.5" /> {t('Group vs Group')}
                 </TabsTrigger>
                 <TabsTrigger value="vibe" className="gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5" /> Crew Vibe
+                  <Sparkles className="h-3.5 w-3.5" /> {t('Crew Vibe')}
                 </TabsTrigger>
               </TabsList>
 
               {/* Battle picker */}
               <TabsContent value="battle" className="space-y-3 mt-4">
                 <p className="text-xs text-muted-foreground">
-                  Tap a friend to add them to <b>A</b>. Tap again to move to <b>B</b>. Third tap removes.
+                  {t('Tap a friend to add them to A. Tap again to move to B. Third tap removes.')}
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  <GroupSummary label="Group A" color="primary" ids={groupA} friendMap={friendMap} />
-                  <GroupSummary label="Group B" color="accent" ids={groupB} friendMap={friendMap} />
+                  <GroupSummary label={t('Group A')} color="primary" ids={groupA} friendMap={friendMap} />
+                  <GroupSummary label={t('Group B')} color="accent" ids={groupB} friendMap={friendMap} />
                 </div>
                 <FriendPickerList
                   friends={friends}
@@ -340,9 +342,9 @@ export default function GroupCompare() {
               {/* Vibe picker */}
               <TabsContent value="vibe" className="space-y-3 mt-4">
                 <p className="text-xs text-muted-foreground">
-                  Pick 2+ friends to see how aligned your crew really is.
+                  {t('Pick 2+ friends to see how aligned your crew really is.')}
                 </p>
-                <GroupSummary label="Your Crew" color="primary" ids={vibeGroup} friendMap={friendMap} />
+                <GroupSummary label={t('Your Crew')} color="primary" ids={vibeGroup} friendMap={friendMap} />
                 <FriendPickerList
                   friends={friends}
                   onTap={(id) => toggleInGroup(id, 'vibe')}
@@ -359,7 +361,7 @@ export default function GroupCompare() {
                 className="w-full rounded-full pointer-events-auto shadow-lg gap-2 h-12"
               >
                 <BarChart3 className="h-4 w-4" />
-                {mode === 'battle' ? 'Run battle' : 'Reveal crew vibe'}
+                {mode === 'battle' ? t('Run battle') : t('Reveal crew vibe')}
               </Button>
             </div>
           </>
@@ -392,6 +394,7 @@ function GroupSummary({
   ids: string[];
   friendMap: Map<string, Friend>;
 }) {
+  const { t } = useT();
   const tone = color === 'primary' ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-accent/10 border-accent/30 text-accent-foreground';
   return (
     <div className={`rounded-2xl border p-3 ${tone}`}>
@@ -401,7 +404,7 @@ function GroupSummary({
       </div>
       <p className="text-[11px] truncate text-foreground/80">
         {ids.length === 0
-          ? 'No one yet'
+          ? t('No one yet')
           : ids
               .map((id) => friendMap.get(id)?.friend_username || '?')
               .join(', ')}
@@ -419,6 +422,7 @@ function FriendPickerList({
   onTap: (id: string) => void;
   badgeFor: (id: string) => string | null;
 }) {
+  const { t } = useT();
   return (
     <div className="space-y-1.5">
       {friends.map((f) => {
@@ -437,7 +441,7 @@ function FriendPickerList({
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate text-sm">{f.friend_username || 'Unknown'}</p>
               <p className="text-[11px] text-muted-foreground">
-                {f.compatibility_score ?? 0}% match with you
+                {t('{n}% match with you', { n: f.compatibility_score ?? 0 })}
               </p>
             </div>
             {badge && (
@@ -496,9 +500,9 @@ function ResultsView({
     }
     try {
       await navigator.clipboard.writeText(`${text}\n${shareData.url}`);
-      toast.success('Copied to clipboard');
+      toast.success(t('Copied to clipboard'));
     } catch {
-      toast.error('Could not share');
+      toast.error(t('Could not share'));
     }
   }
 
@@ -513,7 +517,7 @@ function ResultsView({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <button onClick={onReset} className="text-xs text-muted-foreground underline">
-            ← Pick a different crew
+            ← {t('Pick a different crew')}
           </button>
           <Button
             size="sm"
@@ -522,32 +526,32 @@ function ResultsView({
             onClick={() => shareResults(vibeShareText)}
           >
             <Share2 className="h-3.5 w-3.5" />
-            Share
+            {t('Share')}
           </Button>
         </div>
 
         <div className="glass rounded-3xl p-6 text-center space-y-2">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Your Crew</p>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">{t('Your Crew')}</p>
           <p className="text-sm font-semibold">{namesOf(vibeGroup)}</p>
           <div className="text-5xl font-display font-bold text-primary mt-2">
             {stats.alignmentPct}%
           </div>
           <p className="text-sm text-muted-foreground">
-            aligned across {stats.sharedPolls} shared polls
+            {t('aligned across {n} shared polls', { n: stats.sharedPolls })}
           </p>
           <p className="text-xs text-foreground/70 italic mt-1">
             {stats.alignmentPct >= 70
-              ? '🔥 Tight crew — you really get each other.'
+              ? t('🔥 Tight crew — you really get each other.')
               : stats.alignmentPct >= 40
-              ? '⚖️ Mixed bag — you agree on some things, debate the rest.'
-              : '🌪️ Chaos crew — wildly different tastes.'}
+              ? t('⚖️ Mixed bag — you agree on some things, debate the rest.')
+              : t('🌪️ Chaos crew — wildly different tastes.')}
           </p>
         </div>
 
         {stats.catList.length > 0 && (
           <div className="glass rounded-3xl p-4 space-y-3">
             <p className="text-xs uppercase tracking-wide text-muted-foreground font-bold">
-              Where you agree most
+              {t('Where you agree most')}
             </p>
             {stats.catList.slice(0, 6).map((c: any) => (
               <div key={c.cat} className="space-y-1">
@@ -583,7 +587,7 @@ function ResultsView({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <button onClick={onReset} className="text-xs text-muted-foreground underline">
-          ← Pick different groups
+          ← {t('Pick different groups')}
         </button>
         <Button
           size="sm"
@@ -592,7 +596,7 @@ function ResultsView({
           onClick={() => shareResults(battleShareText)}
         >
           <Share2 className="h-3.5 w-3.5" />
-          Share
+          {t('Share')}
         </Button>
       </div>
 
@@ -620,8 +624,8 @@ function ResultsView({
               <Trophy className="h-7 w-7 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] uppercase tracking-widest opacity-80">Tightest Crew</p>
-              <p className="text-xl font-display font-bold">Group {winner} wins 🏆</p>
+              <p className="text-[10px] uppercase tracking-widest opacity-80">{t('Tightest Crew')}</p>
+              <p className="text-xl font-display font-bold">{t('Group {w} wins 🏆', { w: winner })}</p>
               <p className="text-xs opacity-90 truncate">
                 {winner === 'A' ? namesOf(groupA) : namesOf(groupB)}
               </p>
@@ -630,15 +634,15 @@ function ResultsView({
               <div className="text-3xl font-display font-bold leading-none">
                 {winner === 'A' ? stats.a.alignmentPct : stats.b.alignmentPct}%
               </div>
-              <p className="text-[10px] opacity-80 mt-0.5">aligned</p>
+              <p className="text-[10px] opacity-80 mt-0.5">{t('aligned')}</p>
             </div>
           </div>
         </div>
       ) : (
         <div className="rounded-3xl bg-gradient-to-br from-muted to-muted/50 p-5 text-center animate-scale-in">
           <div className="text-3xl mb-1">🤝</div>
-          <p className="text-base font-display font-bold">It's a tie!</p>
-          <p className="text-xs text-muted-foreground">Both crews equally tight</p>
+          <p className="text-base font-display font-bold">{t("It's a tie!")}</p>
+          <p className="text-xs text-muted-foreground">{t('Both crews equally tight')}</p>
         </div>
       )}
 
@@ -648,7 +652,7 @@ function ResultsView({
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
             {/* Group A side */}
             <div className={`text-center transition-all ${winner === 'A' ? 'scale-105' : winner === 'B' ? 'opacity-60' : ''}`}>
-              <p className="text-[10px] uppercase tracking-widest text-primary font-bold mb-1">Group A</p>
+              <p className="text-[10px] uppercase tracking-widest text-primary font-bold mb-1">{t('Group A')}</p>
               <div className="relative mx-auto w-16 h-16 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center">
                 <span className="text-2xl font-display font-bold text-primary">A</span>
                 {winner === 'A' && (
@@ -656,7 +660,7 @@ function ResultsView({
                 )}
               </div>
               <div className="text-2xl font-display font-bold mt-2">{stats.a.alignmentPct}%</div>
-              <p className="text-[10px] text-muted-foreground">{stats.a.sharedPolls} polls</p>
+              <p className="text-[10px] text-muted-foreground">{t('{n} polls', { n: stats.a.sharedPolls })}</p>
             </div>
 
             {/* VS */}
@@ -669,7 +673,7 @@ function ResultsView({
 
             {/* Group B side */}
             <div className={`text-center transition-all ${winner === 'B' ? 'scale-105' : winner === 'A' ? 'opacity-60' : ''}`}>
-              <p className="text-[10px] uppercase tracking-widest text-accent-foreground font-bold mb-1">Group B</p>
+              <p className="text-[10px] uppercase tracking-widest text-accent-foreground font-bold mb-1">{t('Group B')}</p>
               <div className="relative mx-auto w-16 h-16 rounded-full bg-accent/30 border-2 border-accent flex items-center justify-center">
                 <span className="text-2xl font-display font-bold">B</span>
                 {winner === 'B' && (
@@ -677,7 +681,7 @@ function ResultsView({
                 )}
               </div>
               <div className="text-2xl font-display font-bold mt-2">{stats.b.alignmentPct}%</div>
-              <p className="text-[10px] text-muted-foreground">{stats.b.sharedPolls} polls</p>
+              <p className="text-[10px] text-muted-foreground">{t('{n} polls', { n: stats.b.sharedPolls })}</p>
             </div>
           </div>
         </div>
@@ -686,7 +690,7 @@ function ResultsView({
         <div className="space-y-1.5">
           <div className="flex justify-between text-[10px] uppercase tracking-wide font-bold">
             <span className="text-primary">A {stats.a.alignmentPct}%</span>
-            <span className="text-muted-foreground">Internal alignment</span>
+            <span className="text-muted-foreground">{t('Internal alignment')}</span>
             <span>B {stats.b.alignmentPct}%</span>
           </div>
           <div className="relative h-3 rounded-full bg-muted overflow-hidden flex">
@@ -706,7 +710,7 @@ function ResultsView({
 
         {/* Cross-crew alignment dial */}
         <div className="border-t border-border pt-4 text-center">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Cross-crew alignment</p>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{t('Cross-crew alignment')}</p>
           <div className="flex items-baseline justify-center gap-1 mt-1">
             <div className="text-4xl font-display font-bold text-primary">{stats.crossAlign}</div>
             <div className="text-xl font-display font-bold text-primary">%</div>
@@ -714,13 +718,13 @@ function ResultsView({
           <Progress value={stats.crossAlign} className="h-2 mt-2" />
           <p className="text-[11px] text-muted-foreground mt-2 italic">
             {stats.crossAlign >= 70
-              ? '🔥 These crews think alike'
+              ? t('🔥 These crews think alike')
               : stats.crossAlign >= 40
-              ? '⚖️ Some shared ground, plenty to debate'
-              : '🌪️ Totally different worlds'}
+              ? t('⚖️ Some shared ground, plenty to debate')
+              : t('🌪️ Totally different worlds')}
           </p>
           <p className="text-[10px] text-muted-foreground mt-0.5">
-            on {stats.crossShared} polls both crews voted on
+            {t('on {n} polls both crews voted on', { n: stats.crossShared })}
           </p>
         </div>
       </div>
@@ -729,7 +733,7 @@ function ResultsView({
       {stats.disagreements.length > 0 && (
         <div className="glass rounded-3xl p-4 space-y-3">
           <p className="text-xs uppercase tracking-wide text-muted-foreground font-bold flex items-center gap-1">
-            <Swords className="h-3 w-3" /> Where the crews split
+            <Swords className="h-3 w-3" /> {t('Where the crews split')}
           </p>
           {stats.disagreements.map((d: any) => (
             <div key={d.poll.id} className="border border-border rounded-2xl p-3 text-sm">
@@ -751,13 +755,13 @@ function ResultsView({
       {stats.agreements.length > 0 && (
         <div className="glass rounded-3xl p-4 space-y-3">
           <p className="text-xs uppercase tracking-wide text-muted-foreground font-bold flex items-center gap-1">
-            <Check className="h-3 w-3" /> Where both crews agree
+            <Check className="h-3 w-3" /> {t('Where both crews agree')}
           </p>
           {stats.agreements.map((a: any) => (
             <div key={a.poll.id} className="border border-border rounded-2xl p-3 text-sm">
               <p className="font-semibold mb-1 line-clamp-2">{a.poll.question}</p>
               <p className="text-xs text-primary font-medium">
-                Both picked: {a.choice === 'A' ? a.poll.option_a : a.poll.option_b}
+                {t('Both picked:')} {a.choice === 'A' ? a.poll.option_a : a.poll.option_b}
               </p>
             </div>
           ))}
@@ -766,7 +770,7 @@ function ResultsView({
 
       {stats.crossShared === 0 && (
         <div className="glass rounded-3xl p-6 text-center text-sm text-muted-foreground">
-          These two crews haven't voted on enough of the same polls yet. Keep voting!
+          {t("These two crews haven't voted on enough of the same polls yet. Keep voting!")}
         </div>
       )}
     </div>

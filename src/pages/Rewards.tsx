@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useT } from '@/hooks/useT';
 
 interface Reward {
   id: string;
@@ -34,6 +35,7 @@ interface Reward {
 }
 
 export default function Rewards() {
+  const { t } = useT();
   const { user, profile, refreshProfile } = useAuth();
   const queryClient = useQueryClient();
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
@@ -75,13 +77,13 @@ export default function Rewards() {
       if (!user || !profile) throw new Error('Not authenticated');
       
       if (profile.points < reward.cost_points) {
-        throw new Error('Not enough points');
+        throw new Error(t('Not enough points'));
       }
       
       const existing = reward.userReward;
       
       if (existing?.status === 'redeemed') {
-        throw new Error('Already redeemed');
+        throw new Error(t('Already redeemed'));
       }
       
       const code = generateCode();
@@ -115,16 +117,16 @@ export default function Rewards() {
       setRedemptionCode(code);
       queryClient.invalidateQueries({ queryKey: ['rewards'] });
       refreshProfile();
-      toast.success('Reward redeemed successfully!');
+      toast.success(t('Reward redeemed successfully!'));
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to redeem reward');
+      toast.error(error.message || t('Failed to redeem reward'));
     },
   });
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast.success('Code copied to clipboard!');
+    toast.success(t('Code copied to clipboard!'));
   };
 
   const partnerRewards = rewards?.filter(r => r.partner_name) || [];
@@ -134,8 +136,8 @@ export default function Rewards() {
     <AppLayout>
       <div className="p-4 space-y-6 animate-slide-up">
         <header>
-          <h1 className="text-2xl font-display font-bold">Perks</h1>
-          <p className="text-foreground/60 text-sm">Unlock perks with your influence</p>
+          <h1 className="text-2xl font-display font-bold">{t('Perks')}</h1>
+          <p className="text-foreground/60 text-sm">{t('Unlock perks with your influence')}</p>
         </header>
 
         {/* Insight Score Balance */}
@@ -144,7 +146,7 @@ export default function Rewards() {
             <Gift className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <p className="text-sm text-card-foreground/70">Insight Score</p>
+            <p className="text-sm text-card-foreground/70">{t('Insight Score')}</p>
             <p className="text-2xl font-display font-bold">{profile?.points || 0}</p>
           </div>
         </div>
@@ -160,10 +162,10 @@ export default function Rewards() {
               <section className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  <h2 className="text-lg font-semibold">Partner Rewards</h2>
+                  <h2 className="text-lg font-semibold">{t('Partner Rewards')}</h2>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Exclusive offers from our partner brands
+                  {t('Exclusive offers from our partner brands')}
                 </p>
                 
                 <div className="space-y-3">
@@ -213,7 +215,7 @@ export default function Rewards() {
                               {isRedeemed ? (
                                 <span className="flex items-center gap-1 text-xs text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
                                   <Check className="h-3 w-3" />
-                                  Redeemed
+                                  {t('Redeemed')}
                                 </span>
                               ) : (
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -221,7 +223,7 @@ export default function Rewards() {
                                     ? 'bg-primary/10 text-primary' 
                                     : 'bg-muted text-muted-foreground'
                                 }`}>
-                                  {canAfford ? 'Unlock now' : 'Keep voting'}
+                                  {canAfford ? t('Unlock now') : t('Keep voting')}
                                 </span>
                               )}
                             </div>
@@ -237,7 +239,7 @@ export default function Rewards() {
             {/* Internal Rewards Section */}
             {internalRewards.length > 0 && (
               <section className="space-y-4">
-                <h2 className="text-lg font-semibold">Versa Rewards</h2>
+                <h2 className="text-lg font-semibold">{t('Versa Rewards')}</h2>
                 
                 <div className="grid grid-cols-2 gap-4">
                   {internalRewards.map((reward) => {
@@ -272,7 +274,7 @@ export default function Rewards() {
                             {isRedeemed ? (
                               <span className="flex items-center gap-1 text-xs text-green-500">
                                 <Check className="h-3 w-3" />
-                                Redeemed
+                                {t('Redeemed')}
                               </span>
                             ) : (
                               <span className="text-xs text-muted-foreground">
@@ -291,9 +293,9 @@ export default function Rewards() {
             {rewards?.length === 0 && (
               <div className="text-center py-12">
                 <Gift className="h-12 w-12 text-foreground/40 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold">No rewards available</h3>
+                <h3 className="text-lg font-semibold">{t('No rewards available')}</h3>
                 <p className="text-foreground/60 text-sm">
-                  Check back later for new rewards from our partners
+                  {t('Check back later for new rewards from our partners')}
                 </p>
               </div>
             )}
@@ -335,7 +337,7 @@ export default function Rewards() {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
-                  <span className="text-sm text-muted-foreground">Required Score</span>
+                  <span className="text-sm text-muted-foreground">{t('Required Score')}</span>
                   <span className="font-bold text-primary">{selectedReward.cost_points}</span>
                 </div>
 
@@ -348,7 +350,7 @@ export default function Rewards() {
                 {/* Redemption Code Display */}
                 {(redemptionCode || selectedReward.userReward?.redemption_code) && (
                   <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl space-y-3">
-                    <p className="text-sm text-green-600 font-medium text-center">Your Unlock Code</p>
+                    <p className="text-sm text-green-600 font-medium text-center">{t('Your Unlock Code')}</p>
                     <div className="flex items-center justify-center gap-2">
                       <code className="text-lg font-mono font-bold text-foreground bg-background px-4 py-2 rounded-lg">
                         {redemptionCode || selectedReward.userReward?.redemption_code}
@@ -362,7 +364,7 @@ export default function Rewards() {
                       </Button>
                     </div>
                     <p className="text-xs text-center text-muted-foreground">
-                      Show this code at our partner location or use it online
+                      {t('Show this code at our partner location or use it online')}
                     </p>
                   </div>
                 )}
@@ -375,7 +377,7 @@ export default function Rewards() {
                       onClick={() => window.open(selectedReward.external_url!, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4" />
-                      Visit Partner Site
+                      {t('Visit Partner Site')}
                     </Button>
                   )
                 ) : (
@@ -391,8 +393,8 @@ export default function Rewards() {
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     ) : null}
                     {(profile?.points || 0) >= selectedReward.cost_points 
-                      ? `Unlock Perk`
-                      : `Need ${selectedReward.cost_points - (profile?.points || 0)} more`
+                      ? t('Unlock Perk')
+                      : t('Need {n} more', { n: selectedReward.cost_points - (profile?.points || 0) })
                     }
                   </Button>
                 )}

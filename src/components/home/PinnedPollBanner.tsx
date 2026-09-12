@@ -3,12 +3,14 @@ import { Pin, X, Users, Radio } from 'lucide-react';
 import { usePinnedPoll } from '@/hooks/usePinnedPoll';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 function AnimatedNum({ value }: { value: number }) {
   return <span>{value.toLocaleString()}</span>;
 }
 
 export default function PinnedPollBanner() {
+  const { t } = useT();
   const { pinnedPollData, genderSplit, isAdminFeatured, isPinned, unpinPoll } = usePinnedPoll();
   const navigate = useNavigate();
 
@@ -28,11 +30,11 @@ export default function PinnedPollBanner() {
         <div className="flex items-center gap-1.5">
           {isAdminFeatured ? (
             <span className="text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/15 px-2 py-0.5 rounded-full">
-              ⭐ Featured Debate
+              ⭐ {t('Featured Debate')}
             </span>
           ) : (
             <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-              <Pin className="h-3 w-3" /> Pinned
+              <Pin className="h-3 w-3" /> {t('Pinned')}
             </span>
           )}
           {/* LIVE badge */}
@@ -42,14 +44,14 @@ export default function PinnedPollBanner() {
             className="flex items-center gap-1 bg-destructive/15 text-destructive px-1.5 py-0.5 rounded-full"
           >
             <Radio className="h-2.5 w-2.5" />
-            <span className="text-[8px] font-bold uppercase">Live</span>
+            <span className="text-[8px] font-bold uppercase">{t('Live')}</span>
           </motion.div>
         </div>
         {!isAdminFeatured && (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              unpinPoll.mutate(undefined, { onSuccess: () => toast.success('Unpinned') });
+              unpinPoll.mutate(undefined, { onSuccess: () => toast.success(t('Unpinned')) });
             }}
             className="p-1 rounded-full hover:bg-muted/50 text-muted-foreground"
           >
@@ -99,7 +101,7 @@ export default function PinnedPollBanner() {
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-[10px] text-muted-foreground flex items-center gap-1">
             <Users className="h-3 w-3" />
-            <AnimatedNum value={poll.totalVotes} /> votes
+            <AnimatedNum value={poll.totalVotes} /> {t('votes')}
           </span>
           {genderSplit && (
             <span className="text-[10px] text-muted-foreground">

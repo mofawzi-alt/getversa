@@ -24,6 +24,7 @@ import {
 } from '@/lib/biometric';
 import { hapticSuccess, hapticError } from '@/lib/haptics';
 import SocialAuthButtons from '@/components/auth/SocialAuthButtons';
+import { useT } from '@/hooks/useT';
 
 const AGE_RANGES = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDERS = ['Male', 'Female'];
@@ -104,6 +105,7 @@ const clearPendingSignupProfile = () => {
 const selectClass = "flex h-10 w-full rounded-md border border-input bg-secondary/80 px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-foreground appearance-none cursor-pointer border-border/50 focus:border-accent focus:ring-accent/30";
 
 export default function Auth() {
+  const { t } = useT();
   const [searchParams] = useSearchParams();
   const isSignupMode = searchParams.get('mode') === 'signup';
   const isVoteIntent = searchParams.get('reason') === 'vote';
@@ -202,11 +204,11 @@ export default function Auth() {
     if (data.session) {
       hapticSuccess();
       markBiometricUnlocked();
-      toast.success('Welcome back!');
+      toast.success(t('Welcome back!'));
       navigate('/home', { replace: true });
     } else {
       setEmail(bioEmail);
-      toast(`${bioLabel} can only unlock an existing session — after logout, sign in with your password first.`, { duration: 4200 });
+      toast(t('{n} can only unlock an existing session — after logout, sign in with your password first.', { n: bioLabel }), { duration: 4200 });
     }
   };
 
@@ -216,7 +218,7 @@ export default function Auth() {
 
     if (isLogin) {
       // Login — only email + password
-      if (!termsAccepted) { toast.error('Please agree to the Terms first.'); return; }
+      if (!termsAccepted) { toast.error(t('Please agree to the Terms first.')); return; }
       const validation = loginSchema.safeParse({ email, password });
       if (!validation.success) {
         toast.error(validation.error.errors[0].message);
@@ -227,7 +229,7 @@ export default function Auth() {
         const { error, session: signedInSession } = await signIn(email, password);
         if (error) {
           hapticError();
-          toast.error(error.message.includes('Invalid login credentials') ? 'Invalid email/password. If you joined with Google or Apple, use that button.' : error.message);
+          toast.error(error.message.includes('Invalid login credentials') ? t('Invalid email/password. If you joined with Google or Apple, use that button.') : error.message);
         } else {
           const signedInUser = signedInSession?.user || session?.user || null;
           const pendingProfile = getPendingSignupProfile(email);
@@ -240,14 +242,14 @@ export default function Auth() {
             }
           }
           hapticSuccess();
-          toast.success('Welcome back!');
+          toast.success(t('Welcome back!'));
           // Offer to enable biometrics on first successful native login
           if (isNativePlatform() && bioAvailable && !bioEnabled) {
-            const result = await promptBiometric(`Enable ${bioLabel} for faster sign-in?`);
+            const result = await promptBiometric(t('Enable {n} for faster sign-in?', { n: bioLabel }));
             if (result.ok) {
               enableBiometric(email);
               markBiometricUnlocked();
-              toast.success(`${bioLabel} enabled`);
+              toast.success(t('{n} enabled', { n: bioLabel }));
             }
           } else if (bioEnabled && bioEmail !== email) {
             // Re-enroll for the new account
@@ -259,19 +261,19 @@ export default function Auth() {
           }
           navigate('/home');
         }
-      } catch { toast.error('An unexpected error occurred'); }
+      } catch { toast.error(t('An unexpected error occurred')); }
       finally { setLoading(false); }
       return;
     }
 
     // Signup — validate all fields
-    if (!termsAccepted) { toast.error('Please agree to the Terms first.'); return; }
+    if (!termsAccepted) { toast.error(t('Please agree to the Terms first.')); return; }
     const validation = loginSchema.safeParse({ email, password });
     if (!validation.success) { toast.error(validation.error.errors[0].message); return; }
-    if (!name.trim()) { toast.error('Please enter your name'); return; }
-    if (!ageRange) { toast.error('Please select your age range'); return; }
-    if (!gender) { toast.error('Please select your gender'); return; }
-    if (!city) { toast.error('Please select your city'); return; }
+    if (!name.trim()) { toast.error(t('Please enter your name')); return; }
+    if (!ageRange) { toast.error(t('Please select your age range')); return; }
+    if (!gender) { toast.error(t('Please select your gender')); return; }
+    if (!city) { toast.error(t('Please select your city')); return; }
 
     setLoading(true);
     try {
@@ -288,7 +290,7 @@ export default function Auth() {
       const { error, user: createdUser, session: createdSession } = await signUp(email, password, signupMetadata);
       if (error) {
         if (error.message.includes('already registered')) {
-          toast.error('This email is already registered. Please sign in instead.');
+          toast.error(t('This email is already registered. Please sign in instead.'));
         } else {
           toast.error(error.message);
         }
@@ -300,10 +302,10 @@ export default function Auth() {
         const repeatedSignupUser = createdUser as { identities?: unknown[] } | null;
         const repeatedSignup = Array.isArray(repeatedSignupUser?.identities) && repeatedSignupUser.identities.length === 0;
         if (repeatedSignup) {
-          toast.error('This email already has an account. Sign in with Google/Apple or use Forgot password.');
+          toast.error(t('This email already has an account. Sign in with Google/Apple or use Forgot password.'));
         } else {
           savePendingSignupProfile(email, signupMetadata);
-          toast.success('Check your email to finish joining Versa.');
+          toast.success(t('Check your email to finish joining Versa.'));
         }
         setIsLogin(true);
         setLoading(false);
@@ -317,12 +319,12 @@ export default function Auth() {
       await applyProfileForUser(newUser, signupMetadata);
       clearPendingSignupProfile();
 
-      toast.success('Welcome to Versa! 🔥');
+      toast.success(t('Welcome to Versa! 🔥'));
 
       // If they came from trying to vote, go home (vote intent poll handled there)
       navigate('/home', { replace: true });
     } catch (signupError) {
-      const message = signupError instanceof Error ? signupError.message : 'An unexpected error occurred';
+      const message = signupError instanceof Error ? signupError.message : t('An unexpected error occurred');
       toast.error(message);
     } finally {
       setLoading(false);
@@ -341,9 +343,9 @@ export default function Auth() {
         <div className="text-center flex flex-col items-center">
           <VersaLogo size="lg" />
           {isVoteIntent && !isLogin ? (
-            <p className="text-foreground font-display font-bold mt-2 text-sm">Sign up free to add your vote 🔥<br /><span className="text-muted-foreground font-normal text-xs">Takes 30 seconds</span></p>
+            <p className="text-foreground font-display font-bold mt-2 text-sm">{t('Sign up free to add your vote 🔥')}<br /><span className="text-muted-foreground font-normal text-xs">{t('Takes 30 seconds')}</span></p>
           ) : (
-            <p className="text-muted-foreground mt-2">{isLogin ? 'Welcome back.' : 'Join the conversation'}</p>
+            <p className="text-muted-foreground mt-2">{isLogin ? t('Welcome back.') : t('Join the conversation')}</p>
           )}
         </div>
 
@@ -354,7 +356,7 @@ export default function Auth() {
 
           <div className="my-4 flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">or {isLogin ? 'sign in with email' : 'with email'}</span>
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t('or')} {isLogin ? t('sign in with email') : t('with email')}</span>
             <div className="h-px flex-1 bg-border" />
           </div>
 
@@ -362,11 +364,11 @@ export default function Auth() {
             {/* Signup-only fields */}
             {!isLogin && (
               <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-card-foreground text-xs">Name</Label>
+                <Label htmlFor="name" className="text-card-foreground text-xs">{t('Name')}</Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Your name"
+                  placeholder={t('Your name')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="bg-secondary/80 border-border/50 text-card-foreground placeholder:text-muted-foreground focus:border-accent focus:ring-accent/30 h-10"
@@ -376,7 +378,7 @@ export default function Auth() {
             )}
 
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-card-foreground text-xs">Email</Label>
+              <Label htmlFor="email" className="text-card-foreground text-xs">{t('Email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -390,14 +392,14 @@ export default function Auth() {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-card-foreground text-xs">Password</Label>
+                <Label htmlFor="password" className="text-card-foreground text-xs">{t('Password')}</Label>
                 {isLogin && (
                   <button
                     type="button"
                     onClick={async () => {
                       const emailCheck = z.string().email().safeParse(email);
                       if (!emailCheck.success) {
-                        toast.error('Enter your email first, then tap Forgot password?');
+                        toast.error(t('Enter your email first, then tap Forgot password?'));
                         return;
                       }
                       setLoading(true);
@@ -407,15 +409,15 @@ export default function Auth() {
                       });
                       setLoading(false);
                       if (error) {
-                        toast.error(error.message || 'Could not send reset email');
+                        toast.error(error.message || t('Could not send reset email'));
                       } else {
-                        toast.success('Check your inbox for a reset link');
+                        toast.success(t('Check your inbox for a reset link'));
                       }
                     }}
                     className="text-[11px] text-accent hover:underline disabled:opacity-50"
                     disabled={loading}
                   >
-                    Forgot password?
+                    {t('Forgot password?')}
                   </button>
                 )}
               </div>
@@ -443,7 +445,7 @@ export default function Auth() {
             {!isLogin && (
               <>
                 <div className="space-y-1.5">
-                  <Label className="text-card-foreground text-xs">Age range</Label>
+                  <Label className="text-card-foreground text-xs">{t('Age range')}</Label>
                   <div className="relative">
                     <select
                       value={ageRange}
@@ -451,7 +453,7 @@ export default function Auth() {
                       className={selectClass}
                       disabled={loading}
                     >
-                      <option value="" disabled>Select age range</option>
+                      <option value="" disabled>{t('Select age range')}</option>
                       {AGE_RANGES.map(a => <option key={a} value={a}>{a}</option>)}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -459,7 +461,7 @@ export default function Auth() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-card-foreground text-xs">Gender</Label>
+                  <Label className="text-card-foreground text-xs">{t('Gender')}</Label>
                   <div className="relative">
                     <select
                       value={gender}
@@ -467,7 +469,7 @@ export default function Auth() {
                       className={selectClass}
                       disabled={loading}
                     >
-                      <option value="" disabled>Select gender</option>
+                      <option value="" disabled>{t('Select gender')}</option>
                       {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -475,7 +477,7 @@ export default function Auth() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-card-foreground text-xs">Country</Label>
+                  <Label className="text-card-foreground text-xs">{t('Country')}</Label>
                   <div className="relative">
                     <select
                       value={country}
@@ -483,7 +485,7 @@ export default function Auth() {
                       className={selectClass}
                       disabled={loading}
                     >
-                      <option value="" disabled>Select country</option>
+                      <option value="" disabled>{t('Select country')}</option>
                       {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -491,7 +493,7 @@ export default function Auth() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-card-foreground text-xs">City</Label>
+                  <Label className="text-card-foreground text-xs">{t('City')}</Label>
                   <div className="relative">
                     <select
                       value={city}
@@ -499,7 +501,7 @@ export default function Auth() {
                       className={selectClass}
                       disabled={loading || !country}
                     >
-                      <option value="" disabled>{country ? 'Select city' : 'Select country first'}</option>
+                      <option value="" disabled>{country ? t('Select city') : t('Select country first')}</option>
                       {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -515,7 +517,7 @@ export default function Auth() {
                     className="mt-0.5"
                   />
                   <label htmlFor="age-confirm" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                    I confirm that I am 18 years of age or older.
+                    {t('I confirm that I am 18 years of age or older.')}
                   </label>
                 </div>
               </>
@@ -530,9 +532,9 @@ export default function Auth() {
                 className="mt-0.5"
               />
               <label htmlFor="terms-accepted" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                I agree to the{' '}
-                <Link to="/terms" className="text-accent underline">Terms of Service / EULA</Link> and{' '}
-                <Link to="/privacy" className="text-accent underline">Privacy Policy</Link>
+                {t('I agree to the')}{' '}
+                <Link to="/terms" className="text-accent underline">{t('Terms of Service / EULA')}</Link> {t('and')}{' '}
+                <Link to="/privacy" className="text-accent underline">{t('Privacy Policy')}</Link>
               </label>
             </div>
 
@@ -544,9 +546,9 @@ export default function Auth() {
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : isLogin ? (
-                'Sign In'
+                t('Sign In')
               ) : (
-                'Join Versa'
+                t('Join Versa')
               )}
             </Button>
 
@@ -559,7 +561,7 @@ export default function Auth() {
                 className="w-full h-12 rounded-full mt-2 gap-2"
               >
                 <BioIcon className="h-5 w-5" />
-                Sign in with {bioLabel}
+                {t('Sign in with {n}', { n: bioLabel })}
               </Button>
             )}
           </form>
@@ -570,9 +572,9 @@ export default function Auth() {
               onClick={() => setIsLogin(!isLogin)}
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              {isLogin ? "Don't have an account? " : 'Already have an account? '}
+              {isLogin ? t("Don't have an account? ") : t('Already have an account? ')}
               <span className="text-accent font-medium hover:underline">
-                {isLogin ? 'Sign up' : 'Sign in'}
+                {isLogin ? t('Sign up') : t('Sign in')}
               </span>
             </button>
           </div>

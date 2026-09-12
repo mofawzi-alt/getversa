@@ -1,8 +1,10 @@
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useT } from '@/hooks/useT';
 
 export default function Terms() {
+  const { t } = useT();
   const navigate = useNavigate();
 
   return (
@@ -17,35 +19,35 @@ export default function Terms() {
       </header>
 
       <main className="max-w-2xl mx-auto px-5 py-8 text-foreground">
-        <h1 className="text-2xl font-bold mb-1">Terms of Service</h1>
-        <p className="text-sm text-muted-foreground mb-6">Versa — Consumer Intelligence Platform · Last updated: May 2026</p>
+        <h1 className="text-2xl font-bold mb-1">{t('Terms of Service')}</h1>
+        <p className="text-sm text-muted-foreground mb-6">{t("Versa — Consumer Intelligence Platform · Last updated: May 2026")}</p>
 
-        <Section title="1. Acceptance of Terms">
-          <p>By downloading, accessing, or using the Versa app ("Versa", "the app", "the platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use Versa.</p>
-          <p className="mt-2">These Terms form a legal agreement between you and Versa Technologies ("we", "us", "our"). We reserve the right to update these Terms at any time. Continued use of Versa after changes are posted means you accept the updated Terms.</p>
+        <Section title={t("1. Acceptance of Terms")}>
+          <p>{t("By downloading, accessing, or using the Versa app (\"Versa\", \"the app\", \"the platform\"), you agree to be bound by these Terms of Service (\"Terms\"). If you do not agree to these Terms, do not use Versa.")}</p>
+          <p className="mt-2">{t("These Terms form a legal agreement between you and Versa Technologies (\"we\", \"us\", \"our\"). We reserve the right to update these Terms at any time. Continued use of Versa after changes are posted means you accept the updated Terms.")}</p>
         </Section>
 
-        <Section title="2. Who Can Use Versa">
-          <p>You must be at least 13 years old to use Versa. By creating an account, you confirm that you meet this age requirement.</p>
-          <p className="mt-2">If you are between 13 and 18 years old, you confirm that you have your parent or guardian's permission to use Versa.</p>
-          <p className="mt-2">You may only create one account per person. You may not create an account on behalf of someone else.</p>
+        <Section title={t("2. Who Can Use Versa")}>
+          <p>{t("You must be at least 13 years old to use Versa. By creating an account, you confirm that you meet this age requirement.")}</p>
+          <p className="mt-2">{t("If you are between 13 and 18 years old, you confirm that you have your parent or guardian's permission to use Versa.")}</p>
+          <p className="mt-2">{t("You may only create one account per person. You may not create an account on behalf of someone else.")}</p>
         </Section>
 
-        <Section title="3. Your Account">
+        <Section title={t("3. Your Account")}>
           <h3 className="font-semibold mt-2 mb-1">3.1 Account Registration</h3>
-          <p>To use Versa, you must create an account with a valid email address and username. You are responsible for keeping your login credentials secure. Do not share your password with anyone.</p>
+          <p>{t("To use Versa, you must create an account with a valid email address and username. You are responsible for keeping your login credentials secure. Do not share your password with anyone.")}</p>
 
           <h3 className="font-semibold mt-4 mb-1">3.2 Accurate Information</h3>
-          <p>You agree to provide accurate, current, and complete information when creating your account, including your age range, gender, and location. Providing false demographic information affects the quality of Versa's data and violates these Terms.</p>
+          <p>{t("You agree to provide accurate, current, and complete information when creating your account, including your age range, gender, and location. Providing false demographic information affects the quality of Versa's data and violates these Terms.")}</p>
 
           <h3 className="font-semibold mt-4 mb-1">3.3 Account Security</h3>
           <p>You are responsible for all activity that occurs under your account. If you believe your account has been compromised, contact us immediately at <a href="mailto:privacy@getversa.app" className="text-primary underline">privacy@getversa.app</a>.</p>
 
           <h3 className="font-semibold mt-4 mb-1">3.4 Account Termination</h3>
-          <p>We reserve the right to suspend or permanently delete your account at any time if you violate these Terms, engage in abusive behaviour, or if we determine your account is being used fraudulently.</p>
+          <p>{t("We reserve the right to suspend or permanently delete your account at any time if you violate these Terms, engage in abusive behaviour, or if we determine your account is being used fraudulently.")}</p>
         </Section>
 
-        <Section title="4. Using Versa">
+        <Section title={t("4. Using Versa")}>
           <h3 className="font-semibold mt-2 mb-1">4.1 What You Can Do</h3>
           <ul className="list-disc pl-5 space-y-0.5">
             <li>Vote on polls and view results</li>
@@ -57,7 +59,7 @@ export default function Terms() {
           </ul>
 
           <h3 className="font-semibold mt-4 mb-1">4.2 What You Cannot Do</h3>
-          <p>You agree not to:</p>
+          <p>{t("You agree not to:")}</p>
           <ul className="list-disc pl-5 mt-1 space-y-0.5">
             <li>Create fake accounts or use bots to generate votes</li>
             <li>Attempt to manipulate poll results</li>
@@ -70,39 +72,39 @@ export default function Terms() {
           </ul>
 
           <h3 className="font-semibold mt-4 mb-1">4.3 Poll Participation</h3>
-          <p>Votes on Versa represent your genuine opinion. You agree to vote honestly and not to systematically vote in a way designed to manipulate aggregate results.</p>
+          <p>{t("Votes on Versa represent your genuine opinion. You agree to vote honestly and not to systematically vote in a way designed to manipulate aggregate results.")}</p>
 
           <h3 className="font-semibold mt-4 mb-1">4.4 User Content and Moderation</h3>
-          <p>If you submit content to Versa, including Live Asks, photos, text, usernames, or profile content, you may not submit objectionable, abusive, harassing, hateful, sexual, violent, illegal, spam, impersonation, or otherwise harmful content.</p>
-          <p className="mt-2">Versa may automatically filter submitted content before it appears. Users can report objectionable content and block abusive users from inside the app. Blocking a user hides that user's content from the blocker immediately and sends the related content to Versa for review.</p>
-          <p className="mt-2">We review objectionable content reports and may remove content, restrict access, suspend accounts, or delete accounts that violate these Terms. Reports of objectionable content are acted on within 24 hours where required by platform safety rules.</p>
+          <p>{t("If you submit content to Versa, including Live Asks, photos, text, usernames, or profile content, you may not submit objectionable, abusive, harassing, hateful, sexual, violent, illegal, spam, impersonation, or otherwise harmful content.")}</p>
+          <p className="mt-2">{t("Versa may automatically filter submitted content before it appears. Users can report objectionable content and block abusive users from inside the app. Blocking a user hides that user's content from the blocker immediately and sends the related content to Versa for review.")}</p>
+          <p className="mt-2">{t("We review objectionable content reports and may remove content, restrict access, suspend accounts, or delete accounts that violate these Terms. Reports of objectionable content are acted on within 24 hours where required by platform safety rules.")}</p>
         </Section>
 
-        <Section title="5. Credits and Ask Versa">
+        <Section title={t("5. Credits and Ask Versa")}>
           <h3 className="font-semibold mt-2 mb-1">5.1 Earning Credits</h3>
-          <p>Credits are earned by voting on polls. The credit earning rate may change at any time.</p>
+          <p>{t("Credits are earned by voting on polls. The credit earning rate may change at any time.")}</p>
 
           <h3 className="font-semibold mt-4 mb-1">5.2 Spending Credits</h3>
-          <p>Credits can be spent on Ask Versa insights. Credits have no monetary value and cannot be withdrawn, transferred, or exchanged for cash.</p>
+          <p>{t("Credits can be spent on Ask Versa insights. Credits have no monetary value and cannot be withdrawn, transferred, or exchanged for cash.")}</p>
 
           <h3 className="font-semibold mt-4 mb-1">5.3 Credit Expiry</h3>
-          <p>Credits do not expire while your account is active. If your account is deleted, your credits are forfeited.</p>
+          <p>{t("Credits do not expire while your account is active. If your account is deleted, your credits are forfeited.")}</p>
         </Section>
 
-        <Section title="6. Intellectual Property">
+        <Section title={t("6. Intellectual Property")}>
           <h3 className="font-semibold mt-2 mb-1">6.1 Versa's Content</h3>
-          <p>All content on Versa — including poll questions, images, personality types, dimensions, insights, the Ask Versa feature, the Versa Arena feature, and all associated data — is owned by Versa Technologies. You may not copy, reproduce, distribute, or create derivative works from Versa's content without our written permission.</p>
+          <p>{t("All content on Versa — including poll questions, images, personality types, dimensions, insights, the Ask Versa feature, the Versa Arena feature, and all associated data — is owned by Versa Technologies. You may not copy, reproduce, distribute, or create derivative works from Versa's content without our written permission.")}</p>
 
           <h3 className="font-semibold mt-4 mb-1">6.2 Poll Data and Insights</h3>
-          <p>All vote data collected through Versa, including aggregated results and demographic breakdowns, is the exclusive property of Versa Technologies. This data may be used to create consumer intelligence reports sold to third-party brand clients.</p>
+          <p>{t("All vote data collected through Versa, including aggregated results and demographic breakdowns, is the exclusive property of Versa Technologies. This data may be used to create consumer intelligence reports sold to third-party brand clients.")}</p>
 
           <h3 className="font-semibold mt-4 mb-1">6.3 Your Content</h3>
-          <p>If you submit any content to Versa (such as a profile photo or username), you grant Versa a non-exclusive, worldwide, royalty-free licence to use, display, and store that content for the purpose of operating the platform.</p>
+          <p>{t("If you submit any content to Versa (such as a profile photo or username), you grant Versa a non-exclusive, worldwide, royalty-free licence to use, display, and store that content for the purpose of operating the platform.")}</p>
         </Section>
 
-        <Section title="7. Privacy">
+        <Section title={t("7. Privacy")}>
           <p>Your use of Versa is also governed by our Privacy Policy, which is incorporated into these Terms by reference. Please read it carefully at <a href="/privacy" className="text-primary underline">getversa.app/privacy</a>.</p>
-          <p className="mt-2">The key points:</p>
+          <p className="mt-2">{t("The key points:")}</p>
           <ul className="list-disc pl-5 mt-1 space-y-0.5">
             <li>We collect your demographic data to provide personalised poll targeting</li>
             <li>We aggregate and anonymise vote data for B2B consumer intelligence reports</li>
@@ -111,42 +113,42 @@ export default function Terms() {
           </ul>
         </Section>
 
-        <Section title="8. Disclaimers">
+        <Section title={t("8. Disclaimers")}>
           <h3 className="font-semibold mt-2 mb-1">8.1 As-Is Service</h3>
-          <p>Versa is provided "as is" and "as available" without warranties of any kind. We do not guarantee that the app will be available at all times, error-free, or free from bugs.</p>
+          <p>{t("Versa is provided \"as is\" and \"as available\" without warranties of any kind. We do not guarantee that the app will be available at all times, error-free, or free from bugs.")}</p>
 
           <h3 className="font-semibold mt-4 mb-1">8.2 Poll Results</h3>
-          <p>Poll results on Versa reflect the opinions of Versa users who voted on a given poll. They are not scientifically representative surveys of the general population. Results should not be used as the sole basis for significant business, medical, financial, or personal decisions.</p>
+          <p>{t("Poll results on Versa reflect the opinions of Versa users who voted on a given poll. They are not scientifically representative surveys of the general population. Results should not be used as the sole basis for significant business, medical, financial, or personal decisions.")}</p>
 
           <h3 className="font-semibold mt-4 mb-1">8.3 Ask Versa</h3>
-          <p>Ask Versa provides insights based on available poll data. We do not guarantee the accuracy, completeness, or timeliness of Ask Versa responses.</p>
+          <p>{t("Ask Versa provides insights based on available poll data. We do not guarantee the accuracy, completeness, or timeliness of Ask Versa responses.")}</p>
         </Section>
 
-        <Section title="9. Limitation of Liability">
-          <p>To the maximum extent permitted by applicable law, Versa Technologies shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the platform, including but not limited to loss of data, loss of profits, or reputational damage.</p>
-          <p className="mt-2">Our total liability to you for any claim arising from your use of Versa shall not exceed the amount you paid us in the 12 months preceding the claim (if any).</p>
+        <Section title={t("9. Limitation of Liability")}>
+          <p>{t("To the maximum extent permitted by applicable law, Versa Technologies shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the platform, including but not limited to loss of data, loss of profits, or reputational damage.")}</p>
+          <p className="mt-2">{t("Our total liability to you for any claim arising from your use of Versa shall not exceed the amount you paid us in the 12 months preceding the claim (if any).")}</p>
         </Section>
 
-        <Section title="10. Indemnification">
-          <p>You agree to defend, indemnify, and hold harmless Versa Technologies and its team from any claims, damages, or expenses arising from your violation of these Terms or your misuse of the platform.</p>
+        <Section title={t("10. Indemnification")}>
+          <p>{t("You agree to defend, indemnify, and hold harmless Versa Technologies and its team from any claims, damages, or expenses arising from your violation of these Terms or your misuse of the platform.")}</p>
         </Section>
 
-        <Section title="11. Governing Law">
-          <p>These Terms are governed by the laws of the Arab Republic of Egypt. Any disputes arising from these Terms shall be subject to the jurisdiction of the courts of Cairo, Egypt.</p>
+        <Section title={t("11. Governing Law")}>
+          <p>{t("These Terms are governed by the laws of the Arab Republic of Egypt. Any disputes arising from these Terms shall be subject to the jurisdiction of the courts of Cairo, Egypt.")}</p>
         </Section>
 
-        <Section title="12. Changes to These Terms">
-          <p>We may update these Terms from time to time. When we do, we will update the "Last updated" date at the top of this page. If changes are significant, we will notify you through the app or by email. Continued use of Versa after changes are posted constitutes acceptance of the updated Terms.</p>
+        <Section title={t("12. Changes to These Terms")}>
+          <p>{t("We may update these Terms from time to time. When we do, we will update the \"Last updated\" date at the top of this page. If changes are significant, we will notify you through the app or by email. Continued use of Versa after changes are posted constitutes acceptance of the updated Terms.")}</p>
         </Section>
 
-        <Section title="13. Contact Us">
-          <p>If you have any questions about these Terms, contact us at:</p>
+        <Section title={t("13. Contact Us")}>
+          <p>{t("If you have any questions about these Terms, contact us at:")}</p>
           <p className="mt-2"><strong>Email:</strong> <a href="mailto:privacy@getversa.app" className="text-primary underline">privacy@getversa.app</a></p>
           <p><strong>Website:</strong> <a href="https://getversa.app" className="text-primary underline">getversa.app</a></p>
         </Section>
 
         <div className="pt-8 border-t border-border/40 mt-8">
-          <p className="text-xs text-muted-foreground text-center">© 2026 Versa Technologies. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground text-center">{t("© 2026 Versa Technologies. All rights reserved.")}</p>
         </div>
       </main>
     </div>

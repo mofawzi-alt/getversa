@@ -13,15 +13,16 @@ import SuggestionChips from '@/components/ask/SuggestionChips';
 import AskThread, { type AskTurn, type Mode } from '@/components/ask/AskThread';
 import CreditBalance from '@/components/ask/CreditBalance';
 import UnlockModal from '@/components/ask/UnlockModal';
+import { useT } from '@/hooks/useT';
 
-const DECIDE_SUGGESTIONS = [
+const DECIDE_SUGGESTIONS_RAW = [
   { text: 'Costa or Cilantro for studying?', tag: 'Trending', icon: 'flame' as const },
   { text: 'iPhone or Samsung — which lasts longer?', tag: '2.4K voted', icon: 'users' as const },
   { text: 'Should I order Talabat or Elmenus tonight?', tag: 'Hot', icon: 'zap' as const },
   { text: 'Nike or Adidas for everyday wear?', tag: '50/50 split', icon: 'trending' as const },
 ];
 
-const RESEARCH_SUGGESTIONS = [
+const RESEARCH_SUGGESTIONS_RAW = [
   { text: 'How do students feel about online learning?', tag: 'Popular', icon: 'flame' as const },
   { text: 'What do people think about marriage age in Egypt?', tag: 'Divisive', icon: 'trending' as const },
   { text: 'Cairo vs Alexandria lifestyle differences', tag: '1.8K votes', icon: 'users' as const },
@@ -44,6 +45,10 @@ const RESEARCH_PLACEHOLDERS = [
   'Discover opinion patterns…',
   'Analyze the public mood…',
 ];
+
+function translateSuggestions(list: typeof DECIDE_SUGGESTIONS_RAW, t: (k: string, vars?: Record<string, string | number>) => string) {
+  return list.map((s) => ({ ...s, text: t(s.text), tag: s.tag ? t(s.tag) : s.tag }));
+}
 
 function buildHistoryFromTurns(turns: AskTurn[]) {
   const out: Array<{ role: 'user' | 'assistant'; content: string }> = [];
@@ -89,6 +94,9 @@ export default function Ask() {
   const qc = useQueryClient();
   const { data: askCredits = 0 } = useAskCredits();
   const { totalVotes, askLevel, levelLabel } = useUserVoteCount();
+  const { t } = useT();
+  const DECIDE_SUGGESTIONS = translateSuggestions(DECIDE_SUGGESTIONS_RAW, t);
+  const RESEARCH_SUGGESTIONS = translateSuggestions(RESEARCH_SUGGESTIONS_RAW, t);
   const [mode, setMode] = useState<Mode>('decide');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -110,8 +118,8 @@ export default function Ask() {
 
   const placeholders = mode === 'decide' ? DECIDE_PLACEHOLDERS : RESEARCH_PLACEHOLDERS;
   const currentPlaceholder = turns.length > 0
-    ? 'Ask a follow-up…'
-    : placeholders[placeholderIdx % placeholders.length];
+    ? t('Ask a follow-up…')
+    : t(placeholders[placeholderIdx % placeholders.length]);
 
   const focusInputIfDesktop = () => {
     if (typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches) {
@@ -216,7 +224,7 @@ export default function Ask() {
           }
         } catch {}
         if (/credits?\s*exhausted|not enough credits|402/i.test(msg)) {
-          msg = 'Ask Versa is temporarily unavailable — AI credits exhausted. Please try again later.';
+          msg = t('Ask Versa is temporarily unavailable — AI credits exhausted. Please try again later.');
         }
         toast.error(msg);
         setTurns((prev) => prev.filter((t) => t.id !== turnId));
@@ -241,9 +249,9 @@ export default function Ask() {
 
       const remaining = data.credits_balance ?? 0;
       if (remaining <= 10 && remaining > 0) {
-        toast(`You have ${remaining} credit${remaining === 1 ? '' : 's'} left — vote on more polls to earn more!`, { icon: '💡' });
+        toast(t('You have {n} credit{s} left — vote on more polls to earn more!', { n: remaining, s: remaining === 1 ? '' : 's' }), { icon: '💡' });
       } else if (remaining <= 0) {
-        toast('You\'re out of credits! Vote on polls to earn more.', { icon: '🗳️' });
+        toast(t("You're out of credits! Vote on polls to earn more."), { icon: '🗳️' });
       }
     } catch (e: any) {
       console.error(e);
@@ -256,7 +264,7 @@ export default function Ask() {
 
   const runPreview = async (q?: string) => {
     const question = (q ?? query).trim();
-    if (question.length < 3) { toast.error('Type a fuller question'); return; }
+    if (question.length < 3) { toast.error(t('Type a fuller question')); return; }
     if (loading) return;
 
     setQuery('');
@@ -277,7 +285,7 @@ export default function Ask() {
           }
         } catch {}
         if (/credits?\s*exhausted|not enough credits|402/i.test(msg)) {
-          msg = 'Ask Versa is temporarily unavailable — AI credits exhausted. Please try again later.';
+          msg = t('Ask Versa is temporarily unavailable — AI credits exhausted. Please try again later.');
         }
         toast.error(msg);
         return;
@@ -333,7 +341,7 @@ export default function Ask() {
       }
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || 'Search failed');
+      toast.error(e?.message || t('Search failed'));
     } finally {
       setLoading(false);
       setTimeout(focusInputIfDesktop, 50);
@@ -356,7 +364,7 @@ export default function Ask() {
       >
         <div className="flex items-center justify-between gap-1.5 px-3 py-2 w-full min-w-0 max-w-lg mx-auto overflow-hidden">
           <div className="flex items-center gap-1 min-w-0 flex-1">
-            <button onClick={handleBack} className="p-1.5 -ml-1 rounded-full hover:bg-muted active:scale-95 transition shrink-0" aria-label="Back">
+            <button onClick={handleBack} className="p-1.5 -ml-1 rounded-full hover:bg-muted active:scale-95 transition shrink-0" aria-label={t("Back")}>
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-1.5 min-w-0">
@@ -366,13 +374,13 @@ export default function Ask() {
                   <Sparkles className="h-4 w-4 text-primary" />
                 </div>
               </div>
-              <h1 className="text-[15px] font-bold truncate">Ask Versa</h1>
+              <h1 className="text-[15px] font-bold truncate">{t('Ask Versa')}</h1>
             </div>
           </div>
           <div className="flex items-center justify-end gap-1.5 shrink-0">
             <CreditBalance compact />
             {turns.length > 0 && (
-              <button onClick={reset} className="flex items-center justify-center h-7 w-7 rounded-full bg-muted text-foreground active:scale-95 transition shrink-0" aria-label="New chat">
+              <button onClick={reset} className="flex items-center justify-center h-7 w-7 rounded-full bg-muted text-foreground active:scale-95 transition shrink-0" aria-label={t("New chat")}>
                 <RotateCcw className="h-3.5 w-3.5" />
               </button>
             )}
@@ -388,16 +396,16 @@ export default function Ask() {
             <div className="inline-flex h-14 w-14 rounded-full bg-muted items-center justify-center mb-4">
               <Lock className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="text-base font-bold text-foreground mb-2">Vote on 15 polls to unlock Ask Versa</p>
+            <p className="text-base font-bold text-foreground mb-2">{t('Vote on 15 polls to unlock Ask Versa')}</p>
             <div className="max-w-[200px] mx-auto mb-2">
               <Progress value={(totalVotes / 15) * 100} className="h-2" />
             </div>
-            <p className="text-xs text-muted-foreground">{totalVotes} of 15 polls voted</p>
+            <p className="text-xs text-muted-foreground">{t('{n} of 15 polls voted', { n: totalVotes })}</p>
             <button
               onClick={() => navigate('/home')}
               className="mt-4 h-10 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-95 transition"
             >
-              Start voting
+              {t('Start voting')}
             </button>
           </div>
         )}
@@ -426,7 +434,7 @@ export default function Ask() {
                   transition={{ delay: 0.15 }}
                   className="text-lg font-black text-foreground break-words"
                 >
-                  Can't decide? Egypt already did.
+                  {t("Can't decide? Egypt already did.")}
                 </motion.p>
                 <motion.p
                   initial={{ opacity: 0 }}
@@ -434,10 +442,10 @@ export default function Ask() {
                   transition={{ delay: 0.3 }}
                   className="text-xs text-muted-foreground mt-1 break-words"
                 >
-                  Instant answers backed by real public votes
+                  {t('Instant answers backed by real public votes')}
                 </motion.p>
               </div>
-              <SuggestionChips label="🔥 Everyone's asking right now" suggestions={promptSuggestions} onPick={runPreview} variant="decide" />
+              <SuggestionChips label={t("🔥 Everyone's asking right now")} suggestions={promptSuggestions} onPick={runPreview} variant="decide" />
             </motion.div>
           </>
         )}
@@ -466,7 +474,7 @@ export default function Ask() {
                   transition={{ delay: 0.2, duration: 0.4 }}
                   className="text-base font-semibold text-foreground break-words"
                 >
-                  Understand what Egypt really thinks
+                  {t('Understand what Egypt really thinks')}
                 </motion.p>
                 <motion.p
                   initial={{ opacity: 0 }}
@@ -474,10 +482,10 @@ export default function Ask() {
                   transition={{ delay: 0.4 }}
                   className="text-xs text-muted-foreground mt-1 break-words"
                 >
-                  Deep patterns from real voter data · Demographics · Cultural splits
+                  {t('Deep patterns from real voter data · Demographics · Cultural splits')}
                 </motion.p>
               </div>
-              <SuggestionChips label="📊 Trending research questions" suggestions={promptSuggestions} onPick={runPreview} variant="research" />
+              <SuggestionChips label={t('📊 Trending research questions')} suggestions={promptSuggestions} onPick={runPreview} variant="research" />
             </motion.div>
           </>
         )}
@@ -521,7 +529,7 @@ export default function Ask() {
                   ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
                   : 'bg-foreground/90 text-background shadow-sm'
               }`}
-              aria-label="Send"
+              aria-label={t("Send")}
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
             </button>

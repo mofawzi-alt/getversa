@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 export default function DecisionHelper() {
+  const { t } = useT();
   const navigate = useNavigate();
 
   return (
@@ -19,11 +21,11 @@ export default function DecisionHelper() {
           <ShoppingBag className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-display font-bold text-foreground">Not sure what to pick?</p>
-          <p className="text-xs text-muted-foreground mt-0.5">See real votes from people like you before you decide</p>
+          <p className="text-sm font-display font-bold text-foreground">{t('Not sure what to pick?')}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('See real votes from people like you before you decide')}</p>
         </div>
         <div className="flex items-center gap-1 text-primary shrink-0">
-          <span className="text-xs font-bold">Explore</span>
+          <span className="text-xs font-bold">{t('Explore')}</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </div>
       </div>

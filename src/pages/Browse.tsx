@@ -13,11 +13,13 @@ import { toast } from 'sonner';
 import BottomNav from '@/components/layout/BottomNav';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import BrowseCard, { computeDemoTags, type BrowsePoll, type DemoTag } from '@/components/browse/BrowseCard';
+import { useT } from '@/hooks/useT';
 
 // (BrowsePoll, DemoTag, computeDemoTags imported from shared BrowseCard component)
 
 // Share image generator
 function useShareImage() {
+  const { t } = useT();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -100,7 +102,7 @@ function useShareImage() {
   const share = useCallback(async (poll: BrowsePoll) => {
     try {
       const blob = await generate(poll);
-      if (!blob) { toast.error('Failed to generate image'); return; }
+      if (!blob) { toast.error(t('Failed to generate image')); return; }
       const file = new File([blob], 'versa-result.png', { type: 'image/png' });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ title: 'VERSA', text: `📊 ${poll.question}`, files: [file] });
@@ -109,10 +111,10 @@ function useShareImage() {
         const a = document.createElement('a');
         a.href = url; a.download = 'versa-result.png'; a.click();
         URL.revokeObjectURL(url);
-        toast.success('Image downloaded! Share it 📸');
+        toast.success(t('Image downloaded! Share it 📸'));
       }
     } catch (err) {
-      if ((err as Error).name !== 'AbortError') toast.error('Failed to share');
+      if ((err as Error).name !== 'AbortError') toast.error(t('Failed to share'));
     }
   }, [generate]);
 
@@ -122,6 +124,7 @@ function useShareImage() {
 // FireReactionButton and BrowseCard moved to @/components/browse/BrowseCard
 
 export default function Browse() {
+  const { t } = useT();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -365,7 +368,7 @@ export default function Browse() {
 
   const handleVote = useCallback(() => {
     if (!user) { navigate('/auth'); return; }
-    toast.info("Vote on today's battles from the Home screen! 🔥");
+    toast.info(t("Vote on today's battles from the Home screen! 🔥"));
     navigate('/home');
   }, [user, navigate]);
 
@@ -380,7 +383,7 @@ export default function Browse() {
   if (!sortedFeed.length) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <p className="text-muted-foreground">No polls to browse yet</p>
+        <p className="text-muted-foreground">{t('No polls to browse yet')}</p>
         <BottomNav />
       </div>
     );
@@ -398,13 +401,13 @@ export default function Browse() {
             <ArrowLeft className="h-4 w-4 text-foreground" />
           </button>
           <Radio className="h-3.5 w-3.5 text-destructive animate-pulse" />
-          <span className="text-[11px] font-display font-bold text-foreground">Live Debates</span>
+          <span className="text-[11px] font-display font-bold text-foreground">{t('Live Debates')}</span>
         </div>
       )}
 
       {visibleFeed.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-muted-foreground">No polls match "{searchQuery}"</p>
+          <p className="text-sm text-muted-foreground">{t('No polls match "{q}"', { q: searchQuery })}</p>
         </div>
       ) : (
         <div
@@ -456,7 +459,7 @@ export default function Browse() {
           <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
             <ChevronUp className="h-5 w-5 text-muted-foreground" />
           </motion.div>
-          <span className="text-[10px] text-muted-foreground font-medium">Scroll for more</span>
+          <span className="text-[10px] text-muted-foreground font-medium">{t('Scroll for more')}</span>
         </motion.div>
       )}
 
@@ -482,9 +485,9 @@ export default function Browse() {
               >
                 👆
               </motion.div>
-              <p className="text-lg font-display font-bold text-foreground">Swipe up to see more battles</p>
-              <p className="text-sm text-muted-foreground">Scroll through all live debates like a feed</p>
-              <span className="text-xs text-muted-foreground/60 mt-2">Tap anywhere to continue</span>
+              <p className="text-lg font-display font-bold text-foreground">{t('Swipe up to see more battles')}</p>
+              <p className="text-sm text-muted-foreground">{t('Scroll through all live debates like a feed')}</p>
+              <span className="text-xs text-muted-foreground/60 mt-2">{t('Tap anywhere to continue')}</span>
             </div>
           </motion.div>
         )}
@@ -501,14 +504,14 @@ export default function Browse() {
             className="fixed bottom-20 left-3 right-3 z-40 rounded-2xl bg-card/95 backdrop-blur-lg border border-border/60 shadow-lg px-4 py-3 flex items-center gap-3"
           >
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-foreground leading-tight">Sign up free to add your vote to any battle</p>
-              <p className="text-[10px] text-muted-foreground">30 seconds — no spam, ever</p>
+              <p className="text-xs font-semibold text-foreground leading-tight">{t('Sign up free to add your vote to any battle')}</p>
+              <p className="text-[10px] text-muted-foreground">{t('30 seconds — no spam, ever')}</p>
             </div>
             <button
               onClick={() => navigate('/auth')}
               className="shrink-0 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
             >
-              Sign Up
+              {t('Sign Up')}
             </button>
             <button
               onClick={() => setBannerDismissed(true)}

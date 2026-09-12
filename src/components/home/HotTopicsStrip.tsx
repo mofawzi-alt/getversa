@@ -3,12 +3,14 @@ import { motion } from 'framer-motion';
 import { Flame } from 'lucide-react';
 import { useHotTopics } from '@/hooks/useHotTopics';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
+import { useT } from '@/hooks/useT';
 
 /**
  * Pinned "Hot right now" rail at the very top of Home.
  * Ranked by votes in the last 6 hours; refreshes with pull-to-refresh.
  */
 export default function HotTopicsStrip() {
+  const { t } = useT();
   const navigate = useNavigate();
   const { data: hot = [], isLoading } = useHotTopics(10);
 
@@ -21,8 +23,8 @@ export default function HotTopicsStrip() {
           <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
         </span>
-        <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-foreground">Hot right now</h2>
-        <span className="text-[10px] font-medium text-muted-foreground">updates live</span>
+        <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-foreground">{t('Hot right now')}</h2>
+        <span className="text-[10px] font-medium text-muted-foreground">{t('updates live')}</span>
       </div>
 
       <div className="flex gap-2.5 overflow-x-auto px-3 pb-1 scrollbar-hide">

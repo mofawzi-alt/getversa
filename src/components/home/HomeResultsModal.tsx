@@ -5,6 +5,7 @@ import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { getNativeSafeImageSrc } from '@/lib/pollImages';
+import { useT } from '@/hooks/useT';
 
 interface HomeResultsModalProps {
   open: boolean;
@@ -27,6 +28,7 @@ interface HomeResultsModalProps {
 }
 
 export default function HomeResultsModal({ open, onOpenChange, poll, imageA, imageB, headerLabel }: HomeResultsModalProps) {
+  const { t } = useT();
   const { data: genderTeaser } = useGenderSplitTeaser(
     poll?.id || '',
     poll?.option_a || '',
@@ -83,7 +85,7 @@ export default function HomeResultsModal({ open, onOpenChange, poll, imageA, ima
           <h3 className="text-sm font-bold text-foreground">{poll.question}</h3>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {poll.totalVotes} votes</span>
+              <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {poll.totalVotes} {t('votes')}</span>
               {poll.category && <span className="px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-[10px]">{poll.category}</span>}
             </div>
             <div className="flex items-center gap-1">

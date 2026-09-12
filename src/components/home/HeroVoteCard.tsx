@@ -25,6 +25,7 @@ import HookMoment from '@/components/onboarding/HookMoment';
 import CampaignFeedbackModal from '@/components/poll/CampaignFeedbackModal';
 import { useCampaignFeedbackConfig } from '@/hooks/useCampaignFeedbackConfig';
 import { recordGuestVote } from '@/lib/guestVoteMigration';
+import { useT } from '@/hooks/useT';
 
 interface HeroPoll {
   id: string;
@@ -67,6 +68,7 @@ const DRAG_DEAD_ZONE = 15;
 
 export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPollTap }: HeroVoteCardProps) {
   const { user, profile } = useAuth();
+  const { t } = useT();
   const queryClient = useQueryClient();
 
   const [dragX, setDragX] = useState(0);
@@ -290,7 +292,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
 
     const { error } = await supabase.from('votes').insert(votePayload);
     if (error && error.code !== '23505') {
-      toast.error('Vote failed');
+      toast.error(t('Vote failed'));
       setResult(null);
       setIsVoting(false);
       return;
@@ -577,7 +579,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
               animate={{ scale: 1, opacity: 1 }}
               className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-secondary text-foreground font-semibold"
             >
-              🔥 <span className="text-destructive">{unseenCount}</span> pulse{unseenCount !== 1 ? 's' : ''} left today
+              🔥 <span className="text-destructive">{unseenCount}</span> {unseenCount !== 1 ? t('pulses left today') : t('pulse left today')}
             </motion.span>
           )}
           {poll.ends_at && <CountdownTimer endsAt={poll.ends_at} size="sm" />}
@@ -613,7 +615,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
           <div className="flex items-center gap-2 min-w-0">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold tracking-wide">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              LIVE NOW
+              {t('LIVE NOW')}
             </span>
             {poll.category && (
               <CategoryBadge category={mapToVersaCategory(poll.category)} size="xs" />
@@ -621,7 +623,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             {liveVotes5m >= 5 && (
               <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-medium truncate">
                 <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                +{liveVotes5m.toLocaleString()} votes · last 5 min
+                +{liveVotes5m.toLocaleString()} {t('votes · last 5 min')}
               </span>
             )}
           </div>
@@ -648,11 +650,11 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
         <div className="px-4 pt-0.5 pb-2 text-center">
           {poll.is_hot_take ? (
             <p className="text-[10px] font-bold text-destructive mb-0.5 inline-flex items-center gap-1 justify-center">
-              🔥 Hot Take
+              🔥 {t('Hot Take')}
             </p>
           ) : (
             <p className="text-[10px] font-bold text-destructive mb-0.5 inline-flex items-center gap-1 justify-center">
-              🔥 The Pulse
+              🔥 {t('The Pulse')}
             </p>
           )}
           <h2 className="font-display font-bold leading-tight text-foreground text-xl" dir="auto">
@@ -830,7 +832,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 </p>
               )}
               <p className="text-[10px] text-muted-foreground/80 text-center mt-1">
-                {result.total.toLocaleString()} perspectives{revealMode === 'flash' ? ' · Next loading…' : ''}
+                {result.total.toLocaleString()} {t('perspectives')}{revealMode === 'flash' ? ` · ${t('Next loading…')}` : ''}
               </p>
             </motion.div>
           )}
@@ -853,7 +855,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
                 className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-background/90 backdrop-blur-md border border-border/60 shadow-lg text-foreground text-xs font-semibold"
               >
                 <span>←</span>
-                <span>Swipe or tap to vote</span>
+                <span>{t('Swipe or tap to vote')}</span>
                 <span>→</span>
               </motion.div>
             </motion.div>
@@ -868,7 +870,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
             onClick={submitSkip}
             className="text-xs font-medium text-muted-foreground/80 hover:text-muted-foreground active:scale-95 transition-all px-3 py-1 rounded-full border border-border/40"
           >
-            Skip ↑
+            {t('Skip')} ↑
           </button>
         </div>
       )}

@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Users } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 export default function FriendsJoinedToday() {
+  const { t } = useT();
   const { user } = useAuth();
 
   const { data: count = 0 } = useQuery({
@@ -35,7 +37,7 @@ export default function FriendsJoinedToday() {
       <div className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-full bg-primary/8 border border-primary/15">
         <Users className="h-3 w-3 text-primary" />
         <span className="text-[11px] font-semibold text-primary">
-          {count} {user ? 'people' : 'friends'} joined today
+          {count} {user ? t('people') : t('friends')} {t('joined today')}
         </span>
       </div>
     </motion.div>

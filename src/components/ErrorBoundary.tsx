@@ -1,5 +1,14 @@
 import { Component, ReactNode } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { translate } from '@/lib/i18n';
+
+function getStoredLang(): 'en' | 'ar' {
+  try {
+    const saved = localStorage.getItem('versa_language');
+    if (saved === 'ar' || saved === 'en') return saved;
+  } catch { /* ignore */ }
+  return 'en';
+}
 
 const isNativeApp = () => {
   try {
@@ -102,15 +111,15 @@ export default class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-6 text-center safe-area-top safe-area-bottom">
           <div className="max-w-sm space-y-4">
-            <h1 className="text-2xl font-display font-bold">Just a moment</h1>
+            <h1 className="text-2xl font-display font-bold">{translate('Just a moment', getStoredLang())}</h1>
             <p className="text-sm text-muted-foreground">
-              Versa needs to refresh. Tap below to continue — your account and votes are safe.
+              {translate('Versa needs to refresh. Tap below to continue — your account and votes are safe.', getStoredLang())}
             </p>
             <button
               onClick={this.handleReload}
               className="inline-flex items-center justify-center h-11 px-6 rounded-full bg-primary text-primary-foreground font-medium shadow-card hover:opacity-90 transition"
             >
-              Continue
+              {translate('Continue', getStoredLang())}
             </button>
           </div>
         </div>

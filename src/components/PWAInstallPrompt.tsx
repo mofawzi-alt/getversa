@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X, Share, Smartphone } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 const DISMISS_KEY = 'versa_pwa_dismissed';
 const FIRST_VOTE_KEY = 'versa_first_vote_done';
@@ -29,6 +30,7 @@ export function hasFirstVote(): boolean {
 
 /** Inline banner shown inside the vote results screen after first vote */
 export default function PWAInstallPrompt() {
+  const { t } = useT();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [show, setShow] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -104,19 +106,19 @@ export default function PWAInstallPrompt() {
 
           <div className="flex-1 min-w-0 pr-5">
             <p className="text-xs font-bold text-foreground leading-tight">
-              Add Versa to your home screen for daily battles 🔥
+              {t("Add Versa to your home screen for daily battles 🔥")}
             </p>
 
             {isIOS ? (
               <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
-                Tap <Share className="inline h-3 w-3 -mt-0.5" /> then <span className="font-semibold text-foreground">"Add to Home Screen"</span>
+                {t("Tap")} <Share className="inline h-3 w-3 -mt-0.5" /> {t("then")} <span className="font-semibold text-foreground">{t("Add to Home Screen")}</span>
               </p>
             ) : (
               <button
                 onClick={handleInstall}
                 className="mt-1 flex items-center gap-1 text-[10px] font-bold text-primary hover:text-primary/80 transition-colors"
               >
-                <Download className="h-3 w-3" /> Install App
+                <Download className="h-3 w-3" /> {t("Install App")}
               </button>
             )}
           </div>

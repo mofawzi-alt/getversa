@@ -2,11 +2,13 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { useActiveBrandCampaigns } from '@/hooks/useActiveBrandCampaign';
 import { Sparkles, ArrowRight } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 const AUTO_ROTATE_MS = 5000;
 const SWIPE_THRESHOLD = 40;
 
 export default function BrandPackBanner() {
+  const { t } = useT();
   const navigate = useNavigate();
   const { data: campaigns } = useActiveBrandCampaigns();
   const [index, setIndex] = useState(0);
@@ -90,10 +92,10 @@ export default function BrandPackBanner() {
             </div>
           )}
           <div className="flex-1 text-left min-w-0">
-            <div className="text-[11px] uppercase tracking-wider opacity-90 font-semibold">Brand Pack</div>
+            <div className="text-[11px] uppercase tracking-wider opacity-90 font-semibold">{t('Brand Pack')}</div>
             <div className="text-sm font-bold truncate">{brand}</div>
             <div className="text-xs opacity-90">
-              {campaign.unvoted_polls} quick question{campaign.unvoted_polls === 1 ? '' : 's'}
+              {campaign.unvoted_polls} {campaign.unvoted_polls === 1 ? t('quick question') : t('quick questions')}
             </div>
           </div>
           <ArrowRight className="w-5 h-5 flex-shrink-0" />
@@ -110,7 +112,7 @@ export default function BrandPackBanner() {
                 setPaused(true);
                 setTimeout(() => setPaused(false), 4000);
               }}
-              aria-label={`Show campaign ${i + 1}`}
+              aria-label={`${t('Show campaign')} ${i + 1}`}
               className={`h-1.5 rounded-full transition-all ${
                 i === index ? 'w-5 bg-primary' : 'w-1.5 bg-muted-foreground/30'
               }`}

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import VersaLogo from '@/components/VersaLogo';
+import { useT } from '@/hooks/useT';
 
 const SPLASH_KEY = 'versa_splash_seen';
 
@@ -12,6 +13,7 @@ export function markSplashSeen() {
 }
 
 export default function SplashScreen({ onComplete }: { onComplete?: () => void }) {
+  const { t } = useT();
   return (
     <motion.div
       initial={{ opacity: 1 }}
@@ -34,7 +36,7 @@ export default function SplashScreen({ onComplete }: { onComplete?: () => void }
           className="text-sm tracking-wide"
           style={{ color: '#b0b0b0' }}
         >
-          Where you decide.
+          {t('Where you decide.')}
         </motion.p>
       </motion.div>
     </motion.div>

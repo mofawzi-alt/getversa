@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/hooks/useT';
 
 interface ActiveAsk {
   id: string;
@@ -44,6 +45,7 @@ function matches(ask: ActiveAsk, viewer: ViewerProfile | null): boolean {
 }
 
 export default function LiveAskCards() {
+  const { t } = useT();
   const nav = useNavigate();
   const { user } = useAuth();
   const [asks, setAsks] = useState<ActiveAsk[]>([]);
@@ -124,8 +126,8 @@ export default function LiveAskCards() {
       </span>
       <span className="text-[13px] font-bold text-[#E8392A] shrink-0">
         {isVoted
-          ? `${asks.length} Live Ask${asks.length === 1 ? '' : 's'}`
-          : `${totalNew} new Live Ask${totalNew === 1 ? '' : 's'}`}
+          ? `${asks.length} ${asks.length === 1 ? t('Live Ask') : t('Live Asks')}`
+          : `${totalNew} ${totalNew === 1 ? t('new Live Ask') : t('new Live Asks')}`}
       </span>
       {showCounter && (
         <span className="text-[10px] font-semibold text-[#E8392A]/80 bg-[#E8392A]/15 px-1.5 py-0.5 rounded-full shrink-0">
@@ -136,7 +138,7 @@ export default function LiveAskCards() {
         · {next.question}
       </span>
       <span className="text-[11px] font-semibold text-[#E8392A] shrink-0">
-        {isVoted ? 'View →' : 'Vote →'}
+        {isVoted ? t('View') : t('Vote')} →
       </span>
     </button>
   );

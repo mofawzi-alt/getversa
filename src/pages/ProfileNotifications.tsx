@@ -11,8 +11,10 @@ import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import { NotificationToggle } from '@/components/NotificationToggle';
 import { NotificationPreferences } from '@/components/profile/NotificationPreferences';
 import CategoryStoriesFilter from '@/components/pulse/CategoryStoriesFilter';
+import { useT } from '@/hooks/useT';
 
 export default function ProfileNotifications() {
+  const { t } = useT();
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -68,10 +70,10 @@ export default function ProfileNotifications() {
         }, { onConflict: 'user_id' });
 
       if (error) throw error;
-      toast.success('Settings updated');
+      toast.success(t('Settings updated'));
     } catch (error) {
       console.error('Error updating settings:', error);
-      toast.error('Failed to update settings');
+      toast.error(t('Failed to update settings'));
       setSettings(prev => ({ ...prev, [key]: !value }));
     }
   };
@@ -86,7 +88,7 @@ export default function ProfileNotifications() {
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-2xl font-display font-bold">Notification Settings</h1>
+          <h1 className="text-2xl font-display font-bold">{t('Notification Settings')}</h1>
         </div>
 
         <NotificationToggle />
@@ -96,9 +98,9 @@ export default function ProfileNotifications() {
         <div className="glass rounded-2xl divide-y divide-border">
           <div className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">Sound Effects</Label>
+              <Label className="text-base font-medium">{t('Sound Effects')}</Label>
               <p className="text-sm text-muted-foreground">
-                Play subtle sounds on swipe and results
+                {t('Play subtle sounds on swipe and results')}
               </p>
             </div>
             <Switch
@@ -106,16 +108,16 @@ export default function ProfileNotifications() {
               onCheckedChange={(checked) => {
                 setSoundEffects(checked);
                 setSoundEnabled(checked);
-                toast.success(checked ? 'Sound effects enabled' : 'Sound effects disabled');
+                toast.success(checked ? t('Sound effects enabled') : t('Sound effects disabled'));
               }}
             />
           </div>
 
           <div className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">Daily Poll Reminders</Label>
+              <Label className="text-base font-medium">{t('Daily Poll Reminders')}</Label>
               <p className="text-sm text-muted-foreground">
-                Get reminded to vote on daily polls
+                {t('Get reminded to vote on daily polls')}
               </p>
             </div>
             <Switch
@@ -127,9 +129,9 @@ export default function ProfileNotifications() {
 
           <div className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">Sponsored Polls</Label>
+              <Label className="text-base font-medium">{t('Sponsored Polls')}</Label>
               <p className="text-sm text-muted-foreground">
-                Opt in to receive sponsored poll notifications
+                {t('Opt in to receive sponsored poll notifications')}
               </p>
             </div>
             <Switch

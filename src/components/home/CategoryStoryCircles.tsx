@@ -3,6 +3,7 @@ import { LayoutGrid, Sparkles } from 'lucide-react';
 import { useCategoryStories } from '@/hooks/useCategoryStories';
 import { getCategoryIcon } from '@/lib/categoryMeta';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
+import { useT } from '@/hooks/useT';
 
 interface CategoryStoryCirclesProps {
   active: string | null;
@@ -16,6 +17,7 @@ interface CategoryStoryCirclesProps {
  * top poll of the day. Tapping filters the Home feed to that category.
  */
 export default function CategoryStoryCircles({ active, onSelect, onOpenAll }: CategoryStoryCirclesProps) {
+  const { t } = useT();
   const { data: stories = [] } = useCategoryStories();
 
 
@@ -47,7 +49,7 @@ export default function CategoryStoryCircles({ active, onSelect, onOpenAll }: Ca
             />
           </div>
         </div>
-        <span className="text-[9px] font-semibold text-foreground text-center leading-tight">For you</span>
+        <span className="text-[9px] font-semibold text-foreground text-center leading-tight">{t('For you')}</span>
       </button>
 
       {stories.map((s, i) => {
@@ -82,7 +84,7 @@ export default function CategoryStoryCircles({ active, onSelect, onOpenAll }: Ca
               </div>
             </div>
             <span className="text-[9px] font-semibold text-foreground text-center leading-tight line-clamp-2">
-              {s.category}
+              {t(s.category)}
             </span>
           </motion.button>
         );
@@ -99,7 +101,7 @@ export default function CategoryStoryCircles({ active, onSelect, onOpenAll }: Ca
               <LayoutGrid className="h-5 w-5 text-muted-foreground" />
             </div>
           </div>
-          <span className="text-[9px] font-semibold text-foreground text-center leading-tight">All</span>
+          <span className="text-[9px] font-semibold text-foreground text-center leading-tight">{t('All')}</span>
         </button>
       )}
     </div>

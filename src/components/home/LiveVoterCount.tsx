@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
 import { Users } from 'lucide-react';
 import { useLiveVoterCount } from '@/hooks/useLiveVoterCount';
+import { useT } from '@/hooks/useT';
 
 /**
  * Compact strip rendered just below the hero vote card.
  * "X people voted in the last hour" — refreshes every 60s.
  */
 export default function LiveVoterCount() {
+  const { t } = useT();
   const { data: count = 0 } = useLiveVoterCount();
   if (count < 5) return null; // hide when feed is quiet to avoid awkward small numbers
 
@@ -24,7 +26,7 @@ export default function LiveVoterCount() {
       <Users className="h-3 w-3 text-muted-foreground" />
       <span className="text-[11px] text-muted-foreground">
         <span className="font-bold text-foreground tabular-nums">{count.toLocaleString()}</span>{' '}
-        {count === 1 ? 'vote' : 'votes'} in the last hour
+        {count === 1 ? t('vote') : t('votes')} {t('in the last hour')}
       </span>
     </motion.div>
   );

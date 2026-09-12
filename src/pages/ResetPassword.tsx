@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import VersaLogo from '@/components/VersaLogo';
 import { clearPasswordRecoveryIntent } from '@/lib/authRedirectCapture';
+import { useT } from '@/hooks/useT';
 
 const hasRecoveryParams = () => {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
@@ -34,6 +35,7 @@ const hasOauthCallbackParams = () => {
  * choose a new password via supabase.auth.updateUser({ password }).
  */
 export default function ResetPassword() {
+  const { t } = useT();
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [recoverySession, setRecoverySession] = useState(false);
@@ -92,22 +94,22 @@ export default function ResetPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error(t('Password must be at least 6 characters'));
       return;
     }
     if (password !== confirm) {
-      toast.error('Passwords do not match');
+      toast.error(t('Passwords do not match'));
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      toast.error(error.message || 'Could not update password');
+      toast.error(error.message || t('Could not update password'));
       return;
     }
     clearPasswordRecoveryIntent();
-    toast.success('Password updated');
+    toast.success(t('Password updated'));
     // Sign out the recovery session so they log in fresh with the new password
     await supabase.auth.signOut();
     navigate('/auth', { replace: true });
@@ -126,23 +128,23 @@ export default function ResetPassword() {
       <div className="w-full max-w-sm space-y-6 animate-slide-up">
         <div className="text-center flex flex-col items-center">
           <VersaLogo size="lg" />
-          <p className="text-muted-foreground mt-2 text-sm">Set a new password</p>
+          <p className="text-muted-foreground mt-2 text-sm">{t('Set a new password')}</p>
         </div>
 
         <div className="bg-card/80 backdrop-blur-lg rounded-2xl p-5 shadow-card border border-border/50">
           {!recoverySession ? (
             <div className="space-y-4 text-center">
               <p className="text-sm text-card-foreground">
-                This reset link is invalid or has expired.
+                {t('This reset link is invalid or has expired.')}
               </p>
               <Button onClick={() => navigate('/auth')} className="w-full">
-                Back to sign in
+                {t('Back to sign in')}
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="new-password" className="text-card-foreground text-xs">New password</Label>
+                <Label htmlFor="new-password" className="text-card-foreground text-xs">{t('New password')}</Label>
                 <div className="relative">
                   <Input
                     id="new-password"
@@ -165,7 +167,7 @@ export default function ResetPassword() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="confirm-password" className="text-card-foreground text-xs">Confirm password</Label>
+                <Label htmlFor="confirm-password" className="text-card-foreground text-xs">{t('Confirm password')}</Label>
                 <Input
                   id="confirm-password"
                   type={showPassword ? 'text' : 'password'}
@@ -178,7 +180,7 @@ export default function ResetPassword() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update password'}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('Update password')}
               </Button>
             </form>
           )}
