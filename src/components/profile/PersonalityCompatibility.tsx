@@ -83,8 +83,8 @@ export default function PersonalityCompatibility({ targetUserId, targetUsername 
         <div className="flex items-center justify-center gap-3">
           <div className="text-center">
             <div className="text-2xl">{ownType.emoji}</div>
-            <p className="text-[10px] font-bold text-foreground mt-1">{ownType.name}</p>
-            <p className="text-[9px] text-muted-foreground">You</p>
+            <p className="text-[10px] font-bold text-foreground mt-1">{t(ownType.name)}</p>
+            <p className="text-[9px] text-muted-foreground">{t('You')}</p>
           </div>
           <div className="text-center px-3">
             <div className="text-3xl font-bold text-primary">{compat.score}%</div>
@@ -92,31 +92,31 @@ export default function PersonalityCompatibility({ targetUserId, targetUsername 
           </div>
           <div className="text-center">
             <div className="text-2xl">{targetType.emoji}</div>
-            <p className="text-[10px] font-bold text-foreground mt-1">{targetType.name}</p>
-            <p className="text-[9px] text-muted-foreground">@{targetUsername || 'them'}</p>
+            <p className="text-[10px] font-bold text-foreground mt-1">{t(targetType.name)}</p>
+            <p className="text-[9px] text-muted-foreground">@{targetUsername || t('them')}</p>
           </div>
         </div>
 
         {/* Label */}
         <div className="text-center">
           <span className="px-4 py-1.5 rounded-full bg-primary/10 text-xs font-bold text-primary">
-            {compat.label}
+            {t(compat.label)}
           </span>
         </div>
 
         {/* Description */}
         <p className="text-sm text-center text-muted-foreground leading-relaxed">
-          {compat.description}
+          {t(compat.descriptionKey, { a: t(compat.nameA), b: t(compat.nameB) })}
         </p>
 
         {/* Shared strengths & tensions */}
         {compat.sharedStrengths.length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">What you share</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('What you share')}</p>
             {compat.sharedStrengths.map((s, i) => (
               <div key={i} className="flex items-center gap-2">
                 <span className="text-green-500 text-xs">✓</span>
-                <p className="text-xs text-foreground/70">{s}</p>
+                <p className="text-xs text-foreground/70">{t(s)}</p>
               </div>
             ))}
           </div>
@@ -124,11 +124,11 @@ export default function PersonalityCompatibility({ targetUserId, targetUsername 
 
         {compat.tensions.length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Where you differ</p>
-            {compat.tensions.map((t, i) => (
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('Where you differ')}</p>
+            {compat.tensions.map((x, i) => (
               <div key={i} className="flex items-center gap-2">
                 <span className="text-primary text-xs">↔</span>
-                <p className="text-xs text-foreground/70">{t}</p>
+                <p className="text-xs text-foreground/70">{t(x)}</p>
               </div>
             ))}
           </div>
