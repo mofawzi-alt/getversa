@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import HomeResultsModal from '@/components/home/HomeResultsModal';
+import CategoriesSheet from '@/components/home/CategoriesSheet';
 import DailyPulseStrip from '@/components/home/DailyPulseStrip';
 import LiveAskCards from '@/components/home/LiveAskCards';
 
