@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CirclePlus } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 import { Button } from '@/components/ui/button';
 import { useUserStories, type UserStoryType } from '@/hooks/useUserStories';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +22,7 @@ export default function ShareToStoryButton({
   variant = 'default',
   className = '',
 }: ShareToStoryButtonProps) {
+  const { t } = useT();
   const { user } = useAuth();
   const { postStory, postingStory } = useUserStories();
   const [shared, setShared] = useState(false);
@@ -83,7 +85,7 @@ export default function ShareToStoryButton({
       className={`gap-1.5 h-9 px-3 text-foreground border-border ${className}`}
     >
       <CirclePlus className="w-4 h-4" />
-      {variant === 'compact' ? 'Add to Story' : 'Add to Story'}
+      {t('Add to Story')}
     </Button>
   );
 }
