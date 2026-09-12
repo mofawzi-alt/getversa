@@ -71,7 +71,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen p-4 pb-8 safe-area-top animate-slide-up">
       {/* Header */}
       <header className="flex items-center gap-4 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+        <button onClick={() => navigate('/home')} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
