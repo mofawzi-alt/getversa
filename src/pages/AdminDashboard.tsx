@@ -132,6 +132,7 @@ export default function AdminDashboard() {
           <Tabs defaultValue="dashboard" className="space-y-4">
             <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-secondary/50">
               <TabsTrigger value="dashboard" className="text-xs px-3 py-1.5">Dashboard</TabsTrigger>
+              <TabsTrigger value="period" className="text-xs px-3 py-1.5">By Date</TabsTrigger>
               <TabsTrigger value="overview" className="text-xs px-3 py-1.5">Per Poll</TabsTrigger>
               <TabsTrigger value="brands" className="text-xs px-3 py-1.5">Brands</TabsTrigger>
               <TabsTrigger value="industry" className="text-xs px-3 py-1.5">Industry</TabsTrigger>
