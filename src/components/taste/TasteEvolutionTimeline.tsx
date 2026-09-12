@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 interface Snapshot {
   snapshot_date: string;
@@ -16,6 +17,7 @@ interface Snapshot {
 }
 
 export default function TasteEvolutionTimeline() {
+  const { t, lang } = useT();
   const { profile } = useAuth();
 
   const { data: snapshots = [], isLoading } = useQuery({
@@ -58,32 +60,32 @@ export default function TasteEvolutionTimeline() {
         <div className="p-3 rounded-xl bg-card border border-border/60">
           <div className="flex items-center gap-1.5 mb-1">
             <TrendIcon delta={majorityDelta} />
-            <span className="text-[10px] font-semibold text-muted-foreground">Majority Alignment</span>
+            <span className="text-[10px] font-semibold text-muted-foreground">{t('Majority Alignment')}</span>
           </div>
           <p className="text-lg font-bold text-foreground">{latest.majority_pct ?? 0}%</p>
           <p className={`text-[10px] font-semibold ${majorityDelta > 0 ? 'text-primary' : majorityDelta < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-            {majorityDelta > 0 ? '+' : ''}{majorityDelta}% vs last week
+            {t('{d}% vs last week', { d: (majorityDelta > 0 ? '+' : '') + majorityDelta })}
           </p>
         </div>
 
         <div className="p-3 rounded-xl bg-card border border-border/60">
           <div className="flex items-center gap-1.5 mb-1">
             <TrendIcon delta={adventureDelta} />
-            <span className="text-[10px] font-semibold text-muted-foreground">Adventure Score</span>
+            <span className="text-[10px] font-semibold text-muted-foreground">{t('Adventure Score')}</span>
           </div>
           <p className="text-lg font-bold text-foreground">{latest.adventure_score ?? 0}%</p>
           <p className={`text-[10px] font-semibold ${adventureDelta > 0 ? 'text-primary' : adventureDelta < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-            {adventureDelta > 0 ? '+' : ''}{adventureDelta}% vs last week
+            {t('{d}% vs last week', { d: (adventureDelta > 0 ? '+' : '') + adventureDelta })}
           </p>
         </div>
       </div>
 
       {/* Visual timeline */}
       <div>
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Your Journey</p>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('Your Journey')}</p>
         <div className="space-y-2">
           {snapshots.slice(0, 8).map((snap, i) => {
-            const weekLabel = new Date(snap.snapshot_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const weekLabel = new Date(snap.snapshot_date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' });
             const barWidth = maxVotes > 0 ? Math.max(10, ((snap.total_votes || 0) / maxVotes) * 100) : 10;
 
             return (
@@ -110,9 +112,9 @@ export default function TasteEvolutionTimeline() {
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-[9px] font-semibold text-foreground">{snap.total_votes}v</span>
+                  <span className="text-[9px] font-semibold text-foreground">{t('{n}v', { n: snap.total_votes })}</span>
                   {snap.archetype && (
-                    <span className="text-[8px] text-muted-foreground truncate max-w-[60px]">{snap.archetype}</span>
+                    <span className="text-[8px] text-muted-foreground truncate max-w-[60px]">{t(snap.archetype)}</span>
                   )}
                 </div>
               </motion.div>
