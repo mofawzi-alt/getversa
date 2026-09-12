@@ -219,7 +219,7 @@ export default function ChatThread() {
           </div>
         )}
         {messages.map((m) => (
-          <MessageBubble key={m.id} msg={m} mine={m.sender_id === user?.id} />
+          <MessageBubble key={m.id} msg={m} mine={m.sender_id === user?.id} otherUsername={otherUsername} />
         ))}
       </div>
 
