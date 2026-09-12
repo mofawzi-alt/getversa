@@ -1643,7 +1643,16 @@ export default function Home() {
     }
     return applyAgeSequencing(unvoted, profile?.age_range, votedPollIds);
   }, [allPolls, votedPollIds, skippedPollIds, profile?.age_range, user, queuePollIds, isOnboardingFeed]);
-  const newPolls = allNewPolls;
+  const matchesCategoryFilter = useCallback((raw?: string | null) => {
+    if (!categoryFilter) return true;
+    if (!raw) return false;
+    return raw === categoryFilter || mapToVersaCategory(raw) === categoryFilter;
+  }, [categoryFilter]);
+  const newPolls = useMemo(() => {
+    if (!categoryFilter) return allNewPolls;
+    const filtered = allNewPolls.filter(p => matchesCategoryFilter(p.category));
+    return filtered.length > 0 ? filtered : allNewPolls;
+  }, [allNewPolls, categoryFilter, matchesCategoryFilter]);
 
   // Keep heroPollIndex in bounds — if new polls appear or list shrinks, reset to 0
   useEffect(() => {
