@@ -7,6 +7,7 @@ import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { getNativeSafeImageSrc } from '@/lib/pollImages';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { pollText } from '@/lib/pollText';
+import { useT } from '@/hooks/useT';
 
 export interface DemoTag {
   icon: LucideIcon;
@@ -160,6 +161,7 @@ export default function BrowseCard({
 }: BrowseCardProps) {
   const imgLoading: 'eager' | 'lazy' = eagerImages ? 'eager' : 'lazy';
   const { lang } = useLanguage();
+  const { t } = useT();
   const pt = pollText(poll, lang);
   const winnerLabel = poll.winner === 'A' ? pt.optionA : pt.optionB;
   const winnerImg = poll.winner === 'A' ? poll.image_a_url : poll.image_b_url;
@@ -175,10 +177,10 @@ export default function BrowseCard({
 
   const isDivided = poll.winnerPct >= 45 && poll.winnerPct <= 55;
   const verdictLabel =
-    poll.winnerPct >= 80 ? 'Egypt overwhelmingly chose this'
-    : poll.winnerPct >= 65 ? 'Egypt chose this'
-    : poll.winnerPct >= 56 ? 'Slight majority chose this'
-    : 'Egypt chose this';
+    poll.winnerPct >= 80 ? t('Egypt overwhelmingly chose this')
+    : poll.winnerPct >= 65 ? t('Egypt chose this')
+    : poll.winnerPct >= 56 ? t('Slight majority chose this')
+    : t('Egypt chose this');
   const dividedGap = Math.abs(poll.percentA - poll.percentB);
 
   const isLight = true; // Force light surface + black text for readability across all card images
@@ -255,11 +257,11 @@ export default function BrowseCard({
           )}
           {poll.isClosed && (
             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${chipBg} text-[12px] font-semibold`}>
-              🔒 Closed
+              🔒 {t('Closed')}
             </span>
           )}
           <span className={`ml-auto text-[12px] font-semibold ${subText} tabular-nums`}>
-            {poll.totalVotes.toLocaleString()} votes
+            {poll.totalVotes.toLocaleString()} {t('votes')}
           </span>
         </div>
 
@@ -268,7 +270,7 @@ export default function BrowseCard({
             onClick={(e) => { e.stopPropagation(); onShare(); }}
             className={`absolute right-3 w-9 h-9 rounded-full ${shareBtn} flex items-center justify-center active:scale-95 transition-transform`}
             style={{ top: topSlot ? '4px' : `calc(${topInset} + 14px)` }}
-            aria-label="Share"
+            aria-label={t("Share")}
           >
             <Share2 className="h-[14px] w-[14px]" />
           </button>
@@ -324,8 +326,8 @@ export default function BrowseCard({
               <div className="bg-black/75 backdrop-blur-xl px-5 py-3 rounded-2xl text-center border border-white/20 shadow-2xl flex items-center gap-2.5">
                 <span className="text-2xl">⚖️</span>
                 <div className="text-left">
-                  <p className="text-white font-display font-bold text-[18px] leading-tight">Egypt is split</p>
-                  <p className="text-white/70 text-[13px] leading-tight">Only {dividedGap}% apart</p>
+                  <p className="text-white font-display font-bold text-[18px] leading-tight">{t('Egypt is split')}</p>
+                  <p className="text-white/70 text-[13px] leading-tight">{t('Only')} {dividedGap}% {t('apart')}</p>
                 </div>
               </div>
             </div>
@@ -381,7 +383,7 @@ export default function BrowseCard({
                     </div>
                   )}
                   <span className="text-[14px] font-semibold text-white/90 leading-tight">
-                    {userPickedWinner ? 'You agreed' : 'You picked'} — {userLabel} · <span className="tabular-nums">{userPct}%</span>
+                    {userPickedWinner ? t('You agreed') : t('You picked')} — {userLabel} · <span className="tabular-nums">{userPct}%</span>
                   </span>
                 </div>
               )}
@@ -394,7 +396,7 @@ export default function BrowseCard({
           <div className="absolute top-3 left-3 z-20">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-xl border border-white/20">
               <Sparkles className="h-3.5 w-3.5" />
-              <span className="text-[12px] font-bold tracking-tight">Top {independentPct}% independent</span>
+              <span className="text-[12px] font-bold tracking-tight">{t('Top')} {independentPct}% {t('independent')}</span>
             </div>
           </div>
         )}
@@ -440,7 +442,7 @@ export default function BrowseCard({
               </div>
             ) : (
               <span className={`inline-flex items-center gap-1.5 text-[14px] font-medium ${isLight ? 'text-foreground/85' : 'text-white/85'}`}>
-                🇪🇬 Egypt chose this — <span className="font-bold tabular-nums">{poll.winnerPct}%</span>
+                🇪🇬 {t('Egypt chose this')} — <span className="font-bold tabular-nums">{poll.winnerPct}%</span>
               </span>
             )}
 
@@ -471,7 +473,7 @@ export default function BrowseCard({
               <button
                 onClick={(e) => { e.stopPropagation(); onSendToFriend(); }}
                 className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm active:scale-95 transition-transform"
-                aria-label="Send in chat"
+                aria-label={t("Send in chat")}
               >
                 <Send className="h-3 w-3" />
               </button>
@@ -485,7 +487,7 @@ export default function BrowseCard({
             onClick={(e) => { e.stopPropagation(); onVote(); }}
             className={`w-full text-center text-[13px] font-semibold ${isLight ? 'text-primary active:text-primary/80' : 'text-blue-400 active:text-blue-300'} transition-colors pt-0.5`}
           >
-            Vote on today's battles from Home →
+            {t("Vote on today's battles from Home")} →
           </button>
         )}
       </div>
