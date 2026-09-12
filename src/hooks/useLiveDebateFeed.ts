@@ -5,7 +5,7 @@ type PollCard = any;
 const PAGE_SIZE = 40;
 
 const POLL_SELECT =
-  'id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries, option_a_tag, option_b_tag, tags, is_hot_take';
+  'id, question, subtitle, option_a, option_b, question_ar, option_a_ar, option_b_ar, subtitle_ar, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, target_gender, target_age_range, target_country, target_countries, option_a_tag, option_b_tag, tags, is_hot_take';
 
 const isVideoUrl = (url?: string | null) =>
   !!url && /\.(mp4|webm|mov)(\?|$)/i.test(url);
