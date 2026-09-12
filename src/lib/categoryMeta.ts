@@ -1,79 +1,84 @@
 import {
   Banknote,
-  Car,
   Compass,
-  Flame,
+  Flag,
+  GraduationCap,
   Heart,
   Popcorn,
-  ShoppingBag,
+  Smartphone,
   Sparkles,
-  Users,
   Utensils,
-  Wifi,
-  ShoppingBasket,
   type LucideIcon,
 } from 'lucide-react';
 
 /**
- * The 10 official Versa categories. All polls must map to one of these.
+ * The 8 official Versa categories. All polls must map to one of these.
  */
 export const VERSA_CATEGORIES = [
-  'FMCG & Food',
-  'Beauty & Personal Care',
-  'Financial Services',
-  'Media & Entertainment',
-  'Retail & E-commerce',
-  'Telco & Tech',
-  'Food Delivery & Dining',
-  'Automotive & Mobility',
-  'Lifestyle & Society',
-  'The Pulse',
+  'Relationships',
+  'Money',
+  'Education',
+  'Digital Life',
+  'Food',
+  'Entertainment',
+  'Lifestyle',
+  'Egypt',
 ] as const;
 
 export type VersaCategory = (typeof VERSA_CATEGORIES)[number];
 
+/** Emoji per category (used for compact chips and stories) */
+export const CATEGORY_EMOJI: Record<string, string> = {
+  relationships: '❤️',
+  money: '💰',
+  education: '🎓',
+  'digital life': '📱',
+  food: '🍔',
+  entertainment: '🎬',
+  lifestyle: '🌍',
+  egypt: '🇪🇬',
+};
+
 const EXACT_CATEGORY_ICONS: Record<string, LucideIcon> = {
-  'fmcg & food': ShoppingBasket,
-  'beauty & personal care': Sparkles,
-  'financial services': Banknote,
-  'media & entertainment': Popcorn,
-  'retail & e-commerce': ShoppingBag,
-  'telco & tech': Wifi,
-  'food delivery & dining': Utensils,
-  'automotive & mobility': Car,
-  'lifestyle & society': Heart,
-  'the pulse': Flame,
+  relationships: Heart,
+  money: Banknote,
+  education: GraduationCap,
+  'digital life': Smartphone,
+  food: Utensils,
+  entertainment: Popcorn,
+  lifestyle: Sparkles,
+  egypt: Flag,
 };
 
 /** Tailwind color hint per category (used for chips/badges) */
 export const CATEGORY_COLOR: Record<string, string> = {
-  'fmcg & food': 'bg-green-200 text-green-900 ring-1 ring-green-300/60',
-  'beauty & personal care': 'bg-pink-200 text-pink-900 ring-1 ring-pink-300/60',
-  'financial services': 'bg-blue-200 text-blue-900 ring-1 ring-blue-300/60',
-  'media & entertainment': 'bg-amber-200 text-amber-900 ring-1 ring-amber-300/60',
-  'retail & e-commerce': 'bg-purple-200 text-purple-900 ring-1 ring-purple-300/60',
-  'telco & tech': 'bg-teal-200 text-teal-900 ring-1 ring-teal-300/60',
-  'food delivery & dining': 'bg-orange-200 text-orange-900 ring-1 ring-orange-300/60',
-  'automotive & mobility': 'bg-slate-200 text-slate-900 ring-1 ring-slate-300/60',
-  'lifestyle & society': 'bg-rose-200 text-rose-900 ring-1 ring-rose-300/60',
-  'the pulse': 'bg-red-200 text-red-900 ring-1 ring-red-300/60',
+  relationships: 'bg-rose-200 text-rose-900 ring-1 ring-rose-300/60',
+  money: 'bg-blue-200 text-blue-900 ring-1 ring-blue-300/60',
+  education: 'bg-indigo-200 text-indigo-900 ring-1 ring-indigo-300/60',
+  'digital life': 'bg-teal-200 text-teal-900 ring-1 ring-teal-300/60',
+  food: 'bg-orange-200 text-orange-900 ring-1 ring-orange-300/60',
+  entertainment: 'bg-amber-200 text-amber-900 ring-1 ring-amber-300/60',
+  lifestyle: 'bg-purple-200 text-purple-900 ring-1 ring-purple-300/60',
+  egypt: 'bg-red-200 text-red-900 ring-1 ring-red-300/60',
 };
 
 const KEYWORD_FALLBACK: Array<{ keywords: string[]; icon: LucideIcon }> = [
-  { keywords: ['money', 'finance', 'fintech', 'bank', 'budget', 'crypto', 'payment', 'business', 'startup'], icon: Banknote },
-  { keywords: ['beauty', 'makeup', 'skincare', 'cosmetic', 'hair'], icon: Sparkles },
-  { keywords: ['delivery', 'restaurant', 'dining', 'cafe', 'café'], icon: Utensils },
-  { keywords: ['food', 'drink', 'snack', 'beverage', 'fmcg'], icon: ShoppingBasket },
-  { keywords: ['retail', 'shopping', 'ecommerce', 'e-commerce', 'store', 'brand'], icon: ShoppingBag },
-  { keywords: ['telecom', 'mobile', 'phone', 'network', 'internet', 'tech', 'app'], icon: Wifi },
-  { keywords: ['car', 'auto', 'vehicle', 'mobility', 'ride'], icon: Car },
-  { keywords: ['movie', 'film', 'series', 'tv', 'show', 'celeb', 'music', 'sport', 'game', 'entertainment'], icon: Popcorn },
-  { keywords: ['lifestyle', 'society', 'relationship', 'wellness', 'style', 'fashion', 'personality'], icon: Heart },
-  { keywords: ['pulse', 'trend', 'viral', 'culture', 'news'], icon: Flame },
+  { keywords: ['relationship', 'dating', 'love', 'marriage', 'friend', 'family'], icon: Heart },
+  { keywords: ['money', 'finance', 'fintech', 'bank', 'budget', 'crypto', 'payment', 'business', 'startup', 'career', 'work', 'salary', 'real estate'], icon: Banknote },
+  { keywords: ['education', 'school', 'university', 'study', 'learning', 'exam', 'student'], icon: GraduationCap },
+  { keywords: ['tech', 'telecom', 'mobile', 'phone', 'network', 'internet', 'app', 'social media', 'digital', 'gaming'], icon: Smartphone },
+  { keywords: ['food', 'drink', 'snack', 'beverage', 'fmcg', 'restaurant', 'delivery', 'dining', 'cafe', 'café'], icon: Utensils },
+  { keywords: ['movie', 'film', 'series', 'tv', 'show', 'celeb', 'music', 'sport', 'entertainment', 'media'], icon: Popcorn },
+  { keywords: ['lifestyle', 'beauty', 'fashion', 'style', 'wellness', 'health', 'travel', 'shopping', 'retail', 'car', 'auto', 'mobility'], icon: Sparkles },
+  { keywords: ['egypt', 'pulse', 'trend', 'viral', 'culture', 'news', 'society'], icon: Flag },
 ];
 
 export function normalizeCategoryName(category?: string | null): string {
   return category?.trim().toLowerCase() ?? '';
+}
+
+export function getCategoryEmoji(category?: string | null): string {
+  return CATEGORY_EMOJI[normalizeCategoryName(mapToVersaCategory(category))] ?? '✨';
 }
 
 export function getCategoryIcon(category?: string | null): LucideIcon {
@@ -90,16 +95,18 @@ export function getCategoryIcon(category?: string | null): LucideIcon {
 }
 
 export function getCategoryColorClass(category?: string | null): string {
-  return CATEGORY_COLOR[normalizeCategoryName(category)] ?? 'bg-muted text-muted-foreground';
+  const direct = CATEGORY_COLOR[normalizeCategoryName(category)];
+  if (direct) return direct;
+  return CATEGORY_COLOR[normalizeCategoryName(mapToVersaCategory(category))] ?? 'bg-muted text-muted-foreground';
 }
 
 /**
- * Map any free-form category string to one of the 10 Versa categories.
- * Returns 'The Pulse' as the default catch-all.
+ * Map any free-form category string to one of the 8 Versa categories.
+ * Returns 'Egypt' as the default catch-all.
  */
 export function mapToVersaCategory(input?: string | null): VersaCategory {
   const n = normalizeCategoryName(input);
-  if (!n) return 'The Pulse';
+  if (!n) return 'Egypt';
 
   // Direct match
   for (const cat of VERSA_CATEGORIES) {
@@ -107,16 +114,14 @@ export function mapToVersaCategory(input?: string | null): VersaCategory {
   }
 
   // Keyword routing
-  if (/(deliver|restaurant|dining|cafe|café|talabat|elmenus|otlob)/.test(n)) return 'Food Delivery & Dining';
-  if (/(beauty|makeup|skincare|cosmetic|shampoo|perfume|hair)/.test(n)) return 'Beauty & Personal Care';
-  if (/(bank|finance|fintech|money|budget|crypto|payment|wallet|loan|business|startup)/.test(n)) return 'Financial Services';
-  if (/(telecom|mobile|phone|network|internet|wifi|tech|app|software|gadget|telco)/.test(n)) return 'Telco & Tech';
-  if (/(car|auto|vehicle|mobility|ride|uber|careem|swvl|motorcycle|scooter)/.test(n)) return 'Automotive & Mobility';
-  if (/(retail|shopping|ecommerce|e-commerce|store|brand|amazon|noon|jumia)/.test(n)) return 'Retail & E-commerce';
-  if (/(movie|film|series|tv|show|celeb|music|song|artist|sport|football|game|gaming|entertainment)/.test(n)) return 'Media & Entertainment';
-  if (/(food|drink|snack|beverage|fmcg|coffee|tea|chips|cola|juice|chocolate)/.test(n)) return 'FMCG & Food';
-  if (/(lifestyle|society|relationship|dating|wellness|habit|style|fashion|design|personality|travel|education|school|university|study|learning)/.test(n)) return 'Lifestyle & Society';
-  if (/(pulse|trend|viral|culture|news|politic|debate)/.test(n)) return 'The Pulse';
+  if (/(relationship|dating|love|marriage|romance|friend|family|parent)/.test(n)) return 'Relationships';
+  if (/(bank|finance|financial|fintech|money|budget|crypto|payment|wallet|loan|business|startup|career|work|job|salary|invest|real estate)/.test(n)) return 'Money';
+  if (/(education|school|university|study|studies|learning|exam|student|course)/.test(n)) return 'Education';
+  if (/(telecom|telco|mobile|phone|network|internet|wifi|tech|app|software|gadget|digital|gaming|social media|ai)/.test(n)) return 'Digital Life';
+  if (/(food|drink|snack|beverage|fmcg|coffee|tea|chips|cola|juice|chocolate|deliver|restaurant|dining|cafe|café)/.test(n)) return 'Food';
+  if (/(movie|film|series|tv|show|celeb|music|song|artist|sport|football|entertainment|media|content)/.test(n)) return 'Entertainment';
+  if (/(lifestyle|beauty|makeup|skincare|cosmetic|perfume|hair|fashion|style|wellness|health|fitness|travel|shopping|retail|ecommerce|e-commerce|store|brand|car|auto|vehicle|mobility|ride|transport)/.test(n)) return 'Lifestyle';
+  if (/(egypt|pulse|trend|viral|culture|news|politic|debate|society)/.test(n)) return 'Egypt';
 
-  return 'The Pulse';
+  return 'Egypt';
 }

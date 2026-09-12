@@ -208,12 +208,12 @@ serve(async (req) => {
     const timestamp = Date.now();
 
     const ALLOWED_CATEGORIES = [
-      'FMCG & Food', 'Beauty & Personal Care', 'Financial Services',
-      'Media & Entertainment', 'Retail & E-commerce', 'Telco & Tech',
-      'Food Delivery & Dining', 'Automotive & Mobility', 'Lifestyle & Society', 'The Pulse',
+      'Relationships', 'Money', 'Education', 'Digital Life',
+      'Food', 'Entertainment', 'Lifestyle', 'Egypt',
     ];
 
-    const mappedCategory = category === 'Media' ? 'Media & Entertainment' : category;
+    const mappedCategory = category === 'Media' ? 'Entertainment' : category;
+
     const { data: existingPolls } = await supabase
       .from('polls').select('question').eq('category', mappedCategory || '')
       .order('created_at', { ascending: false }).limit(50);
@@ -290,15 +290,15 @@ ${avoidList}
 Category MUST be EXACTLY one of: ${ALLOWED_CATEGORIES.join(', ')}
 
 Category guide:
-- FMCG & Food: packaged food, snacks, beverages
-- Beauty & Personal Care: makeup, skincare, perfume
-- Financial Services: banks, fintech, payments, wallets, crypto, business
-- Media & Entertainment: movies, series, music, sports, celebrities, gaming
-- Retail & E-commerce: shopping, stores, marketplaces
-- Telco & Tech: telecom, apps, gadgets, software
-- Food Delivery & Dining: restaurants, cafes, delivery apps
-- Automotive & Mobility: cars, ride-hailing, scooters
-- Lifestyle & Society: relationships, wellness, style, fashion, personality, habits, travel
+- Relationships: dating, love, marriage, family, friendship
+- Money: banks, fintech, payments, wallets, crypto, salaries, work, business
+- Education: school, university, studying, exams, learning
+- Digital Life: telecom, apps, gadgets, social media, gaming, AI
+- Food: packaged food, snacks, beverages, restaurants, cafes, delivery
+- Entertainment: movies, series, music, sports, celebrities
+- Lifestyle: beauty, fashion, wellness, travel, shopping, cars, mobility
+- Egypt: trending national and cultural debates
+
 - The Pulse: trending cultural debates
 
 ${targetAgeRange || targetGender || targetCountry ? `
@@ -372,16 +372,15 @@ Respond with a VALID JSON object only.`;
         const n = (raw || '').trim().toLowerCase();
         const exact = ALLOWED_CATEGORIES.find((c) => c.toLowerCase() === n);
         if (exact) return exact;
-        if (/(deliver|restaurant|dining|cafe|café|talabat|elmenus)/.test(n)) return 'Food Delivery & Dining';
-        if (/(beauty|makeup|skincare|cosmetic|perfume)/.test(n)) return 'Beauty & Personal Care';
-        if (/(bank|finance|fintech|money|crypto|payment|wallet)/.test(n)) return 'Financial Services';
-        if (/(telecom|mobile|phone|network|internet|tech|app|gadget)/.test(n)) return 'Telco & Tech';
-        if (/(car|auto|mobility|ride|uber|careem)/.test(n)) return 'Automotive & Mobility';
-        if (/(retail|shopping|ecommerce|store|brand|noon)/.test(n)) return 'Retail & E-commerce';
-        if (/(movie|film|series|tv|celeb|music|sport|football|game|entertainment)/.test(n)) return 'Media & Entertainment';
-        if (/(food|drink|snack|beverage|fmcg|coffee|tea|chips)/.test(n)) return 'FMCG & Food';
-        if (/(lifestyle|society|relationship|wellness|fashion|personality|travel)/.test(n)) return 'Lifestyle & Society';
-        return 'The Pulse';
+        if (/(relationship|dating|love|marriage|family|friend)/.test(n)) return 'Relationships';
+        if (/(bank|finance|fintech|money|crypto|payment|wallet|career|work|salary|business|invest)/.test(n)) return 'Money';
+        if (/(education|school|university|study|exam|student|learning)/.test(n)) return 'Education';
+        if (/(telecom|mobile|phone|network|internet|tech|app|gadget|digital|gaming|social media)/.test(n)) return 'Digital Life';
+        if (/(food|drink|snack|beverage|fmcg|coffee|tea|chips|deliver|restaurant|dining|cafe|café)/.test(n)) return 'Food';
+        if (/(movie|film|series|tv|celeb|music|sport|football|entertainment|media)/.test(n)) return 'Entertainment';
+        if (/(lifestyle|beauty|makeup|skincare|perfume|fashion|wellness|health|travel|shopping|retail|ecommerce|store|car|auto|mobility|ride)/.test(n)) return 'Lifestyle';
+        return 'Egypt';
+
       };
       pollData.category = clampCategory(pollData.category || category);
 

@@ -20,15 +20,16 @@ interface PollRow {
 
 // Realistic category splits for auto-seed (option_a % wins)
 const CATEGORY_SPLITS: Record<string, [number, number]> = {
-  'FMCG & Food': [55, 45],
-  'The Pulse': [60, 40],
-  'Financial Services': [52, 48],
-  'Lifestyle & Society': [58, 42],
-  'Media & Entertainment': [62, 38],
-  'Retail & E-commerce': [54, 46],
-  'Beauty & Personal Care': [57, 43],
-  'Telco & Tech': [53, 47],
+  'Relationships': [58, 42],
+  'Money': [52, 48],
+  'Education': [55, 45],
+  'Digital Life': [53, 47],
+  'Food': [55, 45],
+  'Entertainment': [62, 38],
+  'Lifestyle': [57, 43],
+  'Egypt': [60, 40],
 };
+
 
 function randomInRange(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;

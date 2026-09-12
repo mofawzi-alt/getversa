@@ -24,23 +24,22 @@ function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
 }
 
-// Category icon & color mapping (10 official Versa categories)
+// Category icon & color mapping (8 official Versa categories)
 import {
-  ShoppingBasket, Banknote, Popcorn, ShoppingBag, Wifi, Utensils, Car,
+  Banknote, Popcorn, Utensils, GraduationCap, Flag,
 } from 'lucide-react';
 
 const CATEGORY_STYLE: Record<string, { icon: React.ReactNode; gradient: string; accent: string }> = {
-  'FMCG & Food':            { icon: <ShoppingBasket className="h-5 w-5" />, gradient: 'from-green-500 to-emerald-400',  accent: 'text-green-600' },
-  'Beauty & Personal Care': { icon: <Sparkles className="h-5 w-5" />,       gradient: 'from-pink-500 to-rose-400',      accent: 'text-pink-500' },
-  'Financial Services':     { icon: <Banknote className="h-5 w-5" />,       gradient: 'from-blue-600 to-sky-400',       accent: 'text-blue-600' },
-  'Media & Entertainment':  { icon: <Popcorn className="h-5 w-5" />,        gradient: 'from-amber-500 to-yellow-400',   accent: 'text-amber-500' },
-  'Retail & E-commerce':    { icon: <ShoppingBag className="h-5 w-5" />,    gradient: 'from-purple-500 to-fuchsia-400', accent: 'text-purple-500' },
-  'Telco & Tech':           { icon: <Wifi className="h-5 w-5" />,           gradient: 'from-teal-500 to-cyan-400',      accent: 'text-teal-500' },
-  'Food Delivery & Dining': { icon: <Utensils className="h-5 w-5" />,       gradient: 'from-orange-500 to-amber-400',   accent: 'text-orange-500' },
-  'Automotive & Mobility':  { icon: <Car className="h-5 w-5" />,            gradient: 'from-slate-600 to-slate-400',    accent: 'text-slate-600' },
-  'Lifestyle & Society':    { icon: <Heart className="h-5 w-5" />,          gradient: 'from-rose-500 to-pink-400',      accent: 'text-rose-500' },
-  'The Pulse':              { icon: <Flame className="h-5 w-5" />,          gradient: 'from-red-500 to-orange-400',     accent: 'text-red-500' },
+  'Relationships':  { icon: <Heart className="h-5 w-5" />,         gradient: 'from-rose-500 to-pink-400',      accent: 'text-rose-500' },
+  'Money':          { icon: <Banknote className="h-5 w-5" />,      gradient: 'from-blue-600 to-sky-400',       accent: 'text-blue-600' },
+  'Education':      { icon: <GraduationCap className="h-5 w-5" />, gradient: 'from-indigo-500 to-violet-400',  accent: 'text-indigo-500' },
+  'Digital Life':   { icon: <Smartphone className="h-5 w-5" />,    gradient: 'from-teal-500 to-cyan-400',      accent: 'text-teal-500' },
+  'Food':           { icon: <Utensils className="h-5 w-5" />,      gradient: 'from-orange-500 to-amber-400',   accent: 'text-orange-500' },
+  'Entertainment':  { icon: <Popcorn className="h-5 w-5" />,       gradient: 'from-amber-500 to-yellow-400',   accent: 'text-amber-500' },
+  'Lifestyle':      { icon: <Sparkles className="h-5 w-5" />,      gradient: 'from-purple-500 to-fuchsia-400', accent: 'text-purple-500' },
+  'Egypt':          { icon: <Flag className="h-5 w-5" />,          gradient: 'from-red-500 to-orange-400',     accent: 'text-red-500' },
 };
+
 
 function getCategoryStyle(name: string) {
   const exact = CATEGORY_STYLE[name];
