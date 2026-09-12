@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 export default function HeroCaughtUp() {
+  const { t } = useT();
   const [countdown, setCountdown] = useState('');
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export default function HeroCaughtUp() {
     <div className="w-full px-3 py-3">
       <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
         <Clock className="h-3.5 w-3.5" />
-        <p className="text-xs font-medium">Next drop in <span className="text-foreground font-bold">{countdown}</span> · New polls at 9 AM</p>
+        <p className="text-xs font-medium">{t('Next drop in')} <span className="text-foreground font-bold">{countdown}</span> · {t('New polls at 9 AM')}</p>
       </div>
     </div>
   );
