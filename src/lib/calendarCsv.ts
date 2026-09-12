@@ -31,8 +31,9 @@ export const CSV_HEADERS = [
 
 export const CSV_TEMPLATE = [
   CSV_HEADERS.join(','),
-  '2026-04-21,Financial Services,Do you trust mobile wallets as much as cash?,Yes — fully,No — cash is safer,Instapay fee launch sparked debate,Instapay news,,,Egypt,,',
-  '2026-04-22,FMCG & Food,Have you switched to a cheaper food brand?,Yes — I changed brands,No — I kept my usual,Food inflation is the daily pain point,CAPMAS data,,,Egypt,,',
+  '2026-04-21,Money,Do you trust mobile wallets as much as cash?,Yes — fully,No — cash is safer,Instapay fee launch sparked debate,Instapay news,,,Egypt,,',
+  '2026-04-22,Food,Have you switched to a cheaper food brand?,Yes — I changed brands,No — I kept my usual,Food inflation is the daily pain point,CAPMAS data,,,Egypt,,',
+
 ].join('\n');
 
 export function downloadCsvTemplate() {
