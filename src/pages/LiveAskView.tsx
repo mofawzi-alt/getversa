@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Home, Flag, Ban } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 interface LiveAsk {
   id: string;
@@ -50,6 +51,7 @@ function matches(ask: LiveAsk, viewer: ViewerProfile | null): boolean {
 }
 
 export default function LiveAskView() {
+  const { t } = useT();
   const { id } = useParams();
   const nav = useNavigate();
   const { user } = useAuth();
@@ -171,8 +173,8 @@ export default function LiveAskView() {
   if (!asks.length) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center gap-3">
-        <p className="font-semibold">No Live Asks available</p>
-        <Button variant="outline" onClick={() => nav("/home")}>Back home</Button>
+        <p className="font-semibold">{t("No Live Asks available")}</p>
+        <Button variant="outline" onClick={() => nav("/home")}>{t("Back home")}</Button>
       </div>
     );
   }
@@ -189,7 +191,7 @@ export default function LiveAskView() {
           <Home className="h-5 w-5" />
         </button>
         <div className="flex items-center gap-2">
-          <span className="text-xs uppercase tracking-wide text-primary font-semibold">Live Ask</span>
+          <span className="text-xs uppercase tracking-wide text-primary font-semibold">{t("Live Ask")}</span>
           {asks.length > 1 && (
             <span className="text-[10px] font-semibold text-[#E8392A] bg-[#E8392A]/10 px-1.5 py-0.5 rounded-full">
               {activeIdx + 1}/{asks.length}
@@ -249,29 +251,31 @@ export default function LiveAskView() {
 }
 
 function ReportButton({ liveAskId }: { liveAskId: string }) {
+  const { t } = useT();
   const report = async () => {
-    const reason = prompt("Why are you reporting this? (e.g. unsafe, offensive, spam)");
+    const reason = prompt(t("Why are you reporting this? (e.g. unsafe, offensive, spam)"));
     if (!reason) return;
     const { error } = await supabase.functions.invoke("report-live-ask", { body: { live_ask_id: liveAskId, reason } });
     if (error) toast({ title: error.message, variant: "destructive" });
-    else toast({ title: "Report submitted" });
+    else toast({ title: t("Report submitted") });
   };
   return (
-    <button onClick={report} className="p-2" aria-label="Report">
+    <button onClick={report} className="p-2" aria-label={t("Report")}>
       <Flag className="h-5 w-5 text-muted-foreground" />
     </button>
   );
 }
 
 function BlockButton({ askerId, liveAskId, onBlocked }: { askerId: string; liveAskId: string; onBlocked: (uid: string) => void }) {
+  const { t } = useT();
   const { user } = useAuth();
   const block = async () => {
     if (!user) return;
     if (user.id === askerId) {
-      toast({ title: "You can't block yourself" });
+      toast({ title: t("You can't block yourself") });
       return;
     }
-    const ok = window.confirm("Block this user? You won't see their Live Asks again, and our team will review their content.");
+    const ok = window.confirm(t("Block this user? You won't see their Live Asks again, and our team will review their content."));
     if (!ok) return;
     const { error } = await (supabase as any)
       .from("user_blocks")
@@ -285,10 +289,10 @@ function BlockButton({ askerId, liveAskId, onBlocked }: { askerId: string; liveA
       body: { live_ask_id: liveAskId, reason: "user_blocked_author", notes: "User blocked the author from a Live Ask" },
     }).catch(() => {});
     onBlocked(askerId);
-    toast({ title: "User blocked. Their content is hidden." });
+    toast({ title: t("User blocked. Their content is hidden.") });
   };
   return (
-    <button onClick={block} className="p-2" aria-label="Block user">
+    <button onClick={block} className="p-2" aria-label={t("Block user")}>
       <Ban className="h-5 w-5 text-muted-foreground" />
     </button>
   );
@@ -303,6 +307,7 @@ function AskPage({
   onAskUpdate: (patch: Partial<LiveAsk>) => void;
   onNext: () => void;
 }) {
+  const { t } = useT();
   const { user } = useAuth();
   const nav = useNavigate();
   const [voting, setVoting] = useState(false);
@@ -319,8 +324,8 @@ function AskPage({
   const vote = async (choice: "A" | "B") => {
     if (!user) return nav("/auth");
     if (voting || voted) return;
-    if (isAsker) return toast({ title: "You can't vote on your own Live Ask" });
-    if (isClosed) return toast({ title: "Voting closed" });
+    if (isAsker) return toast({ title: t("You can't vote on your own Live Ask") });
+    if (isClosed) return toast({ title: t("Voting closed") });
     setVoting(true);
     onAskUpdate({
       vote_count: ask.vote_count + 1,
@@ -333,7 +338,7 @@ function AskPage({
         body: { live_ask_id: ask.id, choice, session_duration_ms: Date.now() - startMs },
       });
       if (error) throw error;
-      if ((data as any)?.is_targeted_match) toast({ title: "You matched the asker's audience" });
+      if ((data as any)?.is_targeted_match) toast({ title: t("You matched the asker's audience") });
       // Auto-advance to the next unvoted ask after a brief reveal
       setTimeout(onNext, 900);
     } catch (e: any) {
@@ -342,7 +347,7 @@ function AskPage({
         votes_a: Math.max(0, ask.votes_a),
         votes_b: Math.max(0, ask.votes_b),
       });
-      toast({ title: e?.message || "Failed to vote", variant: "destructive" });
+      toast({ title: e?.message || t("Failed to vote"), variant: "destructive" });
     } finally {
       setVoting(false);
     }
@@ -351,8 +356,8 @@ function AskPage({
   if (ask.status === "collapsed" || ask.status === "rejected") {
     return (
       <div className="min-h-full flex flex-col items-center justify-center p-6 text-center gap-3">
-        <p className="font-semibold">This Live Ask was removed</p>
-        <p className="text-sm text-muted-foreground">It was flagged by the community.</p>
+        <p className="font-semibold">{t("This Live Ask was removed")}</p>
+        <p className="text-sm text-muted-foreground">{t("It was flagged by the community.")}</p>
       </div>
     );
   }
@@ -366,7 +371,7 @@ function AskPage({
       <h2 className="text-base font-semibold text-center mt-3 line-clamp-2">{ask.question}</h2>
       {ask.target_gender && (
         <p className="text-[11px] text-center text-muted-foreground mt-0.5">
-          Asking {ask.target_gender === "female" ? "women" : "men"} only
+          {ask.target_gender === "female" ? t("Asking women only") : t("Asking men only")}
         </p>
       )}
 
@@ -377,12 +382,12 @@ function AskPage({
 
       <p className="text-[11px] text-center text-muted-foreground mt-2">
         {isAsker
-          ? `${ask.vote_count} ${ask.vote_count === 1 ? "vote" : "votes"} — others can vote on this`
-          : `${ask.vote_count} ${ask.vote_count === 1 ? "vote" : "votes"}`}
-        {!isAsker && !revealed && !isClosed && " — vote to reveal"}
-        {isClosed && " — voting closed"}
+          ? `${ask.vote_count} ${t(ask.vote_count === 1 ? "vote" : "votes")} — ${t("others can vote on this")}`
+          : `${ask.vote_count} ${t(ask.vote_count === 1 ? "vote" : "votes")}`}
+        {!isAsker && !revealed && !isClosed && ` — ${t("vote to reveal")}`}
+        {isClosed && ` — ${t("voting closed")}`}
       </p>
-      <p className="text-[10px] text-center text-muted-foreground/70 mt-3">Swipe ← → for more Live Asks</p>
+      <p className="text-[10px] text-center text-muted-foreground/70 mt-3">{t("Swipe ← → for more Live Asks")}</p>
     </main>
   );
 }
