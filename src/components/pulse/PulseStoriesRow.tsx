@@ -569,18 +569,7 @@ export default function PulseStoriesRow() {
         return !!card.backgroundImage || !card.votePollId;
       });
     }
-    const final = deduped.filter((c) => c.cards.length > 0);
-
-    // ── Categories shortcut: always append so users can browse by topic ──
-    final.push({
-      topic: 'categories',
-      label: 'Categories',
-      cards: [],
-      dot: null,
-      priority: 100,
-    });
-
-    return final;
+    return deduped.filter((c) => c.cards.length > 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pulse, settings, battleData, updatesData, friendsData, predictData, closingData, weeklyData, newPollsData, breakdownData, user, bump]);
 
@@ -720,10 +709,6 @@ export default function PulseStoriesRow() {
                 key={circle.topic}
                 type="button"
                 onClick={() => {
-                  if (circle.topic === 'categories') {
-                    setCategoriesOpen(true);
-                    return;
-                  }
                   setOpenTopic(circle.topic);
                   trackStoryEvent(circle.topic);
                 }}
