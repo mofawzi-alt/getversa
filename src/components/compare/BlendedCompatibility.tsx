@@ -85,7 +85,7 @@ export default function BlendedCompatibility({ userAId, userBId, userBUsername }
     if (score >= 70) return { label: t('Strong Bond'), emoji: '🤝', color: 'text-green-500' };
     if (score >= 55) return { label: t('Good Vibes'), emoji: '⚡', color: 'text-primary' };
     if (score >= 40) return { label: t('Different Flavors'), emoji: '🔄', color: 'text-orange-500' };
-    return { label: t('Opposites', emoji: '🧲', color: 'text-red-500' };
+    return { label: t('Opposites'), emoji: '🧲', color: 'text-red-500' };
   };
 
   if (blendedScore == null) {
