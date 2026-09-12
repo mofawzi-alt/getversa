@@ -80,6 +80,7 @@ function OptionSide({
 }
 
 export default function Shorts() {
+  const { lang } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -211,6 +212,7 @@ export default function Shorts() {
         )}
 
         {polls.map((poll, i) => {
+          const pt = pollText(poll, lang);
           const choice = results[poll.id];
           const tally = tallies[poll.id];
           const live = liveDeltas[poll.id] || { a: 0, b: 0 };
@@ -241,7 +243,7 @@ export default function Shorts() {
                 <div className="flex items-center gap-2 mt-2">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold tracking-wide ${getCategoryColorClass(mapToVersaCategory(poll.category))}`}>
                     <Flame className="h-3 w-3" />
-                    {mapToVersaCategory(poll.category)}
+                    {categoryLabel(mapToVersaCategory(poll.category), lang)}
                   </span>
                   {total > 0 && (
                     <span className="ml-auto flex items-center gap-1.5 text-[12px] font-semibold text-white/80 tabular-nums">
@@ -257,15 +259,15 @@ export default function Shorts() {
                     </span>
                   )}
                 </div>
-                {poll.subtitle && (
-                  <p className="mt-1.5 text-[12px] font-medium text-white/75">{poll.subtitle}</p>
+                {pt.subtitle && (
+                  <p className="mt-1.5 text-[12px] font-medium text-white/75" dir="auto">{pt.subtitle}</p>
                 )}
               </div>
 
               {/* Two stacked halves */}
               <div className="flex-1 min-h-0 flex flex-col">
                 <OptionSide
-                  label={poll.option_a}
+                  label={pt.optionA}
                   image={poll.image_a_url}
                   question={poll.question}
                   side="A"
@@ -275,7 +277,7 @@ export default function Shorts() {
                   onVote={() => handleVote(poll, 'A')}
                 />
                 <OptionSide
-                  label={poll.option_b}
+                  label={pt.optionB}
                   image={poll.image_b_url}
                   question={poll.question}
                   side="B"
