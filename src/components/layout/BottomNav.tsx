@@ -112,32 +112,4 @@ function NavButton({ icon: Icon, label, active, onClick, badge }: {
   );
 }
 
-function CenterNavButton({ icon: Icon, label, active, onClick }: {
-  path: string;
-  icon: any;
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="relative -top-3 flex flex-col items-center gap-1 transition-all"
-    >
-      <div
-        className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg ring-4 ring-background transition-all ${
-          active
-            ? 'bg-primary text-primary-foreground scale-110'
-            : 'bg-card-foreground text-background hover:scale-105'
-        }`}
-      >
-        <Icon className="h-6 w-6" />
-      </div>
-      <span className={`text-[10px] font-medium ${active ? 'text-primary' : 'text-card-foreground/70'}`}>
-        {label}
-      </span>
-    </button>
-  );
-}
-
 export default BottomNav;
