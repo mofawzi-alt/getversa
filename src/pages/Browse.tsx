@@ -158,7 +158,7 @@ export default function Browse() {
     queryKey: ['browse-feed', liveFilter, user?.id, profile?.age_range, targetPollId, pageCount],
     queryFn: async () => {
       const now = new Date().toISOString();
-      const POLL_COLS = 'id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, expiry_type';
+      const POLL_COLS = 'id, question, option_a, option_b, question_ar, option_a_ar, option_b_ar, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score, expiry_type';
       const { data: polls, error: pollsError } = await supabase
         .from('polls')
         .select(POLL_COLS)

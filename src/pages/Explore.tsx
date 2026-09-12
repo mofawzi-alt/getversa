@@ -162,7 +162,7 @@ export default function Explore() {
       const now = new Date().toISOString();
       const { data: rawPolls, error: rawPollsError } = await supabase
         .from('polls')
-        .select('id, question, option_a, option_b, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score')
+        .select('id, question, option_a, option_b, question_ar, option_a_ar, option_b_ar, image_a_url, image_b_url, category, created_at, starts_at, ends_at, weight_score')
         .eq('is_active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .order('weight_score', { ascending: false, nullsFirst: false })
