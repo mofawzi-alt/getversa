@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Send, Share2, Clock, ChevronUp, BarChart3, CirclePlus } from 'lucide-react';
+import { Users, Send, Share2, Clock, ChevronUp, BarChart3, CirclePlus, type LucideIcon } from 'lucide-react';
 import { getOptimizedPollImageSrc, getPollDisplayImageSrc, handlePollImageError } from '@/lib/pollImages';
 import CategoryBadge from '@/components/category/CategoryBadge';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
@@ -25,7 +25,7 @@ interface Props {
   userChoice?: string | null;
   topSlot?: ReactNode;
   extraSideAction?: ReactNode;
-  demoTags?: Array<{ emoji: string; label: string; choice: 'A' | 'B' }>;
+  demoTags?: Array<{ icon: LucideIcon; label: string; choice: 'A' | 'B' }>;
   showBackToTop?: boolean;
   onBackToTop?: () => void;
   onClick: () => void;
@@ -273,7 +273,7 @@ export default function LiveDebateStoryCard({
                 key={`${tag.label}-${i}`}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/25 backdrop-blur-md border border-white/40 text-white text-[13px] font-bold shadow-lg drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
               >
-                <span aria-hidden className="text-[15px]">{tag.emoji}</span>
+                <tag.icon aria-hidden className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
                 <span>{tag.label}</span>
               </span>
             ))}
