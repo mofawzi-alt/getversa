@@ -324,7 +324,7 @@ const dict: Record<string, string> = {
   'risk taker': 'مجازف',
   'conservative': 'محافظ',
   'practical': 'عملي',
-  'convenience': 'الراحة',
+  'growth': 'النمو',
   'growth': 'النمو',
 
 };
