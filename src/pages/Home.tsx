@@ -2020,9 +2020,7 @@ export default function Home() {
               seen.add(p.id);
               merged.push(p);
             }
-            const filteredLivePolls = categoryFilter
-              ? merged.filter(p => matchesCategoryFilter(p.category, categoryFilter))
-              : merged;
+            const filteredLivePolls = merged;
             return filteredLivePolls.length > 0 ? (
               <>
                 {/* Live debates section — no banner, cards speak for themselves */}
