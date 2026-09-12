@@ -16,12 +16,17 @@ import PinButton from '@/components/poll/PinButton';
 import BottomNav from '@/components/layout/BottomNav';
 import { mapToVersaCategory } from '@/lib/categoryMeta';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { pollText } from '@/lib/pollText';
 
 interface VoteHistoryItem {
   pollId: string;
   question: string;
   optionA: string;
   optionB: string;
+  questionAr?: string | null;
+  optionAAr?: string | null;
+  optionBAr?: string | null;
   imageAUrl: string | null;
   imageBUrl: string | null;
   category: string | null;
@@ -46,9 +51,14 @@ function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: 
     vote.percentB
   );
 
+  const { lang } = useLanguage();
+  const vt = pollText({
+    question: vote.question, option_a: vote.optionA, option_b: vote.optionB,
+    question_ar: vote.questionAr, option_a_ar: vote.optionAAr, option_b_ar: vote.optionBAr,
+  }, lang);
   const chosenA = vote.userChoice === 'A';
   const chosenB = vote.userChoice === 'B';
-  const chosenOptionLabel = chosenA ? vote.optionA : vote.optionB;
+  const chosenOptionLabel = chosenA ? vt.optionA : vt.optionB;
 
   const handleShareClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -252,9 +262,13 @@ export default function PollHistory() {
       if (votesError) throw votesError;
       if (!votes || votes.length === 0) return [];
       const pollIds = votes.map(v => v.poll_id);
-      const { data: polls } = await supabase.rpc('get_all_polls_for_history');
-      const { data: results } = await supabase.rpc('get_poll_results', { poll_ids: pollIds });
+      const [{ data: polls }, { data: results }, { data: arPolls }] = await Promise.all([
+        supabase.rpc('get_all_polls_for_history'),
+        supabase.rpc('get_poll_results', { poll_ids: pollIds }),
+        supabase.from('polls').select('id, question_ar, option_a_ar, option_b_ar').in('id', pollIds),
+      ]);
       const pollMap = new Map(polls?.map(p => [p.id, p]) || []);
+      const arMap = new Map((arPolls || []).map((p: any) => [p.id, p]));
       const resultsMap = new Map(results?.map((r: any) => [r.poll_id, r]) || []);
       return votes.map(v => {
         const poll = pollMap.get(v.poll_id);
@@ -266,8 +280,10 @@ export default function PollHistory() {
         const userPercent = userChoice === 'A' ? percentA : percentB;
         const hasStarted = poll.starts_at ? new Date(poll.starts_at) <= new Date() : true;
         const isLive = poll.is_active && hasStarted && (!poll.ends_at || new Date(poll.ends_at) > new Date());
+        const ar = arMap.get(v.poll_id) as any;
         return {
           pollId: v.poll_id, question: poll.question, optionA: poll.option_a, optionB: poll.option_b,
+          questionAr: ar?.question_ar || null, optionAAr: ar?.option_a_ar || null, optionBAr: ar?.option_b_ar || null,
           imageAUrl: poll.image_a_url, imageBUrl: poll.image_b_url, category: poll.category,
           userChoice, percentA, percentB, totalVotes: result?.total_votes || 0,
           votedAt: v.created_at, inMajority: userPercent >= 50, isLive: !!isLive,
