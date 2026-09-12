@@ -26,6 +26,7 @@ import BrandCampaignBuilder from '@/components/admin/BrandCampaignBuilder';
 import CategoryAnalytics from '@/components/admin/CategoryAnalytics';
 import BrandRankingReport from '@/components/admin/BrandRankingReport';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
+import PeriodAnalytics from '@/components/admin/PeriodAnalytics';
 import InsightsReport from '@/components/admin/InsightsReport';
 import BrandIntelligence from '@/components/admin/BrandIntelligence';
 import IndustryReport from '@/components/admin/IndustryReport';
