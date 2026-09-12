@@ -206,6 +206,7 @@ export default function SharedPoll() {
 
   // ── VOTE PHASE ──
   if (phase === 'vote') {
+    const pt = pollText(poll, lang);
     const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
     const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
 
@@ -221,7 +222,7 @@ export default function SharedPoll() {
 
         {/* Question */}
         <div className="px-6 py-4 text-center">
-          <h1 className="text-xl font-bold text-white leading-tight">{poll.question}</h1>
+          <h1 className="text-xl font-bold text-white leading-tight" dir="auto">{pt.question}</h1>
         </div>
 
         {/* Options */}
@@ -233,10 +234,10 @@ export default function SharedPoll() {
             disabled={isVoting}
             className="relative rounded-2xl overflow-hidden aspect-[16/10] w-full"
           >
-            <img src={imgA} alt={poll.option_a} className="w-full h-full object-cover" />
+            <img src={imgA} alt={pt.optionA} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
             <div className="absolute bottom-4 left-4 right-4">
-              <p className="text-white font-bold text-lg text-left">{poll.option_a}</p>
+              <p className="text-white font-bold text-lg text-left" dir="auto">{pt.optionA}</p>
             </div>
           </motion.button>
 
@@ -249,10 +250,10 @@ export default function SharedPoll() {
             disabled={isVoting}
             className="relative rounded-2xl overflow-hidden aspect-[16/10] w-full"
           >
-            <img src={imgB} alt={poll.option_b} className="w-full h-full object-cover" />
+            <img src={imgB} alt={pt.optionB} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
             <div className="absolute bottom-4 left-4 right-4">
-              <p className="text-white font-bold text-lg text-left">{poll.option_b}</p>
+              <p className="text-white font-bold text-lg text-left" dir="auto">{pt.optionB}</p>
             </div>
           </motion.button>
         </div>
@@ -268,6 +269,7 @@ export default function SharedPoll() {
 
   // ── RESULTS PHASE (share-style card) ──
   if (phase === 'results' && myChoice) {
+    const pt = pollText(poll, lang);
     const userPercent = myChoice === 'A' ? percentA : percentB;
     const imgA = getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' });
     const imgB = getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' });
@@ -287,7 +289,7 @@ export default function SharedPoll() {
             </div>
 
             <div className="px-5 pb-4">
-              <h2 className="text-base font-bold text-gray-900 leading-snug">{poll.question}</h2>
+              <h2 className="text-base font-bold text-gray-900 leading-snug" dir="auto">{pt.question}</h2>
             </div>
 
             <div className="grid grid-cols-2 gap-1 px-1">
@@ -295,7 +297,7 @@ export default function SharedPoll() {
                 const isMine = myChoice === side;
                 const isWinner = side === 'A' ? winnerIsA : !winnerIsA;
                 const pct = side === 'A' ? percentA : percentB;
-                const label = side === 'A' ? poll.option_a : poll.option_b;
+                const label = side === 'A' ? pt.optionA : pt.optionB;
                 const img = side === 'A' ? imgA : imgB;
                 return (
                   <div key={side} className="relative aspect-[4/5] rounded-2xl overflow-hidden">
