@@ -722,6 +722,10 @@ export default function PulseStoriesRow() {
                 key={circle.topic}
                 type="button"
                 onClick={() => {
+                  if (circle.topic === 'categories') {
+                    setCategoriesOpen(true);
+                    return;
+                  }
                   setOpenTopic(circle.topic);
                   trackStoryEvent(circle.topic);
                 }}
