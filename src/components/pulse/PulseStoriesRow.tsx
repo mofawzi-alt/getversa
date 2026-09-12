@@ -741,7 +741,7 @@ export default function PulseStoriesRow() {
                   }`}
                 >
                   <div className="w-full h-full rounded-full bg-background flex items-center justify-center p-[3px]">
-                    <div className={`w-full h-full rounded-full ${tileGrad} flex items-center justify-center shadow-inner relative ${!showRing ? 'opacity-70' : ''}`}>
+                    <div className={`w-full h-full rounded-full ${tileGrad} flex items-center justify-center shadow-inner relative ${!showRing && circle.topic !== 'categories' ? 'opacity-70' : ''}`}>
                       {circle.topic === 'egypt_today' && pulse?.pinned_poll_id && (
                         <Pin className="absolute top-0.5 right-0.5 w-3 h-3 text-white fill-white" />
                       )}
