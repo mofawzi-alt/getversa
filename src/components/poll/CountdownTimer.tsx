@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { translate } from '@/lib/i18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CountdownTimerProps {
   endsAt: string;
@@ -10,18 +12,18 @@ interface CountdownTimerProps {
   size?: 'xs' | 'sm';
 }
 
-function format(diffMs: number): string {
-  if (diffMs <= 0) return 'Ended';
+function format(diffMs: number, lang: 'en' | 'ar'): string {
+  if (diffMs <= 0) return translate('Ended', lang);
   const totalSec = Math.floor(diffMs / 1000);
   const days = Math.floor(totalSec / 86400);
   const hours = Math.floor((totalSec % 86400) / 3600);
   const minutes = Math.floor((totalSec % 3600) / 60);
   const seconds = totalSec % 60;
 
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  if (minutes >= 10) return `${minutes}m`;
-  return `${minutes}m ${seconds}s`;
+  if (days > 0) return translate('{d}d {h}h', lang, { d: days, h: hours });
+  if (hours > 0) return translate('{h}h {m}m', lang, { h: hours, m: minutes });
+  if (minutes >= 10) return translate('{m}m', lang, { m: minutes });
+  return translate('{m}m {s}s', lang, { m: minutes, s: seconds });
 }
 
 /**
@@ -30,6 +32,7 @@ function format(diffMs: number): string {
  * - <10m: red + pulsing
  */
 export default function CountdownTimer({ endsAt, className, showIcon = true, size = 'xs' }: CountdownTimerProps) {
+  const { lang } = useLanguage();
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -45,7 +48,7 @@ export default function CountdownTimer({ endsAt, className, showIcon = true, siz
 
   const isCritical = diffMs < 10 * 60 * 1000; // <10 min
   const isUrgent = diffMs < 60 * 60 * 1000;   // <1 hour
-  const label = format(diffMs);
+  const label = format(diffMs, lang);
 
   const textSize = size === 'sm' ? 'text-xs' : 'text-[10px]';
   const iconSize = size === 'sm' ? 'h-3 w-3' : 'h-2.5 w-2.5';
@@ -54,7 +57,7 @@ export default function CountdownTimer({ endsAt, className, showIcon = true, siz
   const content = (
     <span className={cn('inline-flex items-center gap-1 font-semibold tabular-nums', textSize, colorClass, className)}>
       {showIcon && <Timer className={iconSize} />}
-      <span>Closes in {label}</span>
+      <span>{translate('Closes in {label}', lang, { label })}</span>
     </span>
   );
 
