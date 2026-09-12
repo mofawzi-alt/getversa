@@ -23,6 +23,7 @@ export interface Message {
   content: string | null;
   message_type: 'text' | 'poll_share';
   shared_poll_id: string | null;
+  shared_choice: string | null;
   read_at: string | null;
   created_at: string;
 }
@@ -127,6 +128,7 @@ export function useSendMessage() {
       conversationId: string;
       content?: string;
       sharedPollId?: string;
+      sharedChoice?: 'A' | 'B' | null;
     }) => {
       if (!user) throw new Error('Not authenticated');
       const messageType = params.sharedPollId ? 'poll_share' : 'text';
@@ -135,8 +137,9 @@ export function useSendMessage() {
         sender_id: user.id,
         content: params.content || null,
         shared_poll_id: params.sharedPollId || null,
+        shared_choice: params.sharedPollId ? params.sharedChoice || null : null,
         message_type: messageType,
-      });
+      } as any);
       if (error) throw error;
 
       // Notify the recipient (person-to-person, bypasses daily cap by design)
