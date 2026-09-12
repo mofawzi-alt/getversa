@@ -1,4 +1,10 @@
 import type { AppLanguage } from '@/lib/pollText';
+import arHome from '@/lib/i18n/ar.home';
+import arProfile from '@/lib/i18n/ar.profile';
+import arAuth from '@/lib/i18n/ar.auth';
+import arSocial from '@/lib/i18n/ar.social';
+import arDiscover from '@/lib/i18n/ar.discover';
+import arPlay from '@/lib/i18n/ar.play';
 
 /**
  * Lightweight UI translation layer.
@@ -12,7 +18,7 @@ import type { AppLanguage } from '@/lib/pollText';
  *   <span>{t('{n} votes', { n: 12 })}</span>
  */
 
-export const AR: Record<string, string> = {
+const BASE_AR: Record<string, string> = {
   // ---- Navigation / tabs ----
   'Home': 'الرئيسية',
   'Categories': 'الأقسام',
@@ -170,6 +176,16 @@ export const AR: Record<string, string> = {
   'people': 'شخص',
   'Gen Z': 'الجيل زد',
   '25+': '+25',
+};
+
+export const AR: Record<string, string> = {
+  ...arHome,
+  ...arProfile,
+  ...arAuth,
+  ...arSocial,
+  ...arDiscover,
+  ...arPlay,
+  ...BASE_AR,
 };
 
 export function translate(
