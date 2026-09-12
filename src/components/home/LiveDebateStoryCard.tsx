@@ -68,6 +68,8 @@ export default function LiveDebateStoryCard({
   eagerImage,
   height,
 }: Props) {
+  const { lang } = useLanguage();
+  const pt = pollText(poll, lang);
   // Pick the dominant image (winning side) as the full-bleed background, fallback to either.
   const dominantSide: 'A' | 'B' = poll.percentA >= poll.percentB ? 'A' : 'B';
   const bgImageSrc = useMemo(() => {
