@@ -208,7 +208,6 @@ const dict: Record<string, string> = {
   'Value-conscious': 'واعي بالقيمة',
   'Practical wisdom': 'حكمة عملية',
   'Thoughtful choices': 'اختيارات متأنية',
-  'Health-conscious': 'واعي صحياً',
   'Loyal preferences': 'تفضيلات ثابتة',
   'Efficiency-driven': 'مدفوع بالكفاءة',
   'Brand loyalty': 'ولاء للبراندات',

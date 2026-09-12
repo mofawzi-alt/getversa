@@ -287,7 +287,7 @@ function DimensionCard({ insight, index }: { insight: { dimension_name: string; 
 // ── Main page ──
 export default function TasteProfile() {
   const { user, profile } = useAuth();
-  const { t, language } = useT();
+  const { t, lang } = useT();
   const [showReveal, setShowReveal] = useState(() => !hasTasteBeenRevealed());
   const { data: rarityData } = useTasteRarity();
 
@@ -624,7 +624,7 @@ export default function TasteProfile() {
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: t('Top Category'), value: topCategory === '—' ? '—' : categoryLabel(topCategory, language), icon: '⭐' },
+              { label: t('Top Category'), value: topCategory === '—' ? '—' : categoryLabel(topCategory, lang), icon: '⭐' },
               { label: t('Active Day'), value: mostActiveDay, icon: '📅' },
               { label: t('Peak Time'), value: mostActiveTime, icon: '⏰' },
             ].map((stat) => (
