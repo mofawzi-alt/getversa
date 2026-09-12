@@ -1,0 +1,2 @@
+ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS shared_choice text;
+COMMENT ON COLUMN public.messages.shared_choice IS 'The sender''s own vote (A or B) on the shared poll, used for the friend-picked reveal.';

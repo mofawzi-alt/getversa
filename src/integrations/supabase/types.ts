@@ -1269,6 +1269,7 @@ export type Database = {
           message_type: string
           read_at: string | null
           sender_id: string
+          shared_choice: string | null
           shared_poll_id: string | null
         }
         Insert: {
@@ -1279,6 +1280,7 @@ export type Database = {
           message_type?: string
           read_at?: string | null
           sender_id: string
+          shared_choice?: string | null
           shared_poll_id?: string | null
         }
         Update: {
@@ -1289,6 +1291,7 @@ export type Database = {
           message_type?: string
           read_at?: string | null
           sender_id?: string
+          shared_choice?: string | null
           shared_poll_id?: string | null
         }
         Relationships: [
