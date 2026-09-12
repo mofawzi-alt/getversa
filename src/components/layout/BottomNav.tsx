@@ -10,6 +10,17 @@ const BottomNav = forwardRef<HTMLElement, object>(function BottomNav(_, ref) {
   const { user, loading } = useAuth();
   const { totalUnread } = useConversations();
 
+  // Categories tab: go Home (if not there) and open the category sheet
+  const openCategories = () => {
+    if (location.pathname !== '/home' && location.pathname !== '/') {
+      navigate('/home');
+      // give Home a tick to mount its listener
+      setTimeout(() => window.dispatchEvent(new CustomEvent('versa:open-categories')), 60);
+    } else {
+      window.dispatchEvent(new CustomEvent('versa:open-categories'));
+    }
+  };
+
   // While auth is loading, show the full authenticated nav to prevent flash
   if (!user && !loading) {
     return (
