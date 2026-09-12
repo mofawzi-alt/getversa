@@ -302,6 +302,31 @@ const dict: Record<string, string> = {
   'Dimension Alignment': 'توافق الأبعاد',
   'Not enough shared data yet. Vote on more polls!': 'مفيش بيانات مشتركة كفاية لسه. صوّتوا على استطلاعات أكتر!',
   'You & {u}': 'إنت و {u}',
+  // ── Journey / share card / misc ──
+  'Majority Alignment': 'توافقك مع الأغلبية',
+  'Adventure Score': 'درجة المغامرة',
+  '{d}% vs last week': '{d}% عن الأسبوع اللي فات',
+  'Your Journey': 'رحلتك',
+  '{n}v': '{n} صوت',
+  'Share Taste Profile': 'شارك بروفايل الذوق',
+  'Add to Story': 'أضف إلى ستوري',
+  'Generating...': '...جارٍ التجهيز',
+  'M Y   T A S T E   P R O F I L E': 'ب ر و ف ا ي ل   ا ل ذ و ق',
+  'VOTES': 'تصويتات',
+  'STREAK': 'تتابع',
+  'TOP': 'الأعلى',
+  'social': 'اجتماعي',
+  'independent': 'مستقل',
+  'long term growth': 'نمو طويل المدى',
+  'experience': 'التجارب',
+  'brand oriented': 'براندات',
+  'price sensitive': 'حساس للسعر',
+  'risk taker': 'مجازف',
+  'conservative': 'محافظ',
+  'practical': 'عملي',
+  'convenience': 'الراحة',
+  'growth': 'النمو',
+
 };
 
 export default dict;
