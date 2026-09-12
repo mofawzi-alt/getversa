@@ -347,7 +347,7 @@ export default function SharedPoll() {
   // ── FRIEND REVEAL PHASE ──
   if (phase === 'friend-reveal' && myChoice && sharerChoice) {
     const sameChoice = myChoice === sharerChoice;
-    const friendOption = sharerChoice === 'A' ? poll.option_a : poll.option_b;
+    const friendOption = sharerChoice === 'A' ? pollText(poll, lang).optionA : pollText(poll, lang).optionB;
 
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#0F172A] px-6">
@@ -518,6 +518,7 @@ export default function SharedPoll() {
       );
     }
 
+    const gPt = pollText(currentPoll, lang);
     const gImgA = getPollDisplayImageSrc({ imageUrl: currentPoll.image_a_url, option: currentPoll.option_a, question: currentPoll.question, side: 'A' });
     const gImgB = getPollDisplayImageSrc({ imageUrl: currentPoll.image_b_url, option: currentPoll.option_b, question: currentPoll.question, side: 'B' });
 
@@ -527,7 +528,7 @@ export default function SharedPoll() {
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-white/40">VERSA</p>
         </div>
         <div className="px-6 py-4 text-center">
-          <h1 className="text-xl font-bold text-white leading-tight">{currentPoll.question}</h1>
+          <h1 className="text-xl font-bold text-white leading-tight" dir="auto">{gPt.question}</h1>
         </div>
         <div className="flex-1 flex flex-col justify-center px-4 gap-4 pb-8">
           <motion.button
@@ -536,9 +537,9 @@ export default function SharedPoll() {
             disabled={isVoting}
             className="relative rounded-2xl overflow-hidden aspect-[16/10] w-full"
           >
-            <img src={gImgA} alt={currentPoll.option_a} className="w-full h-full object-cover" />
+            <img src={gImgA} alt={gPt.optionA} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-            <div className="absolute bottom-4 left-4"><p className="text-white font-bold text-lg">{currentPoll.option_a}</p></div>
+            <div className="absolute bottom-4 left-4"><p className="text-white font-bold text-lg" dir="auto">{gPt.optionA}</p></div>
           </motion.button>
           <div className="text-center text-white/30 text-xs font-bold tracking-widest">OR</div>
           <motion.button
@@ -547,9 +548,9 @@ export default function SharedPoll() {
             disabled={isVoting}
             className="relative rounded-2xl overflow-hidden aspect-[16/10] w-full"
           >
-            <img src={gImgB} alt={currentPoll.option_b} className="w-full h-full object-cover" />
+            <img src={gImgB} alt={gPt.optionB} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-            <div className="absolute bottom-4 left-4"><p className="text-white font-bold text-lg">{currentPoll.option_b}</p></div>
+            <div className="absolute bottom-4 left-4"><p className="text-white font-bold text-lg" dir="auto">{gPt.optionB}</p></div>
           </motion.button>
         </div>
       </div>
