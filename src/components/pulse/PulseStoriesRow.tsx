@@ -898,6 +898,12 @@ export default function PulseStoriesRow() {
           return false;
         }}
       />
+
+      <CategoriesSheet
+        open={categoriesOpen}
+        onOpenChange={setCategoriesOpen}
+        onSelect={(cat) => navigate(`/explore?category=${encodeURIComponent(cat)}`)}
+      />
     </>
   );
 }
