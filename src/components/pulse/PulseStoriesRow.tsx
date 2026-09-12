@@ -224,23 +224,14 @@ export default function PulseStoriesRow() {
   const [openEditorial, setOpenEditorial] = useState<EditorialStory | null>(null);
   const [bump, setBump] = useState(0);
   const [shareFinding, setShareFinding] = useState<BreakdownFinding | null>(null);
-  const [hiddenCats, setHiddenCats] = useState(() => getHiddenCategories());
   const { data: editorialStories } = useEditorialStories();
   const { storyGroups, markViewed, deleteStory } = useUserStories();
   const [openUserStoryGroup, setOpenUserStoryGroup] = useState<GroupedUserStories | null>(null);
-
-  // Listen for changes from settings page
-  useEffect(() => {
-    const handler = () => setHiddenCats(getHiddenCategories());
-    window.addEventListener('versa-category-filter-changed', handler);
-    return () => window.removeEventListener('versa-category-filter-changed', handler);
-  }, []);
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
   const { data: updatesData } = useYourPollsUpdated();
   const { data: friendsData } = useFriendsActivity();
-  const { data: categoryStories } = useCategoryStories();
   const { data: predictData } = usePredictRecap();
   const { data: closingData } = useClosingSoon();
   const { data: weeklyData } = useWeeklyVerdict();
