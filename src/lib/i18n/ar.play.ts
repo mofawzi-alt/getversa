@@ -309,7 +309,9 @@ const dict: Record<string, string> = {
   "You need {n} more credit. Every vote earns credits.": "محتاج كريدت واحد كمان. كل صوت بيكسبك كريدت.",
   "You need {n} more credits. Every vote earns credits.": "محتاج {n} كريدت كمان. كل صوت بيكسبك كريدت."
   ,"Yes": "آه",
-  "No": "لأ"
+  "No": "لأ",
+  "{h}h {m}m left": "باقي {h} س {m} د",
+  "{m}m left": "باقي {m} د"
 };
 
 export default dict;

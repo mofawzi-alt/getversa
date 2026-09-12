@@ -1,4 +1,256 @@
-// Arabic UI strings for the profile screens. Keys are the English source strings.
-const dict: Record<string, string> = {};
+// Arabic UI strings for the profile screens.
+const dict: Record<string, string> = {
+  // Legal / Terms & Privacy section headers
+  "1. Acceptance of Terms": "1. الموافقة على الشروط",
+  "1. Introduction": "1. مقدمة",
+  "10. Cookies and Tracking": "10. الكوكيز والتتبع",
+  "10. Indemnification": "10. التعويض",
+  "11. Changes to This Policy": "11. التغييرات على هذه السياسة",
+  "11. Governing Law": "11. القانون الحاكم",
+  "12. Changes to These Terms": "12. التغييرات على هذه الشروط",
+  "12. Contact Us": "12. تواصل معنا",
+  "13. Contact Us": "13. تواصل معنا",
+  "2. Who Can Use Versa": "2. مين يقدر يستخدم فيرسا",
+  "2. Who We Are": "2. مين إحنا",
+  "3. What Data We Collect": "3. البيانات اللي بنجمعها",
+  "3. Your Account": "3. حسابك",
+  "4. How We Use Your Data": "4. إزاي بنستخدم بياناتك",
+  "4. Using Versa": "4. استخدام فيرسا",
+  "5. Credits and Ask Versa": "5. الكريديت وميزة اسأل فيرسا",
+  "5. How We Share Your Data": "5. إزاي بنشارك بياناتك",
+  "6. Data Retention": "6. الاحتفاظ بالبيانات",
+  "6. Intellectual Property": "6. الملكية الفكرية",
+  "7. Privacy": "7. الخصوصية",
+  "7. Your Rights": "7. حقوقك",
+  "8. Children and Age Requirements": "8. الأطفال ومتطلبات السن",
+  "8. Disclaimers": "8. إخلاء المسؤولية",
+  "9. Limitation of Liability": "9. حدود المسؤولية",
+  "9. Security": "9. الأمان",
+
+  "Aggregated, anonymised demographic breakdowns are shared with brand clients as consumer intelligence reports. No personally identifying information is ever shared.":
+    "بيانات ديموغرافية مجمّعة ومجهولة الهوية بتتشارك مع الشركات الشريكة كتقارير معرفة استهلاكية. مفيش أي معلومة تعرّف عليك بتتشارك أبدًا.",
+  "All content on Versa — including poll questions, images, personality types, dimensions, insights, the Ask Versa feature, the Versa Arena feature, and all associated data — is owned by Versa Technologies. You may not copy, reproduce, distribute, or create derivative works from Versa's content without our written permission.":
+    "كل المحتوى على فيرسا — بما فيه أسئلة الاستطلاعات والصور وأنواع الشخصية والأبعاد والرؤى وميزة اسأل فيرسا وميزة أرينا فيرسا وكل البيانات المرتبطة بيهم — ملك لشركة فيرسا تكنولوجيز. مش مسموح تنسخ أو تعيد إنتاج أو توزع أو تعمل أعمال مشتقة من محتوى فيرسا من غير إذن كتابي منّا.",
+  "All vote data collected through Versa, including aggregated results and demographic breakdowns, is the exclusive property of Versa Technologies. This data may be used to create consumer intelligence reports sold to third-party brand clients.":
+    "كل بيانات التصويت اللي بتتجمع من خلال فيرسا، بما فيها النتائج المجمّعة والتوزيعات الديموغرافية، ملك حصري لشركة فيرسا تكنولوجيز. البيانات دي ممكن تُستخدم لعمل تقارير معرفة استهلاكية بتتباع لشركات شريكة.",
+  "Ask Versa provides insights based on available poll data. We do not guarantee the accuracy, completeness, or timeliness of Ask Versa responses.":
+    "ميزة اسأل فيرسا بتقدّم رؤى مبنية على بيانات الاستطلاعات المتاحة. إحنا مش بنضمن دقة أو اكتمال أو توقيت ردود اسأل فيرسا.",
+  "By downloading, accessing, or using the Versa app (\"":
+    "بتحميلك أو دخولك أو استخدامك لتطبيق فيرسا (\"",
+  "Credits are earned by voting on polls. The credit earning rate may change at any time.":
+    "بتكسب الكريديت بالتصويت على الاستطلاعات. معدل كسب الكريديت ممكن يتغير في أي وقت.",
+  "Credits can be spent on Ask Versa insights. Credits have no monetary value and cannot be withdrawn, transferred, or exchanged for cash.":
+    "الكريديت ممكن تستخدمه في رؤى اسأل فيرسا. الكريديت مالوش قيمة نقدية ومش ممكن تسحبه أو تحوّله أو تستبدله بفلوس.",
+  "Credits do not expire while your account is active. If your account is deleted, your credits are forfeited.":
+    "الكريديت مايتخصمش طول ما حسابك شغال. لو حسابك اتمسح، الكريديت بتاعك بيضيع.",
+  "Depending on your country, you may have the right to:": "على حسب بلدك، ممكن يكون ليك الحق في:",
+  "For any questions, concerns, or requests related to your privacy:": "لأي أسئلة أو مخاوف أو طلبات متعلقة بخصوصيتك:",
+  "If Versa is acquired or merges with another company, your data may be transferred as part of that transaction. We will notify you in advance.":
+    "لو فيرسا اتباعت أو اندمجت مع شركة تانية، بياناتك ممكن تنتقل كجزء من الصفقة دي. هنبلغك قبل ما ده يحصل.",
+  "If you are between 13 and 18 years old, you confirm that you have your parent or guardian's permission to use Versa.":
+    "لو سنك بين 13 و18 سنة، إنت بتأكد إن عندك إذن من والدك أو ولي أمرك لاستخدام فيرسا.",
+  "If you contact our support team, we collect the content of your message and your contact details.":
+    "لو تواصلت مع فريق الدعم، بنجمع محتوى رسالتك وبيانات التواصل بتاعتك.",
+  "If you do not agree with any part of this policy, please do not use the app.":
+    "لو مش موافق على أي جزء من السياسة دي، من فضلك متستخدمش التطبيق.",
+  "If you have any questions about these Terms, contact us at:": "لو عندك أي أسئلة عن الشروط دي، تواصل معانا على:",
+  "If you submit any content to Versa (such as a profile photo or username), you grant Versa a non-exclusive, worldwide, royalty-free licence to use, display, and store that content for the purpose of operating the platform.":
+    "لو رفعت أي محتوى على فيرسا (زي صورة بروفايل أو اسم مستخدم)، إنت بتدّي فيرسا ترخيص غير حصري وعالمي ومن غير مقابل لاستخدام وعرض وتخزين المحتوى ده بغرض تشغيل المنصة.",
+  "If you submit content to Versa, including Live Asks, photos, text, usernames, or profile content, you may not submit objectionable, abusive, harassing, hateful, sexual, violent, illegal, spam, impersonation, or otherwise harmful content.":
+    "لو بترفع محتوى على فيرسا، زي لايف آسك أو صور أو نصوص أو أسماء مستخدمين أو محتوى بروفايل، ممنوع ترفع محتوى مسيء أو مؤذي أو تحرشي أو يحض على الكراهية أو جنسي أو عنيف أو غير قانوني أو سبام أو انتحال شخصية أو أي محتوى ضار.",
+  "No method of transmission or storage is 100% secure. We cannot guarantee absolute security, but we are committed to protecting your data.":
+    "مفيش طريقة نقل أو تخزين آمنة 100%. إحنا مش بنضمن أمان مطلق، بس ملتزمين بحماية بياناتك.",
+  "Our total liability to you for any claim arising from your use of Versa shall not exceed the amount you paid us in the 12 months preceding the claim (if any).":
+    "مسؤوليتنا الإجمالية تجاهك عن أي مطالبة ناتجة عن استخدامك لفيرسا مش هتتعدى المبلغ اللي دفعته لنا في الـ12 شهر اللي قبل المطالبة (لو موجود).",
+  "Poll results on Versa reflect the opinions of Versa users who voted on a given poll. They are not scientifically representative surveys of the general population. Results should not be used as the sole basis for significant business, medical, financial, or personal decisions.":
+    "نتائج الاستطلاعات على فيرسا بتعكس آراء مستخدمي فيرسا اللي صوتوا على الاستطلاع. مش استطلاعات علمية ممثلة لعموم الناس. متعتمدش عليها كأساس وحيد لقرارات مهمة في الشغل أو الطب أو المال أو حياتك الشخصية.",
+  "The key points:": "أهم النقاط:",
+  "These Terms are governed by the laws of the Arab Republic of Egypt. Any disputes arising from these Terms shall be subject to the jurisdiction of the courts of Cairo, Egypt.":
+    "الشروط دي محكومة بقوانين جمهورية مصر العربية. أي نزاع ينشأ عن الشروط دي هيكون تحت اختصاص محاكم القاهرة، مصر.",
+  "These Terms form a legal agreement between you and Versa Technologies (\"":
+    "الشروط دي بتكوّن اتفاقية قانونية بينك وبين فيرسا تكنولوجيز (\"",
+  "These providers process data only on our behalf and under strict confidentiality obligations.":
+    "الجهات دي بتعالج البيانات بالنيابة عننا بس، وتحت التزامات سرية صارمة.",
+  "This Privacy Policy explains what personal data we collect, how we use it, who we share it with, and your rights as a user. By creating an account and using Versa, you agree to this policy.":
+    "سياسة الخصوصية دي بتشرح البيانات الشخصية اللي بنجمعها وإزاي بنستخدمها ومين بنشاركها معاه وحقوقك كمستخدم. بإنشائك حساب واستخدامك فيرسا، إنت موافق على السياسة دي.",
+  "This information is used to generate demographic breakdowns of poll results.": "المعلومات دي بتُستخدم لعمل توزيعات ديموغرافية لنتائج الاستطلاعات.",
+  "To the maximum extent permitted by applicable law, Versa Technologies shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the platform, including but not limited to loss of data, loss of profits, or reputational damage.":
+    "لأقصى حد يسمح بيه القانون، فيرسا تكنولوجيز مش هتكون مسؤولة عن أي أضرار غير مباشرة أو عرضية أو خاصة أو تبعية أو تأديبية ناتجة عن استخدامك للمنصة، بما في ذلك فقدان البيانات أو الأرباح أو الإضرار بالسمعة.",
+  "To use Versa, you must create an account with a valid email address and username. You are responsible for keeping your login credentials secure. Do not share your password with anyone.":
+    "علشان تستخدم فيرسا، لازم تعمل حساب بإيميل حقيقي واسم مستخدم. إنت المسؤول عن الحفاظ على بيانات دخولك آمنة. متشاركش الباسورد بتاعك مع حد.",
+  "Versa is operated by Versa Technologies. For any questions about this policy or your data, contact us at:":
+    "فيرسا بتتشغّل بواسطة فيرسا تكنولوجيز. لأي أسئلة عن السياسة دي أو بياناتك، تواصل معانا على:",
+  "Versa is provided \"": "فيرسا متاح \"",
+  "Versa is the place where Gen Z decides — vote on real polls, compare your taste, and discover trends across the region. If something isn't working, we want to hear from you.":
+    "فيرسا هو المكان اللي جيل زد بيقرر فيه — صوّت على استطلاعات حقيقية، قارن ذوقك، واكتشف الترندات في المنطقة. لو في حاجة مش شغالة، عايزين نسمع منك.",
+  "Versa may automatically filter submitted content before it appears. Users can report objectionable content and block abusive users from inside the app. Blocking a user hides that user's content from the blocker immediately and sends the related content to Versa for review.":
+    "فيرسا ممكن تفلتر المحتوى تلقائيًا قبل ما يظهر. المستخدمين يقدروا يبلّغوا عن محتوى مسيء ويحظروا مستخدمين مسيئين من داخل التطبيق. حظر مستخدم بيخفي محتواه فورًا وبيبعت المحتوى المرتبط بيه لفيرسا لمراجعته.",
+  "Versa — Consumer Intelligence Platform · Last updated: May 2026": "فيرسا — منصة معرفة استهلاكية · آخر تحديث: مايو 2026",
+  "Votes on Versa represent your genuine opinion. You agree to vote honestly and not to systematically vote in a way designed to manipulate aggregate results.":
+    "التصويتات على فيرسا بتمثل رأيك الحقيقي. إنت موافق إنك تصوّت بأمانة وميكونش هدفك التلاعب بالنتائج المجمّعة.",
+  "We aggregate and anonymise vote data to produce consumer intelligence reports sold to brand clients (companies). These reports show demographic trends — for example, \"":
+    "بنجمع ونخفي هوية بيانات التصويت لعمل تقارير معرفة استهلاكية بتتباع للشركات. التقارير دي بتوضح ترندات ديموغرافية — مثلًا، \"",
+  "We automatically collect:": "بنجمع تلقائيًا:",
+  "We do not sell your personal data to any third party.": "إحنا مش بنبيع بياناتك الشخصية لأي طرف تالت.",
+  "We keep your data for as long as your account is active. If you delete your account:": "بنحتفظ ببياناتك طول ما حسابك شغال. لو مسحت حسابك:",
+  "We may disclose your data if required by law, court order, or to protect the rights and safety of our users.":
+    "ممكن نكشف بياناتك لو طلب منّا القانون أو أمر محكمة أو علشان نحمي حقوق وسلامة مستخدمينا.",
+  "We may update these Terms from time to time. When we do, we will update the \"":
+    "ممكن نحدّث الشروط دي من وقت للتاني. لما نعمل كده، هنحدّث \"",
+  "We may update this Privacy Policy from time to time. When we do, we will update the \"":
+    "ممكن نحدّث سياسة الخصوصية دي من وقت للتاني. لما نعمل كده، هنحدّث \"",
+  "We reserve the right to suspend or permanently delete your account at any time if you violate these Terms, engage in abusive behaviour, or if we determine your account is being used fraudulently.":
+    "بنحتفظ بحق إيقاف أو حذف حسابك نهائيًا في أي وقت لو خالفت الشروط دي أو تصرفت بشكل مسيء أو لو تأكدنا إن حسابك بيتستخدم بشكل احتيالي.",
+  "We review objectionable content reports and may remove content, restrict access, suspend accounts, or delete accounts that violate these Terms. Reports of objectionable content are acted on within 24 hours where required by platform safety rules.":
+    "بنراجع بلاغات المحتوى المسيء وممكن نشيل محتوى أو نقيّد الوصول أو نوقف حسابات أو نحذفها لو مخالفة للشروط دي. البلاغات بيتم التعامل معاها خلال 24 ساعة لو مطلوب حسب قواعد أمان المنصة.",
+  "We take reasonable technical and organisational measures to protect your data, including:": "بنتخذ إجراءات تقنية وتنظيمية معقولة لحماية بياناتك، منها:",
+  "We use minimal tracking to keep you logged in and to understand how the app is used. We do not use advertising trackers or sell data to advertisers.":
+    "بنستخدم تتبع بسيط علشان نخليك مسجل دخول ونفهم إزاي التطبيق بيتستخدم. إحنا مش بنستخدم متتبعات إعلانية أو نبيع بيانات للمعلنين.",
+  "We use trusted third-party services to operate Versa, including:": "بنستخدم خدمات طرف تالت موثوقة لتشغيل فيرسا، منها:",
+  "Welcome to Versa (\"": "أهلًا بيك في فيرسا (\"",
+  "When you complete your profile, we collect:": "لما تكمّل بروفايلك، بنجمع:",
+  "When you create an account, we collect:": "لما تعمل حساب، بنجمع:",
+  "When you use the app, we collect:": "لما تستخدم التطبيق، بنجمع:",
+  "You agree not to:": "إنت موافق إنك ماتعملش:",
+  "You agree to defend, indemnify, and hold harmless Versa Technologies and its team from any claims, damages, or expenses arising from your violation of these Terms or your misuse of the platform.":
+    "إنت موافق إنك تدافع وتعوّض وتُبرئ فيرسا تكنولوجيز وفريقها من أي مطالبات أو أضرار أو مصاريف ناتجة عن مخالفتك للشروط دي أو سوء استخدامك للمنصة.",
+  "You agree to provide accurate, current, and complete information when creating your account, including your age range, gender, and location. Providing false demographic information affects the quality of Versa's data and violates these Terms.":
+    "إنت موافق إنك تقدّم معلومات صحيحة ومحدّثة وكاملة لما تعمل حسابك، بما فيها فئتك العمرية والجنس والموقع. تقديم معلومات ديموغرافية غلط بيأثر على جودة بيانات فيرسا وده مخالفة للشروط دي.",
+  "You haven't voted on any polls yet": "لسه مصوّتش على أي استطلاع",
+  "You may only create one account per person. You may not create an account on behalf of someone else.": "مسموح لك بحساب واحد بس. ممنوع تعمل حساب بالنيابة عن حد تاني.",
+  "You must be at least 13 years old to use Versa. By creating an account, you confirm that you meet this age requirement.":
+    "لازم يكون سنك 13 سنة على الأقل علشان تستخدم فيرسا. بعملك حساب، إنت بتأكد إنك مستوفي شرط السن ده.",
+  "Your continued use of Versa after changes are posted means you accept the updated policy.": "استمرارك في استخدام فيرسا بعد نشر أي تغييرات معناه إنك موافق على السياسة المحدّثة.",
+  "Your username, profile photo, vote match percentage, and public stats are visible to users you connect with as friends.":
+    "اسم المستخدم وصورة البروفايل ونسبة توافق التصويت والإحصائيات العامة بتاعتك تظهر للمستخدمين اللي إنت أصدقاء معاهم.",
+  "© 2026 Versa Technologies. All rights reserved.": "© 2026 فيرسا تكنولوجيز. جميع الحقوق محفوظة.",
+
+  // Profile / app UI
+  "(You)": "(إنت)",
+  "+{n} insight earned": "+{n} رؤية اتكسبت",
+  "Achievements": "الإنجازات",
+  "Age Range": "الفئة العمرية",
+  "All-Time": "طول الوقت",
+  "Already redeemed": "اتصرفت خلاص",
+  "Based on {n}+ votes — your profile is taking shape": "بناءً على {n}+ صوت — بروفايلك بيتشكّل",
+  "Battles": "المبارزات",
+  "Check back later for customization options!": "ارجع تاني بعدين علشان تلاقي خيارات تخصيص!",
+  "Check back later for new rewards from our partners": "ارجع تاني بعدين تلاقي جوايز جديدة من شركائنا",
+  "City": "المدينة",
+  "Code copied to clipboard!": "الكود اتنسخ!",
+  "Comparisons": "المقارنات",
+  "Compete with other voters and climb the ranks!": "نافس المصوّتين التانيين واطلع في الترتيب!",
+  "Contact us": "تواصل معانا",
+  "Country": "الدولة",
+  "Credits": "الكريديت",
+  "Customize Theme": "خصّص الثيم",
+  "Daily Poll Reminders": "تذكيرات الاستطلاع اليومي",
+  "Delete account": "احذف الحساب",
+  "Edit Profile": "تعديل البروفايل",
+  "Email us anytime — we usually reply within 24 hours.": "ابعتلنا إيميل في أي وقت — بنرد عادة خلال 24 ساعة.",
+  "Enter city": "اكتب المدينة",
+  "Enter username": "اكتب اسم المستخدم",
+  "Exclusive offers from our partner brands": "عروض حصرية من الماركات الشريكة",
+  "Failed to apply theme": "حصل خطأ في تطبيق الثيم",
+  "Failed to redeem reward": "حصل خطأ في صرف الجايزة",
+  "Failed to take photo": "حصل خطأ في التقاط الصورة",
+  "Failed to update privacy": "حصل خطأ في تحديث الخصوصية",
+  "Failed to update profile": "حصل خطأ في تحديث البروفايل",
+  "Failed to update settings": "حصل خطأ في تحديث الإعدادات",
+  "Failed to upload photo": "حصل خطأ في رفع الصورة",
+  "Followers": "المتابعين",
+  "Following": "بتتابعهم",
+  "Frequently asked questions": "الأسئلة الشائعة",
+  "Friends": "الأصدقاء",
+  "Gender": "النوع",
+  "Get reminded to vote on daily polls": "خلينا نفكّرك تصوّت على الاستطلاع اليومي",
+  "How can we help?": "نقدر نساعدك إزاي؟",
+  "Image must be under 5MB": "الصورة لازم تكون أقل من 5 ميجا",
+  "Insight Score": "درجة الرؤية",
+  "Insight": "رؤية",
+  "Keep voting": "استمر في التصويت",
+  "Leaderboard": "لوحة المتصدرين",
+  "Link copied!": "اللينك اتنسخ!",
+  "Live results": "نتائج لايف",
+  "Log Out": "تسجيل خروج",
+  "Logged out successfully": "خرجت بنجاح",
+  "Logging out...": "جاري تسجيل الخروج...",
+  "Logging out…": "جاري تسجيل الخروج…",
+  "Logout failed": "فشل تسجيل الخروج",
+  "Majority": "الأغلبية",
+  "Minority": "الأقلية",
+  "My Live Asks": "لايف آسك بتاعتي",
+  "My Votes": "تصويتاتي",
+  "Need {n} more": "محتاج {n} كمان",
+  "New": "جديد",
+  "No Themes Available": "مفيش ثيمات متاحة",
+  "No data yet. Be the first!": "مفيش بيانات لسه. كن أول واحد!",
+  "No polls match your search": "مفيش استطلاعات تطابق بحثك",
+  "No rewards available": "مفيش جوايز متاحة",
+  "Not enough points": "مفيش نقط كفاية",
+  "Notification Settings": "إعدادات الإشعارات",
+  "Opt in to receive sponsored poll notifications": "فعّل استقبال إشعارات الاستطلاعات المموّلة",
+  "Partner Rewards": "جوايز الشركاء",
+  "Perks": "المميزات",
+  "Play subtle sounds on swipe and results": "شغّل أصوات خفيفة عند السحب والنتائج",
+  "Points": "النقط",
+  "Poll questions and options": "أسئلة وخيارات الاستطلاعات",
+  "Privacy Policy": "سياسة الخصوصية",
+  "Private profile": "بروفايل خاص",
+  "Profile is now private": "البروفايل بقى خاص",
+  "Profile is now public": "البروفايل بقى عام",
+  "Profile picture updated!": "صورة البروفايل اتحدّثت!",
+  "Profile updated successfully!": "البروفايل اتحدّث بنجاح!",
+  "Redeemed": "اتصرفت",
+  "Required Score": "الدرجة المطلوبة",
+  "Resources": "مصادر",
+  "Results update in real time": "النتائج بتتحدّث لحظة بلحظة",
+  "Reward redeemed successfully!": "الجايزة اتصرفت بنجاح!",
+  "Save Changes": "احفظ التغييرات",
+  "Saving...": "جاري الحفظ...",
+  "Search polls...": "دوّر في الاستطلاعات...",
+  "Select age range": "اختار الفئة العمرية",
+  "Select country": "اختار الدولة",
+  "Select gender": "اختار النوع",
+  "Send to friend": "ابعت لصاحبك",
+  "Send": "ابعت",
+  "Settings updated": "الإعدادات اتحدّثت",
+  "Share": "شير",
+  "Show this code at our partner location or use it online": "وريّ الكود ده في فرع الشريك أو استخدمه أونلاين",
+  "Sound Effects": "المؤثرات الصوتية",
+  "Sound effects disabled": "المؤثرات الصوتية اتقفلت",
+  "Sound effects enabled": "المؤثرات الصوتية اشتغلت",
+  "Sponsored Polls": "استطلاعات مموّلة",
+  "Streak": "السلسلة",
+  "Support": "الدعم",
+  "Tap to change photo": "دوس علشان تغيّر الصورة",
+  "Taste Profile": "بروفايل الذوق",
+  "Terms of Service": "شروط الخدمة",
+  "Theme applied!": "الثيم اتطبق!",
+  "Top Voters": "أكتر المصوّتين",
+  "Unknown location": "موقع غير معروف",
+  "Unlock Perk": "افتح الميزة",
+  "Unlock now": "افتحها دلوقتي",
+  "Unlock perks with your influence": "افتح مميزات بتأثيرك",
+  "Username": "اسم المستخدم",
+  "Versa Insider": "فيرسا إنسايدر",
+  "Versa OG": "فيرسا أو جي",
+  "Versa Rewards": "جوايز فيرسا",
+  "Versa v1.0 · © 2026": "فيرسا v1.0 · © 2026",
+  "Versa · Made in Cairo · © {year}": "فيرسا · صُنع في القاهرة · © {year}",
+  "Visit Partner Site": "زور موقع الشريك",
+  "Votes": "التصويتات",
+  "Weekly": "أسبوعي",
+  "When on, only friends can see your votes, badges, and patterns. Your username and avatar stay visible so people can still find and add you.":
+    "لما تفعّله، بس أصدقاءك يقدروا يشوفوا تصويتاتك وشاراتك وأنماطك. اسم المستخدم والصورة بتاعتك يفضلوا ظاهرين عشان الناس تقدر تلاقيك وتضيفك.",
+  "You voted": "صوّتّ",
+  "Your Badges": "شاراتك",
+  "Your Unlock Code": "كود الفتح بتاعك",
+  "{earned} of {total} badges earned": "اتكسب {earned} من أصل {total} شارة",
+  "{n} day streak": "سلسلة {n} يوم",
+  "{n} day(s) left this week — keep voting!": "باقيلك {n} يوم في الأسبوع ده — استمر في التصويت!",
+  "{n} pts": "{n} نقطة",
+  "{n} votes": "{n} صوت",
+};
 
 export default dict;
