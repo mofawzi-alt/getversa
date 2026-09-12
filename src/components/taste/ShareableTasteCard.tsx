@@ -86,7 +86,7 @@ export default function ShareableTasteCard({ archetype, description, topCategory
     ctx.font = '700 26px "Inter", "SF Pro Display", sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     ctx.letterSpacing = '10px';
-    ctx.fillText('M Y   T A S T E   P R O F I L E', W / 2, 530);
+    ctx.fillText(t('M Y   T A S T E   P R O F I L E'), W / 2, 530);
 
     // Archetype name — big bold
     ctx.font = 'bold 88px "Space Grotesk", "SF Pro Display", sans-serif';
