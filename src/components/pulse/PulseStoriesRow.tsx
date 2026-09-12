@@ -24,7 +24,7 @@ import { useEditorialStories, type EditorialStory } from '@/hooks/useEditorialSt
 import { EDITORIAL_STORY_META } from '@/lib/editorialStoryTypes';
 import EditorialStoryViewer from './EditorialStoryViewer';
 import { hasSeenLocally as hasSeenLocallyKey } from '@/lib/pulseTime';
-import CategoriesSheet from '@/components/home/CategoriesSheet';
+
 
 
 type DotColor = 'red' | 'blue' | 'gold' | null;
@@ -228,7 +228,6 @@ export default function PulseStoriesRow() {
   const { data: editorialStories } = useEditorialStories();
   const { storyGroups, markViewed, deleteStory } = useUserStories();
   const [openUserStoryGroup, setOpenUserStoryGroup] = useState<GroupedUserStories | null>(null);
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
@@ -724,7 +723,7 @@ export default function PulseStoriesRow() {
                   }`}
                 >
                   <div className="w-full h-full rounded-full bg-background flex items-center justify-center p-[3px]">
-                    <div className={`w-full h-full rounded-full ${tileGrad} flex items-center justify-center shadow-inner relative ${!showRing && circle.topic !== 'categories' ? 'opacity-70' : ''}`}>
+                    <div className={`w-full h-full rounded-full ${tileGrad} flex items-center justify-center shadow-inner relative ${!showRing ? 'opacity-70' : ''}`}>
                       {circle.topic === 'egypt_today' && pulse?.pinned_poll_id && (
                         <Pin className="absolute top-0.5 right-0.5 w-3 h-3 text-white fill-white" />
                       )}
@@ -882,14 +881,6 @@ export default function PulseStoriesRow() {
         }}
       />
 
-      <CategoriesSheet
-        open={categoriesOpen}
-        onOpenChange={setCategoriesOpen}
-        onSelect={(cat) => {
-          // Filter the Home feed in place instead of leaving for another page
-          window.dispatchEvent(new CustomEvent('versa:home-category', { detail: cat }));
-        }}
-      />
     </>
   );
 }
