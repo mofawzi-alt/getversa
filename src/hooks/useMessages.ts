@@ -168,6 +168,10 @@ export function useSendMessage() {
               url: `/messages/${params.conversationId}`,
               user_ids: [recipientId],
               notification_type: 'new_message',
+              // Direct person-to-person message: always deliver (no daily cap,
+              // quiet hours or duplicate-title gating).
+              governance_checked: true,
+              skip_in_app: false,
             },
           });
         }
