@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { computePersonalityType, computeTypeCompatibility, PERSONALITY_TYPES } from '@/lib/personalityType';
 import { motion } from 'framer-motion';
 import { Brain, Heart, Layers, Sparkles, TrendingUp } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 interface Props {
   userAId: string;
@@ -33,6 +34,7 @@ function usePersonalityData(userId: string | undefined) {
 }
 
 export default function BlendedCompatibility({ userAId, userBId, userBUsername }: Props) {
+  const { t } = useT();
   // 1. Vote match score
   const { data: voteScore } = useQuery({
     queryKey: ['vote-compatibility', userAId, userBId],
@@ -79,18 +81,18 @@ export default function BlendedCompatibility({ userAId, userBId, userBUsername }
     : null;
 
   const getScoreLabel = (score: number) => {
-    if (score >= 85) return { label: 'Soul Match', emoji: '💛', color: 'text-yellow-500' };
-    if (score >= 70) return { label: 'Strong Bond', emoji: '🤝', color: 'text-green-500' };
-    if (score >= 55) return { label: 'Good Vibes', emoji: '⚡', color: 'text-primary' };
-    if (score >= 40) return { label: 'Different Flavors', emoji: '🔄', color: 'text-orange-500' };
-    return { label: 'Opposites', emoji: '🧲', color: 'text-red-500' };
+    if (score >= 85) return { label: t('Soul Match'), emoji: '💛', color: 'text-yellow-500' };
+    if (score >= 70) return { label: t('Strong Bond'), emoji: '🤝', color: 'text-green-500' };
+    if (score >= 55) return { label: t('Good Vibes'), emoji: '⚡', color: 'text-primary' };
+    if (score >= 40) return { label: t('Different Flavors'), emoji: '🔄', color: 'text-orange-500' };
+    return { label: t('Opposites', emoji: '🧲', color: 'text-red-500' };
   };
 
   if (blendedScore == null) {
     return (
       <div className="glass rounded-2xl p-6 text-center">
         <Brain className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-        <p className="text-sm text-muted-foreground">Not enough shared data yet. Vote on more polls!</p>
+        <p className="text-sm text-muted-foreground">{t('Not enough shared data yet. Vote on more polls!')}</p>
       </div>
     );
   }
@@ -110,7 +112,7 @@ export default function BlendedCompatibility({ userAId, userBId, userBUsername }
           <div className="flex items-center justify-center gap-2 mb-3">
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              Compatibility Score
+              {t('Compatibility Score')}
             </span>
           </div>
 
@@ -136,7 +138,7 @@ export default function BlendedCompatibility({ userAId, userBId, userBUsername }
           </span>
 
           <p className="text-xs text-muted-foreground mt-3">
-            You & @{userBUsername || 'them'}
+            {t('You & {u}', { u: '@' + (userBUsername || t('them')) })}
           </p>
         </div>
       </div>
@@ -147,21 +149,21 @@ export default function BlendedCompatibility({ userAId, userBId, userBUsername }
         <div className="glass rounded-xl p-3 text-center">
           <Heart className="h-4 w-4 mx-auto text-red-400 mb-1" />
           <div className="text-lg font-bold">{voteScore != null ? `${voteScore}%` : '—'}</div>
-          <div className="text-[9px] text-muted-foreground font-medium">Vote Match</div>
+          <div className="text-[9px] text-muted-foreground font-medium">{t('Vote Match')}</div>
         </div>
 
         {/* Dimension */}
         <div className="glass rounded-xl p-3 text-center">
           <Layers className="h-4 w-4 mx-auto text-blue-400 mb-1" />
           <div className="text-lg font-bold">{dimensionAvg != null ? `${dimensionAvg}%` : '—'}</div>
-          <div className="text-[9px] text-muted-foreground font-medium">Dimension</div>
+          <div className="text-[9px] text-muted-foreground font-medium">{t('Dimension')}</div>
         </div>
 
         {/* Personality */}
         <div className="glass rounded-xl p-3 text-center">
           <Brain className="h-4 w-4 mx-auto text-purple-400 mb-1" />
           <div className="text-lg font-bold">{personalityCompat ? `${personalityCompat.score}%` : '—'}</div>
-          <div className="text-[9px] text-muted-foreground font-medium">Personality</div>
+          <div className="text-[9px] text-muted-foreground font-medium">{t('Personality')}</div>
         </div>
       </div>
 
@@ -171,19 +173,19 @@ export default function BlendedCompatibility({ userAId, userBId, userBUsername }
           <div className="flex items-center justify-between mb-3">
             <div className="text-center flex-1">
               <div className="text-xl">{typeA.emoji}</div>
-              <p className="text-[10px] font-bold mt-1">{PERSONALITY_TYPES[typeA.code]?.name || typeA.name}</p>
-              <p className="text-[9px] text-muted-foreground">You</p>
+              <p className="text-[10px] font-bold mt-1">{t(PERSONALITY_TYPES[typeA.code]?.name || typeA.name)}</p>
+              <p className="text-[9px] text-muted-foreground">{t('You')}</p>
             </div>
             <div className="text-center px-2">
-              <span className="text-xs font-bold text-primary">{personalityCompat.label}</span>
+              <span className="text-xs font-bold text-primary">{t(personalityCompat.label)}</span>
             </div>
             <div className="text-center flex-1">
               <div className="text-xl">{typeB.emoji}</div>
-              <p className="text-[10px] font-bold mt-1">{PERSONALITY_TYPES[typeB.code]?.name || typeB.name}</p>
-              <p className="text-[9px] text-muted-foreground">@{userBUsername || 'them'}</p>
+              <p className="text-[10px] font-bold mt-1">{t(PERSONALITY_TYPES[typeB.code]?.name || typeB.name)}</p>
+              <p className="text-[9px] text-muted-foreground">@{userBUsername || t('them')}</p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground text-center">{personalityCompat.description}</p>
+          <p className="text-xs text-muted-foreground text-center">{t(personalityCompat.descriptionKey, { a: t(personalityCompat.nameA), b: t(personalityCompat.nameB) })}</p>
         </div>
       )}
 
@@ -193,13 +195,13 @@ export default function BlendedCompatibility({ userAId, userBId, userBUsername }
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Dimension Alignment
+              {t('Dimension Alignment')}
             </span>
           </div>
           {dimensions.slice(0, 5).map((dim) => (
-            <div key={dim.dimension_name}>
+            <div key={t(dim.dimension_name)}>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium">{dim.dimension_name}</span>
+                <span className="text-xs font-medium">{t(dim.dimension_name)}</span>
                 <span className="text-xs font-bold">{Number(dim.alignment)}%</span>
               </div>
               <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
