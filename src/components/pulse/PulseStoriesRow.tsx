@@ -219,6 +219,7 @@ function breakdownToCard(f: BreakdownFinding): StoryCardData {
 
 export default function PulseStoriesRow() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: pulse } = useDailyPulse();
   const { data: settings } = usePulseSettings();
   const lastVisit = useLastVisit();
@@ -229,6 +230,7 @@ export default function PulseStoriesRow() {
   const { data: editorialStories } = useEditorialStories();
   const { storyGroups, markViewed, deleteStory } = useUserStories();
   const [openUserStoryGroup, setOpenUserStoryGroup] = useState<GroupedUserStories | null>(null);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   // All circle data
   const { data: battleData } = useBattleOfTheDay();
