@@ -26,9 +26,25 @@ export default function CategoryStoryCircles({ active, onSelect, onOpenAll }: Ca
         onClick={() => onSelect(null)}
         className="flex flex-col items-center gap-1 shrink-0 w-[68px]"
       >
-        <div className={`w-16 h-16 rounded-full p-[2px] ${!active ? 'bg-primary' : 'bg-border'}`}>
-          <div className="w-full h-full rounded-full overflow-hidden border-2 border-background bg-muted flex items-center justify-center">
-            <Sparkles className={`h-5 w-5 ${!active ? 'text-primary' : 'text-muted-foreground'}`} />
+        <div
+          className={`w-16 h-16 rounded-full p-[2px] ${
+            !active
+              ? 'bg-gradient-to-tr from-primary via-primary/70 to-primary/30'
+              : 'bg-primary'
+          }`}
+        >
+          <div
+            className={`w-full h-full rounded-full overflow-hidden border-2 border-background flex items-center justify-center ${
+              !active
+                ? 'bg-gradient-to-br from-primary/15 via-background to-background'
+                : 'bg-background'
+            }`}
+          >
+            <Sparkles
+              className={`h-5 w-5 ${!active ? 'text-primary' : 'text-primary'}`}
+              fill="currentColor"
+              fillOpacity={!active ? 0.15 : 0}
+            />
           </div>
         </div>
         <span className="text-[9px] font-semibold text-foreground text-center leading-tight">For you</span>
