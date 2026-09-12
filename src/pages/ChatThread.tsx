@@ -25,7 +25,7 @@ interface PollPreview {
   image_b_url: string | null;
 }
 
-function SharedPollBubble({ pollId }: { pollId: string }) {
+function SharedPollBubble({ pollId, sharedChoice, byName }: { pollId: string; sharedChoice?: string | null; byName?: string }) {
   const [poll, setPoll] = useState<PollPreview | null>(null);
   const navigate = useNavigate();
 
@@ -54,7 +54,13 @@ function SharedPollBubble({ pollId }: { pollId: string }) {
 
   return (
     <button
-      onClick={() => navigate(`/poll/${poll.id}`)}
+      onClick={() => {
+        const params = new URLSearchParams();
+        if (sharedChoice === 'A' || sharedChoice === 'B') params.set('c', sharedChoice);
+        if (sharedChoice && byName) params.set('by', byName);
+        const qs = params.toString();
+        navigate(`/poll/${poll.id}${qs ? `?${qs}` : ''}`);
+      }}
       className="rounded-xl overflow-hidden border border-border bg-background w-[240px] text-left hover:opacity-90 transition-opacity"
     >
       <div className="grid grid-cols-2 aspect-[2/1]">
@@ -72,12 +78,16 @@ function SharedPollBubble({ pollId }: { pollId: string }) {
   );
 }
 
-function MessageBubble({ msg, mine }: { msg: Message; mine: boolean }) {
+function MessageBubble({ msg, mine, otherUsername }: { msg: Message; mine: boolean; otherUsername?: string }) {
   return (
     <div className={`flex ${mine ? 'justify-end' : 'justify-start'} mb-2`}>
       <div className={`flex flex-col ${mine ? 'items-end' : 'items-start'} max-w-[80%]`}>
         {msg.message_type === 'poll_share' && msg.shared_poll_id ? (
-          <SharedPollBubble pollId={msg.shared_poll_id} />
+          <SharedPollBubble
+            pollId={msg.shared_poll_id}
+            sharedChoice={msg.shared_choice}
+            byName={mine ? 'You' : otherUsername || 'Your friend'}
+          />
         ) : (
           <div
             className={`rounded-2xl px-3.5 py-2 text-sm break-words ${
@@ -153,7 +163,18 @@ export default function ChatThread() {
   const handleSendPoll = async (pollId: string) => {
     if (!conversationId) return;
     try {
-      await sendMessage.mutateAsync({ conversationId, sharedPollId: pollId });
+      // Attach the sender's own vote so the friend gets the "your friend picked" reveal
+      let sharedChoice: 'A' | 'B' | null = null;
+      if (user) {
+        const { data: myVote } = await supabase
+          .from('votes')
+          .select('choice')
+          .eq('user_id', user.id)
+          .eq('poll_id', pollId)
+          .maybeSingle();
+        sharedChoice = (myVote?.choice as 'A' | 'B') || null;
+      }
+      await sendMessage.mutateAsync({ conversationId, sharedPollId: pollId, sharedChoice });
       setPollPickerOpen(false);
       toast.success('Poll sent!');
     } catch {
