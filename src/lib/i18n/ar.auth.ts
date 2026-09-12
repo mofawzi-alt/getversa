@@ -188,6 +188,8 @@ const dict: Record<string, string> = {
   "Your friend": "صاحبك",
   "by": "بواسطة",
   "of {n} voters": "من {n} مصوّت",
+  "Swipe to choose. See what the world prefers.": "اسحب واختار. شوف العالم بيفضّل إيه.",
+  "Start Voting": "ابدأ التصويت",
 };
 
 export default dict;
