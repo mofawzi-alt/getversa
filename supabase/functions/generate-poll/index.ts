@@ -208,12 +208,12 @@ serve(async (req) => {
     const timestamp = Date.now();
 
     const ALLOWED_CATEGORIES = [
-      'FMCG & Food', 'Beauty & Personal Care', 'Financial Services',
-      'Media & Entertainment', 'Retail & E-commerce', 'Telco & Tech',
-      'Food Delivery & Dining', 'Automotive & Mobility', 'Lifestyle & Society', 'The Pulse',
+      'Relationships', 'Money', 'Education', 'Digital Life',
+      'Food', 'Entertainment', 'Lifestyle', 'Egypt',
     ];
 
-    const mappedCategory = category === 'Media' ? 'Media & Entertainment' : category;
+    const mappedCategory = category === 'Media' ? 'Entertainment' : category;
+
     const { data: existingPolls } = await supabase
       .from('polls').select('question').eq('category', mappedCategory || '')
       .order('created_at', { ascending: false }).limit(50);
@@ -290,15 +290,15 @@ ${avoidList}
 Category MUST be EXACTLY one of: ${ALLOWED_CATEGORIES.join(', ')}
 
 Category guide:
-- FMCG & Food: packaged food, snacks, beverages
-- Beauty & Personal Care: makeup, skincare, perfume
-- Financial Services: banks, fintech, payments, wallets, crypto, business
-- Media & Entertainment: movies, series, music, sports, celebrities, gaming
-- Retail & E-commerce: shopping, stores, marketplaces
-- Telco & Tech: telecom, apps, gadgets, software
-- Food Delivery & Dining: restaurants, cafes, delivery apps
-- Automotive & Mobility: cars, ride-hailing, scooters
-- Lifestyle & Society: relationships, wellness, style, fashion, personality, habits, travel
+- Relationships: dating, love, marriage, family, friendship
+- Money: banks, fintech, payments, wallets, crypto, salaries, work, business
+- Education: school, university, studying, exams, learning
+- Digital Life: telecom, apps, gadgets, social media, gaming, AI
+- Food: packaged food, snacks, beverages, restaurants, cafes, delivery
+- Entertainment: movies, series, music, sports, celebrities
+- Lifestyle: beauty, fashion, wellness, travel, shopping, cars, mobility
+- Egypt: trending national and cultural debates
+
 - The Pulse: trending cultural debates
 
 ${targetAgeRange || targetGender || targetCountry ? `
