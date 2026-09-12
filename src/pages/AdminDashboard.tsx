@@ -146,6 +146,10 @@ export default function AdminDashboard() {
               <AnalyticsDashboard />
             </TabsContent>
 
+            <TabsContent value="period">
+              <PeriodAnalytics />
+            </TabsContent>
+
             <TabsContent value="overview" className="space-y-6">
               <PollAnalytics initialPollId={selectedPollId} />
               <div className="border-t pt-6">
