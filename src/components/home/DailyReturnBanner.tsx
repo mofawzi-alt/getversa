@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 const SESSION_KEY = 'versa_session_return_shown';
 
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export default function DailyReturnBanner({ currentStreak, remainingToday }: Props) {
+  const { t } = useT();
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -29,16 +31,16 @@ export default function DailyReturnBanner({ currentStreak, remainingToday }: Pro
 
     if (currentStreak === 0 || currentStreak === 1) {
       // Brand new user or first day
-      setMessage('Welcome to Versa 🔥 Your first battles are ready');
+      setMessage(t('Welcome to Versa 🔥 Your first battles are ready'));
     } else if (currentStreak >= 7) {
-      setMessage('7 days in a row 🔥 You never miss a battle');
+      setMessage(t('7 days in a row 🔥 You never miss a battle'));
     } else if (currentStreak >= 2) {
-      setMessage("You're back 🙌 New battles are waiting");
+      setMessage(t("You're back 🙌 New battles are waiting"));
     } else if (remainingToday && remainingToday > 0) {
-      setMessage(`Your daily battles are ready 🔥 ${remainingToday} new polls today`);
+      setMessage(t('Your daily battles are ready 🔥 {n} new polls today', { n: remainingToday }));
     } else {
       // Fallback welcome
-      setMessage('Welcome to Versa 🔥 Your first battles are ready');
+      setMessage(t('Welcome to Versa 🔥 Your first battles are ready'));
     }
 
     markShownToday();

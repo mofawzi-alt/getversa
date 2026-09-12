@@ -2,6 +2,7 @@ import { ArrowLeft, Mail, MessageCircle, Shield, FileText, Trash2, HelpCircle } 
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
+import { useT } from '@/hooks/useT';
 
 const FAQ_ITEMS: { q: string; a: string }[] = [
   { q: 'How do I vote on a poll?', a: 'On the Home screen, tap the left or right image to cast your vote. You can also swipe left or right. Skip a poll by swiping up or tapping Skip.' },
@@ -23,6 +24,7 @@ const FAQ_JSONLD = {
 };
 
 export default function Support() {
+  const { t } = useT();
   const navigate = useNavigate();
 
   return (
@@ -41,25 +43,25 @@ export default function Support() {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="mr-3">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold text-foreground">Support</h1>
+          <h1 className="text-lg font-semibold text-foreground">{t('Support')}</h1>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-8">
         <section>
-          <h2 className="text-2xl font-bold text-foreground mb-2">How can we help?</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t('How can we help?')}</h2>
           <p className="text-muted-foreground">
-            Versa is the place where Gen Z decides — vote on real polls, compare your taste, and discover trends across the region. If something isn't working, we want to hear from you.
+            {t("Versa is the place where Gen Z decides — vote on real polls, compare your taste, and discover trends across the region. If something isn't working, we want to hear from you.")}
           </p>
         </section>
 
         <section className="rounded-2xl border border-border bg-card p-6">
           <div className="flex items-center gap-3 mb-3">
             <Mail className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold text-foreground">Contact us</h3>
+            <h3 className="text-lg font-semibold text-foreground">{t('Contact us')}</h3>
           </div>
           <p className="text-muted-foreground mb-4">
-            Email us anytime — we usually reply within 24 hours.
+            {t('Email us anytime — we usually reply within 24 hours.')}
           </p>
           <a
             href="mailto:support@getversa.app"
@@ -73,45 +75,45 @@ export default function Support() {
         <section>
           <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <HelpCircle className="h-5 w-5 text-primary" />
-            Frequently asked questions
+            {t('Frequently asked questions')}
           </h3>
           <div className="space-y-4">
             {FAQ_ITEMS.map((item) => (
-              <FAQ key={item.q} q={item.q} a={item.a} />
+              <FAQ key={item.q} q={t(item.q)} a={t(item.a)} />
             ))}
           </div>
         </section>
 
         <section>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Resources</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">{t('Resources')}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
               onClick={() => navigate('/privacy-policy')}
               className="flex items-center gap-2 p-4 rounded-xl border border-border bg-card hover:bg-accent transition-colors text-left"
             >
               <Shield className="h-5 w-5 text-primary shrink-0" />
-              <span className="text-sm font-medium text-foreground">Privacy Policy</span>
+              <span className="text-sm font-medium text-foreground">{t('Privacy Policy')}</span>
             </button>
             <button
               onClick={() => navigate('/terms')}
               className="flex items-center gap-2 p-4 rounded-xl border border-border bg-card hover:bg-accent transition-colors text-left"
             >
               <FileText className="h-5 w-5 text-primary shrink-0" />
-              <span className="text-sm font-medium text-foreground">Terms of Service</span>
+              <span className="text-sm font-medium text-foreground">{t('Terms of Service')}</span>
             </button>
             <button
               onClick={() => navigate('/profile')}
               className="flex items-center gap-2 p-4 rounded-xl border border-border bg-card hover:bg-accent transition-colors text-left"
             >
               <Trash2 className="h-5 w-5 text-primary shrink-0" />
-              <span className="text-sm font-medium text-foreground">Delete account</span>
+              <span className="text-sm font-medium text-foreground">{t('Delete account')}</span>
             </button>
           </div>
         </section>
 
         <section className="pb-8">
           <p className="text-xs text-muted-foreground text-center">
-            Versa · Made in Cairo · © {new Date().getFullYear()}
+            {t('Versa · Made in Cairo · © {year}', { year: new Date().getFullYear() })}
           </p>
         </section>
       </main>

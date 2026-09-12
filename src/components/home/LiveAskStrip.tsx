@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Camera, X } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 interface ActiveAsk {
   id: string;
@@ -43,6 +44,7 @@ function matches(ask: ActiveAsk, viewer: ViewerProfile | null): boolean {
 }
 
 export default function LiveAskStrip() {
+  const { t } = useT();
   const nav = useNavigate();
   const { user } = useAuth();
   const [asks, setAsks] = useState<ActiveAsk[]>([]);
@@ -99,12 +101,12 @@ export default function LiveAskStrip() {
           <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E8392A]" />
         </span>
         <span className="text-[13px] font-bold text-[#E8392A]">
-          {asks.length} live ask{asks.length === 1 ? '' : 's'}
+          {asks.length} {asks.length === 1 ? t('live ask') : t('live asks')}
         </span>
         <span className="text-[12px] text-foreground/70 truncate flex-1 text-left">
           · {asks[0].question}
         </span>
-        <span className="text-[11px] font-semibold text-[#E8392A]">Vote →</span>
+        <span className="text-[11px] font-semibold text-[#E8392A]">{t('Vote')} →</span>
       </button>
 
       {open && createPortal(
@@ -120,7 +122,7 @@ export default function LiveAskStrip() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8392A] opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E8392A]" />
                 </span>
-                <h2 className="text-base font-bold">Live Asks</h2>
+                <h2 className="text-base font-bold">{t('Live Asks')}</h2>
               </div>
               <button onClick={() => setOpen(false)} className="p-1 -mr-1">
                 <X className="h-5 w-5 text-foreground/60" />
@@ -132,7 +134,7 @@ export default function LiveAskStrip() {
               className="mx-4 mb-3 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[#E8392A] text-white font-semibold text-sm"
             >
               <Camera className="h-4 w-4" />
-              Snap & ask the crowd
+              {t('Snap & ask the crowd')}
             </button>
 
             <div className="overflow-y-auto px-4 pb-4 space-y-2">
@@ -150,9 +152,9 @@ export default function LiveAskStrip() {
                   />
                   <div className="flex-1 text-left min-w-0">
                     <p className="text-sm font-semibold leading-tight line-clamp-2">{a.question}</p>
-                    <p className="text-[11px] text-foreground/60 mt-1">{a.vote_count} votes</p>
+                    <p className="text-[11px] text-foreground/60 mt-1">{a.vote_count} {t('votes')}</p>
                   </div>
-                  <span className="text-xs font-bold text-[#E8392A] flex-shrink-0">Vote →</span>
+                  <span className="text-xs font-bold text-[#E8392A] flex-shrink-0">{t('Vote')} →</span>
                 </button>
               ))}
             </div>

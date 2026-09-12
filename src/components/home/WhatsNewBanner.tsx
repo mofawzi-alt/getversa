@@ -4,6 +4,7 @@ import { Sparkles, X, ChevronRight, Swords, Users, MessageCircle, Camera } from 
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/hooks/useT';
 
 /**
  * What's New banner — appears on Home once per release for each user.
@@ -81,6 +82,7 @@ async function markReleaseSeenForUser(userId: string) {
 }
 
 export default function WhatsNewBanner() {
+  const { t } = useT();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -145,7 +147,7 @@ export default function WhatsNewBanner() {
         <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-background p-4 shadow-sm">
           <button
             onClick={dismiss}
-            aria-label="Dismiss"
+            aria-label={t('Dismiss')}
             className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-foreground/10 text-muted-foreground transition-colors"
           >
             <X className="h-4 w-4" />
@@ -156,8 +158,8 @@ export default function WhatsNewBanner() {
               <Sparkles className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-primary">What's new</p>
-              <p className="text-sm font-bold text-foreground leading-tight">{HEADLINE}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">{t("What's new")}</p>
+              <p className="text-sm font-bold text-foreground leading-tight">{t(HEADLINE)}</p>
             </div>
           </div>
 
@@ -166,7 +168,7 @@ export default function WhatsNewBanner() {
               onClick={() => setExpanded(true)}
               className="mt-1 flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
-              See what changed
+              {t('See what changed')}
               <ChevronRight className="h-3 w-3" />
             </button>
           )}
@@ -185,8 +187,8 @@ export default function WhatsNewBanner() {
                     <FeatureRow
                       key={f.title}
                       icon={f.icon}
-                      title={f.title}
-                      desc={f.desc}
+                      title={t(f.title)}
+                      desc={t(f.desc)}
                       onClick={() => {
                         dismiss();
                         navigate(f.route);
@@ -199,7 +201,7 @@ export default function WhatsNewBanner() {
                   onClick={dismiss}
                   className="mt-3 w-full rounded-xl bg-primary text-primary-foreground text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity"
                 >
-                  Got it
+                  {t('Got it')}
                 </button>
               </motion.div>
             )}

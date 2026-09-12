@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, ArrowRight, Check, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 const AGE_RANGES = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDERS = ['Male', 'Female', 'Prefer not to say'];
@@ -38,6 +39,7 @@ function detectCountry(): string {
 }
 
 export default function Onboarding() {
+  const { t } = useT();
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -81,11 +83,11 @@ export default function Onboarding() {
 
   const handleComplete = async () => {
     if (!user) return;
-    if (!username.trim()) { toast.error('Please enter a username'); return; }
-    if (!ageRange) { toast.error('Please select your age range'); return; }
-    if (!gender) { toast.error('Please select your gender'); return; }
-    if (!nationality) { toast.error('Please select your nationality'); return; }
-    if (!cityOfResidence.trim()) { toast.error('Please enter your city'); return; }
+    if (!username.trim()) { toast.error(t('Please enter a username')); return; }
+    if (!ageRange) { toast.error(t('Please select your age range')); return; }
+    if (!gender) { toast.error(t('Please select your gender')); return; }
+    if (!nationality) { toast.error(t('Please select your nationality')); return; }
+    if (!cityOfResidence.trim()) { toast.error(t('Please enter your city')); return; }
 
     setLoading(true);
     try {
@@ -105,7 +107,7 @@ export default function Onboarding() {
 
       if (profileError) {
         if (profileError.message.includes('duplicate') && profileError.message.includes('username')) {
-          toast.error('This username is already taken');
+          toast.error(t('This username is already taken'));
           setLoading(false);
           return;
         }
@@ -121,18 +123,18 @@ export default function Onboarding() {
         navigate('/vote');
       }, 2000);
     } catch (err) {
-      toast.error('Failed to save profile');
+      toast.error(t('Failed to save profile'));
     } finally {
       setLoading(false);
     }
   };
 
   const nextStep = () => {
-    if (currentStep === 'username' && !username.trim()) { toast.error('Please enter a username'); return; }
-    if (currentStep === 'age' && !ageRange) { toast.error('Please select your age range'); return; }
-    if (currentStep === 'gender' && !gender) { toast.error('Please select your gender'); return; }
-    if (currentStep === 'nationality' && !nationality) { toast.error('Please select your nationality'); return; }
-    if (currentStep === 'city_of_residence' && !cityOfResidence.trim()) { toast.error('Please enter your city'); return; }
+    if (currentStep === 'username' && !username.trim()) { toast.error(t('Please enter a username')); return; }
+    if (currentStep === 'age' && !ageRange) { toast.error(t('Please select your age range')); return; }
+    if (currentStep === 'gender' && !gender) { toast.error(t('Please select your gender')); return; }
+    if (currentStep === 'nationality' && !nationality) { toast.error(t('Please select your nationality')); return; }
+    if (currentStep === 'city_of_residence' && !cityOfResidence.trim()) { toast.error(t('Please enter your city')); return; }
     setStepIndex(stepIndex + 1);
   };
 
@@ -149,8 +151,8 @@ export default function Onboarding() {
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
             <Check className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Your insights are now personalized</h1>
-          <p className="text-muted-foreground text-sm">Taking you back to voting...</p>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t('Your insights are now personalized')}</h1>
+          <p className="text-muted-foreground text-sm">{t('Taking you back to voting...')}</p>
         </motion.div>
       </div>
     );
@@ -186,21 +188,21 @@ export default function Onboarding() {
           {currentStep === 'username' && (
             <div className="space-y-6">
               <div>
-                <h1 className="text-3xl font-display font-bold text-foreground mb-2">Choose your username</h1>
-                <p className="text-foreground/60">This is how others will see you</p>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">{t('Choose your username')}</h1>
+                <p className="text-foreground/60">{t('This is how others will see you')}</p>
               </div>
               <div className="space-y-2 bg-card rounded-xl p-4 border border-border">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">{t('Username')}</Label>
                 <Input
                   id="username"
-                  placeholder="@cooluser"
+                  placeholder={t('@cooluser')}
                   value={username}
                   onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                   className="text-lg h-14"
                   maxLength={20}
                   autoFocus
                 />
-                <p className="text-xs text-muted-foreground">Only letters, numbers, and underscores</p>
+                <p className="text-xs text-muted-foreground">{t('Only letters, numbers, and underscores')}</p>
               </div>
             </div>
           )}
@@ -209,8 +211,8 @@ export default function Onboarding() {
           {currentStep === 'age' && (
             <div className="space-y-6">
               <div>
-                <h1 className="text-3xl font-display font-bold text-foreground mb-2">How old are you?</h1>
-                <p className="text-foreground/60">Help us show you better comparisons</p>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">{t('How old are you?')}</h1>
+                <p className="text-foreground/60">{t('Help us show you better comparisons')}</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 {AGE_RANGES.map((range) => (
@@ -228,7 +230,7 @@ export default function Onboarding() {
                 ))}
               </div>
               <p className="text-xs text-muted-foreground text-center">
-                Your details are never shared or shown publicly — we use them only to show you how people like you voted.
+                {t('Your details are never shared or shown publicly — we use them only to show you how people like you voted.')}
               </p>
             </div>
           )}
@@ -237,8 +239,8 @@ export default function Onboarding() {
           {currentStep === 'gender' && (
             <div className="space-y-6">
               <div>
-                <h1 className="text-3xl font-display font-bold text-foreground mb-2">What's your gender?</h1>
-                <p className="text-foreground/60">Help us show you better comparisons</p>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">{t("What's your gender?")}</h1>
+                <p className="text-foreground/60">{t('Help us show you better comparisons')}</p>
               </div>
               <div className="flex flex-col gap-3">
                 {GENDERS.map((g) => (
@@ -256,7 +258,7 @@ export default function Onboarding() {
                 ))}
               </div>
               <p className="text-xs text-muted-foreground text-center">
-                Your details are never shared or shown publicly — we use them only to show you how people like you voted.
+                {t('Your details are never shared or shown publicly — we use them only to show you how people like you voted.')}
               </p>
             </div>
           )}
@@ -265,9 +267,9 @@ export default function Onboarding() {
           {currentStep === 'nationality' && (
             <div className="space-y-6">
               <div>
-                <h1 className="text-3xl font-display font-bold text-foreground mb-2">Where are you from?</h1>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">{t('Where are you from?')}</h1>
                 <p className="text-foreground/60">
-                  {nationality ? `Detected: ${nationality}` : 'Select your nationality'}
+                  {nationality ? t('Detected: {n}', { n: nationality }) : t('Select your nationality')}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-2 max-h-[50vh] overflow-y-auto scrollbar-hide">
@@ -292,14 +294,14 @@ export default function Onboarding() {
           {currentStep === 'city_of_residence' && (
             <div className="space-y-6">
               <div>
-                <h1 className="text-3xl font-display font-bold text-foreground mb-2">Which city do you live in?</h1>
-                <p className="text-foreground/60">Helps with local polls</p>
+                <h1 className="text-3xl font-display font-bold text-foreground mb-2">{t('Which city do you live in?')}</h1>
+                <p className="text-foreground/60">{t('Helps with local polls')}</p>
               </div>
               <div className="space-y-2 bg-card rounded-xl p-4 border border-border">
-                <Label htmlFor="city_of_residence">City</Label>
+                <Label htmlFor="city_of_residence">{t('City')}</Label>
                 <Input
                   id="city_of_residence"
-                  placeholder="e.g. Cairo, Dubai, Riyadh..."
+                  placeholder={t('e.g. Cairo, Dubai, Riyadh...')}
                   value={cityOfResidence}
                   onChange={(e) => setCityOfResidence(e.target.value)}
                   className="text-lg h-14"
@@ -316,19 +318,19 @@ export default function Onboarding() {
       <div className="flex gap-3 mt-6">
         {stepIndex > 0 && (
           <Button variant="outline" onClick={() => setStepIndex(stepIndex - 1)} className="flex-1 h-14 rounded-xl">
-            Back
+            {t('Back')}
           </Button>
         )}
         
         {stepIndex < totalSteps - 1 ? (
           <Button onClick={nextStep} className="flex-1 h-14 bg-gradient-primary hover:opacity-90 rounded-xl">
-            Continue
+            {t('Continue')}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         ) : (
           <Button onClick={handleComplete} disabled={loading || !cityOfResidence.trim()} className="flex-1 h-14 bg-gradient-primary hover:opacity-90 rounded-xl">
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (
-              <>Get Started<ArrowRight className="ml-2 h-5 w-5" /></>
+              <>{t('Get Started')}<ArrowRight className="ml-2 h-5 w-5" /></>
             )}
           </Button>
         )}

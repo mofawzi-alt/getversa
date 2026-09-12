@@ -7,8 +7,10 @@ import AppLayout from '@/components/layout/AppLayout';
 import { ArrowLeft, Check, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useT } from '@/hooks/useT';
 
 export default function ProfileCustomize() {
+  const { t } = useT();
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
@@ -75,10 +77,10 @@ export default function ProfileCustomize() {
       if (error) throw error;
 
       await refetch();
-      toast.success('Theme applied!');
+      toast.success(t('Theme applied!'));
     } catch (error) {
       console.error('Error applying theme:', error);
-      toast.error('Failed to apply theme');
+      toast.error(t('Failed to apply theme'));
     }
   };
 
@@ -93,7 +95,7 @@ export default function ProfileCustomize() {
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-2xl font-display font-bold">Customize Theme</h1>
+          <h1 className="text-2xl font-display font-bold">{t('Customize Theme')}</h1>
         </div>
 
         {/* Themes Grid */}
@@ -134,9 +136,9 @@ export default function ProfileCustomize() {
         ) : (
           <div className="glass rounded-2xl p-8 text-center">
             <Palette className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-semibold mb-2">No Themes Available</h3>
+            <h3 className="font-semibold mb-2">{t('No Themes Available')}</h3>
             <p className="text-sm text-muted-foreground">
-              Check back later for customization options!
+              {t('Check back later for customization options!')}
             </p>
           </div>
         )}

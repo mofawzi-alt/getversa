@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { getAuthRedirectUrl } from '@/lib/nativeSession';
 import { useAuth } from '@/contexts/AuthContext';
 import { startNativeOAuth } from '@/lib/nativeOAuth';
+import { useT } from '@/hooks/useT';
 
 /**
  * Apple HIG-compliant Sign in with Apple button + Google button.
@@ -14,12 +15,13 @@ import { startNativeOAuth } from '@/lib/nativeOAuth';
  * On web: uses Lovable Cloud managed OAuth redirect.
  */
 export default function SocialAuthButtons({ mode = 'signin', disabled = false }: { mode?: 'signin' | 'signup'; disabled?: boolean }) {
+  const { t } = useT();
   const [busy, setBusy] = useState<'apple' | 'google' | null>(null);
   const { prepareForExternalSignIn } = useAuth();
 
   const handleOAuth = async (provider: 'apple' | 'google') => {
     if (disabled) {
-      toast.error('Please agree to the Terms first.');
+      toast.error(t('Please agree to the Terms first.'));
       return;
     }
     setBusy(provider);
@@ -38,19 +40,19 @@ export default function SocialAuthButtons({ mode = 'signin', disabled = false }:
         redirect_uri: getAuthRedirectUrl(),
       });
       if (result.error) {
-        toast.error(result.error.message || `${provider === 'apple' ? 'Apple' : 'Google'} sign-in failed`);
+        toast.error(result.error.message || t('{n} sign-in failed', { n: provider === 'apple' ? 'Apple' : 'Google' }));
         setBusy(null);
         return;
       }
       // result.redirected → browser redirects, nothing more to do
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Sign-in failed. Please try again.';
+      const msg = e instanceof Error ? e.message : t('Sign-in failed. Please try again.');
       toast.error(msg);
       setBusy(null);
     }
   };
 
-  const verb = mode === 'signup' ? 'Sign up' : 'Sign in';
+  const verb = mode === 'signup' ? t('Sign up') : t('Sign in');
 
   return (
     <div className="space-y-2.5">
@@ -68,7 +70,7 @@ export default function SocialAuthButtons({ mode = 'signin', disabled = false }:
             <path d="M14.04 16.34c-.27.62-.59 1.2-.96 1.72-.51.71-.93 1.21-1.25 1.48-.5.45-1.04.69-1.62.7-.41 0-.91-.12-1.5-.36-.59-.24-1.13-.36-1.62-.36-.51 0-1.07.12-1.67.36-.6.24-1.08.37-1.45.39-.55.02-1.1-.22-1.65-.72-.34-.3-.78-.81-1.31-1.55-.57-.78-1.04-1.69-1.41-2.73C.4 14.04.2 12.95.2 11.9c0-1.21.26-2.25.79-3.13.41-.7.97-1.26 1.66-1.66.69-.4 1.44-.61 2.25-.62.43 0 1.01.13 1.74.4.73.27 1.2.4 1.4.4.16 0 .68-.16 1.55-.47.83-.29 1.53-.41 2.1-.36 1.55.13 2.71.74 3.49 1.85-1.39.84-2.07 2.02-2.06 3.53.01 1.18.44 2.16 1.28 2.94.38.36.81.64 1.28.84-.1.3-.21.58-.34.85zM11.86 1.16c0 .9-.33 1.74-.99 2.52-.79.93-1.74 1.46-2.78 1.38-.01-.11-.02-.23-.02-.35 0-.86.38-1.79 1.05-2.55.34-.39.76-.71 1.28-.97.51-.26.99-.4 1.45-.43.01.13.01.27.01.4z"/>
           </svg>
         )}
-        <span>{verb} with Apple</span>
+        <span>{t('{verb} with Apple', { verb })}</span>
       </button>
 
       {/* Google — white button per Google brand guidelines */}
@@ -88,7 +90,7 @@ export default function SocialAuthButtons({ mode = 'signin', disabled = false }:
             <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.97 8.97 0 0 0 9 0 9 9 0 0 0 .96 4.96l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/>
           </svg>
         )}
-        <span>{verb} with Google</span>
+        <span>{t('{verb} with Google', { verb })}</span>
       </button>
     </div>
   );

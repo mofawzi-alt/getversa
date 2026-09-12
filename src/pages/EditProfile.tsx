@@ -19,6 +19,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Capacitor } from '@capacitor/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Switch } from '@/components/ui/switch';
+import { useT } from '@/hooks/useT';
 
 const AGE_RANGES = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
@@ -28,6 +29,7 @@ const COUNTRIES = [
 ];
 
 export default function EditProfile() {
+  const { t } = useT();
   const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -91,10 +93,10 @@ export default function EditProfile() {
       const persisted = Boolean((data as any)?.is_private ?? next);
       setIsPrivate(persisted);
       await refreshProfile();
-      toast.success(persisted ? 'Profile is now private' : 'Profile is now public');
+      toast.success(persisted ? t('Profile is now private') : t('Profile is now public'));
     } catch (err) {
       console.error('Privacy toggle error:', err);
-      toast.error('Failed to update privacy');
+      toast.error(t('Failed to update privacy'));
       setIsPrivate(previous); // revert
     } finally {
       setSavingPrivacy(false);
@@ -145,12 +147,12 @@ export default function EditProfile() {
 
         setAvatarUrl(publicUrl);
         await refreshProfile();
-        toast.success('Profile picture updated!');
+        toast.success(t('Profile picture updated!'));
       } catch (err: any) {
         // User cancelled
         if (err?.message?.includes('cancelled') || err?.message?.includes('canceled')) return;
         console.error('Camera error:', err);
-        toast.error('Failed to take photo');
+        toast.error(t('Failed to take photo'));
       } finally {
         setUploading(false);
       }
@@ -165,7 +167,7 @@ export default function EditProfile() {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be under 5MB');
+      toast.error(t('Image must be under 5MB'));
       return;
     }
     setUploading(true);
@@ -184,10 +186,10 @@ export default function EditProfile() {
       if (updErr) throw updErr;
       setAvatarUrl(publicUrl);
       await refreshProfile();
-      toast.success('Profile picture updated!');
+      toast.success(t('Profile picture updated!'));
     } catch (err) {
       console.error('Avatar upload error:', err);
-      toast.error('Failed to upload photo');
+      toast.error(t('Failed to upload photo'));
     } finally {
       setUploading(false);
     }
@@ -212,11 +214,11 @@ export default function EditProfile() {
       if (error) throw error;
 
       await refreshProfile();
-      toast.success('Profile updated successfully!');
+      toast.success(t('Profile updated successfully!'));
       navigate('/profile');
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      toast.error(t('Failed to update profile'));
     } finally {
       setIsLoading(false);
     }
@@ -233,7 +235,7 @@ export default function EditProfile() {
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-2xl font-display font-bold text-foreground">Edit Profile</h1>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t('Edit Profile')}</h1>
         </div>
 
         {/* Form */}
@@ -263,30 +265,30 @@ export default function EditProfile() {
               onChange={handleAvatarUpload}
               disabled={uploading}
             />
-            <p className="text-xs text-muted-foreground">Tap to change photo</p>
+            <p className="text-xs text-muted-foreground">{t('Tap to change photo')}</p>
           </div>
 
           {/* Username */}
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-foreground">Username</Label>
+            <Label htmlFor="username" className="text-foreground">{t('Username')}</Label>
             <Input
               id="username"
               value={formData.username}
               onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-              placeholder="Enter username"
+              placeholder={t('Enter username')}
               className="text-foreground"
             />
           </div>
 
           {/* Age Range */}
           <div className="space-y-2">
-            <Label className="text-foreground">Age Range</Label>
+            <Label className="text-foreground">{t('Age Range')}</Label>
             <Select
               value={formData.age_range}
               onValueChange={(value) => setFormData(prev => ({ ...prev, age_range: value }))}
             >
               <SelectTrigger className="text-foreground">
-                <SelectValue placeholder="Select age range" />
+                <SelectValue placeholder={t('Select age range')} />
               </SelectTrigger>
               <SelectContent>
                 {AGE_RANGES.map((range) => (
@@ -298,13 +300,13 @@ export default function EditProfile() {
 
           {/* Gender */}
           <div className="space-y-2">
-            <Label className="text-foreground">Gender</Label>
+            <Label className="text-foreground">{t('Gender')}</Label>
             <Select
               value={formData.gender}
               onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
             >
               <SelectTrigger className="text-foreground">
-                <SelectValue placeholder="Select gender" />
+                <SelectValue placeholder={t('Select gender')} />
               </SelectTrigger>
               <SelectContent>
                 {GENDERS.map((gender) => (
@@ -316,13 +318,13 @@ export default function EditProfile() {
 
           {/* Country */}
           <div className="space-y-2">
-            <Label className="text-foreground">Country</Label>
+            <Label className="text-foreground">{t('Country')}</Label>
             <Select
               value={formData.country}
               onValueChange={(value) => setFormData(prev => ({ ...prev, country: value }))}
             >
               <SelectTrigger className="text-foreground">
-                <SelectValue placeholder="Select country" />
+                <SelectValue placeholder={t('Select country')} />
               </SelectTrigger>
               <SelectContent>
                 {COUNTRIES.map((country) => (
@@ -334,12 +336,12 @@ export default function EditProfile() {
 
           {/* City */}
           <div className="space-y-2">
-            <Label htmlFor="city" className="text-foreground">City</Label>
+            <Label htmlFor="city" className="text-foreground">{t('City')}</Label>
             <Input
               id="city"
               value={formData.city}
               onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-              placeholder="Enter city"
+              placeholder={t('Enter city')}
               className="text-foreground"
             />
           </div>
@@ -353,7 +355,7 @@ export default function EditProfile() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-3">
               <Label htmlFor="private-toggle" className="text-foreground font-semibold">
-                Private profile
+                {t('Private profile')}
               </Label>
               <Switch
                 id="private-toggle"
@@ -363,7 +365,7 @@ export default function EditProfile() {
               />
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              When on, only friends can see your votes, badges, and patterns. Your username and avatar stay visible so people can still find and add you.
+              {t('When on, only friends can see your votes, badges, and patterns. Your username and avatar stay visible so people can still find and add you.')}
             </p>
           </div>
         </div>
@@ -375,7 +377,7 @@ export default function EditProfile() {
           className="w-full h-14 text-lg font-semibold"
         >
           <Save className="mr-2 h-5 w-5" />
-          {isLoading ? 'Saving...' : 'Save Changes'}
+          {isLoading ? t('Saving...') : t('Save Changes')}
         </Button>
       </div>
     </AppLayout>

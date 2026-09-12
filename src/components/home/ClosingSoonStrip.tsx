@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Flame } from 'lucide-react';
 import CountdownTimer from '@/components/poll/CountdownTimer';
 import PollOptionImage from '@/components/poll/PollOptionImage';
+import { useT } from '@/hooks/useT';
 
 interface ClosingSoonPoll {
   id: string;
@@ -24,6 +25,7 @@ interface ClosingSoonStripProps {
  * Renders nothing when there are no qualifying polls.
  */
 export default function ClosingSoonStrip({ polls }: ClosingSoonStripProps) {
+  const { t } = useT();
   const navigate = useNavigate();
   if (polls.length === 0) return null;
 
@@ -32,10 +34,10 @@ export default function ClosingSoonStrip({ polls }: ClosingSoonStripProps) {
       <div className="px-3 flex items-center gap-2 mb-2">
         <Flame className="h-3.5 w-3.5 text-destructive fill-destructive/30" />
         <span className="text-xs font-display font-bold text-foreground uppercase tracking-wider">
-          Closing Soon
+          {t('Closing Soon')}
         </span>
         <span className="text-[10px] text-muted-foreground">
-          · {polls.length} {polls.length === 1 ? 'poll' : 'polls'}
+          · {polls.length} {polls.length === 1 ? t('poll') : t('polls')}
         </span>
       </div>
 
@@ -82,7 +84,7 @@ export default function ClosingSoonStrip({ polls }: ClosingSoonStripProps) {
                   {poll.question}
                 </p>
                 <p className="text-[10px] text-white/70 mt-0.5">
-                  {poll.totalVotes.toLocaleString()} votes
+                  {poll.totalVotes.toLocaleString()} {t('votes')}
                 </p>
               </div>
             </div>

@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 /* ── Unique gradient per personality code ── */
 const TYPE_GRADIENTS: Record<string, string> = {
@@ -46,6 +47,7 @@ const TYPE_ACCENTS: Record<string, string> = {
 };
 
 export default function PersonalitySnapshot() {
+  const { t } = useT();
   const { user } = useAuth();
   const navigate = useNavigate();
   const MIN_VOTES = 30;
@@ -106,7 +108,7 @@ export default function PersonalitySnapshot() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Sparkles className="w-3 h-3 text-white/50" />
-                <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Your Type</p>
+                <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">{t('Your Type')}</p>
               </div>
               <p className="text-xl font-display font-extrabold text-white leading-tight tracking-tight">{result.name}</p>
               {result.description && (
@@ -141,11 +143,11 @@ export default function PersonalitySnapshot() {
               <span className="text-2xl">🧬</span>
             </motion.div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Personality Type</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('Personality Type')}</p>
               <p className="text-sm font-semibold text-foreground mt-0.5">
                 {voteCount < MIN_VOTES
-                  ? `${MIN_VOTES - voteCount} more votes to unlock`
-                  : 'Calculating your type...'}
+                  ? t('{n} more votes to unlock', { n: MIN_VOTES - voteCount })
+                  : t('Calculating your type...')}
               </p>
               <div className="h-2.5 rounded-full bg-muted overflow-hidden mt-2 max-w-[200px]">
                 <motion.div
@@ -155,7 +157,7 @@ export default function PersonalitySnapshot() {
                   transition={{ duration: 0.8, ease: 'easeOut' }}
                 />
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">{voteCount}/{MIN_VOTES} votes</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{voteCount}/{MIN_VOTES} {t('votes')}</p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
           </div>

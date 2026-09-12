@@ -6,10 +6,12 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Bell, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { NotificationToggle } from '@/components/NotificationToggle';
+import { useT } from '@/hooks/useT';
 
 export default function Notifications() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useT();
   const queryClient = useQueryClient();
 
   const resolveNotificationRoute = (n: any): string | null => {
@@ -130,8 +132,8 @@ export default function Notifications() {
     <AppLayout>
       <div className="p-4 space-y-4 animate-slide-up">
         <header>
-          <h1 className="text-2xl font-display font-bold">Alerts</h1>
-          <p className="text-foreground/60 text-sm">Stay in the loop</p>
+          <h1 className="text-2xl font-display font-bold">{t('Alerts')}</h1>
+          <p className="text-foreground/60 text-sm">{t('Stay in the loop')}</p>
         </header>
 
         <NotificationToggle />
@@ -176,9 +178,9 @@ export default function Notifications() {
               <Bell className="h-8 w-8 text-primary" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-foreground">New polls drop daily</h3>
+              <h3 className="text-lg font-semibold text-foreground">{t('New polls drop daily')}</h3>
               <p className="text-foreground/60 text-sm max-w-xs mx-auto">
-                Enable notifications to know when fresh polls are live and see how your votes compare.
+                {t('Enable notifications to know when fresh polls are live and see how your votes compare.')}
               </p>
             </div>
           </div>

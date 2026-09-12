@@ -15,6 +15,7 @@ import {
   ChevronRight, BarChart3, Trophy
 } from 'lucide-react';
 import ShareCompatibilityImage from '@/components/compare/ShareCompatibilityImage';
+import { useT } from '@/hooks/useT';
 
 interface CategoryMatch {
   category: string;
@@ -29,6 +30,7 @@ export default function Compare() {
   const { friends, loadingFriends } = useFriends();
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
   const [filterText, setFilterText] = useState('');
+  const { t } = useT();
 
   const selectedFriend = friends.find(f => f.friend_id === selectedFriendId);
 
@@ -137,8 +139,8 @@ export default function Compare() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-display font-bold">Compare</h1>
-              <p className="text-xs text-muted-foreground">Pick a friend to compare votes</p>
+              <h1 className="text-xl font-display font-bold">{t('Compare')}</h1>
+              <p className="text-xs text-muted-foreground">{t('Pick a friend to compare votes')}</p>
             </div>
           </div>
 
@@ -151,9 +153,9 @@ export default function Compare() {
               <Users className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Crew Compare</p>
+              <p className="font-semibold text-sm">{t('Crew Compare')}</p>
               <p className="text-xs text-muted-foreground truncate">
-                Battle two groups of friends or vibe-check one crew
+                {t('Battle two groups of friends or vibe-check one crew')}
               </p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -163,7 +165,7 @@ export default function Compare() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Filter friends..."
+              placeholder={t('Filter friends...')}
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
               className="pl-10"
@@ -178,12 +180,12 @@ export default function Compare() {
             <div className="glass rounded-2xl p-8 text-center">
               <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="font-semibold mb-2">
-                {friends.length === 0 ? 'No friends yet' : 'No match'}
+                {friends.length === 0 ? t('No friends yet') : t('No match')}
               </h3>
               <p className="text-sm text-muted-foreground">
                 {friends.length === 0
-                  ? 'Add friends first to compare voting patterns'
-                  : 'Try a different search'}
+                  ? t('Add friends first to compare voting patterns')
+                  : t('Try a different search')}
               </p>
             </div>
           ) : (
@@ -203,7 +205,7 @@ export default function Compare() {
                     <h3 className="font-semibold text-sm truncate">@{f.friend_username}</h3>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Heart className="h-3 w-3" />
-                      {f.compatibility_score !== null ? `${f.compatibility_score}% compatible` : 'No data yet'}
+                      {f.compatibility_score !== null ? t('{n}% compatible', { n: f.compatibility_score }) : t('No data yet')}
                     </div>
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -225,7 +227,7 @@ export default function Compare() {
           <Button variant="ghost" size="icon" onClick={() => setSelectedFriendId(null)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-display font-bold">Compare</h1>
+          <h1 className="text-xl font-display font-bold">{t('Compare')}</h1>
         </div>
 
         {/* Overall Score Card */}
@@ -252,14 +254,14 @@ export default function Compare() {
           </div>
 
           <h2 className="text-lg font-semibold">
-            You & @{selectedFriend?.friend_username}
+            {t('You & @{u}', { u: selectedFriend?.friend_username })}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
             {loadingVotes
-              ? 'Crunching numbers...'
+              ? t('Crunching numbers...')
               : sharedVotes.length === 0
-                ? 'No shared votes yet — vote on more polls!'
-                : `Based on ${sharedVotes.length} shared poll${sharedVotes.length !== 1 ? 's' : ''}`}
+                ? t('No shared votes yet — vote on more polls!')
+                : t('Based on {n} shared polls', { n: sharedVotes.length })}
           </p>
           {overallScore !== null && (
             <div className="mt-4 space-y-2">
@@ -295,7 +297,7 @@ export default function Compare() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-lg">Category Breakdown</h3>
+              <h3 className="font-semibold text-lg">{t('Category Breakdown')}</h3>
             </div>
 
             {categoryBreakdown.map((cat) => (
@@ -313,7 +315,7 @@ export default function Compare() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {cat.matched}/{cat.shared} votes matched
+                  {t('{a}/{b} votes matched', { a: cat.matched, b: cat.shared })}
                 </p>
               </div>
             ))}
@@ -322,7 +324,7 @@ export default function Compare() {
           <div className="glass rounded-2xl p-6 text-center">
             <BarChart3 className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
             <p className="text-sm text-muted-foreground">
-              Not enough data per category yet. Keep voting!
+              {t('Not enough data per category yet. Keep voting!')}
             </p>
           </div>
         ) : null}
@@ -334,7 +336,7 @@ export default function Compare() {
             className="w-full"
             onClick={() => navigate(`/friends/${selectedFriendId}`)}
           >
-            View Full Vote History
+            {t('View Full Vote History')}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         )}

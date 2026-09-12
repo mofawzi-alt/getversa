@@ -13,20 +13,21 @@ import SuggestionChips from '@/components/ask/SuggestionChips';
 import AskThread, { type AskTurn, type Mode } from '@/components/ask/AskThread';
 import CreditBalance from '@/components/ask/CreditBalance';
 import UnlockModal from '@/components/ask/UnlockModal';
+import { useT } from '@/hooks/useT';
 
 const DECIDE_SUGGESTIONS = [
-  { text: 'Costa or Cilantro for studying?', tag: 'Trending', icon: 'flame' as const },
-  { text: 'iPhone or Samsung — which lasts longer?', tag: '2.4K voted', icon: 'users' as const },
-  { text: 'Should I order Talabat or Elmenus tonight?', tag: 'Hot', icon: 'zap' as const },
-  { text: 'Nike or Adidas for everyday wear?', tag: '50/50 split', icon: 'trending' as const },
+  { text: t('Costa or Cilantro for studying?'), tag: t('Trending'), icon: 'flame' as const },
+  { text: t('iPhone or Samsung — which lasts longer?'), tag: '2.4K voted', icon: 'users' as const },
+  { text: t('Should I order Talabat or Elmenus tonight?'), tag: t('Hot'), icon: 'zap' as const },
+  { text: t('Nike or Adidas for everyday wear?'), tag: t('50/50 split'), icon: 'trending' as const },
 ];
 
 const RESEARCH_SUGGESTIONS = [
-  { text: 'How do students feel about online learning?', tag: 'Popular', icon: 'flame' as const },
-  { text: 'What do people think about marriage age in Egypt?', tag: 'Divisive', icon: 'trending' as const },
-  { text: 'Cairo vs Alexandria lifestyle differences', tag: '1.8K votes', icon: 'users' as const },
-  { text: 'Which fast food brand wins with 18–24?', tag: 'Hot', icon: 'zap' as const },
-  { text: 'How divided are Egyptians on Ahly vs Zamalek?', tag: '50/50', icon: 'flame' as const },
+  { text: t('How do students feel about online learning?'), tag: t('Popular'), icon: 'flame' as const },
+  { text: t('What do people think about marriage age in Egypt?'), tag: t('Divisive'), icon: 'trending' as const },
+  { text: t('Cairo vs Alexandria lifestyle differences'), tag: '1.8K votes', icon: 'users' as const },
+  { text: t('Which fast food brand wins with 18–24?'), tag: t('Hot'), icon: 'zap' as const },
+  { text: t('How divided are Egyptians on Ahly vs Zamalek?'), tag: t('50/50'), icon: 'flame' as const },
 ];
 
 /* Rotating placeholder phrases */
@@ -89,6 +90,7 @@ export default function Ask() {
   const qc = useQueryClient();
   const { data: askCredits = 0 } = useAskCredits();
   const { totalVotes, askLevel, levelLabel } = useUserVoteCount();
+  const { t } = useT();
   const [mode, setMode] = useState<Mode>('decide');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);

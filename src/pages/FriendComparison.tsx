@@ -13,6 +13,7 @@ import {
 import { format } from 'date-fns';
 import UserAvatar from '@/components/UserAvatar';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
+import { useT } from '@/hooks/useT';
 
 interface CompatibilityTrend {
   overall_score: number | null;
@@ -40,6 +41,7 @@ export default function FriendComparison() {
   const [searchParams] = useSearchParams();
   const focusPollId = searchParams.get('focus');
   const focusedRef = useRef<HTMLDivElement | null>(null);
+  const { t } = useT();
 
   useEffect(() => {
     if (focusPollId && focusedRef.current) {
@@ -125,12 +127,12 @@ export default function FriendComparison() {
   };
 
   const getCompatibilityLabel = (score: number | null) => {
-    if (score === null) return 'No shared votes yet';
-    if (score >= 90) return 'Best Friends! 💕';
-    if (score >= 75) return 'Great Match! 💫';
-    if (score >= 50) return 'Vote Buddies 🤝';
-    if (score >= 25) return 'Different Views';
-    return 'Opposites';
+    if (score === null) return t('No shared votes yet');
+    if (score >= 90) return t('Best Friends! 💕');
+    if (score >= 75) return t('Great Match! 💫');
+    if (score >= 50) return t('Vote Buddies 🤝');
+    if (score >= 25) return t('Different Views');
+    return t('Opposites');
   };
 
   const getCompatibilityGradient = (score: number | null) => {
@@ -155,9 +157,9 @@ export default function FriendComparison() {
     return (
       <AppLayout>
         <div className="p-4 text-center">
-          <p className="text-muted-foreground">Friend not found</p>
+          <p className="text-muted-foreground">{t('Friend not found')}</p>
           <Button onClick={() => navigate('/friends')} className="mt-4">
-            Back to Friends
+            {t('Back to Friends')}
           </Button>
         </div>
       </AppLayout>
@@ -172,7 +174,7 @@ export default function FriendComparison() {
           <Button variant="ghost" size="icon" onClick={() => navigate('/friends')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-display font-bold">Vote Comparison</h1>
+          <h1 className="text-xl font-display font-bold">{t('Vote Comparison')}</h1>
         </div>
 
         {/* Friend Card with Compatibility */}
@@ -219,17 +221,17 @@ export default function FriendComparison() {
               {trendData.trend === 'up' ? (
                 <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-green-500/20 text-green-500">
                   <TrendingUp className="h-4 w-4" />
-                  <span className="text-xs font-medium">+{trendData.trend_change}% this month</span>
+                  <span className="text-xs font-medium">{t('+{n}% this month', { n: trendData.trend_change })}</span>
                 </div>
               ) : trendData.trend === 'down' ? (
                 <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-orange-500/20 text-orange-500">
                   <TrendingDown className="h-4 w-4" />
-                  <span className="text-xs font-medium">{trendData.trend_change}% this month</span>
+                  <span className="text-xs font-medium">{t('{n}% this month', { n: trendData.trend_change })}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-muted text-muted-foreground">
                   <Minus className="h-4 w-4" />
-                  <span className="text-xs font-medium">Stable</span>
+                  <span className="text-xs font-medium">{t('Stable')}</span>
                 </div>
               )}
             </div>
@@ -242,21 +244,21 @@ export default function FriendComparison() {
                 <Check className="h-4 w-4" />
                 <span className="font-bold">{matchingVotes}</span>
               </div>
-              <span className="text-xs text-muted-foreground">Matches</span>
+              <span className="text-xs text-muted-foreground">{t('Matches')}</span>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 text-orange-500">
                 <X className="h-4 w-4" />
                 <span className="font-bold">{totalVotes - matchingVotes}</span>
               </div>
-              <span className="text-xs text-muted-foreground">Different</span>
+              <span className="text-xs text-muted-foreground">{t('Different')}</span>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 text-primary">
                 <TrendingUp className="h-4 w-4" />
                 <span className="font-bold">{totalVotes}</span>
               </div>
-              <span className="text-xs text-muted-foreground">Shared</span>
+              <span className="text-xs text-muted-foreground">{t('Shared')}</span>
             </div>
           </div>
           
@@ -264,13 +266,13 @@ export default function FriendComparison() {
           {trendData && trendData.recent_score !== null && trendData.older_score !== null && (
             <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-border">
               <div className="text-center">
-                <div className="text-xs text-muted-foreground mb-1">Last 30 days</div>
+                <div className="text-xs text-muted-foreground mb-1">{t('Last 30 days')}</div>
                 <div className={`text-lg font-bold ${getCompatibilityColor(trendData.recent_score)}`}>
                   {trendData.recent_score}%
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-xs text-muted-foreground mb-1">Before that</div>
+                <div className="text-xs text-muted-foreground mb-1">{t('Before that')}</div>
                 <div className={`text-lg font-bold ${getCompatibilityColor(trendData.older_score)}`}>
                   {trendData.older_score}%
                 </div>
@@ -285,7 +287,7 @@ export default function FriendComparison() {
                   opponent: friend.username,
                   won: compatibilityScore >= 70,
                   tied: compatibilityScore >= 40 && compatibilityScore < 70,
-                  score: `${compatibilityScore}% compatible · ${matchingVotes}/${totalVotes} matched`,
+                  score: t('{p}% compatible · {a}/{b} matched', { p: compatibilityScore, a: matchingVotes, b: totalVotes }),
                   match_rate: compatibilityScore,
                 }}
                 variant="compact"
@@ -298,15 +300,15 @@ export default function FriendComparison() {
         <div>
           <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
-            Shared Vote History
+            {t('Shared Vote History')}
           </h3>
           
           {sharedVotes.length === 0 ? (
             <div className="glass rounded-2xl p-8 text-center">
               <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-semibold mb-2">No shared polls yet</h3>
+              <h3 className="font-semibold mb-2">{t('No shared polls yet')}</h3>
               <p className="text-sm text-muted-foreground">
-                Vote on more polls to see how you compare!
+                {t('Vote on more polls to see how you compare!')}
               </p>
             </div>
           ) : (
@@ -341,7 +343,7 @@ export default function FriendComparison() {
                       <div className="flex items-center gap-4 text-xs">
                         {/* Your vote */}
                         <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground">You:</span>
+                          <span className="text-muted-foreground">{t('You:')}</span>
                           <span className={`font-medium px-2 py-0.5 rounded ${
                             vote.user_a_choice === 'A' 
                               ? 'bg-option-a/20 text-option-a' 

@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, Building2, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 export default function JoinOrganization() {
+  const { t } = useT();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [code, setCode] = useState('');
@@ -31,7 +33,7 @@ export default function JoinOrganization() {
 
       if (lookupErr) throw lookupErr;
       if (!org) {
-        toast.error('Invalid invite code. Please check and try again.');
+        toast.error(t('Invalid invite code. Please check and try again.'));
         setLoading(false);
         return;
       }
@@ -45,7 +47,7 @@ export default function JoinOrganization() {
         .maybeSingle() as any);
 
       if (existing) {
-        toast.info(`You're already a member of ${org.name}`);
+        toast.info(t("You're already a member of {n}", { n: org.name }));
         setLoading(false);
         return;
       }
@@ -59,10 +61,10 @@ export default function JoinOrganization() {
 
       setOrgName(org.name);
       setJoined(true);
-      toast.success(`Welcome to ${org.name}!`);
+      toast.success(t('Welcome to {n}!', { n: org.name }));
     } catch (err) {
       console.error(err);
-      toast.error('Something went wrong. Please try again.');
+      toast.error(t('Something went wrong. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -76,8 +78,8 @@ export default function JoinOrganization() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-xl font-display font-bold">Join Organization</h1>
-            <p className="text-sm text-muted-foreground">Enter an invite code to access private polls</p>
+            <h1 className="text-xl font-display font-bold">{t('Join Organization')}</h1>
+            <p className="text-sm text-muted-foreground">{t('Enter an invite code to access private polls')}</p>
           </div>
         </header>
 
@@ -87,13 +89,13 @@ export default function JoinOrganization() {
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
                 <Check className="h-8 w-8 text-primary" />
               </div>
-              <h2 className="text-lg font-bold">You're in! 🎉</h2>
+              <h2 className="text-lg font-bold">{t("You're in! 🎉")}</h2>
               <p className="text-muted-foreground text-sm">
-                You've joined <span className="font-semibold text-foreground">{orgName}</span>. 
-                Private polls from this organization will now appear in your feed.
+                {t("You've joined")} <span className="font-semibold text-foreground">{orgName}</span>. 
+                {t('Private polls from this organization will now appear in your feed.')}
               </p>
               <Button onClick={() => navigate('/home')} className="w-full">
-                Go to Feed
+                {t('Go to Feed')}
               </Button>
             </div>
           ) : (
@@ -103,7 +105,7 @@ export default function JoinOrganization() {
                   <Building2 className="h-7 w-7 text-primary" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Your organization admin should have shared an invite code with you.
+                  {t('Your organization admin should have shared an invite code with you.')}
                 </p>
               </div>
 
@@ -111,7 +113,7 @@ export default function JoinOrganization() {
                 <Input
                   value={code}
                   onChange={e => setCode(e.target.value.toUpperCase())}
-                  placeholder="Enter invite code"
+                  placeholder={t('Enter invite code')}
                   className="bg-secondary text-center text-lg font-mono tracking-[0.3em] uppercase"
                   maxLength={12}
                 />
@@ -123,7 +125,7 @@ export default function JoinOrganization() {
                 className="w-full"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Join Organization
+                {t('Join Organization')}
               </Button>
             </div>
           )}

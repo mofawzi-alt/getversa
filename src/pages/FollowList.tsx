@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import { ArrowLeft } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import { useT } from '@/hooks/useT';
 
 type Tab = 'followers' | 'following';
 
@@ -16,6 +17,7 @@ export default function FollowList() {
   const [params, setParams] = useSearchParams();
   const initialTab = (params.get('tab') as Tab) || 'followers';
   const [tab, setTab] = useState<Tab>(initialTab);
+  const { t } = useT();
 
   const targetId = userId || user?.id;
 
@@ -57,28 +59,28 @@ export default function FollowList() {
           <button onClick={() => navigate(-1)} className="p-1">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-lg font-display font-bold">Connections</h1>
+          <h1 className="text-lg font-display font-bold">{t('Connections')}</h1>
         </div>
 
         <div className="flex border-b border-border">
-          {(['followers', 'following'] as Tab[]).map((t) => (
+          {(['followers', 'following'] as Tab[]).map((tb) => (
             <button
-              key={t}
-              onClick={() => setActive(t)}
+              key={tb}
+              onClick={() => setActive(tb)}
               className={`flex-1 py-3 text-sm font-medium capitalize transition-colors ${
-                tab === t ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'
+                tab === tb ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'
               }`}
             >
-              {t}
+              {tb === 'followers' ? t('Followers') : t('Following')}
             </button>
           ))}
         </div>
 
         {isLoading ? (
-          <p className="text-center text-sm text-muted-foreground py-8">Loading…</p>
+          <p className="text-center text-sm text-muted-foreground py-8">{t('Loading…')}</p>
         ) : list.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground py-8">
-            {tab === 'followers' ? 'No followers yet' : 'Not following anyone yet'}
+            {tab === 'followers' ? t('No followers yet') : t('Not following anyone yet')}
           </p>
         ) : (
           <ul className="space-y-2">
@@ -98,7 +100,7 @@ export default function FollowList() {
                     </div>
                   )}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-medium">@{u.username || 'user'}</span>
+                    <span className="text-sm font-medium">@{u.username || t('user')}</span>
                     {u.verified_public_figure && <VerifiedBadge size="sm" />}
                   </div>
                 </button>

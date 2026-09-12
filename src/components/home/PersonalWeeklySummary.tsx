@@ -6,6 +6,7 @@ import { Share2, Trophy, Target, Sparkles } from 'lucide-react';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 function getWeekRange() {
   const now = new Date();
@@ -21,6 +22,7 @@ function getWeekRange() {
 }
 
 export default function PersonalWeeklySummary() {
+  const { t } = useT();
   const { user, profile } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { start, end } = getWeekRange();
@@ -150,7 +152,7 @@ export default function PersonalWeeklySummary() {
   const handleShare = useCallback(async () => {
     try {
       const blob = await generateImage();
-      if (!blob) { toast.error('Failed to generate'); return; }
+      if (!blob) { toast.error(t('Failed to generate')); return; }
       const file = new File([blob], 'versa-weekly-summary.png', { type: 'image/png' });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ title: 'My Week on Versa', files: [file] });
@@ -158,10 +160,10 @@ export default function PersonalWeeklySummary() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'versa-weekly-summary.png'; a.click();
         URL.revokeObjectURL(url);
-        toast.success('Image downloaded!');
+        toast.success(t('Image downloaded!'));
       }
     } catch (err) {
-      if ((err as Error).name !== 'AbortError') toast.error('Failed to share');
+      if ((err as Error).name !== 'AbortError') toast.error(t('Failed to share'));
     }
   }, [generateImage]);
 
@@ -179,7 +181,7 @@ export default function PersonalWeeklySummary() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span className="text-xs font-display font-bold text-primary">Your Week</span>
+            <span className="text-xs font-display font-bold text-primary">{t('Your Week')}</span>
           </div>
           <div className="flex items-center gap-1">
             <ShareToStoryButton
@@ -201,17 +203,17 @@ export default function PersonalWeeklySummary() {
         <div className="flex items-center justify-around mb-2">
           <div className="text-center">
             <p className="text-lg font-bold font-display text-foreground">{summary.totalVoted}</p>
-            <p className="text-[9px] text-muted-foreground">Voted</p>
+            <p className="text-[9px] text-muted-foreground">{t('Voted')}</p>
           </div>
           <div className="h-6 w-px bg-border/60" />
           <div className="text-center">
             <p className="text-lg font-bold font-display text-green-600">{summary.majority}</p>
-            <p className="text-[9px] text-muted-foreground">Majority</p>
+            <p className="text-[9px] text-muted-foreground">{t('Majority')}</p>
           </div>
           <div className="h-6 w-px bg-border/60" />
           <div className="text-center">
             <p className="text-lg font-bold font-display text-amber-500">{summary.minority}</p>
-            <p className="text-[9px] text-muted-foreground">Minority</p>
+            <p className="text-[9px] text-muted-foreground">{t('Minority')}</p>
           </div>
         </div>
 
@@ -219,7 +221,7 @@ export default function PersonalWeeklySummary() {
         {summary.biggestUpset && (
           <div className="rounded-lg bg-muted/40 px-2.5 py-1.5 flex items-center gap-1.5">
             <Target className="h-3 w-3 text-muted-foreground shrink-0" />
-            <span className="text-[10px] text-muted-foreground font-medium">Most Surprising:</span>
+            <span className="text-[10px] text-muted-foreground font-medium">{t('Most Surprising')}:</span>
             <span className="text-[10px] text-foreground font-medium truncate">
               {summary.biggestUpset.question.length > 35 ? summary.biggestUpset.question.slice(0, 35) + '…' : summary.biggestUpset.question}
             </span>

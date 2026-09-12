@@ -12,6 +12,7 @@ import SwipeableFriendRow from '@/components/friends/SwipeableFriendRow';
 import CompatibilityRing from '@/components/friends/CompatibilityRing';
 import ShareCompatibilityButton from '@/components/friends/ShareCompatibilityButton';
 import UserAvatar from '@/components/UserAvatar';
+import { useT } from '@/hooks/useT';
 import { useIncomingDuels } from '@/hooks/useIncomingDuels';
 import { 
   Search, UserPlus, UserCheck, Users, Loader2, 
@@ -43,6 +44,7 @@ export default function Friends() {
   } = useFriends();
 
   const navigate = useNavigate();
+  const { t } = useT();
   const openConv = useOpenConversation();
   const { data: conversations = [], totalUnread } = useConversations();
   const { user } = useAuth();
@@ -103,11 +105,11 @@ export default function Friends() {
   };
 
   const getCompatibilityLabel = (score: number | null) => {
-    if (score === null) return 'No shared votes yet';
-    if (score >= 80) return 'Best Friends!';
-    if (score >= 60) return 'Great Match';
-    if (score >= 40) return 'Compatible';
-    return 'Different Views';
+    if (score === null) return t('No shared votes yet');
+    if (score >= 80) return t('Best Friends!');
+    if (score >= 60) return t('Great Match');
+    if (score >= 40) return t('Compatible');
+    return t('Different Views');
   };
 
   const getTrendIcon = (trend: string | null) => {
@@ -118,8 +120,8 @@ export default function Friends() {
 
   const getTrendLabel = (trend: string | null, change: number | null) => {
     if (!trend || trend === 'neutral' || trend === 'stable') return null;
-    if (trend === 'up' && change) return `+${change}% this month`;
-    if (trend === 'down' && change) return `${change}% this month`;
+    if (trend === 'up' && change) return t('+{n}% this month', { n: change });
+    if (trend === 'down' && change) return t('{n}% this month', { n: change });
     return null;
   };
 
@@ -134,9 +136,9 @@ export default function Friends() {
                 <Users className="h-5 w-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-xl font-display font-bold leading-tight truncate">Friends</h1>
+                <h1 className="text-xl font-display font-bold leading-tight truncate">{t('Friends')}</h1>
                 <p className="text-xs text-muted-foreground">
-                  {friendCount} friend{friendCount !== 1 ? 's' : ''}
+                  {t('{n} friends', { n: friendCount })}
                 </p>
               </div>
             </div>
@@ -148,7 +150,7 @@ export default function Friends() {
                 onClick={() => navigate('/messages')}
               >
                 <MessageCircle className="h-3.5 w-3.5" />
-                Inbox
+                {t('Inbox')}
                 {totalUnread > 0 && (
                   <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center px-1">
                     {totalUnread}
@@ -162,7 +164,7 @@ export default function Friends() {
                 onClick={() => navigate('/compare')}
               >
                 <Heart className="h-3.5 w-3.5" />
-                Compare
+                {t('Compare')}
               </Button>
             </div>
           </div>
@@ -179,9 +181,9 @@ export default function Friends() {
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div className="relative">
-              <p className="font-bold text-white text-sm leading-tight">Crew Compare</p>
+              <p className="font-bold text-white text-sm leading-tight">{t('Crew Compare')}</p>
               <p className="text-[11px] text-white/80 leading-tight mt-1">
-                Battle two groups or vibe-check one crew
+                {t('Battle two groups or vibe-check one crew')}
               </p>
             </div>
           </button>
@@ -195,9 +197,9 @@ export default function Friends() {
               <Swords className="h-5 w-5 text-white" />
             </div>
             <div className="relative">
-              <p className="font-bold text-white text-sm leading-tight">Versa Arena</p>
+              <p className="font-bold text-white text-sm leading-tight">{t('Versa Arena')}</p>
               <p className="text-[11px] text-white/80 leading-tight mt-1">
-                Challenge a friend to a live 10-poll duel
+                {t('Challenge a friend to a live 10-poll duel')}
               </p>
             </div>
           </button>
@@ -205,22 +207,22 @@ export default function Friends() {
 
         <Tabs defaultValue="friends" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-4">
-            <TabsTrigger value="friends">Friends</TabsTrigger>
+            <TabsTrigger value="friends">{t('Friends')}</TabsTrigger>
             <TabsTrigger value="suggested" className="relative">
-              Discover
+              {t('Discover')}
               {suggestedFriends.length > 0 && (
                 <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary" />
               )}
             </TabsTrigger>
             <TabsTrigger value="requests" className="relative">
-              Requests
+              {t('Requests')}
               {pendingRequests.length > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
                   {pendingRequests.length}
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="search">Add</TabsTrigger>
+            <TabsTrigger value="search">{t('Add')}</TabsTrigger>
           </TabsList>
 
           {/* Friends List */}
@@ -232,16 +234,16 @@ export default function Friends() {
             ) : friends.length === 0 ? (
               <div className="glass rounded-2xl p-8 text-center">
                 <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-semibold mb-2">No friends yet</h3>
+                <h3 className="font-semibold mb-2">{t('No friends yet')}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Search for users to add as friends
+                  {t('Search for users to add as friends')}
                 </p>
               </div>
             ) : (
               friends.map((friend) => (
                 <SwipeableFriendRow
                   key={friend.friend_id}
-                  friendName={`@${friend.friend_username || 'this friend'}`}
+                  friendName={`@${friend.friend_username || t('this friend')}`}
                   onDelete={() => removeFriend(friend.friend_id)}
                 >
                   <div
@@ -260,7 +262,7 @@ export default function Friends() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-semibold truncate">
-                            @{friend.friend_username || 'Unknown'}
+                            @{friend.friend_username || t('Unknown')}
                           </h3>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Trophy className="h-3 w-3" />
@@ -275,7 +277,7 @@ export default function Friends() {
                               className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold animate-pulse"
                             >
                               <Swords className="h-2.5 w-2.5" />
-                              Challenged you
+                              {t('Challenged you')}
                             </button>
                           )}
                         </div>
@@ -312,7 +314,7 @@ export default function Friends() {
                           )}
                         </div>
                         <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider leading-none">
-                          Vote match
+                          {t('Vote match')}
                         </span>
                       </div>
 
@@ -345,7 +347,7 @@ export default function Friends() {
           <TabsContent value="suggested" className="space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">People who vote like you</h3>
+              <h3 className="font-semibold">{t('People who vote like you')}</h3>
             </div>
             
             {loadingSuggested ? (
@@ -355,9 +357,9 @@ export default function Friends() {
             ) : suggestedFriends.length === 0 ? (
               <div className="glass rounded-2xl p-8 text-center">
                 <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-semibold mb-2">No suggestions yet</h3>
+                <h3 className="font-semibold mb-2">{t('No suggestions yet')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Vote on more polls to find people with similar opinions
+                  {t('Vote on more polls to find people with similar opinions')}
                 </p>
               </div>
             ) : (
@@ -384,7 +386,7 @@ export default function Friends() {
                         
                         {/* Similarity caption (ring shown on the right) */}
                         <p className="text-xs text-muted-foreground mt-1">
-                          {voter.matching_votes}/{voter.shared_polls} shared votes match
+                          {t('{a}/{b} shared votes match', { a: voter.matching_votes, b: voter.shared_polls })}
                         </p>
                       </div>
 
@@ -396,7 +398,7 @@ export default function Friends() {
                         disabled={sendingRequest}
                       >
                         <UserPlus className="h-4 w-4 mr-1" />
-                        Add
+                        {t('Add')}
                       </Button>
                     </div>
                   </div>
@@ -414,9 +416,9 @@ export default function Friends() {
             ) : pendingRequests.length === 0 && sentRequests.length === 0 ? (
               <div className="glass rounded-2xl p-8 text-center">
                 <UserPlus className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-semibold mb-2">No pending requests</h3>
+                <h3 className="font-semibold mb-2">{t('No pending requests')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Friend requests will appear here
+                  {t('Friend requests will appear here')}
                 </p>
               </div>
             ) : (
@@ -425,7 +427,7 @@ export default function Friends() {
                 {pendingRequests.length > 0 && (
                   <div className="space-y-3">
                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">
-                      Received ({pendingRequests.length})
+                      {t('Received ({n})', { n: pendingRequests.length })}
                     </h3>
                     {pendingRequests.map((request) => (
                       <div key={request.id} className="glass rounded-xl p-4">
@@ -440,7 +442,7 @@ export default function Friends() {
                               @{request.requester_username}
                             </h3>
                             <p className="text-xs text-muted-foreground">
-                              Wants to be friends
+                              {t('Wants to be friends')}
                             </p>
                           </div>
                           <div className="flex gap-2">
@@ -470,7 +472,7 @@ export default function Friends() {
                 {sentRequests.length > 0 && (
                   <div className="space-y-3">
                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">
-                      Sent ({sentRequests.length})
+                      {t('Sent ({n})', { n: sentRequests.length })}
                     </h3>
                     {sentRequests.map((request: any) => (
                       <div key={request.id} className="glass rounded-xl p-4">
@@ -485,7 +487,7 @@ export default function Friends() {
                               @{request.recipient_username}
                             </h3>
                             <p className="text-xs text-muted-foreground">
-                              Awaiting response
+                              {t('Awaiting response')}
                             </p>
                           </div>
                           <Button
@@ -494,7 +496,7 @@ export default function Friends() {
                             onClick={() => cancelRequest(request.recipient_id)}
                             disabled={cancellingRequest}
                           >
-                            Cancel
+                            {t('Cancel')}
                           </Button>
                         </div>
                       </div>
@@ -511,7 +513,7 @@ export default function Friends() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by username..."
+                  placeholder={t('Search by username...')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -522,7 +524,7 @@ export default function Friends() {
                 {isSearching ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  'Search'
+                  t('Search')
                 )}
               </Button>
             </div>
@@ -548,7 +550,7 @@ export default function Friends() {
                           </h3>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Trophy className="h-3 w-3" />
-                            {user.points || 0} points
+                            {t('{n} points', { n: user.points || 0 })}
                           </div>
                         </div>
                       </button>
@@ -559,7 +561,7 @@ export default function Friends() {
                         {user.friendship_status === 'accepted' ? (
                           <Button size="sm" variant="secondary" disabled>
                             <UserCheck className="h-4 w-4 mr-1" />
-                            Friends
+                            {t('Friends')}
                           </Button>
                         ) : user.friendship_status === 'pending' || hasPendingRequest(user.id) ? (
                           <Button
@@ -568,7 +570,7 @@ export default function Friends() {
                             onClick={() => cancelRequest(user.id)}
                             disabled={cancellingRequest}
                           >
-                            Cancel
+                            {t('Cancel')}
                           </Button>
                         ) : (
                           <Button
@@ -577,7 +579,7 @@ export default function Friends() {
                             disabled={sendingRequest}
                           >
                             <UserPlus className="h-4 w-4 mr-1" />
-                            Add
+                            {t('Add')}
                           </Button>
                         )}
                       </div>
@@ -590,9 +592,9 @@ export default function Friends() {
             {searchResults.length === 0 && searchTerm && !isSearching && (
               <div className="glass rounded-2xl p-8 text-center">
                 <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-semibold mb-2">No users found</h3>
+                <h3 className="font-semibold mb-2">{t('No users found')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Try a different username
+                  {t('Try a different username')}
                 </p>
               </div>
             )}

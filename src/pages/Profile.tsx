@@ -20,15 +20,17 @@ import PersonalWeeklySummary from '@/components/home/PersonalWeeklySummary';
 import SuggestPollDialog from '@/components/profile/SuggestPollDialog';
 import BiometricToggle from '@/components/profile/BiometricToggle';
 import DeleteAccountButton from '@/components/profile/DeleteAccountButton';
+import { useT } from '@/hooks/useT';
 
 function LanguageCard() {
   const { lang, setLanguage } = useLanguage();
+  const { t } = useT();
   return (
     <div className="bg-card rounded-2xl p-4 border border-border shadow-sm flex items-center gap-3">
       <Languages className="h-5 w-5 text-primary shrink-0" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-foreground">Language / اللغة</p>
-        <p className="text-[11px] text-muted-foreground">Poll questions and options</p>
+        <p className="text-[11px] text-muted-foreground">{t('Poll questions and options')}</p>
       </div>
       <div className="flex rounded-full bg-secondary p-0.5">
         <button
@@ -49,6 +51,7 @@ function LanguageCard() {
 }
 
 export default function Profile() {
+  const { t } = useT();
   const { profile, isAdmin, signOut, user } = useAuth();
   const navigate = useNavigate();
   const { isVerified: selfVerified, category: selfCategory } = useVerifiedUser(user?.id);
@@ -97,24 +100,24 @@ export default function Profile() {
     setLoggingOut(true);
 
     try {
-      toast.loading('Logging out...', { id: 'logout' });
+      toast.loading(t('Logging out...'), { id: 'logout' });
       await signOut();
-      toast.success('Logged out successfully', { id: 'logout' });
+      toast.success(t('Logged out successfully'), { id: 'logout' });
       navigate('/auth', { replace: true });
     } catch (e) {
       console.error('Logout error', e);
-      toast.error('Logout failed', { id: 'logout' });
+      toast.error(t('Logout failed'), { id: 'logout' });
       setLoggingOut(false);
     }
   };
 
   const menuItems = [
-    { icon: Sparkles, label: 'Taste Profile', path: '/taste-profile', color: 'text-primary', highlight: true },
-    { icon: History, label: 'My Votes', path: '/history', color: 'text-primary' },
-    { icon: Users, label: 'Friends', path: '/friends', color: 'text-primary' },
-    { icon: User, label: 'Edit Profile', path: '/profile/edit', color: 'text-muted-foreground' },
-    { icon: Bell, label: 'Notification Settings', path: '/profile/notifications', color: 'text-muted-foreground' },
-    { icon: MessageCircleQuestion, label: 'My Live Asks', path: '/live-ask/mine', color: 'text-primary' },
+    { icon: Sparkles, label: t('Taste Profile'), path: '/taste-profile', color: 'text-primary', highlight: true },
+    { icon: History, label: t('My Votes'), path: '/history', color: 'text-primary' },
+    { icon: Users, label: t('Friends'), path: '/friends', color: 'text-primary' },
+    { icon: User, label: t('Edit Profile'), path: '/profile/edit', color: 'text-muted-foreground' },
+    { icon: Bell, label: t('Notification Settings'), path: '/profile/notifications', color: 'text-muted-foreground' },
+    { icon: MessageCircleQuestion, label: t('My Live Asks'), path: '/live-ask/mine', color: 'text-primary' },
 
     ...(isAdmin ? [
       { icon: MessageCircleQuestion, label: 'Live Ask (Beta)', path: '/live-ask/new', color: 'text-primary' },
@@ -153,17 +156,17 @@ export default function Profile() {
           {/* Milestone labels */}
           {(stats?.votes ?? 0) >= 200 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 text-[10px] font-bold mt-1">
-              🔥 Versa OG
+              🔥 {t('Versa OG')}
             </span>
           )}
           {(stats?.votes ?? 0) >= 100 && (stats?.votes ?? 0) < 200 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold mt-1">
-              ⚡ Versa Insider
+              ⚡ {t('Versa Insider')}
             </span>
           )}
 
           <p className="text-muted-foreground text-xs mt-0.5">
-            {profile?.country || 'Unknown location'}
+            {profile?.country || t('Unknown location')}
           </p>
 
           {/* Followers / Following — IG style */}
@@ -173,20 +176,20 @@ export default function Profile() {
               className="flex items-baseline gap-1"
             >
               <span className="text-sm font-bold text-foreground">{stats?.followers || 0}</span>
-              <span className="text-[11px] text-muted-foreground">Followers</span>
+              <span className="text-[11px] text-muted-foreground">{t('Followers')}</span>
             </button>
             <button
               onClick={() => navigate('/profile/connections?tab=following')}
               className="flex items-baseline gap-1"
             >
               <span className="text-sm font-bold text-foreground">{stats?.following || 0}</span>
-              <span className="text-[11px] text-muted-foreground">Following</span>
+              <span className="text-[11px] text-muted-foreground">{t('Following')}</span>
             </button>
           </div>
           {/* Profile confidence indicator */}
           {(stats?.votes ?? 0) >= 30 && (stats?.votes ?? 0) < 50 && (
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">
-              Based on {stats?.votes}+ votes — your profile is taking shape
+              {t('Based on {n}+ votes — your profile is taking shape', { n: stats?.votes ?? 0 })}
             </p>
           )}
 
@@ -197,7 +200,7 @@ export default function Profile() {
                 <BarChart3 className="h-3 w-3 text-muted-foreground" />
                 <span className="text-sm font-bold text-foreground">{stats?.votes || 0}</span>
               </div>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Votes</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{t('Votes')}</span>
             </button>
             <div className="w-px h-7 bg-border" />
             <button onClick={() => navigate('/compare')} className="flex flex-col items-center gap-0.5">
@@ -205,7 +208,7 @@ export default function Profile() {
                 <Target className="h-3 w-3 text-muted-foreground" />
                 <span className="text-sm font-bold text-foreground">{stats?.comparisons || 0}</span>
               </div>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Comparisons</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{t('Comparisons')}</span>
             </button>
             <div className="w-px h-7 bg-border" />
             <button onClick={() => navigate('/play/duels')} className="flex flex-col items-center gap-0.5">
@@ -213,7 +216,7 @@ export default function Profile() {
                 <Swords className="h-3 w-3 text-muted-foreground" />
                 <span className="text-sm font-bold text-foreground">{stats?.battles || 0}</span>
               </div>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Battles</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{t('Battles')}</span>
             </button>
             <div className="w-px h-7 bg-border" />
             <button onClick={() => navigate('/rewards')} className="flex flex-col items-center gap-0.5">
@@ -221,7 +224,7 @@ export default function Profile() {
                 <Sparkles className="h-3 w-3 text-muted-foreground" />
                 <span className="text-sm font-bold text-foreground">{stats?.points ?? profile?.points ?? 0}</span>
               </div>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Points</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{t('Points')}</span>
             </button>
             <div className="w-px h-7 bg-border" />
             <button onClick={() => navigate('/ask')} className="flex flex-col items-center gap-0.5">
@@ -229,7 +232,7 @@ export default function Profile() {
                 <Coins className="h-3 w-3 text-primary" />
                 <span className="text-sm font-bold text-foreground">{credits}</span>
               </div>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Credits</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{t('Credits')}</span>
             </button>
             <div className="w-px h-7 bg-border" />
             <div className="flex flex-col items-center gap-0.5">
@@ -237,14 +240,14 @@ export default function Profile() {
                 <Target className="h-3 w-3 text-muted-foreground" />
                 <span className="text-sm font-bold text-foreground">{stats?.predictionAccuracy || 0}%</span>
               </div>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Majority</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{t('Majority')}</span>
             </div>
           </div>
 
           {stats?.currentStreak !== undefined && stats.currentStreak > 0 && (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warning/20 mt-3">
               <Flame className="h-3 w-3 text-warning" />
-              <span className="text-xs font-bold text-warning">{stats.currentStreak} day streak</span>
+              <span className="text-xs font-bold text-warning">{t('{n} day streak', { n: stats.currentStreak })}</span>
             </div>
           )}
         </div>
@@ -284,7 +287,7 @@ export default function Profile() {
               <Icon className={`h-5 w-5 ${color || 'text-card-foreground/70'}`} />
               <span className="flex-1 text-left font-medium">{label}</span>
               {highlight && (
-                <span className="text-[9px] font-bold text-primary-foreground bg-primary px-2 py-0.5 rounded-full uppercase">New</span>
+                <span className="text-[9px] font-bold text-primary-foreground bg-primary px-2 py-0.5 rounded-full uppercase">{t('New')}</span>
               )}
               <ChevronRight className="h-5 w-5 text-card-foreground/70" />
             </button>
@@ -295,9 +298,9 @@ export default function Profile() {
         {/* Legal & Support */}
         <div className="glass rounded-2xl divide-y divide-border overflow-hidden">
           {[
-            { icon: FileText, label: 'Privacy Policy', path: '/privacy-policy' },
-            { icon: ScrollText, label: 'Terms of Service', path: '/terms' },
-            { icon: LifeBuoy, label: 'Support', path: '/support' },
+            { icon: FileText, label: t('Privacy Policy'), path: '/privacy-policy' },
+            { icon: ScrollText, label: t('Terms of Service'), path: '/terms' },
+            { icon: LifeBuoy, label: t('Support'), path: '/support' },
           ].map(({ icon: Icon, label, path }) => (
             <button
               key={path}
@@ -319,11 +322,11 @@ export default function Profile() {
           disabled={loggingOut}
         >
           <LogOut className="mr-2 h-5 w-5" />
-          {loggingOut ? 'Logging out…' : 'Log Out'}
+          {loggingOut ? t('Logging out…') : t('Log Out')}
         </Button>
 
         <p className="text-center text-[11px] text-muted-foreground/60">
-          Versa v1.0 · © 2026
+          {t('Versa v1.0 · © 2026')}
         </p>
 
         {/* Account deletion — required by Apple App Store Guideline 5.1.1(v) */}

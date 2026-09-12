@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 export interface VoteMilestoneData {
   count: number;
@@ -68,6 +69,7 @@ interface Props {
 }
 
 export default function VoteMilestoneCelebration({ milestone, open, onClose }: Props) {
+  const { t } = useT();
   useEffect(() => {
     if (open) {
       markMilestoneSeen(milestone.count);
@@ -89,7 +91,7 @@ export default function VoteMilestoneCelebration({ milestone, open, onClose }: P
         >
           <div className="rounded-2xl bg-gradient-to-r from-primary/90 to-accent/90 backdrop-blur-md border border-primary/30 px-5 py-4 shadow-xl text-center">
             <p className="text-primary-foreground font-display font-bold text-sm leading-snug break-words">
-              {milestone.message}
+              {t(milestone.message)}
             </p>
           </div>
         </motion.div>

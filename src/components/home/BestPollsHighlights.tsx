@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Trophy, Calendar, TrendingUp, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useT } from '@/hooks/useT';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ interface BestPollsData {
 type HighlightType = 'yesterday' | 'weekly' | 'monthly' | null;
 
 export default function BestPollsHighlights() {
+  const { t } = useT();
   const [activeHighlight, setActiveHighlight] = useState<HighlightType>(null);
 
   const { data: bestPolls, isLoading } = useQuery({
@@ -147,8 +149,8 @@ export default function BestPollsHighlights() {
     {
       key: 'yesterday' as const,
       poll: bestPolls?.yesterday,
-      label: "Yesterday's Best",
-      shortLabel: 'Yesterday',
+      label: t("Yesterday's Best"),
+      shortLabel: t('Yesterday'),
       icon: Calendar,
       bgClass: 'bg-emerald-500/20 hover:bg-emerald-500/30',
       activeBgClass: 'bg-emerald-500',
@@ -159,8 +161,8 @@ export default function BestPollsHighlights() {
     {
       key: 'weekly' as const,
       poll: bestPolls?.weekly,
-      label: 'Weekly Best',
-      shortLabel: 'Week',
+      label: t('Weekly Best'),
+      shortLabel: t('Week'),
       icon: TrendingUp,
       bgClass: 'bg-blue-500/20 hover:bg-blue-500/30',
       activeBgClass: 'bg-blue-500',
@@ -171,8 +173,8 @@ export default function BestPollsHighlights() {
     {
       key: 'monthly' as const,
       poll: bestPolls?.monthly,
-      label: 'Monthly Best',
-      shortLabel: 'Month',
+      label: t('Monthly Best'),
+      shortLabel: t('Month'),
       icon: Trophy,
       bgClass: 'bg-amber-500/20 hover:bg-amber-500/30',
       activeBgClass: 'bg-amber-500',
@@ -194,7 +196,7 @@ export default function BestPollsHighlights() {
       <div className="mb-4">
         {/* Icon buttons row */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground mr-1">🏆 Top:</span>
+          <span className="text-xs font-medium text-muted-foreground mr-1">🏆 {t('Top')}:</span>
           {highlights.map(({ key, poll, shortLabel, icon: Icon, bgClass, activeBgClass, textClass, activeTextClass }) => {
             if (!poll) return null;
             const isActive = activeHighlight === key;
@@ -208,7 +210,7 @@ export default function BestPollsHighlights() {
                     ? `${activeBgClass} ${activeTextClass}` 
                     : `${bgClass} ${textClass}`
                 }`}
-                title={`View ${shortLabel}'s best poll`}
+                title={`${t('View')} ${shortLabel} ${t("'s best poll")}`}
               >
                 <Icon className="h-3.5 w-3.5" />
                 <span>{shortLabel}</span>
@@ -231,7 +233,7 @@ export default function BestPollsHighlights() {
                   </DialogTitle>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {activeData.poll.totalVotes} total votes
+                  {activeData.poll.totalVotes} {t('total votes')}
                   {activeData.poll.category && ` • ${activeData.poll.category}`}
                 </p>
               </DialogHeader>
@@ -261,7 +263,7 @@ export default function BestPollsHighlights() {
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-white">Option A</span>
+                        <span className="text-xs font-medium text-white">{t('Option A')}</span>
                         <span className="text-sm font-bold text-option-a">{getPercentage(activeData.poll, 'a')}%</span>
                       </div>
                       <div className="mt-1 h-1 bg-white/20 rounded-full overflow-hidden">
@@ -290,7 +292,7 @@ export default function BestPollsHighlights() {
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-white">Option B</span>
+                        <span className="text-xs font-medium text-white">{t('Option B')}</span>
                         <span className="text-sm font-bold text-option-b">{getPercentage(activeData.poll, 'b')}%</span>
                       </div>
                       <div className="mt-1 h-1 bg-white/20 rounded-full overflow-hidden">
@@ -305,10 +307,10 @@ export default function BestPollsHighlights() {
 
                 {/* Winner indicator */}
                 <div className="text-center">
-                  <span className="text-xs text-muted-foreground">Winner: </span>
+                  <span className="text-xs text-muted-foreground">{t('Winner')}: </span>
                   <span className={`text-sm font-semibold ${activeData.poll.votes_a >= activeData.poll.votes_b ? 'text-option-a' : 'text-option-b'}`}>
-                    {activeData.poll.votes_a >= activeData.poll.votes_b ? 'Option A' : 'Option B'}
-                    {activeData.poll.votes_a === activeData.poll.votes_b && activeData.poll.totalVotes > 0 && ' (Tie!)'}
+                    {activeData.poll.votes_a >= activeData.poll.votes_b ? t('Option A') : t('Option B')}
+                    {activeData.poll.votes_a === activeData.poll.votes_b && activeData.poll.totalVotes > 0 && ` (${t('Tie!')})`}
                   </span>
                 </div>
               </div>

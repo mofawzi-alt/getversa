@@ -10,6 +10,7 @@ import { getPollDisplayImageSrc } from '@/lib/pollImages';
 import { mapToVersaCategory, getCategoryColorClass } from '@/lib/categoryMeta';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { pollText, categoryLabel } from '@/lib/pollText';
+import { useT } from '@/hooks/useT';
 import BottomNav from '@/components/layout/BottomNav';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { toast } from 'sonner';
@@ -71,7 +72,7 @@ function OptionSide({
               className="mt-1 font-display font-extrabold text-[15px] text-white tabular-nums"
               style={{ textShadow: '0 1px 3px rgba(0,0,0,.5)' }}
             >
-              {percent}%{chosen ? ' · your pick' : ''}
+              {percent}%{chosen ? ` · ${t('your pick')}` : ''}
             </p>
           </div>
         )}
@@ -82,6 +83,7 @@ function OptionSide({
 
 export default function Shorts() {
   const { lang } = useLanguage();
+  const { t } = useT();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -187,7 +189,7 @@ export default function Shorts() {
     } as any);
 
     if (error && !`${error.message}`.toLowerCase().includes('duplicate')) {
-      toast.error("Couldn't save your vote — try again");
+      toast.error(t("Couldn't save your vote — try again"));
       setResults((prev) => {
         const next = { ...prev };
         delete next[poll.id];
@@ -255,7 +257,7 @@ export default function Shorts() {
                         </span>
                       )}
                       <motion.span key={total} initial={{ opacity: 0.5, y: -3 }} animate={{ opacity: 1, y: 0 }}>
-                        {total.toLocaleString()} votes
+                        {t('{n} votes', { n: total.toLocaleString() })}
                       </motion.span>
                     </span>
                   )}
@@ -314,7 +316,7 @@ export default function Shorts() {
               {i === 0 && !choice && (
                 <div className="absolute bottom-24 left-0 right-0 z-20 flex flex-col items-center gap-1 pointer-events-none">
                   <ChevronUp className="h-4 w-4 text-white/80 animate-bounce" />
-                  <span className="text-[11px] font-semibold text-white/80">Tap a side to vote · swipe up for next</span>
+                  <span className="text-[11px] font-semibold text-white/80">{t('Tap a side to vote · swipe up for next')}</span>
                 </div>
               )}
             </section>
@@ -325,7 +327,7 @@ export default function Shorts() {
 
         {!isLoading && polls.length === 0 && (
           <div className="h-full flex items-center justify-center px-8 text-center">
-            <p className="text-sm font-semibold text-white/80">No shorts right now — check back soon.</p>
+            <p className="text-sm font-semibold text-white/80">{t('No shorts right now — check back soon.')}</p>
           </div>
         )}
       </div>

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import { Loader2, Award, Lock, CheckCircle2, Star, Flame, Vote, Share2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useT } from '@/hooks/useT';
 
 interface Badge {
   id: string;
@@ -21,6 +22,7 @@ interface UserBadge {
 }
 
 export default function Badges() {
+  const { t } = useT();
   const { profile } = useAuth();
 
   const { data: badges, isLoading: loadingBadges } = useQuery({
@@ -146,11 +148,11 @@ export default function Badges() {
         <header className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 mb-4">
             <Award className="h-5 w-5 text-primary" />
-            <span className="font-bold text-primary">Achievements</span>
+            <span className="font-bold text-primary">{t('Achievements')}</span>
           </div>
-          <h1 className="text-2xl font-display font-bold">Your Badges</h1>
+          <h1 className="text-2xl font-display font-bold">{t('Your Badges')}</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {earnedCount} of {totalCount} badges earned
+            {t('{earned} of {total} badges earned', { earned: earnedCount, total: totalCount })}
           </p>
           
           <div className="mt-4 max-w-xs mx-auto">
@@ -208,7 +210,7 @@ export default function Badges() {
                 
                 {isEarned && badge.points_reward > 0 && (
                   <div className="text-xs text-center text-primary font-medium mt-2">
-                    +{badge.points_reward} insight earned
+                    {t('+{n} insight earned', { n: badge.points_reward })}
                   </div>
                 )}
               </div>

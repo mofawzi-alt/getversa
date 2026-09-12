@@ -13,6 +13,7 @@ import {
 } from '@/lib/biometric';
 import { hapticSuccess, hapticError } from '@/lib/haptics';
 import VersaLogo from '@/components/VersaLogo';
+import { useT } from '@/hooks/useT';
 
 /**
  * Forces the user to authenticate with Face ID / Touch ID on every app
@@ -25,6 +26,7 @@ import VersaLogo from '@/components/VersaLogo';
  * must tap the button. We do not pre-call promptBiometric on mount.
  */
 export default function BiometricLockGate({ children }: { children: React.ReactNode }) {
+  const { t } = useT();
   const { user, signOut } = useAuth();
   const [bio, setBio] = useState<BiometricAvailability | null>(null);
   const [unlocked, setUnlocked] = useState<boolean>(() => isBiometricUnlocked());
@@ -47,7 +49,7 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
   if (!shouldLock) return <>{children}</>;
 
   const bioType = bio?.type ?? 'face';
-  const bioLabel = bioType === 'face' ? 'Face ID' : bioType === 'fingerprint' ? 'Touch ID' : 'Biometrics';
+  const bioLabel = bioType === 'face' ? t('Face ID') : bioType === 'fingerprint' ? t('Touch ID') : t('Biometrics');
   const Icon = bioType === 'fingerprint' ? Fingerprint : ScanFace;
   const email = getBiometricEmail();
 
@@ -55,7 +57,7 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
     if (busy) return;
     setBusy(true);
     try {
-      const result = await promptBiometric(email ? `Sign in as ${email}` : 'Unlock Versa');
+      const result = await promptBiometric(email ? t('Sign in as {n}', { n: email }) : t('Unlock Versa'));
       if (result.ok) {
         hapticSuccess();
         markBiometricUnlocked();
@@ -80,9 +82,9 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
           <Icon className="w-10 h-10 text-primary" />
         </div>
         <div className="space-y-1">
-          <h1 className="text-xl font-display font-bold text-foreground">Versa is locked</h1>
+          <h1 className="text-xl font-display font-bold text-foreground">{t('Versa is locked')}</h1>
           <p className="text-sm text-muted-foreground">
-            {email ? <>Tap below to unlock with {bioLabel} as <span className="font-medium text-foreground">{email}</span>.</> : <>Tap below to unlock with {bioLabel}.</>}
+            {email ? <>{t('Tap below to unlock with {n} as', { n: bioLabel })} <span className="font-medium text-foreground">{email}</span>.</> : <>{t('Tap below to unlock with {n}.', { n: bioLabel })}</>}
           </p>
         </div>
         <button
@@ -92,7 +94,7 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
           className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full bg-primary text-primary-foreground font-medium shadow-card hover:opacity-90 transition disabled:opacity-60 w-full"
         >
           <Icon className="w-5 h-5" />
-          {busy ? 'Authenticating…' : `Unlock with ${bioLabel}`}
+          {busy ? t('Authenticating…') : t('Unlock with {n}', { n: bioLabel })}
         </button>
         <button
           type="button"
@@ -100,7 +102,7 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
           className="inline-flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition"
         >
           <LogOut className="w-3.5 h-3.5" />
-          Sign out instead
+          {t('Sign out instead')}
         </button>
       </div>
     </div>

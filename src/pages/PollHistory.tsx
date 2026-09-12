@@ -18,6 +18,7 @@ import { mapToVersaCategory } from '@/lib/categoryMeta';
 import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { pollText } from '@/lib/pollText';
+import { useT } from '@/hooks/useT';
 
 interface VoteHistoryItem {
   pollId: string;
@@ -40,6 +41,7 @@ interface VoteHistoryItem {
 }
 
 function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: number; total: number }) {
+  const { t } = useT();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
@@ -67,7 +69,7 @@ function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: 
       navigator.share({ title: 'VERSA Poll', text: `📊 ${vote.question}`, url: pollUrl });
     } else {
       navigator.clipboard.writeText(pollUrl);
-      import('sonner').then(m => m.toast.success('Link copied!'));
+      import('sonner').then(m => m.toast.success(t('Link copied!')));
     }
   };
 
@@ -150,11 +152,11 @@ function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: 
         <div className="px-4 pt-2.5 flex items-center justify-between text-[12px]">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Users className="h-3.5 w-3.5" />
-            <span className="font-medium">{vote.totalVotes.toLocaleString()} votes</span>
+            <span className="font-medium">{t('{n} votes', { n: vote.totalVotes.toLocaleString() })}</span>
           </div>
           <div className="flex items-center gap-1.5 text-destructive">
             <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
-            <span className="font-medium">Live results</span>
+            <span className="font-medium">{t('Live results')}</span>
           </div>
         </div>
 
@@ -163,7 +165,7 @@ function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: 
           {vote.isLive && <LiveIndicator variant="badge" />}
           {vote.category && <CategoryBadge category={mapToVersaCategory(vote.category)} size="xs" />}
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${vote.inMajority ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'}`}>
-            {vote.inMajority ? 'Majority' : 'Minority'}
+            {vote.inMajority ? t('Majority') : t('Minority')}
           </span>
           <div className="ml-auto flex items-center gap-1.5">
             <div onClick={(e) => e.stopPropagation()}>
@@ -187,7 +189,7 @@ function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-primary mb-0.5">
                   <Flame className="h-3 w-3" />
-                  <span>Insight</span>
+                  <span>{t('Insight')}</span>
                 </div>
                 <p className="text-[13px] font-bold text-foreground leading-snug">{genderTeaser.text}</p>
               </div>
@@ -204,23 +206,23 @@ function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: 
               <Check className="h-3.5 w-3.5 text-success" strokeWidth={3} />
             </div>
             <span className="text-[13px] font-semibold text-foreground truncate">
-              You voted <span className="text-primary">{chosenOptionLabel.length > 14 ? chosenOptionLabel.slice(0, 14) + '…' : chosenOptionLabel}</span>
+              {t('You voted')} <span className="text-primary">{chosenOptionLabel.length > 14 ? chosenOptionLabel.slice(0, 14) + '…' : chosenOptionLabel}</span>
             </span>
           </div>
           {user && (
             <button
               onClick={(e) => { e.stopPropagation(); setShareSheetOpen(true); }}
-              aria-label="Send to friend"
+              aria-label={t('Send to friend')}
               className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-primary/30 bg-card text-primary text-[12px] font-bold active:scale-95 transition"
             >
-              <Send className="h-3.5 w-3.5" /> Send
+              <Send className="h-3.5 w-3.5" /> {t('Send')}
             </button>
           )}
           <button
             onClick={handleShareClick}
             className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-primary-foreground text-[12px] font-bold shadow-sm active:scale-95 transition"
           >
-            <Share2 className="h-3.5 w-3.5" /> Share
+            <Share2 className="h-3.5 w-3.5" /> {t('Share')}
           </button>
         </div>
       </motion.div>
@@ -241,6 +243,7 @@ function FullScreenHistoryCard({ vote, index }: { vote: VoteHistoryItem; index: 
 }
 
 export default function PollHistory() {
+  const { t } = useT();
   const { user } = useAuth();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -355,14 +358,14 @@ export default function PollHistory() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-lg font-display font-bold text-foreground">My Votes</h1>
-            <p className="text-[10px] text-muted-foreground">Results update in real time</p>
+            <h1 className="text-lg font-display font-bold text-foreground">{t('My Votes')}</h1>
+            <p className="text-[10px] text-muted-foreground">{t('Results update in real time')}</p>
           </div>
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search polls..."
+            placeholder={t('Search polls...')}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             className="pl-10 h-9 text-sm"
@@ -374,7 +377,7 @@ export default function PollHistory() {
       {filteredHistory.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted-foreground text-sm">
-            {voteHistory && voteHistory.length > 0 ? 'No polls match your search' : "You haven't voted on any polls yet"}
+            {voteHistory && voteHistory.length > 0 ? t('No polls match your search') : t("You haven't voted on any polls yet")}
           </p>
         </div>
       ) : (

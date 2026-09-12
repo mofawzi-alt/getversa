@@ -19,6 +19,7 @@ import HomeResultsModal from '@/components/home/HomeResultsModal';
 import { useCelebrityPresence } from '@/hooks/useCelebrityVotes';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { getCategoryIcon, mapToVersaCategory } from '@/lib/categoryMeta';
+import { useT } from '@/hooks/useT';
 
 function getFallbackImage(seed: string, index: number): string {
   return getStablePollFallbackImage(seed, index);
@@ -85,21 +86,21 @@ type PollItem = {
   contestedness: number;
 };
 
-function getTimeLeft(endsAt: string): string {
+function getTimeLeft(endsAt: string, t: (k: string, v?: Record<string, string | number>) => string): string {
   const diff = new Date(endsAt).getTime() - Date.now();
-  if (diff <= 0) return 'Ended';
+  if (diff <= 0) return t('Ended');
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  if (hours > 24) return `${Math.floor(hours / 24)}d left`;
-  if (hours > 0) return `${hours}h ${mins}m`;
-  return `${mins}m`;
+  if (hours > 24) return t('{n}d left', { n: Math.floor(hours / 24) });
+  if (hours > 0) return t('{h}h {m}m', { h: hours, m: mins });
+  return t('{m}m', { m: mins });
 }
 
-function getVerdictBadge(poll: PollItem): { label: string; icon: React.ReactNode; className: string } | null {
+function getVerdictBadge(poll: PollItem, t: (k: string) => string): { label: string; icon: React.ReactNode; className: string } | null {
   if (poll.totalVotes < 3) return null;
   const winnerPct = Math.max(poll.percentA, poll.percentB);
-  if (winnerPct >= 65) return { label: 'Crowd Favorite', icon: <Crown className="h-3 w-3" />, className: 'bg-amber-500/20 text-amber-600' };
-  if (winnerPct <= 55 && poll.totalVotes >= 10) return { label: 'Highly Debated', icon: <Scale className="h-3 w-3" />, className: 'bg-orange-500/20 text-orange-600' };
+  if (winnerPct >= 65) return { label: t('Crowd Favorite'), icon: <Crown className="h-3 w-3" />, className: 'bg-amber-500/20 text-amber-600' };
+  if (winnerPct <= 55 && poll.totalVotes >= 10) return { label: t('Highly Debated'), icon: <Scale className="h-3 w-3" />, className: 'bg-orange-500/20 text-orange-600' };
   return null;
 }
 
@@ -115,6 +116,7 @@ function formatVoteCount(n: number): string {
 
 export default function Explore() {
   const { user } = useAuth();
+  const { t } = useT();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
@@ -332,7 +334,7 @@ export default function Explore() {
           <div className="px-4 pt-4 pb-3">
             <button onClick={() => { setSelectedCategory(null); setPeopleLikeYou(false); }} className="flex items-center gap-1 text-muted-foreground mb-3">
               <ChevronLeft className="h-4 w-4" />
-              <span className="text-xs font-medium">Explore</span>
+              <span className="text-xs font-medium">{t('Explore')}</span>
             </button>
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${style.gradient} flex items-center justify-center text-white shadow-sm`}>
@@ -340,7 +342,7 @@ export default function Explore() {
               </div>
               <div className="flex-1">
                 <h1 className="text-xl font-display font-bold text-foreground">{selectedCategory}</h1>
-                <p className="text-[11px] text-muted-foreground">{categoryPollsBase.length} active polls</p>
+                <p className="text-[11px] text-muted-foreground">{t('{n} active polls', { n: categoryPollsBase.length })}</p>
               </div>
             </div>
 
@@ -348,7 +350,7 @@ export default function Explore() {
             <div className="mt-3 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={`Search in ${selectedCategory}…`}
+                placeholder={t('Search in {cat}…', { cat: selectedCategory })}
                 value={categorySearch}
                 onChange={e => setCategorySearch(e.target.value)}
                 className="pl-9 bg-card border-border/60 rounded-xl text-sm h-10"
@@ -374,12 +376,12 @@ export default function Explore() {
                       <CheckCircle2 className="h-6 w-6" />
                     </div>
                     <p className="text-sm font-display font-bold text-foreground mb-1">
-                      {q ? 'No polls match your search' : 'No active polls'}
+                      {q ? t('No polls match your search') : t('No active polls')}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {q
-                        ? `Try different keywords in ${selectedCategory}`
-                        : 'Check back soon for new polls in this category'}
+                        ? t('Try different keywords in {cat}', { cat: selectedCategory })
+                        : t('Check back soon for new polls in this category')}
                     </p>
                   </div>
                 );
@@ -420,10 +422,10 @@ export default function Explore() {
         <div className="px-4 pt-4 pb-2">
           <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-muted-foreground mb-2">
             <ChevronLeft className="h-4 w-4" />
-            <span className="text-xs font-medium">Back</span>
+            <span className="text-xs font-medium">{t('Back')}</span>
           </button>
-          <h1 className="text-xl font-display font-bold text-foreground">Explore</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Discover polls & see what people choose</p>
+          <h1 className="text-xl font-display font-bold text-foreground">{t('Explore')}</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('Discover polls & see what people choose')}</p>
         </div>
 
         {/* Search */}
@@ -431,7 +433,7 @@ export default function Explore() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search brands, products, decisions…"
+              placeholder={t('Search brands, products, decisions…')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="pl-9 bg-card border-border/60 rounded-xl text-sm h-10"
@@ -445,7 +447,7 @@ export default function Explore() {
             <div className="flex items-center gap-1.5 mb-2 px-1">
               <Search className="h-3.5 w-3.5 text-primary" />
               <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">
-                {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for "{search}"
+                {t('{n} results for "{q}"', { n: searchResults.length, q: search })}
               </span>
             </div>
             <div className="space-y-2.5">
@@ -458,7 +460,7 @@ export default function Explore() {
 
         {search && search.length >= 2 && searchResults.length === 0 && (
           <div className="text-center py-12 px-4">
-            <p className="text-muted-foreground text-sm">No polls found for "{search}"</p>
+            <p className="text-muted-foreground text-sm">{t('No polls found for "{q}"', { q: search })}</p>
           </div>
         )}
 
@@ -467,7 +469,7 @@ export default function Explore() {
           <section className="mb-5">
             <div className="px-4 flex items-center gap-1.5 mb-2.5">
               <Flame className="h-4 w-4 text-orange-500" />
-              <span className="text-xs font-display font-bold text-foreground">Trending Now</span>
+              <span className="text-xs font-display font-bold text-foreground">{t('Trending Now')}</span>
             </div>
             <div className="flex gap-2.5 overflow-x-auto px-4 scrollbar-hide pb-1">
               {trendingCategories.map((cat, i) => {
@@ -486,13 +488,13 @@ export default function Explore() {
                       <div className="text-white/90">{style.icon}</div>
                       <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white/20 backdrop-blur-sm">
                         <ArrowUp className="h-3 w-3 text-white" />
-                        <span className="text-xs font-bold text-white">Hot</span>
+                        <span className="text-xs font-bold text-white">{t('Hot')}</span>
                       </div>
                     </div>
                     <div className="p-2.5">
                       <p className="text-base font-bold text-foreground truncate">{cat.name}</p>
                       <p className="text-sm text-muted-foreground mt-0.5">
-                        {cat.votes24h > 0 ? `${cat.votes24h} votes today` : `${cat.activePolls} polls`}
+                        {cat.votes24h > 0 ? t('{n} votes today', { n: cat.votes24h }) : t('{n} polls', { n: cat.activePolls })}
                       </p>
                     </div>
                   </motion.div>
@@ -507,7 +509,7 @@ export default function Explore() {
           <section className="px-4">
             <div className="flex items-center gap-1.5 mb-3">
               <LayoutGrid className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-display font-bold text-foreground">All Categories</span>
+              <span className="text-xs font-display font-bold text-foreground">{t('All Categories')}</span>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               {filteredCategories.map((cat, i) => {
@@ -528,7 +530,7 @@ export default function Explore() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-base font-bold text-foreground truncate">{cat.name}</p>
-                        <p className="text-sm text-muted-foreground">{cat.activePolls} polls</p>
+                        <p className="text-sm text-muted-foreground">{t('{n} polls', { n: cat.activePolls })}</p>
                       </div>
                     </div>
                     
@@ -536,17 +538,17 @@ export default function Explore() {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {cat.hasLive && (
                         <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-destructive/10 text-destructive text-xs font-bold">
-                         <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" /> Live
+                         <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" /> {t('Live')}
                         </span>
                       )}
                       {cat.momentum === 'rising' && (
                         <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 text-xs font-bold">
-                          <TrendingUp className="h-3.5 w-3.5" /> Trending
+                          <TrendingUp className="h-3.5 w-3.5" /> {t('Trending')}
                         </span>
                       )}
                       {cat.votes24h > 0 && (
                         <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                          <Zap className="h-3.5 w-3.5" /> {cat.votes24h} today
+                          <Zap className="h-3.5 w-3.5" /> {t('{n} today', { n: cat.votes24h })}
                         </span>
                       )}
                     </div>
@@ -557,7 +559,7 @@ export default function Explore() {
 
             {filteredCategories.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-muted-foreground text-sm">No categories found</p>
+                <p className="text-muted-foreground text-sm">{t('No categories found')}</p>
               </div>
             )}
           </section>
@@ -590,8 +592,9 @@ function PollCard({
   demoResult?: { demo_percent_a: number; demo_percent_b: number; demo_total: number };
   userProfile?: { age_range: string | null; gender: string | null } | null;
 }) {
+  const { t } = useT();
   const recentVotes = votes24hMap.get(poll.id) || 0;
-  const verdict = getVerdictBadge(poll);
+  const verdict = getVerdictBadge(poll, t);
   const pctA = peopleLikeYou && demoResult ? demoResult.demo_percent_a : poll.percentA;
   const pctB = peopleLikeYou && demoResult ? demoResult.demo_percent_b : poll.percentB;
 
@@ -644,7 +647,7 @@ function PollCard({
               {celebrityNames.slice(0, 2).map((celeb, ci) => (
                 <span key={ci} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-sm">
                   <VerifiedBadge size="sm" />
-                  <span className="text-[10px] font-semibold text-white/90">{celeb.username} voted</span>
+                  <span className="text-[10px] font-semibold text-white/90">{t('{name} voted', { name: celeb.username })}</span>
                 </span>
               ))}
             </>
@@ -659,13 +662,13 @@ function PollCard({
           </span>
           {recentVotes > 0 && (
             <span className="text-xs text-white/80 font-semibold flex items-center gap-1">
-              <Zap className="h-3.5 w-3.5" /> {recentVotes}/hr
+              <Zap className="h-3.5 w-3.5" /> {t('{n}/hr', { n: recentVotes })}
             </span>
           )}
         </div>
         {poll.ends_at && (
           <span className="text-xs text-white/70 font-medium flex items-center gap-1">
-            <Timer className="h-3.5 w-3.5" /> {getTimeLeft(poll.ends_at)}
+            <Timer className="h-3.5 w-3.5" /> {getTimeLeft(poll.ends_at, t)}
           </span>
         )}
       </div>

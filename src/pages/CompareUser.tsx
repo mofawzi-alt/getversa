@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, LogIn, UserPlus, UserCheck, Loader2 } from 'lucide-react';
 import { useFriends } from '@/hooks/useFriends';
 import { useFollows } from '@/hooks/useFollows';
+import { useT } from '@/hooks/useT';
 
 export default function CompareUser() {
   const { userId } = useParams<{ userId: string }>();
@@ -16,6 +17,7 @@ export default function CompareUser() {
   const { friends, sendRequest } = useFriends();
   const { isFollowing, toggleFollow } = useFollows();
 
+  const { t } = useT();
   const isSelf = user?.id === userId;
 
   // Fetch target user's public profile
@@ -44,8 +46,8 @@ export default function CompareUser() {
     return (
       <AppLayout>
         <div className="p-4 text-center pt-20">
-          <p className="text-lg font-semibold mb-2">User not found</p>
-          <Button variant="outline" onClick={() => navigate('/home')}>Go Home</Button>
+          <p className="text-lg font-semibold mb-2">{t('User not found')}</p>
+          <Button variant="outline" onClick={() => navigate('/home')}>{t('Go Home')}</Button>
         </div>
       </AppLayout>
     );
@@ -60,7 +62,7 @@ export default function CompareUser() {
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-display font-bold">Compatibility</h1>
+            <h1 className="text-xl font-display font-bold">{t('Compatibility')}</h1>
           </div>
 
           <div className="glass rounded-3xl p-8 text-center space-y-5">
@@ -71,23 +73,23 @@ export default function CompareUser() {
             </div>
             <div>
               <h2 className="text-xl font-bold">@{targetUser.username}</h2>
-              <p className="text-sm text-muted-foreground mt-1">wants to know your compatibility</p>
+              <p className="text-sm text-muted-foreground mt-1">{t('wants to know your compatibility')}</p>
             </div>
             
             {/* Teaser score */}
             <div className="py-4">
               <div className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-foreground/5 border border-border">
                 <span className="text-4xl font-black text-foreground">??%</span>
-                <span className="text-sm text-muted-foreground">compatible</span>
+                <span className="text-sm text-muted-foreground">{t('compatible')}</span>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">Sign up & vote on 5 polls to reveal</p>
+              <p className="text-xs text-muted-foreground mt-2">{t('Sign up & vote on 5 polls to reveal')}</p>
             </div>
 
             <Button onClick={() => navigate('/auth?mode=signup&reason=compare')} className="w-full h-12 text-base font-bold">
               <LogIn className="h-4 w-4 mr-2" />
-              Sign Up to Compare
+              {t('Sign Up to Compare')}
             </Button>
-            <p className="text-[11px] text-muted-foreground">Takes 30 seconds · 100% free</p>
+            <p className="text-[11px] text-muted-foreground">{t('Takes 30 seconds · 100% free')}</p>
           </div>
         </div>
       </AppLayout>
@@ -103,15 +105,15 @@ export default function CompareUser() {
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-display font-bold">Your Link</h1>
+            <h1 className="text-xl font-display font-bold">{t('Your Link')}</h1>
           </div>
           <div className="glass rounded-3xl p-8 text-center space-y-3">
             <p className="text-lg">🔗</p>
             <p className="text-sm text-muted-foreground">
-              This is your comparison link! Share it with friends to see your compatibility.
+              {t('This is your comparison link! Share it with friends to see your compatibility.')}
             </p>
             <Button variant="outline" onClick={() => navigate('/profile')}>
-              Go to Profile
+              {t('Go to Profile')}
             </Button>
           </div>
         </div>
@@ -128,8 +130,8 @@ export default function CompareUser() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl font-display font-bold">Compatibility</h1>
-            <p className="text-xs text-muted-foreground">You & @{targetUser.username}</p>
+            <h1 className="text-xl font-display font-bold">{t('Compatibility')}</h1>
+            <p className="text-xs text-muted-foreground">{t('You & @{u}', { u: targetUser.username })}</p>
           </div>
           {/* Social actions */}
           <div className="flex gap-2">
@@ -141,7 +143,7 @@ export default function CompareUser() {
                 className="text-xs"
               >
                 <UserPlus className="h-3.5 w-3.5 mr-1" />
-                Add
+                {t('Add')}
               </Button>
             )}
             <Button
@@ -151,9 +153,9 @@ export default function CompareUser() {
               className="text-xs"
             >
               {isFollowing(userId!) ? (
-                <><UserCheck className="h-3.5 w-3.5 mr-1" /> Following</>
+                <><UserCheck className="h-3.5 w-3.5 mr-1" /> {t('Following')}</>
               ) : (
-                <><UserPlus className="h-3.5 w-3.5 mr-1" /> Follow</>
+                <><UserPlus className="h-3.5 w-3.5 mr-1" /> {t('Follow')}</>
               )}
             </Button>
           </div>
@@ -172,7 +174,7 @@ export default function CompareUser() {
           className="w-full"
           onClick={() => navigate(`/user/${userId}`)}
         >
-          View @{targetUser.username}'s Profile
+          {t('View @{u}\'s Profile', { u: targetUser.username })}
         </Button>
       </div>
     </AppLayout>

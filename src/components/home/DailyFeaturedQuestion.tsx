@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useT } from '@/hooks/useT';
 
 const FEATURED_QUESTIONS = [
   'Who rules Egyptian street food — Koshary or Shawarma?',
@@ -21,6 +22,7 @@ const FEATURED_QUESTIONS = [
 ];
 
 export default function DailyFeaturedQuestion() {
+  const { t } = useT();
   const navigate = useNavigate();
 
   // Pick question based on day of year for consistency
@@ -28,8 +30,8 @@ export default function DailyFeaturedQuestion() {
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 0);
     const dayOfYear = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    return FEATURED_QUESTIONS[dayOfYear % FEATURED_QUESTIONS.length];
-  }, []);
+    return t(FEATURED_QUESTIONS[dayOfYear % FEATURED_QUESTIONS.length]);
+  }, [t]);
 
   return (
     <motion.button
@@ -44,7 +46,7 @@ export default function DailyFeaturedQuestion() {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-extrabold uppercase tracking-wider text-primary/70 mb-0.5">
-          Today's question
+          {t("Today's question")}
         </p>
         <p className="text-[13px] font-bold text-foreground leading-snug line-clamp-2">
           {question}

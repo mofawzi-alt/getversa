@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useVerifiedUsers } from '@/hooks/useVerifiedUsers';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import UserAvatar from '@/components/UserAvatar';
+import { useT } from '@/hooks/useT';
 
 interface LeaderboardUser {
   id: string;
@@ -20,6 +21,7 @@ interface LeaderboardUser {
 }
 
 export default function Leaderboard() {
+  const { t } = useT();
   const { profile } = useAuth();
 
   const { data: pointsLeaderboard, isLoading: loadingPoints } = useQuery({
@@ -142,7 +144,7 @@ export default function Leaderboard() {
     if (!users || users.length === 0) {
       return (
         <div className="text-center py-12 text-muted-foreground">
-          No data yet. Be the first!
+          {t('No data yet. Be the first!')}
         </div>
       );
     }
@@ -178,7 +180,7 @@ export default function Leaderboard() {
                 <p className={`font-semibold truncate flex items-center gap-1 ${isCurrentUser ? 'text-primary' : ''}`}>
                   @{user.username || 'anonymous'}
                   {isVerified(user.id) && <VerifiedBadge size="sm" />}
-                  {isCurrentUser && <span className="text-xs ml-1 text-primary">(You)</span>}
+                  {isCurrentUser && <span className="text-xs ml-1 text-primary">{t('(You)')}</span>}
                 </p>
               </div>
               
@@ -190,11 +192,11 @@ export default function Leaderboard() {
                       {value as number}
                     </span>
                   ) : valueKey === 'vote_count' ? (
-                    `${value} votes`
+                    t('{n} votes', { n: value as number })
                   ) : valueKey === 'weekly_points' ? (
-                    `${value} pts`
+                    t('{n} pts', { n: value as number })
                   ) : (
-                    `${value} pts`
+                    t('{n} pts', { n: value as number })
                   )}
                 </p>
               </div>
@@ -216,11 +218,11 @@ export default function Leaderboard() {
         <header className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 mb-4">
             <Trophy className="h-5 w-5 text-primary" />
-            <span className="font-bold text-primary">Leaderboard</span>
+            <span className="font-bold text-primary">{t('Leaderboard')}</span>
           </div>
-          <h1 className="text-2xl font-display font-bold">Top Voters</h1>
+          <h1 className="text-2xl font-display font-bold">{t('Top Voters')}</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Compete with other voters and climb the ranks!
+            {t('Compete with other voters and climb the ranks!')}
           </p>
         </header>
 
@@ -228,26 +230,26 @@ export default function Leaderboard() {
           <TabsList className="grid w-full grid-cols-4 mb-4">
             <TabsTrigger value="weekly" className="flex items-center gap-1 text-xs">
               <Calendar className="h-3.5 w-3.5" />
-              Weekly
+              {t('Weekly')}
             </TabsTrigger>
             <TabsTrigger value="points" className="flex items-center gap-1 text-xs">
               <Trophy className="h-3.5 w-3.5" />
-              All-Time
+              {t('All-Time')}
             </TabsTrigger>
             <TabsTrigger value="streak" className="flex items-center gap-1 text-xs">
               <Flame className="h-3.5 w-3.5" />
-              Streak
+              {t('Streak')}
             </TabsTrigger>
             <TabsTrigger value="votes" className="flex items-center gap-1 text-xs">
               <Medal className="h-3.5 w-3.5" />
-              Votes
+              {t('Votes')}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="weekly">
             {daysLeft > 0 && (
               <div className="text-center mb-4 px-4 py-2 rounded-full bg-primary/10 text-sm text-primary font-medium">
-                ⏳ {daysLeft} day{daysLeft > 1 ? 's' : ''} left this week — keep voting!
+                ⏳ {t('{n} day(s) left this week — keep voting!', { n: daysLeft })}
               </div>
             )}
             {renderLeaderboard(weeklyLeaderboard, loadingWeekly, 'weekly_points')}
