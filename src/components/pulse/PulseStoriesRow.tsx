@@ -691,15 +691,12 @@ export default function PulseStoriesRow() {
             );
           })}
 
-          {/* ── Existing pulse circles + category circles ── */}
+          {/* ── Existing pulse circles ── */}
           {sorted.map((circle) => {
-            const isCatCircle = circle.topic.startsWith('cat:');
-            const catName = isCatCircle ? circle.topic.slice(4) : '';
-            const catGrad = isCatCircle ? CATEGORY_GRADIENTS[catName.toLowerCase()] : null;
-            const visual = isCatCircle ? null : (TOPIC_VISUALS[circle.topic] || FALLBACK_VISUAL);
-            const CatIcon = isCatCircle ? getCategoryIcon(catName) : (visual?.Icon || Sparkles);
-            const tileGrad = isCatCircle ? (catGrad?.tile || 'bg-gradient-to-br from-slate-500 to-slate-700') : visual!.tileGradient;
-            const ringGrad = isCatCircle ? (catGrad?.ring || 'bg-gradient-to-tr from-primary via-fuchsia-500 to-amber-400') : visual!.ringGradient;
+            const visual = TOPIC_VISUALS[circle.topic] || FALLBACK_VISUAL;
+            const CatIcon = visual.Icon;
+            const tileGrad = visual.tileGradient;
+            const ringGrad = visual.ringGradient;
             const iconClr = 'text-white';
             const showRing = !!circle.dot;
             const dotClass =
