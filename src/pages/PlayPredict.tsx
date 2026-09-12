@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
+import { useT } from '@/hooks/useT';
 
 interface PollLite {
   id: string;
@@ -30,6 +31,7 @@ const ROUND_SIZE = 5;
 
 export default function PlayPredict() {
   const navigate = useNavigate();
+  const { t } = useT();
   const { user, profile } = useAuth();
   const [polls, setPolls] = useState<PollLite[]>([]);
   const [idx, setIdx] = useState(0);
@@ -67,7 +69,7 @@ export default function PlayPredict() {
       .limit(60);
 
     if (error || !data) {
-      toast.error('Could not load polls');
+      toast.error(t('Could not load polls'));
       setLoading(false);
       return;
     }
@@ -77,7 +79,7 @@ export default function PlayPredict() {
     const shuffled = eligible.sort(() => Math.random() - 0.5).slice(0, ROUND_SIZE);
 
     if (shuffled.length === 0) {
-      toast.success("You've predicted everything — come back later!");
+      toast.success(t("You've predicted everything — come back later!"));
       setLoading(false);
       setDone(true);
       return;
@@ -165,12 +167,12 @@ export default function PlayPredict() {
             <div className="inline-flex w-16 h-16 rounded-full bg-primary/10 items-center justify-center mb-3">
               <Sparkles className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Round Complete</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('Round Complete')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              You read the crowd <span className="font-bold text-primary">{accuracy}%</span> right.
+              {t('You read the crowd {pct}% right.', { pct: accuracy })}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {correctCount} of {scoredCount || results.length} correct
+              {t('{correct} of {total} correct', { correct: correctCount, total: scoredCount || results.length })}
             </p>
           </div>
 
@@ -202,12 +204,10 @@ export default function PlayPredict() {
                     {r.poll.question}
                   </p>
                   <p className="text-[10px] text-muted-foreground">
-                    You picked <span className="font-semibold">{r.predicted}</span> ·{' '}
+                    {t('You picked')} <span className="font-semibold">{r.predicted}</span> ·{' '}
                     {r.actualMajority === null
-                      ? 'Not enough votes yet'
-                      : `Crowd: ${r.actualMajority} (${
-                          r.actualMajority === 'A' ? r.actualPctA : r.actualPctB
-                        }%)`}
+                      ? t('Not enough votes yet')
+                      : t('Crowd: {choice} ({pct}%)', { choice: r.actualMajority, pct: r.actualMajority === 'A' ? r.actualPctA : r.actualPctB })}
                   </p>
                 </div>
               </div>
@@ -219,13 +219,13 @@ export default function PlayPredict() {
               onClick={loadRound}
               className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm"
             >
-              Play Again
+              {t('Play Again')}
             </button>
             <button
               onClick={() => navigate('/play')}
               className="flex-1 py-3 rounded-xl bg-muted text-foreground font-bold text-sm"
             >
-              Back
+              {t('Back')}
             </button>
           </div>
         </div>
@@ -244,7 +244,7 @@ export default function PlayPredict() {
           onClick={() => navigate('/play')}
           className="flex items-center gap-1 text-sm text-muted-foreground mb-4"
         >
-          <ArrowLeft className="h-4 w-4" /> Exit
+          <ArrowLeft className="h-4 w-4" /> {t('Exit')}
         </button>
 
         {/* Header */}
@@ -252,7 +252,7 @@ export default function PlayPredict() {
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-primary" />
             <span className="text-xs font-bold uppercase tracking-wider text-primary">
-              Predict the Crowd
+              {t('Predict the Crowd')}
             </span>
           </div>
           <span className="text-xs text-muted-foreground font-medium">
@@ -271,7 +271,7 @@ export default function PlayPredict() {
         {/* Question */}
         <div className="mb-4">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
-            What will the majority pick?
+            {t('What will the majority pick?')}
           </p>
           <h2 className="text-lg font-bold text-foreground leading-tight">{poll.question}</h2>
         </div>
@@ -318,12 +318,12 @@ export default function PlayPredict() {
 
                 {isMajority && (
                   <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-wider">
-                    Crowd
+                    {t('Crowd')}
                   </div>
                 )}
                 {isPicked && (
                   <div className="absolute bottom-12 left-2 px-2 py-1 rounded-full bg-background/90 text-[9px] font-bold uppercase tracking-wider text-foreground">
-                    Your Pick
+                    {t('Your Pick')}
                   </div>
                 )}
 
@@ -336,7 +336,7 @@ export default function PlayPredict() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-4">
-          Tap the option you think most people will pick
+          {t('Tap the option you think most people will pick')}
         </p>
       </div>
     </AppLayout>

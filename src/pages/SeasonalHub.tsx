@@ -7,6 +7,7 @@ import { ArrowLeft, Users, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playSwipeSound, playResultSound } from '@/lib/sounds';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
+import { useT } from '@/hooks/useT';
 
 // ── Hub config: Add new seasonal events here ──
 interface HubSection {
@@ -62,6 +63,7 @@ interface VoteResult {
 const SWIPE_THRESHOLD = 80;
 
 export default function SeasonalHub() {
+  const { t } = useT();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
@@ -113,7 +115,7 @@ export default function SeasonalHub() {
   if (!hub) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Hub not found</p>
+        <p className="text-muted-foreground">{t('Hub not found')}</p>
       </div>
     );
   }
@@ -184,7 +186,7 @@ export default function SeasonalHub() {
                     <p className="text-white/40 text-xs mt-0.5">
                       {hasPolls
                         ? `${sPolls.length} matchups${votedCount > 0 ? ` · ${votedCount} voted` : ''}`
-                        : 'Coming soon'}
+                        : t('Coming soon')}
                     </p>
                   </div>
                 </div>
@@ -233,6 +235,7 @@ function SectionSwipeView({
   userId?: string;
   onBack: () => void;
 }) {
+  const { t } = useT();
   const { profile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [result, setResult] = useState<VoteResult | null>(null);
@@ -343,10 +346,10 @@ function SectionSwipeView({
             🔥
           </motion.span>
           <h2 className="text-2xl font-display font-bold text-white">
-            {section.emoji} {section.label} Completed
+            {section.emoji} {section.label} {t('Completed')}
           </h2>
           <p className="text-white/50 text-sm">
-            More Ramadan battles are coming soon.
+            {t('More Ramadan battles are coming soon.')}
           </p>
 
           <div className="flex flex-col gap-3 w-full mt-4">
@@ -354,13 +357,13 @@ function SectionSwipeView({
               onClick={onBack}
               className="w-full px-6 py-3 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-sm font-bold"
             >
-              Back to Ramadan Hub
+              {t('Back to Ramadan Hub')}
             </button>
             <button
               onClick={handleShare}
               className="w-full px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm font-bold"
             >
-              Share this battle
+              {t('Share this battle')}
             </button>
           </div>
         </motion.div>
@@ -372,9 +375,9 @@ function SectionSwipeView({
     return (
       <div className={`min-h-screen bg-gradient-to-b ${hub.bgGradient} flex items-center justify-center`}>
         <div className="text-center">
-          <p className="text-white text-lg font-bold">No matchups yet</p>
+          <p className="text-white text-lg font-bold">{t('No matchups yet')}</p>
           <button onClick={onBack} className="mt-4 px-6 py-2 rounded-full bg-amber-500/20 text-amber-400 text-sm font-bold">
-            Go Back
+            {t('Go Back')}
           </button>
         </div>
       </div>

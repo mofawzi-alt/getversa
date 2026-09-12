@@ -12,6 +12,7 @@ import PersonalityTypeCard from '@/components/profile/PersonalityTypeCard';
 import { computePersonalityType } from '@/lib/personalityType';
 import TasteRevealCinematic, { hasTasteBeenRevealed } from '@/components/taste/TasteRevealCinematic';
 import { useTasteRarity } from '@/hooks/useTasteRarity';
+import { useT } from '@/hooks/useT';
 
 // ── Archetype engine ──
 interface TraitEntry { tag: string; vote_count: number }
@@ -286,6 +287,7 @@ function DimensionCard({ insight, index }: { insight: { dimension_name: string; 
 // ── Main page ──
 export default function TasteProfile() {
   const { user, profile } = useAuth();
+  const { t } = useT();
   const [showReveal, setShowReveal] = useState(() => !hasTasteBeenRevealed());
   const { data: rarityData } = useTasteRarity();
 
@@ -425,9 +427,9 @@ export default function TasteProfile() {
 
   const dynamicDescription = (() => {
     if (!majorityRatio) return archetype.description;
-    if (majorityRatio.minorityPct > 25) return 'You go against the crowd more than most — classic independent thinker.';
-    if (majorityRatio.majorityPct > 75) return 'You have your finger on the pulse — you think like the majority.';
-    return "You're unpredictable — half maverick, half mainstream.";
+    if (majorityRatio.minorityPct > 25) return t('You go against the crowd more than most — classic independent thinker.');
+    if (majorityRatio.majorityPct > 75) return t('You have your finger on the pulse — you think like the majority.');
+    return t("You're unpredictable — half maverick, half mainstream.");
   })();
 
   const mostActiveDay = getMostActiveDay(allVotes || []);
@@ -458,7 +460,7 @@ export default function TasteProfile() {
         <motion.header variants={fadeUp} className="text-center pt-2">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 mb-3">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-xs font-bold text-primary uppercase tracking-wider">Your Taste Profile</span>
+            <span className="text-xs font-bold text-primary uppercase tracking-wider">{t('Your Taste Profile')}</span>
           </div>
           <h1 className="text-3xl font-display font-black text-foreground">{archetype.emoji} {archetype.name}</h1>
           <p className="text-muted-foreground text-sm mt-1">{dynamicDescription}</p>
@@ -473,7 +475,7 @@ export default function TasteProfile() {
             >
               <Diamond className="h-3.5 w-3.5" />
               <span className="text-xs font-bold">
-                {rarityData.label} — rarer than {rarityData.rarityPct}% of users
+                {rarityData.label} — {t('rarer than {pct}% of users', { pct: rarityData.rarityPct })}
               </span>
             </motion.div>
           )}
@@ -488,11 +490,11 @@ export default function TasteProfile() {
             >
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
                 <span className="text-xs">✅</span>
-                <span className="text-[11px] font-bold text-emerald-700">{majorityRatio.majorityPct}% majority</span>
+                <span className="text-[11px] font-bold text-emerald-700">{majorityRatio.majorityPct}% {t('majority')}</span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-100">
                 <span className="text-xs">🎯</span>
-                <span className="text-[11px] font-bold text-rose-700">{majorityRatio.minorityPct}% minority</span>
+                <span className="text-[11px] font-bold text-rose-700">{majorityRatio.minorityPct}% {t('minority')}</span>
               </div>
             </motion.div>
           )}
@@ -538,11 +540,11 @@ export default function TasteProfile() {
          <motion.section variants={fadeUp} className="space-y-3">
            <div className="flex items-center justify-between">
              <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2">
-               🔮 Your Dimensions
+               {t('🔮 Your Dimensions')}
             </h3>
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <ShieldCheck className="h-3 w-3" />
-              <span>Private</span>
+              <span>{t('Private')}</span>
             </div>
           </div>
 
@@ -556,9 +558,9 @@ export default function TasteProfile() {
                 <span className="text-2xl">🔒</span>
               </div>
               <div>
-                <p className="text-base font-display font-bold text-foreground">Your dimensions are forming</p>
+                <p className="text-base font-display font-bold text-foreground">{t('Your dimensions are forming')}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {Math.max(0, 20 - totalVotes)} more vote{Math.max(0, 20 - totalVotes) !== 1 ? 's' : ''} to unlock ✨
+                  {Math.max(0, 20 - totalVotes)} {t(Math.max(0, 20 - totalVotes) !== 1 ? 'more votes' : 'more vote')} {t('to unlock ✨')}
                 </p>
               </div>
               <div className="max-w-[200px] mx-auto">
@@ -579,13 +581,13 @@ export default function TasteProfile() {
                 <DimensionCard key={insight.dimension_name} insight={insight} index={index} />
               ))}
               <p className="text-[10px] text-center text-muted-foreground/60 pt-1">
-                Tap any dimension to see how you compare
+                {t('Tap any dimension to see how you compare')}
               </p>
             </div>
           ) : (
             <div className="glass rounded-2xl p-6 text-center">
               <span className="text-2xl">🌱</span>
-              <p className="text-sm text-muted-foreground mt-2">Your dimensions are still emerging. Keep voting.</p>
+              <p className="text-sm text-muted-foreground mt-2">{t('Your dimensions are still emerging. Keep voting.')}</p>
             </div>
           )}
         </motion.section>
@@ -593,13 +595,13 @@ export default function TasteProfile() {
         {/* ── TASTE STATS ── */}
         <motion.section variants={fadeUp} className="space-y-3">
           <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" /> Taste Stats
+            <BarChart3 className="h-4 w-4" /> {t('Taste Stats')}
           </h3>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: 'Total Votes', value: totalVotes, icon: '🗳️' },
-              { label: 'Streak', value: `${currentStreak}d`, icon: '🔥' },
-              { label: 'Best Streak', value: `${longestStreak}d`, icon: '🏆' },
+              { label: t('Total Votes'), value: totalVotes, icon: '🗳️' },
+              { label: t('Streak'), value: `${currentStreak}d`, icon: '🔥' },
+              { label: t('Best Streak'), value: `${longestStreak}d`, icon: '🏆' },
             ].map((stat) => (
               <motion.div
                 key={stat.label}
@@ -614,9 +616,9 @@ export default function TasteProfile() {
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: 'Top Category', value: topCategory, icon: '⭐' },
-              { label: 'Active Day', value: mostActiveDay?.slice(0, 3) || '—', icon: '📅' },
-              { label: 'Peak Time', value: mostActiveTime, icon: '⏰' },
+              { label: t('Top Category'), value: topCategory, icon: '⭐' },
+              { label: t('Active Day'), value: mostActiveDay?.slice(0, 3) || '—', icon: '📅' },
+              { label: t('Peak Time'), value: mostActiveTime, icon: '⏰' },
             ].map((stat) => (
               <motion.div
                 key={stat.label}
@@ -635,13 +637,13 @@ export default function TasteProfile() {
         {surprisingResult && (
           <motion.section variants={fadeUp}>
             <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2 mb-3">
-              <Eye className="h-4 w-4" /> Most Surprising Result
+              <Eye className="h-4 w-4" /> {t('Most Surprising Result')}
             </h3>
             <div className="glass rounded-2xl p-5 border-l-4 border-destructive relative overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-destructive/5 blur-2xl -mr-4 -mt-4" />
               <p className="text-sm text-muted-foreground mb-2 relative">{surprisingResult.question}</p>
               <p className="text-lg font-display font-bold text-destructive relative">
-                👀 You were in the {surprisingResult.userPercent}% minority
+                {t('👀 You were in the {pct}% minority', { pct: surprisingResult.userPercent })}
               </p>
             </div>
           </motion.section>
@@ -650,7 +652,7 @@ export default function TasteProfile() {
         {/* ── STREAK TRACKER ── */}
         <motion.section variants={fadeUp}>
           <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2 mb-3">
-            <Flame className="h-4 w-4" /> Streak Journey
+            <Flame className="h-4 w-4" /> {t('Streak Journey')}
           </h3>
           <div className="glass rounded-2xl p-5">
             <div className="flex items-center gap-4 mb-4">
@@ -659,7 +661,7 @@ export default function TasteProfile() {
               </div>
               <div>
                 <div className="text-3xl font-display font-bold">{currentStreak}</div>
-                <div className="text-xs text-muted-foreground">Day Streak</div>
+                <div className="text-xs text-muted-foreground">{t('Day Streak')}</div>
               </div>
             </div>
             <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
@@ -684,7 +686,7 @@ export default function TasteProfile() {
         {/* ── TASTE EVOLUTION TIMELINE ── */}
         <motion.section variants={fadeUp}>
           <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2 mb-3">
-            <Clock className="h-4 w-4" /> Your Evolution
+            <Clock className="h-4 w-4" /> {t('Your Evolution')}
           </h3>
           <TasteEvolutionTimeline />
         </motion.section>
@@ -692,20 +694,20 @@ export default function TasteProfile() {
         {/* ── TASTE TRAITS ── */}
         <motion.section variants={fadeUp}>
           <h3 className="text-sm font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2 mb-3">
-            <TrendingUp className="h-4 w-4" /> Taste Traits
+            <TrendingUp className="h-4 w-4" /> {t('Taste Traits')}
           </h3>
           <div className="glass rounded-2xl p-5">
-            <p className="text-sm text-muted-foreground mb-3">Your top decision traits:</p>
+            <p className="text-sm text-muted-foreground mb-3">{t('Your top decision traits:')}</p>
             <div className="space-y-2.5">
-              {(traits || []).filter(t => t.vote_count >= 3).slice(0, 5).map((t, i, arr) => {
+              {(traits || []).filter(trait => trait.vote_count >= 3).slice(0, 5).map((trait, i, arr) => {
                 const maxCount = arr[0]?.vote_count || 1;
-                const pct = Math.round((t.vote_count / maxCount) * 100);
-                const label = TRAIT_DESCRIPTORS[t.tag]?.positive || t.tag.replace(/_/g, ' ');
+                const pct = Math.round((trait.vote_count / maxCount) * 100);
+                const label = TRAIT_DESCRIPTORS[trait.tag]?.positive || trait.tag.replace(/_/g, ' ');
                 return (
-                  <div key={t.tag}>
+                  <div key={trait.tag}>
                     <div className="flex justify-between text-xs mb-1">
                       <span className="font-medium capitalize">{label}</span>
-                      <span className="text-muted-foreground">{t.vote_count} votes</span>
+                      <span className="text-muted-foreground">{trait.vote_count} {t('votes')}</span>
                     </div>
                     <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
                       <motion.div

@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { X, Download, Circle } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 interface Poll {
   id: string;
@@ -86,9 +87,11 @@ const generateInsightText = (
 };
 
 // Signal strength indicator component
-const SignalStrengthIndicator = ({ strength }: { strength: number }) => (
+const SignalStrengthIndicator = ({ strength }: { strength: number }) => {
+  const { t } = useT();
+  return (
   <div className="flex items-center gap-1">
-    <span className="text-xs text-muted-foreground mr-1">Signal</span>
+    <span className="text-xs text-muted-foreground mr-1">{t('Signal')}</span>
     {[1, 2, 3, 4, 5].map((dot) => (
       <Circle
         key={dot}
@@ -100,7 +103,8 @@ const SignalStrengthIndicator = ({ strength }: { strength: number }) => (
       />
     ))}
   </div>
-);
+  );
+};
 
 // Signal quality metric label
 const MetricLabel = ({ label, value }: { label: string; value: string }) => {
@@ -119,6 +123,7 @@ const MetricLabel = ({ label, value }: { label: string; value: string }) => {
 };
 
 export default function InsightView({ poll, result, onClose }: InsightViewProps) {
+  const { t } = useT();
   const signalStrength = calculateSignalStrength(result.totalVotes, result.percentA, result.percentB);
   const signalMetrics = getSignalMetrics(result.totalVotes, result.percentA, result.percentB);
   const insight = generateInsightText(poll, result.percentA, result.percentB, result.totalVotes, poll.category);
@@ -136,7 +141,7 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
             {/* Left side */}
             <div className="flex items-center gap-3">
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-widest text-primary font-semibold">VERSA INSIGHT</span>
+                <span className="text-[10px] uppercase tracking-widest text-primary font-semibold">{t('VERSA INSIGHT')}</span>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="font-mono">{generatePollCode(poll.id)}</span>
                   {poll.category && (
@@ -147,7 +152,7 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
                   )}
                   <span className="text-muted">•</span>
                   <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/20 text-emerald-400">
-                    ENDED
+                    {t('ENDED')}
                   </span>
                 </div>
               </div>
@@ -158,12 +163,12 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
               <SignalStrengthIndicator strength={signalStrength} />
               <div className="text-right">
                 <div className="text-lg font-bold text-foreground">{result.totalVotes.toLocaleString()}</div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Votes</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t('Total Votes')}</div>
               </div>
               <button 
                 onClick={onClose} 
                 className="p-2 hover:bg-muted rounded-lg transition-colors"
-                aria-label="Close"
+                aria-label={t('Close')}
               >
                 <X className="h-5 w-5 text-muted-foreground" />
               </button>
@@ -203,7 +208,7 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
               </div>
               {winnerIsA && (
                 <div className="absolute top-3 right-3 px-2 py-1 bg-option-a/90 rounded text-[10px] font-semibold uppercase tracking-wider text-option-a-foreground">
-                  Winner
+                  {t('Winner')}
                 </div>
               )}
             </div>
@@ -231,7 +236,7 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
               </div>
               {!winnerIsA && (
                 <div className="absolute top-3 right-3 px-2 py-1 bg-option-b/90 rounded text-[10px] font-semibold uppercase tracking-wider text-option-b-foreground">
-                  Winner
+                  {t('Winner')}
                 </div>
               )}
             </div>
@@ -257,7 +262,7 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
 
           {/* Key Insight */}
           <section className="bg-muted/30 rounded-xl p-4 border border-border">
-            <h2 className="text-[10px] uppercase tracking-widest text-primary font-semibold mb-2">Key Insight</h2>
+            <h2 className="text-[10px] uppercase tracking-widest text-primary font-semibold mb-2">{t('Key Insight')}</h2>
             <p className="text-foreground font-medium leading-relaxed">{insight.primary}</p>
             <p className="text-sm text-muted-foreground mt-2">{insight.secondary}</p>
           </section>
@@ -266,12 +271,12 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
 
           {/* Signal Quality Panel */}
           <section className="space-y-3">
-            <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Signal Quality</h2>
+            <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">{t('Signal Quality')}</h2>
             <div className="grid grid-cols-4 gap-2">
-              <MetricLabel label="Consistency" value={signalMetrics.consistency} />
-              <MetricLabel label="Velocity" value={signalMetrics.velocity} />
-              <MetricLabel label="Polarization" value={signalMetrics.polarization} />
-              <MetricLabel label="Diversity" value={signalMetrics.diversity} />
+              <MetricLabel label={t('Consistency')} value={signalMetrics.consistency} />
+              <MetricLabel label={t('Velocity')} value={signalMetrics.velocity} />
+              <MetricLabel label={t('Polarization')} value={signalMetrics.polarization} />
+              <MetricLabel label={t('Diversity')} value={signalMetrics.diversity} />
             </div>
           </section>
         </main>
@@ -284,7 +289,7 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
               className="flex-1 h-12"
               onClick={onClose}
             >
-              Close
+              {t('Close')}
             </Button>
             <Button 
               className="flex-1 h-12 bg-primary hover:bg-primary/90"
@@ -294,7 +299,7 @@ export default function InsightView({ poll, result, onClose }: InsightViewProps)
               }}
             >
               <Download className="h-4 w-4 mr-2" />
-              Export Insight
+              {t('Export Insight')}
             </Button>
           </div>
         </footer>

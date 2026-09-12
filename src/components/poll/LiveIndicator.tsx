@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Radio } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 interface LiveIndicatorProps {
   variant?: 'badge' | 'inline' | 'overlay';
@@ -7,13 +8,14 @@ interface LiveIndicatorProps {
 }
 
 export default function LiveIndicator({ variant = 'inline', className = '' }: LiveIndicatorProps) {
+  const { t } = useT();
   if (variant === 'badge') {
     return (
       <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive/20 text-destructive ${className}`}>
         <motion.div animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
           <Radio className="h-2.5 w-2.5" />
         </motion.div>
-        <span className="text-[10px] font-bold uppercase">Live</span>
+        <span className="text-[10px] font-bold uppercase">{t('Live')}</span>
       </div>
     );
   }
@@ -24,7 +26,7 @@ export default function LiveIndicator({ variant = 'inline', className = '' }: Li
         <motion.div animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
           <Radio className="h-2.5 w-2.5 text-destructive" />
         </motion.div>
-        LIVE
+        {t('LIVE')}
       </span>
     );
   }
@@ -35,7 +37,7 @@ export default function LiveIndicator({ variant = 'inline', className = '' }: Li
       <motion.div animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
         <Radio className="h-2.5 w-2.5" />
       </motion.div>
-      LIVE
+      {t('LIVE')}
     </span>
   );
 }

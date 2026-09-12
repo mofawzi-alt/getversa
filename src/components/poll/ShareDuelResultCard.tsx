@@ -1,6 +1,7 @@
 import { useRef, useCallback, useState } from 'react';
 import { Share2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 export interface DuelSharePoll {
   id: string;
@@ -34,6 +35,7 @@ export default function ShareDuelResultCard({
   matchRate,
   matches,
 }: ShareDuelResultCardProps) {
+  const { t } = useT();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [busy, setBusy] = useState(false);
 
@@ -239,7 +241,7 @@ export default function ShareDuelResultCard({
     try {
       const blob = await generate();
       if (!blob) {
-        toast.error('Could not generate share image');
+        toast.error(t('Could not generate share image'));
         return;
       }
       const file = new File([blob], 'versa-duel.jpg', { type: 'image/jpeg' });
@@ -275,12 +277,12 @@ export default function ShareDuelResultCard({
       URL.revokeObjectURL(url);
       try {
         await navigator.clipboard.writeText(shareText);
-        toast.success('Image downloaded · link copied');
+        toast.success(t('Image downloaded · link copied'));
       } catch {
-        toast.success('Image downloaded');
+        toast.success(t('Image downloaded'));
       }
     } catch {
-      toast.error('Could not share');
+      toast.error(t('Could not share'));
     } finally {
       setBusy(false);
     }
@@ -296,11 +298,11 @@ export default function ShareDuelResultCard({
       >
         {busy ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin" /> Generating…
+            <Loader2 className="h-4 w-4 animate-spin" /> {t('Generating…')}
           </>
         ) : (
           <>
-            <Share2 className="h-4 w-4" /> Share results
+            <Share2 className="h-4 w-4" /> {t('Share results')}
           </>
         )}
       </button>

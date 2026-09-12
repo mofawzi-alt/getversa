@@ -2,6 +2,7 @@ import { Pin, PinOff } from 'lucide-react';
 import { usePinnedPoll } from '@/hooks/usePinnedPoll';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 interface PinButtonProps {
   pollId: string;
@@ -10,6 +11,7 @@ interface PinButtonProps {
 }
 
 export default function PinButton({ pollId, className = '', size = 'sm' }: PinButtonProps) {
+  const { t } = useT();
   const { user } = useAuth();
   const { userPinId, pinPoll, unpinPoll } = usePinnedPoll();
 
@@ -21,9 +23,9 @@ export default function PinButton({ pollId, className = '', size = 'sm' }: PinBu
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isPinned) {
-      unpinPoll.mutate(undefined, { onSuccess: () => toast.success('Unpinned from home') });
+      unpinPoll.mutate(undefined, { onSuccess: () => toast.success(t('Unpinned from home')) });
     } else {
-      pinPoll.mutate(pollId, { onSuccess: () => toast.success('Pinned to top of home') });
+      pinPoll.mutate(pollId, { onSuccess: () => toast.success(t('Pinned to top of home')) });
     }
   };
 
@@ -35,7 +37,7 @@ export default function PinButton({ pollId, className = '', size = 'sm' }: PinBu
           ? 'bg-primary/20 text-primary'
           : 'bg-black/30 text-white/70 hover:text-white hover:bg-black/50'
       } ${className}`}
-      title={isPinned ? 'Unpin from home' : 'Pin to top of home'}
+      title={isPinned ? t('Unpin from home') : t('Pin to top of home')}
     >
       {isPinned ? <PinOff className={iconSize} /> : <Pin className={iconSize} />}
     </button>

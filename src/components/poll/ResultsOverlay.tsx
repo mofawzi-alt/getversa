@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import StreakInsightTeaser from './StreakInsightTeaser';
 import { getEgoStatement } from './EgoShareCard';
 import LiveSocialBuzz from './LiveSocialBuzz';
+import { useT } from '@/hooks/useT';
   
 
 
@@ -46,6 +47,7 @@ interface ResultsOverlayProps {
 const AUTO_ADVANCE_MS = 1400;
 
 const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, result, onContinue }, ref) => {
+  const { t } = useT();
   const { profile } = useAuth();
   const userPercent = result.choice === 'A' ? result.percentA : result.percentB;
   const isWinnerA = result.percentA >= result.percentB;
@@ -111,7 +113,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
               ? 'bg-primary/10 text-primary'
               : 'bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-600'
           }`}>
-            {userPickedWinner ? 'Majority' : '🔥 Minority'}
+            {userPickedWinner ? t('Majority') : `🔥 ${t('Minority')}`}
           </span>
           <p className="text-[11px] text-muted-foreground italic mt-1">{microFeedback}</p>
           {celebrityVotes.length > 0 && (
@@ -171,7 +173,7 @@ const ResultsOverlay = forwardRef<HTMLDivElement, ResultsOverlayProps>(({ poll, 
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold active:scale-95 transition-transform"
             >
-              💬 Share My Take
+              💬 {t('Share My Take')}
             </button>
             <ChallengeButton pollId={poll.id} pollQuestion={poll.question} userChoice={result.choice} />
           </div>

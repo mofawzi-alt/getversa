@@ -3,6 +3,7 @@ import { Loader2, Volume2, VolumeX } from 'lucide-react';
 import { getOptimizedPollImageSrc, getPollDisplayImageSrc, handlePollImageError, resolvePollMediaUrl } from '@/lib/pollImages';
 import { getBrandColor, getImageTreatment } from '@/lib/brandDetection';
 import { videoSound } from '@/lib/videoSound';
+import { useT } from '@/hooks/useT';
 
 /**
  * Card variant determines image sizing behavior:
@@ -64,6 +65,7 @@ function PollOptionImageComponent({
   loading = 'lazy',
   variant = 'hero',
 }: PollOptionImageProps) {
+  const { t } = useT();
   const [loaded, setLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const instanceId = useId();
@@ -191,7 +193,7 @@ function PollOptionImageComponent({
             type="button"
             onClick={toggleSound as any}
             onTouchEnd={toggleSound as any}
-            aria-label={unmuted ? 'Mute video' : 'Unmute video'}
+            aria-label={unmuted ? t('Mute video') : t('Unmute video')}
             className="absolute bottom-2 right-2 z-10 h-9 w-9 rounded-full bg-black/55 backdrop-blur-sm text-white flex items-center justify-center active:scale-90 transition-transform"
           >
             {unmuted ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}

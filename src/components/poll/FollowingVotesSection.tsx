@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserCheck, Heart, UserPlus } from 'lucide-react';
 import { useFollows } from '@/hooks/useFollows';
+import { useT } from '@/hooks/useT';
 
 interface FollowingVotesSectionProps {
   pollId: string;
@@ -23,6 +24,7 @@ export default function FollowingVotesSection({
   optionA,
   optionB,
 }: FollowingVotesSectionProps) {
+  const { t } = useT();
   const { user } = useAuth();
   const { isFollowing, toggleFollow } = useFollows();
 
@@ -121,7 +123,7 @@ export default function FollowingVotesSection({
           <div className="flex items-center gap-2 mb-2">
             <UserCheck className="h-3.5 w-3.5 text-primary" />
             <span className="text-[11px] font-bold text-foreground">
-              People you follow voted
+              {t('People you follow voted')}
             </span>
           </div>
 
@@ -153,11 +155,11 @@ export default function FollowingVotesSection({
           {agreeing.length > 0 && (
             <p className="text-[10px] text-muted-foreground mt-2">
               <span className="font-bold text-primary">{agreeing.length}</span>{' '}
-              {agreeing.length === 1 ? 'person' : 'people'} you follow agree with you
+              {agreeing.length === 1 ? t('person') : t('people')} {t('you follow agree with you')}
               {disagreeing.length > 0 && (
                 <>
                   {' · '}
-                  <span className="font-bold">{disagreeing.length}</span> chose the other side
+                  <span className="font-bold">{disagreeing.length}</span> {t('chose the other side')}
                 </>
               )}
             </p>
@@ -168,7 +170,7 @@ export default function FollowingVotesSection({
           <div className="flex items-center gap-2 mb-2">
             <UserPlus className="h-3.5 w-3.5 text-primary" />
             <span className="text-[11px] font-bold text-foreground">
-              People who agree with you
+              {t('People who agree with you')}
             </span>
           </div>
 
@@ -191,7 +193,7 @@ export default function FollowingVotesSection({
           </div>
 
           <p className="text-[10px] text-muted-foreground mt-2">
-            Tap to follow and see their votes on future polls
+            {t('Tap to follow and see their votes on future polls')}
           </p>
         </>
       ) : null}
