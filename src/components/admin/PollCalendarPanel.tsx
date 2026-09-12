@@ -558,7 +558,21 @@ function EditForm({
         </div>
         <div>
           <Label>Category</Label>
-          <Input value={form.category || ''} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+          <select
+            value={form.category || ''}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm"
+          >
+            <option value="">Select a category...</option>
+            <option value="Relationships">❤️ Relationships</option>
+            <option value="Money">💰 Money</option>
+            <option value="Education">🎓 Education</option>
+            <option value="Digital Life">📱 Digital Life</option>
+            <option value="Food">🍔 Food</option>
+            <option value="Entertainment">🎬 Entertainment</option>
+            <option value="Lifestyle">🌍 Lifestyle</option>
+            <option value="Egypt">🇪🇬 Egypt</option>
+          </select>
         </div>
       </div>
       <div>
