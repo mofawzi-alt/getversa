@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useT } from '@/hooks/useT';
 
 type Tab = 'inbox' | 'sent' | 'history';
 
@@ -34,6 +35,7 @@ interface Duel {
 }
 
 export default function PlayDuels() {
+  const { t } = useT();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { friends } = useFriends();
@@ -119,7 +121,7 @@ export default function PlayDuels() {
       const categoryFilter = selectedCategory === '__random__' ? null : selectedCategory;
       const pollIds = await pickDuelPollIds([], 10, categoryFilter);
       if (pollIds.length < 10) {
-        toast.error('Not enough polls available');
+        toast.error(t('Not enough polls available'));
         return;
       }
 
@@ -172,13 +174,13 @@ export default function PlayDuels() {
         },
       });
 
-      toast.success('Duel sent! 🔥');
+      toast.success(t('Duel sent! 🔥'));
       setShowStartSheet(false);
       setSelectedFriend(null);
       setSelectedCategory('__random__');
       loadDuels();
     } catch {
-      toast.error('Could not start duel');
+      toast.error(t('Could not start duel'));
     } finally {
       setSending(false);
     }
@@ -199,7 +201,7 @@ export default function PlayDuels() {
         const pollIds = await pickDuelPollIds(seedPollIds);
 
         if (pollIds.length < 10) {
-          toast.error('Not enough polls available');
+          toast.error(t('Not enough polls available'));
           return;
         }
 
@@ -251,20 +253,20 @@ export default function PlayDuels() {
       });
 
       if (accept) {
-        toast.success('Challenge accepted! 🔥');
+        toast.success(t('Challenge accepted! 🔥'));
         navigate(`/play/duels/${duel.id}`);
         return;
       }
 
-      toast.success('Challenge declined');
+      toast.success(t('Challenge declined'));
       setDuels((prev) => prev.map((d) => (d.id === duel.id ? { ...d, status: newStatus } : d)));
     } catch {
-      toast.error('Could not respond');
+      toast.error(t('Could not respond'));
     }
   };
 
   const cancelDuel = async (duelId: string) => {
-    if (!confirm('Cancel this duel challenge?')) return;
+    if (!confirm(t('Cancel this duel challenge?'))) return;
 
     const duel = duels.find((d) => d.id === duelId);
     const { error } = await supabase
@@ -275,7 +277,7 @@ export default function PlayDuels() {
       .eq('status', 'pending');
 
     if (error) {
-      toast.error('Could not cancel');
+      toast.error(t('Could not cancel'));
       return;
     }
 
@@ -309,7 +311,7 @@ export default function PlayDuels() {
       });
     }
 
-    toast.success('Challenge cancelled');
+    toast.success(t('Challenge cancelled'));
     setDuels((prev) => prev.filter((d) => d.id !== duelId));
   };
 
@@ -325,40 +327,40 @@ export default function PlayDuels() {
           onClick={() => navigate('/play')}
           className="flex items-center gap-1 text-sm text-muted-foreground mb-4"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Play
+          <ArrowLeft className="h-4 w-4" /> {t('Back to Play')}
         </button>
 
         <div className="flex items-center justify-between mb-5">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Swords className="h-5 w-5 text-primary" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Duels</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">{t('Duels')}</span>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Friend Battles</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('Friend Battles')}</h1>
           </div>
           <button
             onClick={() => setShowStartSheet(true)}
             className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1"
           >
-            <Swords className="h-3.5 w-3.5" /> New Duel
+            <Swords className="h-3.5 w-3.5" /> {t('New Duel')}
           </button>
         </div>
 
         <div className="flex gap-1 mb-4 p-1 bg-muted rounded-full">
-          {(['inbox', 'sent', 'history'] as Tab[]).map((t) => {
-            const count = t === 'inbox' ? inbox.length : t === 'sent' ? sent.length : history.length;
+          {(['inbox', 'sent', 'history'] as Tab[]).map((tt) => {
+            const count = tt === 'inbox' ? inbox.length : tt === 'sent' ? sent.length : history.length;
             return (
               <button
-                key={t}
-                onClick={() => setTab(t)}
+                key={tt}
+                onClick={() => setTab(tt)}
                 className={`flex-1 py-2 rounded-full text-xs font-bold capitalize transition-colors ${
-                  tab === t ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
+                  tab === tt ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
                 }`}
               >
-                {t === 'inbox' && <Inbox className="h-3 w-3 inline mr-1" />}
-                {t === 'sent' && <Send className="h-3 w-3 inline mr-1" />}
-                {t === 'history' && <Trophy className="h-3 w-3 inline mr-1" />}
-                {t} {count > 0 && `(${count})`}
+                {tt === 'inbox' && <Inbox className="h-3 w-3 inline mr-1" />}
+                {tt === 'sent' && <Send className="h-3 w-3 inline mr-1" />}
+                {tt === 'history' && <Trophy className="h-3 w-3 inline mr-1" />}
+                {t(tt)} {count > 0 && `(${count})`}
               </button>
             );
           })}
@@ -374,9 +376,9 @@ export default function PlayDuels() {
               <Swords className="h-6 w-6 text-muted-foreground" />
             </div>
             <p className="text-sm text-muted-foreground">
-              {tab === 'inbox' && 'No incoming duels yet'}
-              {tab === 'sent' && 'No pending duels sent'}
-              {tab === 'history' && 'No completed duels yet'}
+              {tab === 'inbox' && t('No incoming duels yet')}
+              {tab === 'sent' && t('No pending duels sent')}
+              {tab === 'history' && t('No completed duels yet')}
             </p>
           </div>
         ) : (
@@ -408,12 +410,12 @@ export default function PlayDuels() {
                         {new Date(d.created_at).toLocaleDateString()}
                         {d.poll_ids && (
                           <span className="ml-1 px-1.5 py-0.5 rounded bg-muted font-bold">
-                            {d.poll_ids.length} polls
+                            {d.poll_ids.length} {t('polls')}
                           </span>
                         )}
                         {d.match_rate !== null && (
                           <span className="ml-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
-                            {d.match_rate}% match
+                            {d.match_rate}% {t('match')}
                           </span>
                         )}
                       </div>
@@ -424,23 +426,23 @@ export default function PlayDuels() {
                           onClick={() => respondToDuel(d, true)}
                           className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold"
                         >
-                          Accept
+                          {t('Accept')}
                         </button>
                         <button
                           onClick={() => respondToDuel(d, false)}
                           className="px-3 py-1.5 rounded-full bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive text-xs font-bold transition-colors"
                         >
-                          Decline
+                          {t('Decline')}
                         </button>
                       </div>
                     )}
                     {tab === 'sent' && (
                       <button
                         onClick={() => cancelDuel(d.id)}
-                        aria-label="Cancel challenge"
+                        aria-label={t('Cancel challenge')}
                         className="px-2.5 py-1.5 rounded-full bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive text-xs font-bold flex-shrink-0 flex items-center gap-1 transition-colors"
                       >
-                        <X className="h-3 w-3" /> Cancel
+                        <X className="h-3 w-3" /> {t('Cancel')}
                       </button>
                     )}
                     {tab === 'history' && (
@@ -449,7 +451,7 @@ export default function PlayDuels() {
                         className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 flex items-center gap-1"
                       >
                         <PlayIcon className="h-3 w-3" />
-                        {d.status === 'completed' ? 'View' : 'Play'}
+                        {d.status === 'completed' ? t('View') : t('Play')}
                       </button>
                     )}
                   </div>
@@ -465,22 +467,22 @@ export default function PlayDuels() {
               <div className="p-5 pb-3 shrink-0">
                 <DialogHeader className="text-left">
                   <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                    <Swords className="h-4 w-4 text-primary" /> Pick a friend
+                    <Swords className="h-4 w-4 text-primary" /> {t('Pick a friend')}
                   </DialogTitle>
                 </DialogHeader>
                 <p className="text-xs text-muted-foreground mt-2">
-                  We'll auto-pick 5 polls for both of you.
+                  {t("We'll auto-pick 5 polls for both of you.")}
                 </p>
                 <div className="mt-3">
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                    Category
+                    {t('Category')}
                   </label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full text-sm px-3 py-2 rounded-xl bg-muted/60 border border-border/40 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                   >
-                    <option value="__random__">🎲 Random (any category)</option>
+                    <option value="__random__">{t('🎲 Random (any category)')}</option>
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>
                         {cat}
@@ -493,7 +495,7 @@ export default function PlayDuels() {
               <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5">
                 {friends.length === 0 ? (
                   <div className="text-center py-6">
-                    <p className="text-sm text-muted-foreground mb-3">No friends yet</p>
+                    <p className="text-sm text-muted-foreground mb-3">{t('No friends yet')}</p>
                     <button
                       onClick={() => {
                         setShowStartSheet(false);
@@ -501,7 +503,7 @@ export default function PlayDuels() {
                       }}
                       className="text-xs font-bold text-primary"
                     >
-                      Add friends →
+                      {t('Add friends →')}
                     </button>
                   </div>
                 ) : (
@@ -522,7 +524,7 @@ export default function PlayDuels() {
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{f.friend_username || 'Friend'}</p>
+                          <p className="text-sm font-medium truncate">{f.friend_username || t('Friend')}</p>
                         </div>
                       </button>
                     ))}
@@ -537,7 +539,7 @@ export default function PlayDuels() {
                     disabled={!selectedFriend || sending}
                     className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm disabled:opacity-50"
                   >
-                    {sending ? 'Starting…' : 'Start Duel'}
+                    {sending ? t('Starting…') : t('Start Duel')}
                   </button>
                 </div>
               )}

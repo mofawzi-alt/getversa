@@ -7,11 +7,14 @@ interface BaselineLabelProps {
   className?: string;
 }
 
+import { useT } from '@/hooks/useT';
+
 export default function BaselineLabel({ active, className = '' }: BaselineLabelProps) {
+  const { t } = useT();
   if (!active) return null;
   return (
     <p className={`text-[10px] text-muted-foreground/70 italic text-center ${className}`}>
-      Results include baseline data
+      {t('Results include baseline data')}
     </p>
   );
 }

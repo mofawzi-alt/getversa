@@ -3,6 +3,8 @@
  * designed for Instagram/TikTok stories. Identity-driven statements.
  */
 import { useMemo } from 'react';
+import { translate } from '@/lib/i18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EgoShareCardProps {
   question: string;
@@ -20,15 +22,16 @@ function getEgoStatement(
   userPercent: number,
   isWinner: boolean,
   totalVotes: number,
+  lang: 'en' | 'ar' = 'en',
 ): string {
-  if (userPercent <= 10) return `Only ${userPercent}% agree with me.`;
-  if (userPercent <= 20) return `My taste is controversial.`;
-  if (userPercent <= 30) return `I'm in the bold minority.`;
-  if (!isWinner && userPercent <= 40) return `I voted against the crowd.`;
-  if (isWinner && userPercent >= 80) return `${userPercent}% of Egypt agrees with me.`;
-  if (isWinner && userPercent >= 65) return `I'm with the majority on this one.`;
-  if (Math.abs(50 - userPercent) <= 5) return `Egypt is completely split.`;
-  return `${totalVotes.toLocaleString()} people voted. Here's where I stand.`;
+  if (userPercent <= 10) return translate('Only {n}% agree with me.', lang, { n: userPercent });
+  if (userPercent <= 20) return translate('My taste is controversial.', lang);
+  if (userPercent <= 30) return translate("I'm in the bold minority.", lang);
+  if (!isWinner && userPercent <= 40) return translate('I voted against the crowd.', lang);
+  if (isWinner && userPercent >= 80) return translate('{n}% of Egypt agrees with me.', lang, { n: userPercent });
+  if (isWinner && userPercent >= 65) return translate("I'm with the majority on this one.", lang);
+  if (Math.abs(50 - userPercent) <= 5) return translate('Egypt is completely split.', lang);
+  return translate("{n} people voted. Here's where I stand.", lang, { n: totalVotes.toLocaleString() });
 }
 
 export default function EgoShareCard({
@@ -45,13 +48,15 @@ export default function EgoShareCard({
   const userOption = choice === 'A' ? optionA : optionB;
   const isWinnerA = percentA >= percentB;
   const isWinner = (choice === 'A' && isWinnerA) || (choice === 'B' && !isWinnerA);
-  const egoLine = useMemo(() => getEgoStatement(userPercent, isWinner, totalVotes), [userPercent, isWinner, totalVotes]);
+  const { lang } = useLanguage();
+  const { t } = useMemo(() => ({ t: (k: string, v?: Record<string, string | number>) => translate(k, lang, v) }), [lang]);
+  const egoLine = useMemo(() => getEgoStatement(userPercent, isWinner, totalVotes, lang), [userPercent, isWinner, totalVotes, lang]);
 
   return (
     <div className="w-full max-w-[340px] mx-auto rounded-2xl overflow-hidden bg-foreground text-background">
       {/* Header */}
       <div className="px-5 pt-5 pb-3">
-        <p className="text-[11px] font-medium opacity-50 uppercase tracking-widest mb-1">My Opinion</p>
+        <p className="text-[11px] font-medium opacity-50 uppercase tracking-widest mb-1">{t('My Opinion')}</p>
         <p className="text-lg font-bold leading-tight">{egoLine}</p>
       </div>
 
@@ -79,7 +84,7 @@ export default function EgoShareCard({
       {/* Footer */}
       <div className="px-5 py-3 flex items-center justify-between opacity-50">
         <span className="text-[10px] font-medium">
-          {totalVotes.toLocaleString()} votes
+          {t('{n} votes', { n: totalVotes.toLocaleString() })}
         </span>
         <span className="text-[10px] font-semibold tracking-wide">
           {username ? `@${username}` : ''} · versa
@@ -92,12 +97,13 @@ export default function EgoShareCard({
 function ResultBar({ label, percent, isUser, side }: {
   label: string; percent: number; isUser: boolean; side: 'A' | 'B';
 }) {
+  const { lang } = useLanguage();
   const barBg = side === 'A' ? 'bg-option-a' : 'bg-option-b';
   return (
     <div className={`relative rounded-lg overflow-hidden ${isUser ? 'ring-1 ring-background/30' : ''}`}>
       <div className="relative z-10 flex items-center justify-between px-3 py-2">
         <span className={`text-xs font-semibold ${isUser ? 'text-background' : 'text-background/60'}`}>
-          {label} {isUser && '← You'}
+          {label} {isUser && `← ${translate('You', lang)}`}
         </span>
         <span className={`text-sm font-bold ${isUser ? 'text-background' : 'text-background/60'}`}>
           {percent}%

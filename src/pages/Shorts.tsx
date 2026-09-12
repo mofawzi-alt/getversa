@@ -36,6 +36,7 @@ function OptionSide({
   chosen: boolean;
   onVote: () => void;
 }) {
+  const { t } = useT();
   const src = getPollDisplayImageSrc({ imageUrl: image, option: label, question, side });
 
   return (

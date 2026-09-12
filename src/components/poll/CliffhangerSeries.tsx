@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Link2, ChevronRight, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getPollDisplayImageSrc } from '@/lib/pollImages';
+import { useT } from '@/hooks/useT';
 
 interface SeriesPoll {
   id: string;
@@ -21,6 +22,7 @@ interface CliffhangerSeriesProps {
 }
 
 export default function CliffhangerSeries({ currentPollId, onPollTap }: CliffhangerSeriesProps) {
+  const { t } = useT();
   // Find current poll's series
   const { data: seriesData } = useQuery({
     queryKey: ['cliffhanger-series', currentPollId],
@@ -46,7 +48,7 @@ export default function CliffhangerSeries({ currentPollId, onPollTap }: Cliffhan
       if (!seriesPolls?.length) return null;
 
       return {
-        title: currentPoll.series_title || 'Poll Series',
+        title: currentPoll.series_title || t('Poll Series'),
         polls: seriesPolls as SeriesPoll[],
         currentOrder: currentPoll.series_order || 1,
       };
@@ -68,7 +70,7 @@ export default function CliffhangerSeries({ currentPollId, onPollTap }: Cliffhan
         <Link2 className="h-3.5 w-3.5 text-primary" />
         <span className="text-[11px] font-bold text-foreground">{seriesData.title}</span>
         <span className="text-[10px] text-muted-foreground ml-auto">
-          Part {currentPart} of {totalParts}
+          {t('Part {n} of {total}', { n: currentPart, total: totalParts })}
         </span>
       </div>
 
@@ -112,16 +114,16 @@ export default function CliffhangerSeries({ currentPollId, onPollTap }: Cliffhan
           <div className="flex-1 min-w-0">
             {nextPoll.is_active ? (
               <>
-                <p className="text-[10px] font-bold text-primary">Part {currentPart + 1} is live!</p>
+                <p className="text-[10px] font-bold text-primary">{t('Part {n} is live!', { n: currentPart + 1 })}</p>
                 <p className="text-[9px] text-muted-foreground truncate">{nextPoll.question}</p>
               </>
             ) : (
               <>
                 <p className="text-[10px] font-bold text-foreground flex items-center gap-1">
                   <Sparkles className="h-3 w-3 text-primary" />
-                  Part {currentPart + 1} drops tomorrow
+                  {t('Part {n} drops tomorrow', { n: currentPart + 1 })}
                 </p>
-                <p className="text-[9px] text-muted-foreground">Stay tuned...</p>
+                <p className="text-[9px] text-muted-foreground">{t('Stay tuned...')}</p>
               </>
             )}
           </div>

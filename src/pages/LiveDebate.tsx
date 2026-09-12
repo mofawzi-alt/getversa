@@ -604,6 +604,7 @@ function FullScreenCard({
   celebrityNames?: string[];
   celebrityVotes?: { username: string; choice: 'A' | 'B'; verified_category: string | null }[];
 }) {
+  const { t } = useT();
   const { data: genderTeaser } = useGenderSplitTeaser(
     (phase === 'result' && result) ? poll.id : '',
     poll.option_a,

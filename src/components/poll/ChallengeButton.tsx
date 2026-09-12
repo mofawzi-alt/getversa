@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useFriends } from '@/hooks/useFriends';
 import { toast } from 'sonner';
 import { pickDuelPollIds } from '@/lib/duels';
+import { useT } from '@/hooks/useT';
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,7 @@ const TAUNT_PRESETS = [
 ];
 
 export default function ChallengeButton({ pollId, pollQuestion, userChoice }: ChallengeButtonProps) {
+  const { t } = useT();
   const { user } = useAuth();
   const { friends } = useFriends();
   const [open, setOpen] = useState(false);
@@ -42,7 +44,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
     try {
       const pollIds = await pickDuelPollIds([pollId]);
       if (pollIds.length < 10) {
-        toast.error('Not enough polls available');
+        toast.error(t('Not enough polls available'));
         return;
       }
 
@@ -70,7 +72,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
         .eq('id', user.id)
         .maybeSingle();
 
-      const challengerName = meData?.username || 'A friend';
+      const challengerName = meData?.username || t('A friend');
       const title = `⚔️ ${challengerName} challenged you!`;
       const body = `${taunt} • Tap to accept and play.`;
       const deepUrl = newDuelId ? `/play/duels/${newDuelId}` : '/play/duels';
@@ -93,11 +95,11 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
         },
       });
 
-      toast.success('Duel sent! 🔥');
+      toast.success(t('Duel sent! 🔥'));
       setOpen(false);
       setSelectedFriend(null);
     } catch {
-      toast.error('Failed to send challenge');
+      toast.error(t('Failed to send challenge'));
     } finally {
       setSending(false);
     }
@@ -112,7 +114,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
         }}
         className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors"
       >
-        <Swords className="h-3 w-3" /> Prove who's right
+        <Swords className="h-3 w-3" /> {t("Prove who's right")}
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -121,7 +123,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
             <div className="p-5 pb-3 shrink-0">
               <DialogHeader className="text-left">
                 <DialogTitle className="text-base font-bold flex items-center gap-2">
-                  <Swords className="h-4 w-4 text-primary" /> Prove who's right
+                  <Swords className="h-4 w-4 text-primary" /> {t("Prove who's right")}
                 </DialogTitle>
               </DialogHeader>
               <p className="text-xs text-muted-foreground line-clamp-2 mt-2">{pollQuestion}</p>
@@ -145,10 +147,10 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{friend.friend_username || 'Friend'}</p>
+                      <p className="text-sm font-medium truncate">{friend.friend_username || t('Friend')}</p>
                       {friend.compatibility_score != null && (
                         <p className="text-[10px] text-muted-foreground">
-                          {friend.compatibility_score}% match
+                          {friend.compatibility_score}% {t('match')}
                         </p>
                       )}
                     </div>
@@ -157,7 +159,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
               </div>
 
               <div className="pb-4">
-                <p className="text-xs font-semibold text-foreground mb-1.5">Pick your taunt:</p>
+                <p className="text-xs font-semibold text-foreground mb-1.5">{t('Pick your taunt:')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {TAUNT_PRESETS.map((preset) => (
                     <button
@@ -169,7 +171,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                     >
-                      {preset}
+                      {t(preset)}
                     </button>
                   ))}
                 </div>
@@ -183,7 +185,7 @@ export default function ChallengeButton({ pollId, pollQuestion, userChoice }: Ch
                 className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 <Swords className="h-4 w-4" />
-                {sending ? 'Starting…' : 'Start Duel'}
+                {sending ? t('Starting…') : t('Start Duel')}
               </button>
             </div>
           </div>

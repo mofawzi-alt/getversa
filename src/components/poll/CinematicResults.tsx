@@ -14,6 +14,9 @@ import { useGenderSplitTeaser } from '@/hooks/useGenderSplitTeaser';
 import { useFirstVoterStatus } from '@/hooks/useFirstVoterStatus';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import FirstVoterBadge from './FirstVoterBadge';
+import { useT } from '@/hooks/useT';
+import { translate } from '@/lib/i18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CinematicResultsProps {
   poll: {
@@ -46,7 +49,7 @@ interface PatternResult {
   line: string;
 }
 
-async function detectPattern(userId: string, currentPollId: string, currentChoice: 'A' | 'B'): Promise<PatternResult | null> {
+async function detectPattern(userId: string, currentPollId: string, currentChoice: 'A' | 'B', lang: 'en' | 'ar'): Promise<PatternResult | null> {
   try {
     const { data: recentVotes } = await supabase
       .from('votes')
@@ -71,7 +74,7 @@ async function detectPattern(userId: string, currentPollId: string, currentChoic
         else break;
       }
       if (minorityStreak >= 3) {
-        return { line: `You've disagreed with the majority ${minorityStreak} polls in a row.` };
+        return { line: translate("You've disagreed with the majority {n} polls in a row.", lang, { n: minorityStreak }) };
       }
 
       // Check: majority agreement streak
@@ -89,10 +92,10 @@ async function detectPattern(userId: string, currentPollId: string, currentChoic
         if (currentResult) {
           const currentPct = currentChoice === 'A' ? currentResult.percent_a : currentResult.percent_b;
           if (currentPct < 50) {
-            return { line: `You and most people agreed on the last ${majorityStreak} polls — until this one.` };
+            return { line: translate('You and most people agreed on the last {n} polls — until this one.', lang, { n: majorityStreak }) };
           }
         }
-        return { line: `You've aligned with the majority ${majorityStreak} polls in a row.` };
+        return { line: translate("You've aligned with the majority {n} polls in a row.", lang, { n: majorityStreak }) };
       }
     }
 
@@ -113,7 +116,7 @@ async function detectPattern(userId: string, currentPollId: string, currentChoic
       }
       const topTag = Object.entries(tagCounts).sort((a, b) => b[1] - a[1])[0];
       if (topTag && topTag[1] >= 5) {
-        return { line: `This is the ${topTag[1]}th time you chose ${topTag[0].toLowerCase()}.` };
+        return { line: translate('This is the {n}th time you chose {tag}.', lang, { n: topTag[1], tag: topTag[0].toLowerCase() }) };
       }
     }
 
@@ -123,7 +126,7 @@ async function detectPattern(userId: string, currentPollId: string, currentChoic
       const bCount = recentVotes.filter(v => v.choice === 'B').length;
       const ratio = aCount / (aCount + bCount);
       if ((ratio > 0.7 && currentChoice === 'B') || (ratio < 0.3 && currentChoice === 'A')) {
-        return { line: 'You changed your usual pattern on this one.' };
+        return { line: translate('You changed your usual pattern on this one.', lang) };
       }
     }
 
@@ -134,7 +137,7 @@ async function detectPattern(userId: string, currentPollId: string, currentChoic
 }
 
 // ── Teaser hint generator ──
-async function generateTeaser(pollId: string, percentA: number, percentB: number): Promise<string | null> {
+async function generateTeaser(pollId: string, percentA: number, percentB: number, lang: 'en' | 'ar'): Promise<string | null> {
   try {
     const diff = Math.abs(percentA - percentB);
     // Only show teaser if something interesting
@@ -155,20 +158,20 @@ async function generateTeaser(pollId: string, percentA: number, percentB: number
       const maleA = maleVotes.filter(v => (v as any).choice === 'A' || true).length; // simplified
       const genderDiff = Math.abs((maleVotes.length / votes.length) - 0.5);
       if (genderDiff > 0.15) {
-        return 'There is a surprising gender split on this poll.';
+        return translate('There is a surprising gender split on this poll.', lang);
       }
     }
 
     // Check city split
     const cities = [...new Set(votes.map(v => v.voter_city).filter(Boolean))];
     if (cities.length >= 2) {
-      return `${cities[0]} and ${cities[1]} are on opposite sides of this one.`;
+      return translate('{a} and {b} are on opposite sides of this one.', lang, { a: cities[0] as string, b: cities[1] as string });
     }
 
     // Check age split
     const ageGroups = [...new Set(votes.map(v => v.voter_age_range).filter(Boolean))];
     if (ageGroups.length >= 2) {
-      return 'Your age group sees this differently from the overall result.';
+      return translate('Your age group sees this differently from the overall result.', lang);
     }
 
     return null;
@@ -178,11 +181,13 @@ async function generateTeaser(pollId: string, percentA: number, percentB: number
 }
 
 // ── Personal statement ──
-function getPersonalStatement(userPercent: number, city?: string | null): string {
-  if (userPercent >= 55) return "You voted with most people on this one.";
-  if (userPercent >= 45) return `${city || 'People'} ${city ? 'is' : 'are'} almost perfectly split on this one.`;
-  if (userPercent >= 25) return "You see this differently from most people.";
-  return `Only ${userPercent}% of people chose this. You're in rare company.`;
+function getPersonalStatement(userPercent: number, city: string | null | undefined, lang: 'en' | 'ar'): string {
+  if (userPercent >= 55) return translate('You voted with most people on this one.', lang);
+  if (userPercent >= 45) return city
+    ? translate('{city} is almost perfectly split on this one.', lang, { city })
+    : translate('People are almost perfectly split on this one.', lang);
+  if (userPercent >= 25) return translate('You see this differently from most people.', lang);
+  return translate("Only {n}% of people chose this. You're in rare company.", lang, { n: userPercent });
 }
 
 // ── Animated counter ──
@@ -338,6 +343,8 @@ function useShareCard(props: {
 // ── Main component ──
 export default function CinematicResults({ poll, choice, percentA, percentB, totalVotes, onNext, visible }: CinematicResultsProps) {
   const { user, profile } = useAuth();
+  const { t } = useT();
+  const { lang } = useLanguage();
   const userPercent = choice === 'A' ? percentA : percentB;
   const isMinority = userPercent < 25;
 
@@ -375,11 +382,11 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
     }
 
     if (user?.id) {
-      detectPattern(user.id, poll.id, choice).then(p => setPatternLine(p?.line || null));
+      detectPattern(user.id, poll.id, choice, lang).then(p => setPatternLine(p?.line || null));
     }
 
-    generateTeaser(poll.id, percentA, percentB).then(t => setTeaserLine(t));
-  }, [visible, user?.id, poll.id, choice, percentA, percentB]);
+    generateTeaser(poll.id, percentA, percentB, lang).then(res => setTeaserLine(res));
+  }, [visible, user?.id, poll.id, choice, percentA, percentB, lang]);
 
   useEffect(() => {
     if (genderTeaser?.text) {
@@ -416,7 +423,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
   const handleShare = useCallback(async (type: 'instagram' | 'whatsapp' | 'save') => {
     try {
       const blob = await generate();
-      if (!blob) { toast.error('Failed to generate'); return; }
+      if (!blob) { toast.error(t('Failed to generate')); return; }
       const file = new File([blob], 'versa-result.jpg', { type: 'image/jpeg' });
 
       const username = profile?.username || '';
@@ -427,7 +434,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
         const a = document.createElement('a');
         a.href = url; a.download = 'versa-result.jpg'; a.click();
         URL.revokeObjectURL(url);
-        toast.success('Saved to downloads 📸');
+        toast.success(t('Saved to downloads 📸'));
         return;
       }
 
@@ -450,23 +457,23 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
           await navigator.clipboard.write([
             new ClipboardItem({ 'image/png': blob })
           ]);
-          toast.success('Image copied! Paste it in your Instagram story 📋');
+          toast.success(t('Image copied! Paste it in your Instagram story 📋'));
         } catch {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url; a.download = 'versa-result.jpg'; a.click();
           URL.revokeObjectURL(url);
-          toast.success('Image saved! Open Instagram and share it 📸');
+          toast.success(t('Image saved! Open Instagram and share it 📸'));
         }
       }
     } catch (err) {
-      if ((err as Error).name !== 'AbortError') toast.error('Share failed');
+      if ((err as Error).name !== 'AbortError') toast.error(t('Share failed'));
     }
   }, [generate, poll.question, poll.id, choice, profile?.username]);
 
   const bgColor = isMinority ? '#020617' : '#0F172A';
   const accentColor = isMinority ? '#F59E0B' : '#ffffff';
-  const statement = getPersonalStatement(userPercent, profile?.city);
+  const statement = getPersonalStatement(userPercent, profile?.city, lang);
 
   const overlay = (
     <AnimatePresence>
@@ -506,7 +513,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   style={{ backgroundColor: '#F59E0B' }}
                 >
                   <span className="text-[9px] font-bold tracking-[0.15em] text-[#020617] uppercase">
-                    Minority Opinion
+                    {t('Minority Opinion')}
                   </span>
                 </motion.div>
               )}
@@ -557,11 +564,11 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   }}
                 >
                   <p className="text-white text-sm font-bold text-center leading-snug">
-                    👀 You're in the {userPercent}% minority on this one
+                    👀 {t("You're in the {n}% minority on this one", { n: userPercent })}
                   </p>
                   {profile?.city && (
                     <p className="text-white/90 text-xs font-semibold text-center mt-1 leading-snug">
-                      — only {userPercent}% of {profile.city} agrees with you.
+                      — {t('only {n}% of {city} agrees with you.', { n: userPercent, city: profile.city })}
                     </p>
                   )}
                 </motion.div>
@@ -575,7 +582,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   className="text-center text-[10px] max-w-[16rem] leading-snug"
                   style={{ color: 'rgba(255,255,255,0.5)' }}
                 >
-                  The most interesting opinions are the ones nobody expects.
+                  {t('The most interesting opinions are the ones nobody expects.')}
                 </motion.p>
               )}
 
@@ -626,8 +633,8 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                       <VerifiedBadge size="sm" />
                       <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>
                         {celeb.choice === choice
-                          ? `${celeb.username} also chose this`
-                          : `${celeb.username} voted the other way`}
+                          ? t('{name} also chose this', { name: celeb.username })
+                          : t('{name} voted the other way', { name: celeb.username })}
                       </span>
                     </div>
                   ))}
@@ -681,7 +688,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                 <div className="flex items-center justify-between gap-2 text-[10px] font-bold leading-none">
                   <span style={{ color: choice === 'A' ? '#2563EB' : '#94A3B8' }}>{percentA}%</span>
                   <span className="text-white/50 text-[9px]">
-                    {userPercent >= 50 ? `I voted with the ${userPercent}%` : `I voted with the ${userPercent}% minority`}
+                    {userPercent >= 50 ? t('I voted with the {n}%', { n: userPercent }) : t('I voted with the {n}% minority', { n: userPercent })}
                   </span>
                   <span style={{ color: choice === 'B' ? '#2563EB' : '#94A3B8' }}>{percentB}%</span>
                 </div>
@@ -724,7 +731,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   }}
                 >
                   <Share2 className="h-4 w-4 shrink-0" />
-                  Share to Instagram Stories
+                  {t('Share to Instagram Stories')}
                 </Button>
 
                 <div className="grid grid-cols-4 gap-1.5">
@@ -754,7 +761,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                     className="h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
                   >
                     <MessageCircle className="h-3.5 w-3.5 shrink-0" />
-                    WhatsApp
+                    {t('WhatsApp')}
                   </Button>
 
                   <Button
@@ -763,7 +770,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                     className="h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/10 text-white bg-white/5 hover:bg-white/10"
                   >
                     <Download className="h-3.5 w-3.5 shrink-0" />
-                    Save
+                    {t('Save')}
                   </Button>
 
                   <Button
@@ -771,7 +778,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                     variant="outline"
                     className="h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/15 text-white bg-white/10 hover:bg-white/15"
                   >
-                    Next
+                    {t('Next')}
                     <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                   </Button>
                 </div>
@@ -793,7 +800,7 @@ export default function CinematicResults({ poll, choice, percentA, percentB, tot
                   variant="outline"
                   className="w-full h-9 rounded-xl font-semibold text-[11px] gap-1 border-white/15 text-white bg-white/10 hover:bg-white/15"
                 >
-                  Next
+                  {t('Next')}
                   <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                 </Button>
               </motion.div>

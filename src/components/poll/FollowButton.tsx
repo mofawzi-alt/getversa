@@ -2,6 +2,7 @@ import { UserPlus, UserCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFollows } from '@/hooks/useFollows';
 import { cn } from '@/lib/utils';
+import { useT } from '@/hooks/useT';
 
 interface FollowButtonProps {
   creatorId: string;
@@ -16,6 +17,7 @@ export default function FollowButton({
   variant = 'default',
   className 
 }: FollowButtonProps) {
+  const { t } = useT();
   const { isFollowing, toggleFollow, followMutation, unfollowMutation } = useFollows();
   
   const following = isFollowing(creatorId);
@@ -36,7 +38,7 @@ export default function FollowButton({
             : "bg-secondary/50 text-secondary-foreground hover:bg-primary/20 hover:text-primary",
           className
         )}
-        title={following ? 'Unfollow' : 'Follow'}
+        title={following ? t('Unfollow') : t('Follow')}
       >
         {isLoading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -70,12 +72,12 @@ export default function FollowButton({
         ) : following ? (
           <>
             <UserCheck className="h-3 w-3" />
-            Following
+            {t('Following')}
           </>
         ) : (
           <>
             <UserPlus className="h-3 w-3" />
-            Follow
+            {t('Follow')}
           </>
         )}
       </button>
@@ -98,12 +100,12 @@ export default function FollowButton({
       ) : following ? (
         <>
           <UserCheck className="h-4 w-4" />
-          Following
+          {t('Following')}
         </>
       ) : (
         <>
           <UserPlus className="h-4 w-4" />
-          Follow{creatorName ? ` ${creatorName}` : ''}
+          {t('Follow')}{creatorName ? ` ${creatorName}` : ''}
         </>
       )}
     </Button>

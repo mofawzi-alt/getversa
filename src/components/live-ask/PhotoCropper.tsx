@@ -3,6 +3,7 @@ import Cropper, { Area } from "react-easy-crop";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Loader2 } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 interface PhotoCropperProps {
   src: string;
@@ -11,6 +12,7 @@ interface PhotoCropperProps {
 }
 
 export default function PhotoCropper({ src, onCancel, onConfirm }: PhotoCropperProps) {
+  const { t } = useT();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [area, setArea] = useState<Area | null>(null);
@@ -57,10 +59,10 @@ export default function PhotoCropper({ src, onCancel, onConfirm }: PhotoCropperP
         </div>
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onCancel} disabled={busy}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button className="flex-1" onClick={confirm} disabled={busy || !area}>
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Use photo"}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t("Use photo")}
           </Button>
         </div>
       </div>
