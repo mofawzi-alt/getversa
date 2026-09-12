@@ -426,7 +426,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
   }, [poll, result, isVoting, user, profile, queryClient, onVoteComplete]);
 
   if (!poll) {
-    return <HeroCaughtUp onPollTap={onPollTap} />;
+    return <HeroCaughtUp />;
   }
 
   const handleStart = (clientX: number, clientY: number) => {
