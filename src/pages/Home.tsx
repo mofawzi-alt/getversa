@@ -15,7 +15,7 @@ import { applyAgeSequencing } from '@/lib/ageSequencing';
 import { useSkippedPollIds } from '@/hooks/useSkippedPollIds';
 import { useLiveDebateFeed } from '@/hooks/useLiveDebateFeed';
 import { buildTasteProfile, blendedPollScore, TasteProfile } from '@/lib/tasteScoring';
-import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, Zap, Flame, TrendingUp, Eye, ChevronRight, Timer, Trophy, Target, BarChart3, Share2, Send, Check, BookOpen, X, Play, Search } from 'lucide-react';
 import SharePollToFriendSheet from '@/components/messages/SharePollToFriendSheet';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import LiveIndicator from '@/components/poll/LiveIndicator';
