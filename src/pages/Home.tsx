@@ -1206,6 +1206,18 @@ export default function Home() {
 
   // Track which hero poll index to show for infinite voting
   const [heroPollIndex, setHeroPollIndex] = useState(0);
+  // ── Category filter (opened from the Categories story circle) ──
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const cat = (e as CustomEvent).detail as string;
+      setCategoryFilter(cat || null);
+      setHeroPollIndex(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.addEventListener('versa:home-category', handler);
+    return () => window.removeEventListener('versa:home-category', handler);
+  }, []);
   const heroRef = useRef<HTMLDivElement>(null);
 
   // (carousel API removed — static scroll now)
