@@ -125,28 +125,36 @@ export default function PollCalendarPanel() {
       const normalize = (s: string) =>
         (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
 
-      // Dedupe globally:
-      // 1) Against every existing poll_calendar row (any date, any status)
-      // 2) Against every question already in the published polls table
-      const [{ data: existingCal, error: calErr }, { data: existingPolls, error: pollErr }] =
-        await Promise.all([
-          supabase.from('poll_calendar').select('question'),
-          supabase.from('polls').select('question'),
-        ]);
-      if (calErr) throw calErr;
+      // Overwrite mode: every date present in the file is rebuilt from the file.
+      const dates = Array.from(new Set(parsed.map((p) => p.release_date)));
+
+      // Rows already published as real polls stay untouched.
+      const { data: sameDates, error: sameErr } = await supabase
+        .from('poll_calendar')
+        .select('id, status')
+        .in('release_date', dates);
+      if (sameErr) throw sameErr;
+
+      const removableIds = (sameDates || [])
+        .filter((r: any) => r.status !== 'published')
+        .map((r: any) => r.id);
+      let replaced = 0;
+      if (removableIds.length) {
+        const { error: delErr } = await supabase.from('poll_calendar').delete().in('id', removableIds);
+        if (delErr) throw delErr;
+        replaced = removableIds.length;
+      }
+
+      // Still avoid re-adding questions that are already live polls, and dedupe inside the file.
+      const { data: existingPolls, error: pollErr } = await supabase.from('polls').select('question');
       if (pollErr) throw pollErr;
+      const livePollKeys = new Set<string>((existingPolls || []).map((r: any) => normalize(r.question)));
 
-      const existingKeys = new Set<string>([
-        ...((existingCal || []).map((r: any) => normalize(r.question))),
-        ...((existingPolls || []).map((r: any) => normalize(r.question))),
-      ]);
-
-      // Also dedupe within the uploaded batch itself
       const batchSeen = new Set<string>();
       const inserts = parsed
         .filter((p) => {
           const key = normalize(p.question);
-          if (existingKeys.has(key) || batchSeen.has(key)) return false;
+          if (livePollKeys.has(key) || batchSeen.has(key)) return false;
           batchSeen.add(key);
           return true;
         })
@@ -157,16 +165,18 @@ export default function PollCalendarPanel() {
         if (error) throw error;
       }
       const duplicates = parsed.length - inserts.length;
-      return { inserted: inserts.length, duplicates };
+      return { inserted: inserts.length, duplicates, replaced };
     },
-    onSuccess: ({ inserted, duplicates }) => {
+    onSuccess: ({ inserted, duplicates, replaced }) => {
       const parts = [`Added ${inserted} polls`];
-      if (duplicates) parts.push(`skipped ${duplicates} duplicate${duplicates > 1 ? 's' : ''}`);
+      if (replaced) parts.push(`replaced ${replaced} existing entr${replaced > 1 ? 'ies' : 'y'}`);
+      if (duplicates) parts.push(`skipped ${duplicates} already live`);
       toast.success(parts.join(' • '));
       qc.invalidateQueries({ queryKey: ['poll-calendar'] });
     },
     onError: (e: any) => toast.error(e.message),
   });
+
 
 
   const updateRow = useMutation({
