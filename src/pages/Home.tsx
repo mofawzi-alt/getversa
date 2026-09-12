@@ -1970,6 +1970,42 @@ export default function Home() {
         {/* Ask Egypt daily featured question removed */}
         <PulseStoriesRow />
 
+        {/* ═══ ACTIVE CATEGORY FILTER ═══ */}
+        {categoryFilter && (
+          <div className="px-3 mb-2">
+            <div className="flex items-center justify-between rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2">
+              <span className="text-xs font-semibold text-foreground">
+                Showing {categoryFilter}
+              </span>
+              <button
+                type="button"
+                onClick={() => { setCategoryFilter(null); setHeroPollIndex(0); }}
+                className="flex items-center gap-1 text-xs font-semibold text-primary"
+              >
+                <X className="h-3.5 w-3.5" /> Clear
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ QUICK ACTIONS: reels + search live inside Home ═══ */}
+        <div className="flex items-center gap-2 px-3 mb-2">
+          <button
+            type="button"
+            onClick={() => navigate('/shorts')}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground active:scale-[0.98] transition-transform"
+          >
+            <Play className="h-3.5 w-3.5 text-primary" /> Shorts
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/explore')}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground active:scale-[0.98] transition-transform"
+          >
+            <Search className="h-3.5 w-3.5 text-primary" /> Search
+          </button>
+        </div>
+
         {/* Live voter count strip — "X people voted in the last hour" */}
         <LiveVoterCount />
 
