@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageCircleQuestion, Plus, Users, Clock, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useT } from "@/hooks/useT";
 
 interface MyAsk {
   id: string;
@@ -18,16 +19,17 @@ interface MyAsk {
   created_at: string;
 }
 
-function timeLeft(reveal_at: string): string {
+function timeLeft(reveal_at: string, t: (k: string, v?: Record<string, string | number>) => string): string {
   const ms = new Date(reveal_at).getTime() - Date.now();
-  if (ms <= 0) return "Ended";
+  if (ms <= 0) return t("Ended");
   const h = Math.floor(ms / 3_600_000);
   const m = Math.floor((ms % 3_600_000) / 60_000);
-  if (h >= 1) return `${h}h ${m}m left`;
-  return `${m}m left`;
+  if (h >= 1) return t("{h}h {m}m left", { h, m });
+  return t("{m}m left", { m });
 }
 
 export default function MyLiveAsks() {
+  const { t } = useT();
   const nav = useNavigate();
   const { user } = useAuth();
   const [asks, setAsks] = useState<MyAsk[] | null>(null);
@@ -89,7 +91,7 @@ export default function MyLiveAsks() {
   if (!user) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center px-6 text-center bg-background">
-        <p className="text-sm text-muted-foreground">Please sign in to see your Live Asks.</p>
+        <p className="text-sm text-muted-foreground">{t("Please sign in to see your Live Asks.")}</p>
       </div>
     );
   }
@@ -105,19 +107,19 @@ export default function MyLiveAsks() {
           <button onClick={() => nav(-1)} className="p-1.5 -ml-1 rounded-full active:bg-muted">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-base font-bold flex-1">My Live Asks</h1>
+          <h1 className="text-base font-bold flex-1">{t("My Live Asks")}</h1>
           <button
             onClick={() => nav("/live-ask/new")}
             className="flex items-center gap-1 h-8 px-3 rounded-full bg-primary text-primary-foreground text-xs font-bold active:scale-95 transition"
           >
-            <Plus className="h-3.5 w-3.5" /> New
+            <Plus className="h-3.5 w-3.5" /> {t("New")}
           </button>
         </div>
       </div>
 
       <div className="max-w-md mx-auto px-3 py-4 space-y-3">
         {asks === null && (
-          <div className="text-center py-12 text-sm text-muted-foreground">Loading…</div>
+          <div className="text-center py-12 text-sm text-muted-foreground">{t("Loading…")}</div>
         )}
 
         {asks && asks.length === 0 && (
@@ -125,15 +127,15 @@ export default function MyLiveAsks() {
             <div className="inline-flex h-14 w-14 rounded-full bg-primary/10 items-center justify-center mb-3">
               <MessageCircleQuestion className="h-6 w-6 text-primary" />
             </div>
-            <p className="text-base font-bold mb-1">No Live Asks yet</p>
+            <p className="text-base font-bold mb-1">{t("No Live Asks yet")}</p>
             <p className="text-xs text-muted-foreground mb-4">
-              Post a photo and let Egypt help you decide.
+              {t("Post a photo and let Egypt help you decide.")}
             </p>
             <button
               onClick={() => nav("/live-ask/new")}
               className="h-10 px-5 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-95 transition"
             >
-              Create your first Live Ask
+              {t("Create your first Live Ask")}
             </button>
           </div>
         )}
@@ -162,17 +164,17 @@ export default function MyLiveAsks() {
                   <div className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                       <Users className="h-3 w-3" />
-                      {total} {total === 1 ? "vote" : "votes"}
+                      {total} {t(total === 1 ? "vote" : "votes")}
                     </span>
                     <span>·</span>
                     <span className="inline-flex items-center gap-1">
                       {closed ? <CheckCircle2 className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-                      {closed ? "Closed" : timeLeft(a.reveal_at)}
+                      {closed ? t("Closed") : timeLeft(a.reveal_at, t)}
                     </span>
                   </div>
                   {newVotes > 0 && !closed && (
                     <span className="inline-block mt-1.5 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                      +{newVotes} new
+                      +{newVotes} {t("new")}
                     </span>
                   )}
                 </div>
@@ -193,7 +195,7 @@ export default function MyLiveAsks() {
                   <div className="h-full bg-foreground/70 transition-all" style={{ width: `${pctB}%` }} />
                 </div>
                 <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
-                  <span>{closed ? "Final" : "Live"} · tap to view full results</span>
+                  <span>{closed ? t("Final") : t("Live")} · {t("tap to view full results")}</span>
                   <span>→</span>
                 </div>
               </div>

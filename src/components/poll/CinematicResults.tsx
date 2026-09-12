@@ -92,10 +92,10 @@ async function detectPattern(userId: string, currentPollId: string, currentChoic
         if (currentResult) {
           const currentPct = currentChoice === 'A' ? currentResult.percent_a : currentResult.percent_b;
           if (currentPct < 50) {
-            return { line: `You and most people agreed on the last ${majorityStreak} polls — until this one.` };
+            return { line: translate('You and most people agreed on the last {n} polls — until this one.', lang, { n: majorityStreak }) };
           }
         }
-        return { line: `You've aligned with the majority ${majorityStreak} polls in a row.` };
+        return { line: translate("You've aligned with the majority {n} polls in a row.", lang, { n: majorityStreak }) };
       }
     }
 
@@ -116,7 +116,7 @@ async function detectPattern(userId: string, currentPollId: string, currentChoic
       }
       const topTag = Object.entries(tagCounts).sort((a, b) => b[1] - a[1])[0];
       if (topTag && topTag[1] >= 5) {
-        return { line: `This is the ${topTag[1]}th time you chose ${topTag[0].toLowerCase()}.` };
+        return { line: translate('This is the {n}th time you chose {tag}.', lang, { n: topTag[1], tag: topTag[0].toLowerCase() }) };
       }
     }
 
@@ -126,7 +126,7 @@ async function detectPattern(userId: string, currentPollId: string, currentChoic
       const bCount = recentVotes.filter(v => v.choice === 'B').length;
       const ratio = aCount / (aCount + bCount);
       if ((ratio > 0.7 && currentChoice === 'B') || (ratio < 0.3 && currentChoice === 'A')) {
-        return { line: 'You changed your usual pattern on this one.' };
+        return { line: translate('You changed your usual pattern on this one.', lang) };
       }
     }
 
@@ -137,7 +137,7 @@ async function detectPattern(userId: string, currentPollId: string, currentChoic
 }
 
 // ── Teaser hint generator ──
-async function generateTeaser(pollId: string, percentA: number, percentB: number): Promise<string | null> {
+async function generateTeaser(pollId: string, percentA: number, percentB: number, lang: 'en' | 'ar'): Promise<string | null> {
   try {
     const diff = Math.abs(percentA - percentB);
     // Only show teaser if something interesting
@@ -158,20 +158,20 @@ async function generateTeaser(pollId: string, percentA: number, percentB: number
       const maleA = maleVotes.filter(v => (v as any).choice === 'A' || true).length; // simplified
       const genderDiff = Math.abs((maleVotes.length / votes.length) - 0.5);
       if (genderDiff > 0.15) {
-        return 'There is a surprising gender split on this poll.';
+        return translate('There is a surprising gender split on this poll.', lang);
       }
     }
 
     // Check city split
     const cities = [...new Set(votes.map(v => v.voter_city).filter(Boolean))];
     if (cities.length >= 2) {
-      return `${cities[0]} and ${cities[1]} are on opposite sides of this one.`;
+      return translate('{a} and {b} are on opposite sides of this one.', lang, { a: cities[0] as string, b: cities[1] as string });
     }
 
     // Check age split
     const ageGroups = [...new Set(votes.map(v => v.voter_age_range).filter(Boolean))];
     if (ageGroups.length >= 2) {
-      return 'Your age group sees this differently from the overall result.';
+      return translate('Your age group sees this differently from the overall result.', lang);
     }
 
     return null;
@@ -181,11 +181,13 @@ async function generateTeaser(pollId: string, percentA: number, percentB: number
 }
 
 // ── Personal statement ──
-function getPersonalStatement(userPercent: number, city?: string | null): string {
-  if (userPercent >= 55) return "You voted with most people on this one.";
-  if (userPercent >= 45) return `${city || 'People'} ${city ? 'is' : 'are'} almost perfectly split on this one.`;
-  if (userPercent >= 25) return "You see this differently from most people.";
-  return `Only ${userPercent}% of people chose this. You're in rare company.`;
+function getPersonalStatement(userPercent: number, city: string | null | undefined, lang: 'en' | 'ar'): string {
+  if (userPercent >= 55) return translate('You voted with most people on this one.', lang);
+  if (userPercent >= 45) return city
+    ? translate('{city} is almost perfectly split on this one.', lang, { city })
+    : translate('People are almost perfectly split on this one.', lang);
+  if (userPercent >= 25) return translate('You see this differently from most people.', lang);
+  return translate("Only {n}% of people chose this. You're in rare company.", lang, { n: userPercent });
 }
 
 // ── Animated counter ──
