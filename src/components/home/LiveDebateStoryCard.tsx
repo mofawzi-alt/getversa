@@ -288,7 +288,13 @@ export default function LiveDebateStoryCard({
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-white text-[30px] sm:text-[34px] leading-[1.12] font-extrabold drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
+          className={`text-white font-extrabold drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] ${
+            template === 'bold-type'
+              ? 'text-[40px] sm:text-[48px] leading-[1.04] tracking-tight'
+              : template === 'color-block'
+                ? 'text-[28px] sm:text-[32px] leading-[1.15]'
+                : 'text-[30px] sm:text-[34px] leading-[1.12]'
+          }`}
           dir="auto"
         >
           {pt.question}
