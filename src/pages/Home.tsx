@@ -1064,6 +1064,7 @@ function LiveDebatesList({
             }) : undefined}
             eagerImage={loopIndex < 2}
             height={cardHeight}
+            template={cardTemplates.get(poll.id)}
           />
         );
       })}
