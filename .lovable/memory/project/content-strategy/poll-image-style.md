@@ -1,10 +1,12 @@
 ---
 name: Poll Image Style
-description: Unified cinematic prompt with dynamic country→geo/cast directive, optional cultural_context scene override, and Egyptian keyword boost
+description: Topic-first cinematic prompts use question, category, and option with dynamic country/cultural context and no generic human defaults
 type: design
 ---
 Both AI image pipelines (`batch-create-polls` and `generate-calendar-image`) share the strict cinematic prompt:
 "Cinematic lifestyle photograph, DSLR, candid, magazine-grade. NO logos, brands, text, UI, posters, graphics, illustrations."
+
+Every active generation and regeneration path must explicitly include the poll question, fixed category, and relevant option. The question/category define the main setting, objects, and activity. People are optional and appear only when their action clarifies the topic; generic portraits and neutral human subjects are forbidden. Education polls must visibly prioritize universities, classrooms, libraries, books, or study environments.
 
 Layered context (in this order, all stack):
 1. **Country directive** (from `polls.target_countries[0]` / `poll_calendar.target_country`) — sets geography + cast. Mapping covers Egypt, UAE, Saudi Arabia, Kuwait, Jordan, Lebanon, Morocco, MENA, GCC, Global. Empty/unknown → MENA generic. Never falls back to Western/American/European.
