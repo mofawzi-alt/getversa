@@ -304,14 +304,20 @@ Step 3 — Other filters (only set demographics when the question explicitly men
 - complex: synthesis across multiple polls/demographics
 
 Categories: ${KNOWN_CATEGORIES.join(", ")}.
-If conversation history is provided, the new question may be a FOLLOW-UP — infer underlying topic and merge entities from prior turns.`,
+If conversation history is provided, the new question may be a FOLLOW-UP — infer underlying topic and merge entities from prior turns.
+
+Reply with ONLY a single JSON object (no prose, no markdown):
+{"intent": "preference"|"factual"|"offscope", "keywords": ["..."], "entities": ["..."], "category": "any" or one of the categories above, "route": "simple"|"medium"|"complex", "controversial": false, "intent_summary": "...", "gender": "", "age_range": ""}
+- "keywords" = the SUBJECT words of the question (things, activities, topics) e.g. "best mall or grocery in new cairo?" → ["mall","grocery"].
+- "entities" = named brands/places/people only, lowercase, e.g. ["new cairo"]. Never hallucinate.
+- keywords/entities MUST be arrays of lowercase strings, never a single string.`,
         },
         ...historyMessages,
         { role: "user", content: effectiveQuestion },
         ],
-        tools: [FILTER_TOOL],
-        tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
+        response_format: { type: "json_object" },
       });
+
     } catch (e) {
       console.error("AI extract failed before response", e);
     }
@@ -408,8 +414,9 @@ Rules:
       }
       if (!filters) {
         const content = extractData.choices?.[0]?.message?.content || "";
-        filters = recoverFiltersFromText(content);
+        try { filters = JSON.parse(content); } catch { filters = recoverFiltersFromText(content); }
       }
+
       if (!filters) {
         filters = await jsonModeRetry();
       }
@@ -428,10 +435,14 @@ Rules:
           : [];
 
       return Array.from(new Set(rawItems
-        .map((item) => normalizeTerm(String(item || "")))
+        .map((item: any) => (item && typeof item === "object")
+          ? String(item.value ?? item.name ?? item.entity ?? "")
+          : String(item || ""))
+        .map((item) => normalizeTerm(item))
         .flatMap((item) => item.split(/\s+/))
         .map((item) => item.trim())
         .filter((item) => item.length >= minLength && !STOP_TERMS.has(item))));
+
     };
     const normalizeOptionalString = (value: unknown) => typeof value === "string" ? value.trim() : "";
     const normalizeBoolean = (value: unknown) => {
@@ -753,14 +764,15 @@ Rules:
       if (ss?.baseline_sunset_threshold) sunsetThreshold = ss.baseline_sunset_threshold;
     }
 
-    // ---- 3. Vote stats ----
-    const ids = polls.map((p) => p.id);
+    // ---- 3. Vote stats (fetched lazily, only for the polls we actually matched) ----
     const statsMap = new Map<string, any>();
-    if (ids.length > 0) {
+    const loadStatsFor = async (pollIds: string[]) => {
+      const missing = pollIds.filter((id) => !statsMap.has(id));
+      if (missing.length === 0) return;
       const { data: votes } = await supabase
         .from("votes")
         .select("poll_id, choice, voter_gender, voter_age_range, voter_city")
-        .in("poll_id", ids);
+        .in("poll_id", missing);
 
       votes?.forEach((v: any) => {
         const s = statsMap.get(v.poll_id) || {
@@ -791,7 +803,32 @@ Rules:
         }
         statsMap.set(v.poll_id, s);
       });
-    }
+    };
+
+    // Attach vote stats to an already-matched poll list (mutates and returns it).
+    const attachStats = async (list: any[]) => {
+      await loadStatsFor(list.map((p) => p.id));
+      for (const p of list) {
+        const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
+        const realTotal = rawStats.total;
+        const baselineActive = realTotal < sunsetThreshold;
+        const baseA = baselineActive ? (p.baseline_votes_a || 0) : 0;
+        const baseB = baselineActive ? (p.baseline_votes_b || 0) : 0;
+        const s = {
+          ...rawStats,
+          a: rawStats.a + baseA,
+          b: rawStats.b + baseB,
+          total: rawStats.total + baseA + baseB,
+          realTotal,
+          baselineActive,
+        };
+        const split = s.total > 0 ? s.a / s.total : 0.5;
+        p._stats = s;
+        p._controversyScore = 1 - Math.abs(split - 0.5) * 2;
+      }
+      return list;
+    };
+
 
     // Generate stem variants so "rent" matches "renting", "rents", "rented".
     const expandStemVariants = (term: string): string[] => {
@@ -851,28 +888,31 @@ Rules:
       return requiredEntityVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
     };
 
+    // SUBJECT TERMS: the topic words that are NOT entity names (e.g. "mall", "grocery"
+    // in "best mall or grocery in New Cairo?"). A poll that only matches the entity
+    // ("New Cairo or Zamalek?") is NOT about the subject, so it must not answer.
+    const entityTermSet = new Set(
+      (cleanedEntities || []).map((e: string) => normalizeTerm(String(e || "")))
+    );
+    const subjectTermVariants = topicalTerms
+      .filter((t, i) => !topicalTermIsWeak[i] && !entityTermSet.has(t))
+      .map((t) => expandStemVariants(t));
+
+    const getPollSubjectHitCount = (poll: any) => {
+      if (subjectTermVariants.length === 0) return 0;
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
+      return subjectTermVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+    };
+
     const enrichedPollList = polls.map((p) => {
-      const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
-      const realTotal = rawStats.total;
-      const baselineActive = realTotal < sunsetThreshold;
-      const baseA = baselineActive ? (p.baseline_votes_a || 0) : 0;
-      const baseB = baselineActive ? (p.baseline_votes_b || 0) : 0;
-      const s = {
-        ...rawStats,
-        a: rawStats.a + baseA,
-        b: rawStats.b + baseB,
-        total: rawStats.total + baseA + baseB,
-        realTotal,
-        baselineActive,
-      };
-      const split = s.total > 0 ? s.a / s.total : 0.5;
-      const controversyScore = 1 - Math.abs(split - 0.5) * 2;
       const topicalHits = getPollTopicalHitCount(p);
       const strongHits = getPollStrongHitCount(p);
       const entityMatch = pollMatchesAllEntities(p);
       const entityHits = getPollEntityHitCount(p);
-      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _strongHits: strongHits, _entityMatch: entityMatch, _entityHits: entityHits };
+      const subjectHits = getPollSubjectHitCount(p);
+      return { ...p, _stats: { a: 0, b: 0, total: 0, realTotal: 0, baselineActive: false, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } }, _controversyScore: 0, _topicalHits: topicalHits, _strongHits: strongHits, _entityMatch: entityMatch, _entityHits: entityHits, _subjectHits: subjectHits };
     });
+
 
     // VAGUE-QUESTION GUARD (decide mode): no specific A vs B → ask a clarifier instead of guessing.
     // Triggers when the user has 0 entities AND ≤1 generic topical term (e.g. "best place to eat",
@@ -974,6 +1014,10 @@ Examples:
 
     // Check if we have any non-weak topical terms
     const hasStrongTerms = topicalTerms.some((_, i) => !topicalTermIsWeak[i]);
+    const hasSubjectTerms = subjectTermVariants.length > 0;
+    // A poll may only answer the question if it touches the SUBJECT of the question
+    // (not just the place/brand mentioned in it).
+    const passesSubjectGate = (p: any) => !hasSubjectTerms || p._subjectHits >= 1;
 
     let matchedPolls = enrichedPollList.filter((p: any) => {
       if (!p._entityMatch) return false;
@@ -986,6 +1030,7 @@ Examples:
       // If the question has strong (non-weak) terms, require at least one strong hit.
       // This prevents "private university" from matching "Private Moments" (only weak "private" hit).
       if (hasStrongTerms && p._strongHits < 1) return false;
+      if (!passesSubjectGate(p)) return false;
       return true;
     });
 
@@ -994,20 +1039,20 @@ Examples:
     // irrelevant polls like "TikTok or Instagram" just because they have high votes.
     if (matchedPolls.length === 0 && requiredEntityVariants.length > 0) {
       // First try: polls matching at least one entity
-      const partialEntityMatches = enrichedPollList.filter((p: any) => p._entityHits > 0 && p._topicalHits >= 1);
+      const partialEntityMatches = enrichedPollList.filter((p: any) => p._entityHits > 0 && p._topicalHits >= 1 && passesSubjectGate(p));
       if (partialEntityMatches.length > 0) {
         console.log(`Entity gate killed all ${requiredEntityVariants.length} entities — falling back to ${partialEntityMatches.length} partial entity matches`);
         matchedPolls = partialEntityMatches;
       } else {
         // Second try: topical only (no entity match at all)
-        const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1);
+        const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1 && passesSubjectGate(p));
         if (topicalOnly.length > 0) {
           console.log(`Entity gate killed all ${requiredEntityVariants.length} entities — falling back to ${topicalOnly.length} topical matches`);
           matchedPolls = topicalOnly;
         }
       }
     } else if (matchedPolls.length === 0 && topicalTerms.length > 0) {
-      const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1);
+      const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1 && passesSubjectGate(p));
       if (topicalOnly.length > 0) {
         console.log(`No entity matches — falling back to ${topicalOnly.length} topical matches`);
         matchedPolls = topicalOnly;
@@ -1015,7 +1060,9 @@ Examples:
     }
 
     // Final relax: if still empty and we have a category, fall back to category matches.
-    if (matchedPolls.length === 0 && categoryBuckets.length > 0) {
+    // Skipped when the question has clear subject terms — a same-category poll about a
+    // different subject would answer the wrong question.
+    if (matchedPolls.length === 0 && categoryBuckets.length > 0 && !hasSubjectTerms) {
       const catOnly = enrichedPollList.filter((p: any) => categoryBuckets.includes(p.category));
       if (catOnly.length > 0) {
         console.log(`Topical gate killed everything — falling back to ${catOnly.length} category matches`);
@@ -1023,13 +1070,19 @@ Examples:
       }
     }
 
+    // Rank by relevance first (no vote data needed), keep a small window, then load votes.
+    matchedPolls.sort((a: any, b: any) => (b._subjectHits - a._subjectHits) || (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits));
+    matchedPolls = matchedPolls.slice(0, 24);
+    await attachStats(matchedPolls);
+
     if (controversial) {
       matchedPolls = matchedPolls.filter((p: any) => p._stats.total >= 5).sort((a: any, b: any) => (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._controversyScore - a._controversyScore));
     } else {
-      matchedPolls.sort((a: any, b: any) => (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
+      matchedPolls.sort((a: any, b: any) => (b._subjectHits - a._subjectHits) || (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
     }
 
     matchedPolls = matchedPolls.slice(0, mode === "decide" ? 5 : 12);
+
 
     // ---- 3b. Relevance validation ----
     // Check if matched polls ACTUALLY answer the user's question.
