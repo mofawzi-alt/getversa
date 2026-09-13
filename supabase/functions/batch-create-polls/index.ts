@@ -55,7 +55,7 @@ function resolveCountryDirective(country?: string | null): string {
   return COUNTRY_DIRECTIVES[country.trim().toLowerCase()] || DEFAULT_COUNTRY_DIRECTIVE;
 }
 
-async function generateAndUploadImage(apiKey: string, prompt: string, supabase: any, culturalContext?: string | null, targetCountry?: string | null): Promise<string | null> {
+async function generateAndUploadImage(apiKey: string, prompt: string, question: string, category: string, option: string, supabase: any, culturalContext?: string | null, targetCountry?: string | null): Promise<string | null> {
   try {
     const countryDirective = resolveCountryDirective(targetCountry);
     const keywordBoost = detectEgyptContext(prompt)
@@ -72,22 +72,26 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
       : r < 0.90
       ? 'a young woman'
       : 'a small mixed-gender group of young friends (include both men and women)';
-    const genderDirective = ` GENDER CASTING (IMPORTANT): The subject must be ${genderCast}. Rotate gender naturally — do not default to young women unless the topic is explicitly female-coded (beauty, makeup, bridal). For neutral lifestyle topics, men and women must appear equally often.`;
-    const imagePrompt = `Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real people in real environments.
+    const genderDirective = ` If a person is needed to clarify the topic, use ${genderCast}, actively doing the option rather than posing. Do not add a person when the topic-specific environment or objects communicate the answer more clearly.`;
+    const imagePrompt = `Cinematic lifestyle photograph, DSLR quality, candid, magazine-grade. Real topic-specific environments and activities.
 
 IMAGE V4 RULES:
 - Real life scenes ONLY. No abstract visuals, no icons.
 - Each image must represent: a lifestyle, a feeling, and a status signal.
-- Real faces, real expressions, real human moments. No people looking at cameras.
-- Human centered: people USING or EXPERIENCING the option — not objects alone.
+- People are optional and must never be generic portrait subjects. If included, show real expressions and active behavior with nobody looking at camera.
+- Topic centered: prioritize the specific place, objects, and activity implied by the poll question and category.
 - Premium cinematic quality: warm tones, clean composition, shallow depth of field.
 - 1 second clarity test: the image must communicate the meaning instantly.
 
 NO logos, brands, text, UI elements, posters, graphics, illustrations, icons, abstract symbols, or graphic design elements.
 
-Subject: "${prompt}". ${countryDirective}${contextScene}${genderDirective}${keywordBoost}
+Poll question: "${question}".
+Category: "${category}".
+Selected option: "${option}".
+Option-specific visual brief: "${prompt}".
+The question and category define the main scene. For Education, show an unmistakable university, classroom, library, books, or study environment — never a neutral person in generic clothing. ${countryDirective}${contextScene}${genderDirective}${keywordBoost}
 
-If the subject is an abstract concept, generate a lifestyle scene showing real people embodying that concept.
+If the option is abstract, translate it into literal topic-specific places, objects, and actions rather than a generic human subject.
 Never default to Western, American, or European settings. No alcohol imagery.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -142,9 +146,19 @@ serve(async (req) => {
       }
     }
 
+    const { data: topicRow } = await supabase
+      .from('polls')
+      .select('question, option_a, option_b, category')
+      .eq('id', pollId)
+      .maybeSingle();
+    const question = topicRow?.question || '';
+    const category = topicRow?.category || 'Lifestyle';
+    const optionA = topicRow?.option_a || imageABrief;
+    const optionB = topicRow?.option_b || imageBBrief;
+
     const [imageA, imageB] = await Promise.all([
-      generateAndUploadImage(LOVABLE_API_KEY, imageABrief, supabase, resolvedContext, resolvedCountry),
-      generateAndUploadImage(LOVABLE_API_KEY, imageBBrief, supabase, resolvedContext, resolvedCountry),
+      generateAndUploadImage(LOVABLE_API_KEY, imageABrief, question, category, optionA, supabase, resolvedContext, resolvedCountry),
+      generateAndUploadImage(LOVABLE_API_KEY, imageBBrief, question, category, optionB, supabase, resolvedContext, resolvedCountry),
     ]);
 
     const { error } = await supabase.from('polls').update({ image_a_url: imageA, image_b_url: imageB }).eq('id', pollId);

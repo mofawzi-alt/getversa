@@ -265,11 +265,11 @@ export default function PollAnalytics({ initialPollId }: PollAnalyticsProps) {
         <div className="flex justify-center gap-4 mt-3 text-xs">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-option-a" />
-            <span className="truncate max-w-[80px]">{optionALabel}</span>
+            <span className="break-words">{optionALabel}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-option-b" />
-            <span className="truncate max-w-[80px]">{optionBLabel}</span>
+            <span className="break-words">{optionBLabel}</span>
           </div>
         </div>
       </div>

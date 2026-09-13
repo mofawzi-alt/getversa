@@ -284,9 +284,9 @@ export default function ActivePollsMonitor() {
 
                 {/* A vs B bar */}
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="truncate max-w-[45%] font-medium">{poll.option_a}</span>
-                    <span className="truncate max-w-[45%] font-medium text-right">{poll.option_b}</span>
+                  <div className="flex justify-between gap-4 text-[11px]">
+                    <span className="break-words flex-1 font-medium">{poll.option_a}</span>
+                    <span className="break-words flex-1 font-medium text-right">{poll.option_b}</span>
                   </div>
                   <div className="flex h-2 rounded-full overflow-hidden bg-muted">
                     {votes > 0 ? (

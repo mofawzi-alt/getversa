@@ -418,7 +418,7 @@ function ResultBar({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center gap-2">
-        <span className="text-xs w-20 truncate">{optionA}</span>
+        <span className="text-xs w-20 break-words">{optionA}</span>
         <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
           <div
             className={`h-full ${w === 'A' ? 'bg-green-500' : 'bg-blue-500'}`}
@@ -428,7 +428,7 @@ function ResultBar({
         <span className="text-xs font-semibold w-12 text-right">{percentA}%</span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-xs w-20 truncate">{optionB}</span>
+        <span className="text-xs w-20 break-words">{optionB}</span>
         <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
           <div
             className={`h-full ${w === 'B' ? 'bg-green-500' : 'bg-blue-500'}`}

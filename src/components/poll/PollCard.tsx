@@ -260,8 +260,8 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
           {hasResult && (
             <div className="mt-3 space-y-2 animate-fade-in">
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span dir="auto" className="text-sm font-semibold text-foreground line-clamp-1">{poll.option_a}</span>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span dir="auto" className="min-w-0 flex-1 whitespace-normal break-words text-[clamp(0.6875rem,2.8vw,0.875rem)] leading-tight font-semibold text-foreground">{poll.option_a}</span>
                   <span className="text-sm font-bold text-foreground shrink-0 ml-2">{result!.percentA}%</span>
                 </div>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -269,8 +269,8 @@ export default function PollCard({ poll, onSwipe, isAnimating, result, onResultD
                 </div>
               </div>
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span dir="auto" className="text-sm font-semibold text-foreground line-clamp-1">{poll.option_b}</span>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span dir="auto" className="min-w-0 flex-1 whitespace-normal break-words text-[clamp(0.6875rem,2.8vw,0.875rem)] leading-tight font-semibold text-foreground">{poll.option_b}</span>
                   <span className="text-sm font-bold text-foreground shrink-0 ml-2">{result!.percentB}%</span>
                 </div>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">

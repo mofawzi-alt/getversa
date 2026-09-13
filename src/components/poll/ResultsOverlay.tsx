@@ -230,8 +230,8 @@ function OptionRow({ label, imageUrl, percent, isWinner, isUserChoice, side }: {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
-          <span className={`text-sm font-medium ${isUserChoice ? textColor : 'text-foreground'}`}>
+        <div className="flex items-start gap-2 justify-between mb-1">
+          <span className={`text-sm font-medium break-words ${isUserChoice ? textColor : 'text-foreground'}`}>
             {label.length <= 40 ? label : label.slice(0, 40).replace(/\s+\S*$/, '') + '...'}
           </span>
           <span className={`font-bold text-base ml-2 flex-shrink-0 ${isWinner ? 'text-foreground' : 'text-muted-foreground'}`}>
