@@ -56,29 +56,26 @@ function getBrandHint(subject: string, question: string): string {
   return `\n\n⚠️ BRAND DISAMBIGUATION — CRITICAL: "${subject}" refers to ${hint} This is NOT the literal word meaning. Generate imagery of the BRAND/PRODUCT, never the literal object/animal/fruit.`;
 }
 
-const PROMPT_TPL = (subject: string, question: string, otherOption: string) => {
+const PROMPT_TPL = (subject: string, question: string, otherOption: string, category: string) => {
   const bothCelebrities = isCelebrityName(subject) && isCelebrityName(otherOption);
   
   if (bothCelebrities) {
     return `CELEBRITY POLL IMAGE — CINEMATIC MOVIE POSTER / STREAMING SCREEN STYLE
 
-Create a dramatic, cinematic movie-poster-style image for "${subject}" in the context of "${question}".
+Create a dramatic, cinematic entertainment photograph for "${subject}" in the context of "${question}". Category: "${category}".
 
-CONCEPT: Design a stylish, moody movie poster or streaming platform (like Netflix/Shahid) title card that prominently features the name "${subject}" as the HERO TITLE TEXT.
+CONCEPT: Show a topic-specific entertainment setting or activity that communicates the poll question and this option without relying on a generic person.
 
 MANDATORY ELEMENTS:
-- The name "${subject}" MUST appear as large, bold, elegant TITLE TEXT — like a movie title on a poster or a show title on a streaming app screen
 - Cinematic dramatic lighting — dark background with spotlight effects, lens flares, or neon glow
 - Film-grade color grading — deep blues, warm ambers, dramatic contrast
-- A silhouette or abstract human figure in the background (NOT a real face — just a dramatic shadowy outline or artistic blur)
-- Visual elements suggesting the entertainment industry: film grain, bokeh lights, stage lights, red carpet glow, or a theater/screen frame
+- Use the specific venue, objects, performance style, or activity implied by "${question}" and "${subject}"
+- People are optional; never add a generic silhouette or neutral portrait
 - The overall feel should be PREMIUM and CINEMATIC — like an award-winning movie poster or a Shahid/Netflix original series card
 
 STYLE: Dark cinematic photography, dramatic lighting, movie poster composition, 4:5 portrait, premium streaming platform aesthetic.
 
-TEXT RULES: The name "${subject}" MUST be rendered as stylish typography — think movie credits font, bold serif or elegant sans-serif, with cinematic effects (glow, shadow, metallic sheen).
-
-STRICTLY FORBIDDEN: NO real human faces, NO photographs of actual people, NO logos of streaming platforms, NO brand names other than the person's name. The person's name IS the visual centerpiece.`;
+STRICTLY FORBIDDEN: NO real identifiable celebrity faces, NO logos, NO brand names, NO typography, NO text, NO posters, NO app screens, and NO generic human subjects.`;
   }
 
   const isProduct = isProductOrBrand(subject) && isProductOrBrand(otherOption);
@@ -158,15 +155,15 @@ REJECTION TEST: If a stranger glanced at this image for 1 second, would they say
 Last updated: April 2026
 Apply to every poll generated for the Versa platform without exception.
 
-Cinematic photograph for a Gen Z poll: "${question}". This image represents "${subject}" (vs "${otherOption}"). The "this is me" moment must be obvious in under 1 second.
+  Cinematic photograph for a Gen Z poll: "${question}". Category: "${category}". This image represents "${subject}" (vs "${otherOption}"). The poll topic and answer must be obvious in under 1 second.
 
 ${isProduct ? hybridBlock : lifestyleBlock}${locationLock}
 
 SAME-CATEGORY DIFFERENTIATION: If "${subject}" and "${otherOption}" belong to the same category, contrast via lifestyle, environment, mood, energy (group vs solo), lighting, framing, time of day.
 
-WHO: ONE visible human aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing, natural expression. NO older subjects. NO corporate styling.
+WHO: People are optional. Include Egyptian / MENA Gen Z people only when their active behavior makes the poll topic clearer. Never use a neutral portrait or generic person as the main subject.
 
-WHERE: realistic 2026 environment — modern Cairo / MENA apartment, rooftop, cafe, university, street, gym, park, or social hangout. Culturally grounded.
+WHERE: use the most literal topic-specific 2026 Egyptian / MENA environment. Education requires an unmistakable university, classroom, library, books, or study setting. Do not choose a generic location unrelated to the question.
 
 RULE 9B — EGYPTIAN CULTURAL ACCURACY: When setting scenes in Egypt: coffee shops must show local ahwa aesthetic OR modern specialty cafe — never generic Starbucks-style. Food scenes must show real Egyptian context — home kitchen with Arabic tiles, street food setting, family table. Fashion must show Egyptian Gen Z naturally — women may or may not wear hijab, never stereotype, show both across different polls. Social settings must be grounded in real Cairo locations — New Cairo compounds, Zamalek rooftops, Maadi streets, university campuses, local markets. Aspirational polls lean North Coast and compound aesthetic. Everyday polls lean downtown Cairo and local street aesthetic. Never show generic Arab stock photo aesthetic or settings that could be any country.
 
@@ -219,8 +216,8 @@ async function genImage(apiKey: string, prompt: string): Promise<Uint8Array | nu
 
 async function processOne(supabase: any, apiKey: string, poll: any) {
   const [a, b] = await Promise.all([
-    genImage(apiKey, PROMPT_TPL(poll.option_a, poll.question, poll.option_b)),
-    genImage(apiKey, PROMPT_TPL(poll.option_b, poll.question, poll.option_a)),
+    genImage(apiKey, PROMPT_TPL(poll.option_a, poll.question, poll.option_b, poll.category || 'Lifestyle')),
+    genImage(apiKey, PROMPT_TPL(poll.option_b, poll.question, poll.option_a, poll.category || 'Lifestyle')),
   ]);
   if (!a || !b) return { id: poll.id, status: 'gen_failed' };
   const short = poll.id.slice(0, 8);
