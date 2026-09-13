@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
         : r < 0.90
         ? "a young woman"
         : "a small mixed-gender group of young friends (include both men and women)";
-      demographicDirective = ` GENDER CASTING (IMPORTANT): The subject must be ${subject}. Rotate gender naturally across generations — do not default to young women every time unless the topic is explicitly female-coded (beauty, makeup, bridal). For neutral lifestyle topics, men and women must appear equally often.`;
+      demographicDirective = ` If a person is needed to clarify the topic, use ${subject}, actively doing the option rather than posing. Do not add a person when the topic-specific environment or objects communicate the answer more clearly.`;
     }
 
     // Infer logical setting from question context
@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
         ? " Local cue detected: ensure Egyptian / Arabic signage and local Egyptian atmosphere are clearly present."
         : "";
       const contextLine = resolvedContext ? ` Cultural context: ${resolvedContext}.` : "";
-      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph for a Gen Z polling app. DSLR quality, shallow depth-of-field, warm natural lighting, editorial-grade color grading. Real people in REAL environments. Absolutely NO logos, brand names, text overlays, UI elements, illustrations, icons, abstract art, or graphic design.
+      const prompt = `Generate an image (do not reply with text). Cinematic lifestyle photograph for a Gen Z polling app. DSLR quality, shallow depth-of-field, warm natural lighting, editorial-grade color grading. Real topic-specific environments and activities. Absolutely NO logos, brand names, text overlays, UI elements, illustrations, icons, abstract art, or graphic design.
 
 LUXURY BASELINE (apply to EVERY image):
 - Premium cinematic quality: warm tones, clean composition, shallow depth of field, magazine-grade.
@@ -144,14 +144,14 @@ LUXURY BASELINE (apply to EVERY image):
 
 CRITICAL RULES — READ CAREFULLY:
 1. The image MUST directly depict the SPECIFIC TOPIC of this poll. If the poll is about Sahel, show a BEACH/RESORT. If about ride-hailing, show someone IN A CAR or hailing a ride on a busy street. If about coffee, show ACTUAL COFFEE. NEVER default to "person sitting at desk with phone" — that is WRONG for 90% of topics.
-2. The subject must be a real, attractive, stylish Gen Z person (18-25 years old) with contemporary fashion. NEVER show middle-aged or older people unless the poll specifically targets them.
-3. The person must be ACTIVELY DOING the thing the option describes — not just sitting somewhere.
+2. People are optional. Include them only when their action makes the poll topic clearer; never use a neutral portrait or generic person as the main subject.
+3. If a person appears, they must be ACTIVELY DOING the thing the option describes — not posing or merely sitting somewhere.
 
 Poll: "${row.question}"
 This person chose: "${optionText}"
 Category: ${row.category || "lifestyle"}${contextLine}
 
-Show this person LIVING their answer to "${optionText}". The scene must make the viewer instantly think "${optionText}" within 1 second. Examples of CORRECT interpretation:
+Visually answer "${row.question}" with "${optionText}". The question and category must define the main scene, location, and objects. The scene must make the viewer instantly think "${optionText}" within 1 second. For Education, prioritize an unmistakable university, classroom, library, books, or study environment. Examples of CORRECT interpretation:
 - "Going to Sahel" → young person at a beautiful beach resort, turquoise water, summer vibes
 - "Peak hours ride-hailing" → young person in the back seat of a car in Cairo traffic
 - "Street food" → young person eating koshary/falafel at a street stall
