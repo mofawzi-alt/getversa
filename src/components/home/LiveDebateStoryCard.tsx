@@ -41,6 +41,8 @@ interface Props {
   onAddToStory?: () => void;
   eagerImage?: boolean;
   height: string;
+  /** Visual layout variant so the feed doesn't look repetitive */
+  template?: CardTemplate;
 }
 
 function formatTimeLeft(ends_at: string | null | undefined, t: (k: string, v?: Record<string, string | number>) => string): string | null {
@@ -69,6 +71,7 @@ export default function LiveDebateStoryCard({
   onAddToStory,
   eagerImage,
   height,
+  template = 'cinematic',
 }: Props) {
   const { t } = useT();
   const { lang } = useLanguage();
