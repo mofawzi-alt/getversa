@@ -26,6 +26,7 @@ import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import BrowseCard, { computeDemoTags, type BrowsePoll } from '@/components/browse/BrowseCard';
 import LiveDebateStoryCard from '@/components/home/LiveDebateStoryCard';
+import { assignCardTemplates } from '@/lib/cardTemplates';
 import { useUserStories } from '@/hooks/useUserStories';
 import { setImmersiveMode } from '@/lib/immersiveMode';
 import { Loader2 } from 'lucide-react';
