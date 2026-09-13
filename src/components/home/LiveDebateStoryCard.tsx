@@ -7,6 +7,7 @@ import { mapToVersaCategory } from '@/lib/categoryMeta';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { pollText } from '@/lib/pollText';
 import { useT } from '@/hooks/useT';
+import { getCardEmoji, getCategoryBlockBg, type CardTemplate } from '@/lib/cardTemplates';
 
 export interface LiveDebateStoryPoll {
   id: string;
@@ -40,6 +41,8 @@ interface Props {
   onAddToStory?: () => void;
   eagerImage?: boolean;
   height: string;
+  /** Visual layout variant so the feed doesn't look repetitive */
+  template?: CardTemplate;
 }
 
 function formatTimeLeft(ends_at: string | null | undefined, t: (k: string, v?: Record<string, string | number>) => string): string | null {
@@ -68,6 +71,7 @@ export default function LiveDebateStoryCard({
   onAddToStory,
   eagerImage,
   height,
+  template = 'cinematic',
 }: Props) {
   const { t } = useT();
   const { lang } = useLanguage();
@@ -89,6 +93,16 @@ export default function LiveDebateStoryCard({
     [bgImageSrc, eagerImage]
   );
 
+  // Split VS template shows both option images side by side
+  const splitSrcA = useMemo(
+    () => getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' }),
+    [poll]
+  );
+  const splitSrcB = useMemo(
+    () => getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' }),
+    [poll]
+  );
+
   const timeLeft = formatTimeLeft(poll.ends_at, t);
   const pctA = Math.round(poll.percentA || 0);
   const pctB = Math.round(poll.percentB || 0);
@@ -101,8 +115,8 @@ export default function LiveDebateStoryCard({
       className="relative w-full snap-start snap-always overflow-hidden bg-black cursor-pointer select-none"
       onClick={onClick}
     >
-      {/* Full-bleed background image */}
-      {bgImageSrc && (
+      {/* ── TEMPLATE: CINEMATIC — full-bleed image ── */}
+      {template === 'cinematic' && bgImageSrc && (
         <img
           src={bgDisplaySrc}
           alt=""
@@ -114,9 +128,63 @@ export default function LiveDebateStoryCard({
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
+
+      {/* ── TEMPLATE: SPLIT VS — two images side by side ── */}
+      {template === 'split-vs' && (
+        <div className="absolute inset-0 flex">
+          <div className="relative w-1/2 h-full overflow-hidden">
+            <img
+              src={splitSrcA}
+              alt=""
+              loading={eagerImage ? 'eager' : 'lazy'}
+              decoding="async"
+              onError={(e) => handlePollImageError(e, { option: poll.option_a, question: poll.question, side: 'A' })}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="relative w-1/2 h-full overflow-hidden">
+            <img
+              src={splitSrcB}
+              alt=""
+              loading={eagerImage ? 'eager' : 'lazy'}
+              decoding="async"
+              onError={(e) => handlePollImageError(e, { option: poll.option_b, question: poll.question, side: 'B' })}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-white/70 pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-black/60 backdrop-blur-md border border-white/40 flex items-center justify-center pointer-events-none">
+            <span className="text-white text-[13px] font-extrabold tracking-wider">VS</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── TEMPLATE: BOLD TYPE — no image, dark background ── */}
+      {template === 'bold-type' && (
+        <div className="absolute inset-0 bg-[linear-gradient(160deg,hsl(0_0%_9%),hsl(0_0%_4%))]">
+          <div className="absolute -top-24 -right-16 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
+        </div>
+      )}
+
+      {/* ── TEMPLATE: COLOR BLOCK — solid category color + big emoji ── */}
+      {template === 'color-block' && (
+        <div className={`absolute inset-0 ${getCategoryBlockBg(poll.category)}`}>
+          <span className="absolute top-[26%] left-1/2 -translate-x-1/2 text-[140px] leading-none drop-shadow-[0_8px_24px_rgba(0,0,0,0.35)] select-none">
+            {getCardEmoji(poll.category)}
+          </span>
+        </div>
+      )}
+
       {/* Dark gradient overlay for legibility */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/85 pointer-events-none" />
-      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/55 to-transparent pointer-events-none" />
+      {(template === 'cinematic' || template === 'split-vs') && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/85 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/55 to-transparent pointer-events-none" />
+        </>
+      )}
+      {template === 'color-block' && (
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/55 to-transparent pointer-events-none" />
+      )}
 
       {/* TOP ROW — LIVE pill + category + share-to-story */}
       <div className="absolute inset-x-0 top-0 px-4 pt-[max(env(safe-area-inset-top),12px)] flex items-start justify-between gap-2 z-10">
@@ -220,7 +288,13 @@ export default function LiveDebateStoryCard({
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-white text-[30px] sm:text-[34px] leading-[1.12] font-extrabold drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
+          className={`text-white font-extrabold drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] ${
+            template === 'bold-type'
+              ? 'text-[40px] sm:text-[48px] leading-[1.04] tracking-tight'
+              : template === 'color-block'
+                ? 'text-[28px] sm:text-[32px] leading-[1.15]'
+                : 'text-[30px] sm:text-[34px] leading-[1.12]'
+          }`}
           dir="auto"
         >
           {pt.question}

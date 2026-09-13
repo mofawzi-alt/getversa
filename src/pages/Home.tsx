@@ -26,6 +26,7 @@ import PinButton from '@/components/poll/PinButton';
 import PinnedPollBanner from '@/components/home/PinnedPollBanner';
 import BrowseCard, { computeDemoTags, type BrowsePoll } from '@/components/browse/BrowseCard';
 import LiveDebateStoryCard from '@/components/home/LiveDebateStoryCard';
+import { assignCardTemplates } from '@/lib/cardTemplates';
 import { useUserStories } from '@/hooks/useUserStories';
 import { setImmersiveMode } from '@/lib/immersiveMode';
 import { Loader2 } from 'lucide-react';
@@ -699,6 +700,8 @@ function LiveDebatesList({
 }) {
   const displayLivePolls = useMemo(() => livePolls, [livePolls]);
   const pollIds = useMemo(() => displayLivePolls.map(p => p.id), [displayLivePolls]);
+  // Varied card layouts — never two identical looks back to back
+  const cardTemplates = useMemo(() => assignCardTemplates(displayLivePolls), [displayLivePolls]);
   const { data: friendsByPoll } = useFriendsOnPolls(pollIds);
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
@@ -1061,6 +1064,7 @@ function LiveDebatesList({
             }) : undefined}
             eagerImage={loopIndex < 2}
             height={cardHeight}
+            template={cardTemplates.get(poll.id)}
           />
         );
       })}
