@@ -7,6 +7,7 @@ import { mapToVersaCategory } from '@/lib/categoryMeta';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { pollText } from '@/lib/pollText';
 import { useT } from '@/hooks/useT';
+import { getCardEmoji, getCategoryBlockBg, type CardTemplate } from '@/lib/cardTemplates';
 
 export interface LiveDebateStoryPoll {
   id: string;
