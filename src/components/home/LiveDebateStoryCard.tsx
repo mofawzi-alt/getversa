@@ -93,6 +93,16 @@ export default function LiveDebateStoryCard({
     [bgImageSrc, eagerImage]
   );
 
+  // Split VS template shows both option images side by side
+  const splitSrcA = useMemo(
+    () => getPollDisplayImageSrc({ imageUrl: poll.image_a_url, option: poll.option_a, question: poll.question, side: 'A' }),
+    [poll]
+  );
+  const splitSrcB = useMemo(
+    () => getPollDisplayImageSrc({ imageUrl: poll.image_b_url, option: poll.option_b, question: poll.question, side: 'B' }),
+    [poll]
+  );
+
   const timeLeft = formatTimeLeft(poll.ends_at, t);
   const pctA = Math.round(poll.percentA || 0);
   const pctB = Math.round(poll.percentB || 0);
