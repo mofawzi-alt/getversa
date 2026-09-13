@@ -142,9 +142,9 @@ function Bar({ label, percent, isWinner, side }: { label: string; percent: numbe
   const color = side === 'A' ? 'bg-option-a' : 'bg-option-b';
   return (
     <div>
-      <div className="flex justify-between text-xs mb-0.5">
-        <span className="font-medium text-foreground truncate">{label}</span>
-        <span className={`font-bold ${isWinner ? 'text-foreground' : 'text-muted-foreground'}`}>{percent}%</span>
+      <div className="flex justify-between gap-2 text-xs mb-0.5">
+        <span className="font-medium text-foreground break-words">{label}</span>
+        <span className={`font-bold shrink-0 ${isWinner ? 'text-foreground' : 'text-muted-foreground'}`}>{percent}%</span>
       </div>
       <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${percent}%`, transition: 'width 0.5s ease-out' }} />
