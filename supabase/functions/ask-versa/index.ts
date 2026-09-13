@@ -304,14 +304,20 @@ Step 3 — Other filters (only set demographics when the question explicitly men
 - complex: synthesis across multiple polls/demographics
 
 Categories: ${KNOWN_CATEGORIES.join(", ")}.
-If conversation history is provided, the new question may be a FOLLOW-UP — infer underlying topic and merge entities from prior turns.`,
+If conversation history is provided, the new question may be a FOLLOW-UP — infer underlying topic and merge entities from prior turns.
+
+Reply with ONLY a single JSON object (no prose, no markdown):
+{"intent": "preference"|"factual"|"offscope", "keywords": ["..."], "entities": ["..."], "category": "any" or one of the categories above, "route": "simple"|"medium"|"complex", "controversial": false, "intent_summary": "...", "gender": "", "age_range": ""}
+- "keywords" = the SUBJECT words of the question (things, activities, topics) e.g. "best mall or grocery in new cairo?" → ["mall","grocery"].
+- "entities" = named brands/places/people only, lowercase, e.g. ["new cairo"]. Never hallucinate.
+- keywords/entities MUST be arrays of lowercase strings, never a single string.`,
         },
         ...historyMessages,
         { role: "user", content: effectiveQuestion },
         ],
-        tools: [FILTER_TOOL],
-        tool_choice: { type: "function", function: { name: "extract_poll_filters" } },
+        response_format: { type: "json_object" },
       });
+
     } catch (e) {
       console.error("AI extract failed before response", e);
     }
