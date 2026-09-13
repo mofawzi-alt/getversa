@@ -753,14 +753,15 @@ Rules:
       if (ss?.baseline_sunset_threshold) sunsetThreshold = ss.baseline_sunset_threshold;
     }
 
-    // ---- 3. Vote stats ----
-    const ids = polls.map((p) => p.id);
+    // ---- 3. Vote stats (fetched lazily, only for the polls we actually matched) ----
     const statsMap = new Map<string, any>();
-    if (ids.length > 0) {
+    const loadStatsFor = async (pollIds: string[]) => {
+      const missing = pollIds.filter((id) => !statsMap.has(id));
+      if (missing.length === 0) return;
       const { data: votes } = await supabase
         .from("votes")
         .select("poll_id, choice, voter_gender, voter_age_range, voter_city")
-        .in("poll_id", ids);
+        .in("poll_id", missing);
 
       votes?.forEach((v: any) => {
         const s = statsMap.get(v.poll_id) || {
@@ -791,7 +792,32 @@ Rules:
         }
         statsMap.set(v.poll_id, s);
       });
-    }
+    };
+
+    // Attach vote stats to an already-matched poll list (mutates and returns it).
+    const attachStats = async (list: any[]) => {
+      await loadStatsFor(list.map((p) => p.id));
+      for (const p of list) {
+        const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
+        const realTotal = rawStats.total;
+        const baselineActive = realTotal < sunsetThreshold;
+        const baseA = baselineActive ? (p.baseline_votes_a || 0) : 0;
+        const baseB = baselineActive ? (p.baseline_votes_b || 0) : 0;
+        const s = {
+          ...rawStats,
+          a: rawStats.a + baseA,
+          b: rawStats.b + baseB,
+          total: rawStats.total + baseA + baseB,
+          realTotal,
+          baselineActive,
+        };
+        const split = s.total > 0 ? s.a / s.total : 0.5;
+        p._stats = s;
+        p._controversyScore = 1 - Math.abs(split - 0.5) * 2;
+      }
+      return list;
+    };
+
 
     // Generate stem variants so "rent" matches "renting", "rents", "rented".
     const expandStemVariants = (term: string): string[] => {
