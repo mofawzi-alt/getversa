@@ -435,10 +435,14 @@ Rules:
           : [];
 
       return Array.from(new Set(rawItems
-        .map((item) => normalizeTerm(String(item || "")))
+        .map((item: any) => (item && typeof item === "object")
+          ? String(item.value ?? item.name ?? item.entity ?? "")
+          : String(item || ""))
+        .map((item) => normalizeTerm(item))
         .flatMap((item) => item.split(/\s+/))
         .map((item) => item.trim())
         .filter((item) => item.length >= minLength && !STOP_TERMS.has(item))));
+
     };
     const normalizeOptionalString = (value: unknown) => typeof value === "string" ? value.trim() : "";
     const normalizeBoolean = (value: unknown) => {
