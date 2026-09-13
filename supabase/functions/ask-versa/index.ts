@@ -414,8 +414,9 @@ Rules:
       }
       if (!filters) {
         const content = extractData.choices?.[0]?.message?.content || "";
-        filters = recoverFiltersFromText(content);
+        try { filters = JSON.parse(content); } catch { filters = recoverFiltersFromText(content); }
       }
+
       if (!filters) {
         filters = await jsonModeRetry();
       }
