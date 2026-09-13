@@ -102,13 +102,13 @@ STRICTLY FORBIDDEN: NO real human faces, NO photographs of actual people, NO log
 }
 
 // V4 Image prompt with visual_direction support
-function buildImagePrompt(subject: string, question: string, visualDirection?: any): string {
+function buildImagePrompt(subject: string, question: string, category: string, visualDirection?: any): string {
   // If we have a visual_direction object, use it as the primary brief
   const sceneDirective = visualDirection
     ? `SCENE BRIEF: ${visualDirection.scene}. EMOTION: ${visualDirection.emotion}. CONTRAST TYPE: ${visualDirection.contrast_type || 'lifestyle contrast'}. PAIR RELATIONSHIP: ${visualDirection.pair_relationship || ''}.`
     : '';
 
-  return `Cinematic lifestyle photograph that shows a Gen Z person performing the EXACT real-life behavior of: "${subject}". The behavior must be obvious in under 1 second; this is the user's "this is me" moment.
+  return `Cinematic lifestyle photograph for this poll topic: "${question}". Category: "${category}". Depict the option "${subject}" through the most topic-specific real place, objects, and activity. The poll topic must be obvious in under 1 second.
 
 ${sceneDirective}
 
@@ -117,17 +117,17 @@ Rule 1: Real life scenes only. No abstract visuals, no icons, no AI-generated we
 Rule 2: Each image must represent THREE things simultaneously: a lifestyle, a feeling, and a status signal.
 Rule 3: Strong visual contrast required with the paired option.
 Rule 5: Add status signals — luxury environments when the option warrants it. Clean aspirational aesthetics always.
-Rule 6: Real faces, real expressions, real human moments. No neutral stock behavior. No people looking at cameras.
+Rule 6: People are optional. Include them only when their action clarifies the poll topic. Never use a neutral portrait or generic person as the subject. If people appear, use real expressions and no one looking at camera.
 Rule 7: MENA context mandatory — Egyptian or regional people, realistic Egyptian environments. Never default to Western/American/European settings.
 Rule 8: Premium cinematic quality — warm tones, clean composition, DSLR-style photography. No logos, no text overlaid on images, no UI elements.
-Rule 9: Human centered — people using or experiencing the option, not objects alone.
+Rule 9: Topic centered — prioritize the specific environment, objects, and activity described by the question and category. Education means an unmistakable university, classroom, library, books, or study environment; never a generic portrait.
 Rule 11: 1 second clarity test — the image must communicate the option meaning in under 1 second.
 
-WHO (mandatory): ONE visible human subject aged 18–30, modern Gen Z appearance, casual trendy 2026 clothing, natural and expressive. Egyptian / MENA faces.
+WHO: Only when useful, show one or more natural Egyptian / MENA Gen Z people actively demonstrating the answer. Otherwise, let the topic-specific place or objects be the clear subject.
 
 WHERE: realistic 2026 Egyptian environment — modern apartment, cafe, Cairo street, university, co-working, gym, Nile waterfront, mall, or social space. Culturally accurate.
 
-ACTION (critical): the subject must be visibly DOING the behavior of "${subject}" — translate the option into a real-life usage scene.
+ACTION (critical): visually answer "${question}" with "${subject}". Translate the option into a literal, topic-specific scene guided by the "${category}" category.
 
 STYLE: real DSLR / mirrorless photography, cinematic high-contrast lighting, close-up immersive framing, shallow depth of field, ONE clear subject, no clutter, 4:5 portrait, magazine-grade, TikTok / Instagram aesthetic.
 
@@ -401,21 +401,21 @@ Respond with a VALID JSON object only.`;
         promptA = getCelebrityImagePrompt(pollData.option_a, pollData.question);
         promptB = getCelebrityImagePrompt(pollData.option_b, pollData.question);
       } else if (vd) {
-        promptA = buildImagePrompt(pollData.option_a, pollData.question, {
+        promptA = buildImagePrompt(pollData.option_a, pollData.question, pollData.category, {
           scene: vd.option_a_scene,
           emotion: vd.emotion_a,
           contrast_type: vd.contrast_type,
           pair_relationship: vd.pair_relationship,
         });
-        promptB = buildImagePrompt(pollData.option_b, pollData.question, {
+        promptB = buildImagePrompt(pollData.option_b, pollData.question, pollData.category, {
           scene: vd.option_b_scene,
           emotion: vd.emotion_b,
           contrast_type: vd.contrast_type,
           pair_relationship: vd.pair_relationship,
         });
       } else {
-        promptA = buildImagePrompt(pollData.option_a, pollData.question);
-        promptB = buildImagePrompt(pollData.option_b, pollData.question);
+        promptA = buildImagePrompt(pollData.option_a, pollData.question, pollData.category);
+        promptB = buildImagePrompt(pollData.option_b, pollData.question, pollData.category);
       }
 
       const [imageA, imageB] = await Promise.all([
