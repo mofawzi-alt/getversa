@@ -301,9 +301,21 @@ export default function LiveDebateStoryCard({
         </motion.h2>
 
         {/* Option labels */}
-        <div className="grid grid-cols-2 gap-3 text-white text-[17px] font-bold leading-snug">
-          <div className="line-clamp-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]" dir="auto">{pt.optionA}</div>
-          <div className="line-clamp-2 text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]" dir="auto">{pt.optionB}</div>
+        <div className="grid grid-cols-2 gap-3 text-white font-bold leading-snug">
+          <div
+            className="min-w-0 whitespace-normal break-words drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
+            style={{ fontSize: pt.optionA.length > 34 ? '14px' : pt.optionA.length > 24 ? '15px' : '17px' }}
+            dir="auto"
+          >
+            {pt.optionA}
+          </div>
+          <div
+            className="min-w-0 whitespace-normal break-words text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
+            style={{ fontSize: pt.optionB.length > 34 ? '14px' : pt.optionB.length > 24 ? '15px' : '17px' }}
+            dir="auto"
+          >
+            {pt.optionB}
+          </div>
         </div>
 
         {/* Split bar */}
