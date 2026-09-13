@@ -877,28 +877,31 @@ Rules:
       return requiredEntityVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
     };
 
+    // SUBJECT TERMS: the topic words that are NOT entity names (e.g. "mall", "grocery"
+    // in "best mall or grocery in New Cairo?"). A poll that only matches the entity
+    // ("New Cairo or Zamalek?") is NOT about the subject, so it must not answer.
+    const entityTermSet = new Set(
+      (cleanedEntities || []).map((e: string) => normalizeTerm(String(e || "")))
+    );
+    const subjectTermVariants = topicalTerms
+      .filter((t, i) => !topicalTermIsWeak[i] && !entityTermSet.has(t))
+      .map((t) => expandStemVariants(t));
+
+    const getPollSubjectHitCount = (poll: any) => {
+      if (subjectTermVariants.length === 0) return 0;
+      const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
+      return subjectTermVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+    };
+
     const enrichedPollList = polls.map((p) => {
-      const rawStats = statsMap.get(p.id) || { a: 0, b: 0, total: 0, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } };
-      const realTotal = rawStats.total;
-      const baselineActive = realTotal < sunsetThreshold;
-      const baseA = baselineActive ? (p.baseline_votes_a || 0) : 0;
-      const baseB = baselineActive ? (p.baseline_votes_b || 0) : 0;
-      const s = {
-        ...rawStats,
-        a: rawStats.a + baseA,
-        b: rawStats.b + baseB,
-        total: rawStats.total + baseA + baseB,
-        realTotal,
-        baselineActive,
-      };
-      const split = s.total > 0 ? s.a / s.total : 0.5;
-      const controversyScore = 1 - Math.abs(split - 0.5) * 2;
       const topicalHits = getPollTopicalHitCount(p);
       const strongHits = getPollStrongHitCount(p);
       const entityMatch = pollMatchesAllEntities(p);
       const entityHits = getPollEntityHitCount(p);
-      return { ...p, _stats: s, _controversyScore: controversyScore, _topicalHits: topicalHits, _strongHits: strongHits, _entityMatch: entityMatch, _entityHits: entityHits };
+      const subjectHits = getPollSubjectHitCount(p);
+      return { ...p, _stats: { a: 0, b: 0, total: 0, realTotal: 0, baselineActive: false, viewerAge: { a: 0, b: 0, total: 0 }, viewerCity: { a: 0, b: 0, total: 0 }, genderM: { a: 0, b: 0, total: 0 }, genderF: { a: 0, b: 0, total: 0 } }, _controversyScore: 0, _topicalHits: topicalHits, _strongHits: strongHits, _entityMatch: entityMatch, _entityHits: entityHits, _subjectHits: subjectHits };
     });
+
 
     // VAGUE-QUESTION GUARD (decide mode): no specific A vs B → ask a clarifier instead of guessing.
     // Triggers when the user has 0 entities AND ≤1 generic topical term (e.g. "best place to eat",
