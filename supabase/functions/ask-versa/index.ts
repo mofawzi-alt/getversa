@@ -1003,6 +1003,10 @@ Examples:
 
     // Check if we have any non-weak topical terms
     const hasStrongTerms = topicalTerms.some((_, i) => !topicalTermIsWeak[i]);
+    const hasSubjectTerms = subjectTermVariants.length > 0;
+    // A poll may only answer the question if it touches the SUBJECT of the question
+    // (not just the place/brand mentioned in it).
+    const passesSubjectGate = (p: any) => !hasSubjectTerms || p._subjectHits >= 1;
 
     let matchedPolls = enrichedPollList.filter((p: any) => {
       if (!p._entityMatch) return false;
@@ -1015,6 +1019,7 @@ Examples:
       // If the question has strong (non-weak) terms, require at least one strong hit.
       // This prevents "private university" from matching "Private Moments" (only weak "private" hit).
       if (hasStrongTerms && p._strongHits < 1) return false;
+      if (!passesSubjectGate(p)) return false;
       return true;
     });
 
@@ -1023,20 +1028,20 @@ Examples:
     // irrelevant polls like "TikTok or Instagram" just because they have high votes.
     if (matchedPolls.length === 0 && requiredEntityVariants.length > 0) {
       // First try: polls matching at least one entity
-      const partialEntityMatches = enrichedPollList.filter((p: any) => p._entityHits > 0 && p._topicalHits >= 1);
+      const partialEntityMatches = enrichedPollList.filter((p: any) => p._entityHits > 0 && p._topicalHits >= 1 && passesSubjectGate(p));
       if (partialEntityMatches.length > 0) {
         console.log(`Entity gate killed all ${requiredEntityVariants.length} entities — falling back to ${partialEntityMatches.length} partial entity matches`);
         matchedPolls = partialEntityMatches;
       } else {
         // Second try: topical only (no entity match at all)
-        const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1);
+        const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1 && passesSubjectGate(p));
         if (topicalOnly.length > 0) {
           console.log(`Entity gate killed all ${requiredEntityVariants.length} entities — falling back to ${topicalOnly.length} topical matches`);
           matchedPolls = topicalOnly;
         }
       }
     } else if (matchedPolls.length === 0 && topicalTerms.length > 0) {
-      const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1);
+      const topicalOnly = enrichedPollList.filter((p: any) => p._topicalHits >= 1 && passesSubjectGate(p));
       if (topicalOnly.length > 0) {
         console.log(`No entity matches — falling back to ${topicalOnly.length} topical matches`);
         matchedPolls = topicalOnly;
@@ -1044,7 +1049,9 @@ Examples:
     }
 
     // Final relax: if still empty and we have a category, fall back to category matches.
-    if (matchedPolls.length === 0 && categoryBuckets.length > 0) {
+    // Skipped when the question has clear subject terms — a same-category poll about a
+    // different subject would answer the wrong question.
+    if (matchedPolls.length === 0 && categoryBuckets.length > 0 && !hasSubjectTerms) {
       const catOnly = enrichedPollList.filter((p: any) => categoryBuckets.includes(p.category));
       if (catOnly.length > 0) {
         console.log(`Topical gate killed everything — falling back to ${catOnly.length} category matches`);
@@ -1052,13 +1059,19 @@ Examples:
       }
     }
 
+    // Rank by relevance first (no vote data needed), keep a small window, then load votes.
+    matchedPolls.sort((a: any, b: any) => (b._subjectHits - a._subjectHits) || (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits));
+    matchedPolls = matchedPolls.slice(0, 24);
+    await attachStats(matchedPolls);
+
     if (controversial) {
       matchedPolls = matchedPolls.filter((p: any) => p._stats.total >= 5).sort((a: any, b: any) => (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._controversyScore - a._controversyScore));
     } else {
-      matchedPolls.sort((a: any, b: any) => (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
+      matchedPolls.sort((a: any, b: any) => (b._subjectHits - a._subjectHits) || (b._entityHits - a._entityHits) || (b._topicalHits - a._topicalHits) || (b._stats.total - a._stats.total));
     }
 
     matchedPolls = matchedPolls.slice(0, mode === "decide" ? 5 : 12);
+
 
     // ---- 3b. Relevance validation ----
     // Check if matched polls ACTUALLY answer the user's question.
