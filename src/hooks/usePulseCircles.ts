@@ -107,13 +107,13 @@ export function useFriendsActivity() {
       const userIds = Array.from(new Set(votes.map((v: any) => v.user_id)));
       const pollIds = Array.from(new Set(votes.map((v: any) => v.poll_id)));
       const [{ data: profiles }, { data: polls }] = await Promise.all([
-        supabase.from('users').select('id, name, avatar_url').in('id', userIds),
+        supabase.from('users').select('id, username, avatar_url').in('id', userIds),
         supabase
           .from('polls')
           .select('id, question, option_a, option_b, image_a_url, image_b_url, category')
           .in('id', pollIds),
       ]);
-      const nameMap = new Map((profiles || []).map((p: any) => [p.id, p.name || 'Friend']));
+      const nameMap = new Map((profiles || []).map((p: any) => [p.id, p.username || 'Friend']));
       const pollMap = new Map((polls || []).map((p: any) => [p.id, p]));
       // One card per friend (their most recent vote)
       const seen = new Set<string>();
