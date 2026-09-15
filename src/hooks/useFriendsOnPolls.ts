@@ -50,10 +50,10 @@ export function useFriendsOnPolls(pollIds: string[] | undefined) {
       const userIds = Array.from(new Set(votes.map((v: any) => v.user_id)));
       const { data: profiles } = await supabase
         .from('users')
-        .select('id, name, avatar_url')
+        .select('id, username, avatar_url')
         .in('id', userIds);
       const profileMap = new Map(
-        (profiles || []).map((p: any) => [p.id, { name: p.name || 'Friend', avatar_url: p.avatar_url }])
+        (profiles || []).map((p: any) => [p.id, { name: p.username || 'Friend', avatar_url: p.avatar_url }])
       );
 
       // 4) group by poll
