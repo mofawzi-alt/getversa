@@ -433,6 +433,7 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     onVoteComplete?.('skip', poll.id);
   }, [poll, result, isVoting, user, profile, queryClient, onVoteComplete]);
 
+  const { lang } = useLanguage();
   if (!poll) {
     return <HeroCaughtUp />;
   }
@@ -561,7 +562,6 @@ export default function HeroVoteCard({ poll, unseenCount, onVoteComplete, onPoll
     }
     return { lead: q, tail: null };
   };
-  const { lang } = useLanguage();
   const pt = pollText(poll, lang);
   const isArabic = lang === 'ar' && !!poll.question_ar;
   const { lead: qLead, tail: qTail } = isArabic ? { lead: pt.question, tail: null } : splitQuestion(pt.question);
