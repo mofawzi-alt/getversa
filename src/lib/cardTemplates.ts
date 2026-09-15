@@ -63,25 +63,21 @@ function isOpinionQuestion(question: string): boolean {
 export function preferredTemplate(poll: TemplatePoll): CardTemplate {
   const category = mapToVersaCategory(poll.category);
   const hasBothImages = Boolean(poll.image_a_url && poll.image_b_url);
+  const hasAnyImage = Boolean(poll.image_a_url || poll.image_b_url);
   const bothAreNames = looksLikeName(poll.option_a) && looksLikeName(poll.option_b);
 
   // Split VS — both options are brands / products / places with their own visuals
   if (hasBothImages && bothAreNames) return 'split-vs';
 
-  // Color Block — light, fun preference polls with short options
-  if (bothAreNames && isPreferenceQuestion(poll.question)) return 'color-block';
+  // Any poll with a photo shows it — full-bleed cinematic.
+  if (hasAnyImage) return 'cinematic';
 
-  // Bold Type — opinion / decision / relationship questions
+  // No photo available: pick a no-image style.
+  if (bothAreNames && isPreferenceQuestion(poll.question)) return 'color-block';
   if (isOpinionQuestion(poll.question) || category === 'Relationships' || category === 'Money' || category === 'Education' || category === 'Digital Life') {
     return 'bold-type';
   }
-
-  // Cinematic — lifestyle, food mood, Egypt, travel, entertainment
-  if (category === 'Lifestyle' || category === 'Food' || category === 'Egypt' || category === 'Entertainment') {
-    return 'cinematic';
-  }
-
-  return poll.image_a_url || poll.image_b_url ? 'cinematic' : 'bold-type';
+  return 'bold-type';
 }
 
 /** Fallbacks that still respect what the poll actually has to show. */
