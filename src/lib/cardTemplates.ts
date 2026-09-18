@@ -80,11 +80,13 @@ export function preferredTemplate(poll: TemplatePoll): CardTemplate {
   return 'bold-type';
 }
 
-/** Fallbacks that still respect what the poll actually has to show. */
+/** Fallbacks that always keep a poll's picture visible. */
 function alternatives(poll: TemplatePoll, preferred: CardTemplate): CardTemplate[] {
   const hasBothImages = Boolean(poll.image_a_url && poll.image_b_url);
   const hasAnyImage = Boolean(poll.image_a_url || poll.image_b_url);
-  const ordered: CardTemplate[] = ['cinematic', 'bold-type', 'color-block', 'split-vs'];
+  const ordered: CardTemplate[] = hasAnyImage
+    ? ['cinematic', 'split-vs']
+    : ['bold-type', 'color-block'];
   return ordered.filter((template) => {
     if (template === preferred) return false;
     if (template === 'split-vs') return hasBothImages;
