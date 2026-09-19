@@ -143,14 +143,36 @@ serve(async (req: Request): Promise<Response> => {
           body: JSON.stringify(body),
         });
 
+        const cleanupInvalidPlayerIds = async (json: any) => {
+          const invalid: string[] = Array.isArray(json?.errors?.invalid_player_ids)
+            ? json.errors.invalid_player_ids.filter((id: unknown) => typeof id === "string" && id)
+            : [];
+          if (invalid.length === 0) return 0;
+          const { error: delErr } = await supabase
+            .from("onesignal_subscriptions")
+            .delete()
+            .in("player_id", invalid);
+          if (delErr) {
+            console.error("Failed cleaning stale OneSignal player_ids:", delErr);
+            return 0;
+          }
+          console.log(`Cleaned ${invalid.length} stale OneSignal player_ids`);
+          return invalid.length;
+        };
+
         const osRes = await sendOneSignal(osBody);
         const osJson = await osRes.json();
         console.log(`OneSignal sent via ${sentViaSavedSubscriptionIds ? "saved subscription ids" : (payload.user_ids?.length ? "external_id aliases" : "subscribed segment")}:`, osRes.status, osJson);
 
+        const staleCleaned = await cleanupInvalidPlayerIds(osJson);
+        const invalidCount = staleCleaned;
+
         const noAliasRecipients = Array.isArray(osJson?.errors)
           && osJson.errors.some((error: unknown) => String(error).includes("All included players are not subscribed"));
         if (osRes.ok && !noAliasRecipients) {
-          oneSignalSent = sentViaSavedSubscriptionIds ? subscriptionIds.length : (payload.user_ids?.length ?? 0);
+          oneSignalSent = sentViaSavedSubscriptionIds
+            ? Math.max(subscriptionIds.length - invalidCount, 0)
+            : (payload.user_ids?.length ?? 0);
         }
         if (payload.user_ids?.length && noAliasRecipients && subscriptionIds.length > 0 && !sentViaSavedSubscriptionIds) {
           const fallbackRes = await sendOneSignal({
@@ -160,11 +182,13 @@ serve(async (req: Request): Promise<Response> => {
             include_subscription_ids: subscriptionIds,
           });
           const fallbackJson = await fallbackRes.json();
+          const fallbackCleaned = await cleanupInvalidPlayerIds(fallbackJson);
           if (fallbackRes.ok) {
-            oneSignalSent = subscriptionIds.length;
+            oneSignalSent = Math.max(subscriptionIds.length - fallbackCleaned, 0);
           }
           console.log(`OneSignal fallback sent (${subscriptionIds.length} saved native subscriptions):`, fallbackRes.status, fallbackJson);
         }
+
       } catch (osErr) {
         console.error("OneSignal forward failed:", osErr);
       }

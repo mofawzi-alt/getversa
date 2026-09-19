@@ -242,8 +242,16 @@ async function saveSubscription(userId: string, playerId: string): Promise<void>
           { onConflict: 'user_id,player_id' },
         );
       if (error) throw error;
+      // Remove this user's older registrations for the same platform (reinstall / token rotation)
+      await supabase
+        .from('onesignal_subscriptions')
+        .delete()
+        .eq('user_id', userId)
+        .eq('platform', Capacitor.getPlatform())
+        .neq('player_id', playerId);
       console.log('[OneSignal] saved subscription', playerId);
       return;
+
     } catch (err) {
       if (attempt === 5) {
         console.error('[OneSignal] saveSubscription failed', err);
