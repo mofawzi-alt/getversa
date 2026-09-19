@@ -111,7 +111,15 @@ serve(async (req: Request) => {
 
 
     return new Response(
-      JSON.stringify({ success: true, sent: subscriptionIds.length, result }),
+      JSON.stringify({
+        success: true,
+        sent: Math.max(subscriptionIds.length - invalidIds.length, 0),
+        cleaned: invalidIds.length,
+        result,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err: any) {
