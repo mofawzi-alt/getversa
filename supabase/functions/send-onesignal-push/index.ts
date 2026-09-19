@@ -119,9 +119,6 @@ serve(async (req: Request) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
-
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
   } catch (err: any) {
     console.error("send-onesignal-push error:", err);
     return new Response(
