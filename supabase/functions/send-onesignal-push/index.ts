@@ -90,10 +90,25 @@ serve(async (req: Request) => {
     );
 
     const result = await response.json();
+
+    // Drop device registrations OneSignal reports as invalid so future sends stay clean.
+    const invalidIds: string[] = Array.isArray(result?.errors?.invalid_player_ids)
+      ? result.errors.invalid_player_ids.filter((id: unknown) => typeof id === "string" && id)
+      : [];
+    if (invalidIds.length > 0) {
+      const { error: delErr } = await admin
+        .from("onesignal_subscriptions")
+        .delete()
+        .in("player_id", invalidIds);
+      if (delErr) console.error("Failed cleaning stale player_ids:", delErr);
+      else console.log(`Cleaned ${invalidIds.length} stale OneSignal player_ids`);
+    }
+
     if (!response.ok) {
       console.error("OneSignal error:", result);
       throw new Error(`OneSignal API ${response.status}: ${JSON.stringify(result)}`);
     }
+
 
     return new Response(
       JSON.stringify({ success: true, sent: subscriptionIds.length, result }),
