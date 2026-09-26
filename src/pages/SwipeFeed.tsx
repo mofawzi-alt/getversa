@@ -803,7 +803,7 @@ export default function SwipeFeed() {
   } : null;
 
   const { data: polls, isLoading, refetch } = useQuery({
-    queryKey: ['feed-polls', user?.id, categoryFilter, searchFilter],
+    queryKey: ['feed-polls', user?.id, categoryFilter, searchFilter, isAdmin],
     queryFn: async () => {
       const now = new Date().toISOString();
       let query = supabase.from('polls').select('*').eq('is_active', true).neq('is_archived', true)
