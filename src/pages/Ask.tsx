@@ -409,7 +409,7 @@ export default function Ask() {
                   transition={{ delay: 0.15 }}
                   className="text-lg font-black text-foreground break-words"
                 >
-                  {t("Can't decide? Egypt already did.")}
+                  {t(askCountry.decideTitle)}
                 </motion.p>
                 <motion.p
                   initial={{ opacity: 0 }}
