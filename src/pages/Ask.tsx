@@ -66,8 +66,10 @@ export default function Ask() {
   const { data: askCredits = 0 } = useAskCredits();
   const { totalVotes, askLevel, levelLabel } = useUserVoteCount();
   const { t } = useT();
-  const DECIDE_SUGGESTIONS = translateSuggestions(DECIDE_SUGGESTIONS_RAW, t);
-  const RESEARCH_SUGGESTIONS = translateSuggestions(RESEARCH_SUGGESTIONS_RAW, t);
+  const askCountry = resolveAskCountry(profile?.country);
+  const DECIDE_SUGGESTIONS = translateSuggestions(askCountry.decideSuggestions, t);
+  const RESEARCH_SUGGESTIONS = translateSuggestions(askCountry.researchSuggestions, t);
+
   const [mode, setMode] = useState<Mode>('decide');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
