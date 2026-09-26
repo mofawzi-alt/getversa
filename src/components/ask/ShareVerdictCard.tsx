@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 import versaLogoImg from '@/assets/versa-logo.png';
 import type { Verdict } from './VerdictCard';
 import { useT } from '@/hooks/useT';
+import { useAuth } from '@/contexts/AuthContext';
+import { resolveAskCountry } from '@/lib/askCountry';
 
 interface Props {
   verdict: Verdict;
@@ -11,6 +13,8 @@ interface Props {
 
 export default function ShareVerdictCard({ verdict }: Props) {
   const { t } = useT();
+  const { profile } = useAuth();
+  const askCountry = resolveAskCountry(profile?.country);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [generating, setGenerating] = useState(false);
 
@@ -143,7 +147,7 @@ export default function ShareVerdictCard({ verdict }: Props) {
     ctx.font = '500 24px "Inter", sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText(
-      `Based on ${verdict.total_votes.toLocaleString()} Egyptian votes`,
+      askCountry.shareSampleLine(verdict.total_votes),
       W / 2,
       barY + barH + 110,
     );
@@ -221,7 +225,7 @@ export default function ShareVerdictCard({ verdict }: Props) {
         await navigator.share({
           files: [file],
           title: `Versa says: pick ${verdict.winner_label}`,
-          text: `${verdict.winner_pct}% of Egyptians pick ${verdict.winner_label}. ${verdict.question}`,
+          text: askCountry.shareText(verdict.winner_pct, verdict.winner_label, verdict.question),
         });
       } else {
         const url = URL.createObjectURL(blob);

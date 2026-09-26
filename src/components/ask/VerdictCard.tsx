@@ -5,6 +5,8 @@ import PollOptionImage from '@/components/poll/PollOptionImage';
 import ShareVerdictCard from './ShareVerdictCard';
 import ShareToStoryButton from '@/components/stories/ShareToStoryButton';
 import { useT } from '@/hooks/useT';
+import { useAuth } from '@/contexts/AuthContext';
+import { resolveAskCountry } from '@/lib/askCountry';
 
 export interface Verdict {
   poll_id: string;
@@ -83,7 +85,7 @@ function DecideVerdictCard({ verdict }: { verdict: Verdict }) {
           transition={{ delay: 0.35 }}
           className="text-sm font-bold text-foreground/60 mt-1"
         >
-          {t('{pct}% of Egypt chose this', { pct: verdict.winner_pct })}
+          {t(askCountry.verdictLineKey, { pct: verdict.winner_pct })}
         </motion.p>
       </div>
 
