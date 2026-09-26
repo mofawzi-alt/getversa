@@ -1090,7 +1090,7 @@ function LiveDebatesList({
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
   const storiesRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -1427,7 +1427,7 @@ export default function Home() {
   const isOnboardingFeed = voteCount < ONBOARDING_VOTE_TARGET;
 
   const { data: polls, isLoading } = useQuery({
-    queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, queuePollIds.join('|'), Array.from(votedQueueIds || []).join('|'), isQueueReady, isOnboardingFeed, Array.from(votedPollIds || []).join('|')],
+    queryKey: ['visual-feed-home', user?.id, profile?.gender, profile?.age_range, profile?.country, isAdmin, queuePollIds.join('|'), Array.from(votedQueueIds || []).join('|'), isQueueReady, isOnboardingFeed, Array.from(votedPollIds || []).join('|')],
     queryFn: async () => {
       if (user && !isQueueReady) return [];
       return withQueryTimeout(async () => {
@@ -1523,7 +1523,7 @@ export default function Home() {
 
         const queueSet = new Set(queuePollIds.filter(id => !votedPollIds?.has(id) && !votedQueueIds?.has(id)));
         let prioritized = mergedPolls;
-        if (profile) {
+        if (profile && !isAdmin) {
           const matched: typeof mergedPolls = [];
           const others: typeof mergedPolls = [];
 

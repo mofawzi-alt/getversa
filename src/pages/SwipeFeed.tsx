@@ -722,7 +722,7 @@ const VALUE_MSG_VOTE_THRESHOLD = 3;
 
 // ── Main Feed ──
 export default function SwipeFeed() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [votedResults, setVotedResults] = useState<Map<string, VoteResult>>(new Map());
@@ -803,7 +803,7 @@ export default function SwipeFeed() {
   } : null;
 
   const { data: polls, isLoading, refetch } = useQuery({
-    queryKey: ['feed-polls', user?.id, categoryFilter, searchFilter],
+    queryKey: ['feed-polls', user?.id, categoryFilter, searchFilter, isAdmin],
     queryFn: async () => {
       const now = new Date().toISOString();
       let query = supabase.from('polls').select('*').eq('is_active', true).neq('is_archived', true)
@@ -887,7 +887,7 @@ export default function SwipeFeed() {
         }
       }
 
-      if (profile) {
+      if (profile && !isAdmin) {
         allPolls = allPolls.filter(p => {
           if (p.target_gender && p.target_gender !== 'All' && profile.gender) {
             const genders = p.target_gender.split(',').map((g: string) => g.trim());
