@@ -325,7 +325,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You classify questions for an Egyptian opinion-poll app called Versa, then extract filters.
+            content: `You classify questions for an opinion-poll app called Versa (audience: ${countryCtx.name}), then extract filters.
 
 Step 1 — INTENT (mandatory, exact value):
 - "preference": user is asking which option people PREFER, PICK, CHOOSE, LEAN toward, LOVE more, vote for, or "X or Y?". This is what Versa's polls answer. IMPORTANT: if the user mentions "versa opinion", "versa votes", "what do users think", "any opinions", or asks for poll/vote data on a topic — this is ALWAYS "preference", never "factual". The user is asking for Versa poll results.
@@ -640,7 +640,7 @@ Rules:
       if (bareSelf || (mentionsVersa && aboutShape)) {
         const summary = isArabic
           ? "ڤيرسا هي محرك آراء مصر.\n\nكل يوم، المصريين بيختاروا بين حاجتين — براندات، أكل، لايف ستايل، فلوس، ثقافة. كل اختيار ده داتا سلوكية حقيقية متسجلة بالسن والجنس والمدينة.\n\nكل ما تصوّت أكتر، ڤيرسا بتعرف أكتر إيه اللي مصر بتفضّله فعلاً — مش اللي الناس بتقول إنها بتفضّله، لأ، اللي بيختاروه بجد.\n\nاسألني أي حاجة عن رأي مصر. هقولك الداتا بتقول إيه."
-          : "Versa is Egypt's opinion engine.\n\nEvery day, Egyptians swipe to choose between two things — brands, food, lifestyle, money, culture. Every choice is real behavioral data tagged by age, gender, and city.\n\nThe more you vote, the more Versa learns what Egypt actually prefers — not what people say they prefer, but what they actually choose.\n\nAsk me anything about what Egypt thinks. I'll tell you what the data says.";
+          : `Versa is the opinion engine for ${PLACE}.\n\nEvery day, ${PEOPLE} swipe to choose between two things — brands, food, lifestyle, money, culture. Every choice is real behavioral data tagged by age, gender, and city.\n\nThe more you vote, the more Versa learns what ${PLACE} actually prefers — not what people say they prefer, but what they actually choose.\n\nAsk me anything about what ${PLACE} thinks. I'll tell you what the data says.`;
         let queryId: string | null = null;
         if (userId) {
           const { data: inserted } = await supabase.from("ask_versa_queries").insert({
@@ -679,7 +679,7 @@ Rules:
         stage: "offscope",
         summary: isArabic
           ? "ڤيرسا متخصصة في أسئلة تفضيلات المستهلك — حاجات المصريين بيصوّتوا عليها زي البراندات، الأكل، اللايف ستايل، أو العلاقات. جرّب سؤال زي \"كوكا ولا بيبسي؟\" أو \"الطلبة رأيهم إيه في التعليم أونلاين؟\"."
-          : "Versa is built for consumer preference questions — things people in Egypt vote on, like brands, food, lifestyle, or relationships. Try a question like \"Coke or Pepsi?\" or \"What do students think about online learning?\".",
+          : `Versa is built for consumer preference questions — things ${PEOPLE} vote on, like brands, food, lifestyle, or relationships. Try a question like "Coke or Pepsi?" or "What do students think about online learning?".`,
         credits_balance: userBalance,
         route: safeRoute,
         mode,
@@ -974,10 +974,10 @@ Rules:
           messages: [
             {
               role: "system",
-              content: `You turn a vague Egyptian-consumer question into 3 specific A-vs-B choices Versa can answer from polls.
+              content: `You turn a vague consumer question from ${PLACE} into 3 specific A-vs-B choices Versa can answer from polls.
 Rules:
-- Each clarifier MUST be a concrete pair of two named options Egyptians would actually choose between.
-- Use brands, places, or lifestyle behaviours common in Egypt (Cairo/Alexandria/Sahel/Sahel context welcome).
+- Each clarifier MUST be a concrete pair of two named options ${PEOPLE} would actually choose between.
+- Use brands, places, or lifestyle behaviours common in ${PLACE} (${countryCtx.cities} context welcome).
 - Keep each rewritten question under 9 words, ending with "?".
 - "label" = short 2-4 word chip text. "question" = full rephrased question to send back.
 Examples:
@@ -990,7 +990,7 @@ Examples:
     {"label":"Denim vs leather","question":"Denim jacket or leather jacket?"},
     {"label":"Modest vs trendy","question":"Modest aesthetic or trendy aesthetic?"},
     {"label":"Sneakers vs loafers","question":"Sneakers or loafers for going out?"}
-  ]` + arabicInstruction + (isArabic ? "\nWrite both label and question in Egyptian Arabic (عامية). Brand names stay in their original form." : ""),
+  ]` + arabicInstruction + (isArabic ? `\n${countryCtx.arabic} Brand names stay in their original form.` : ""),
             },
             { role: "user", content: question },
           ],
@@ -1138,7 +1138,7 @@ Examples:
           messages: [
             {
               role: "system",
-              content: `You are Versa, Egypt's public sentiment engine. The user asked a question but Versa doesn't have direct poll data on this exact topic.
+              content: `You are Versa, the public sentiment engine for ${PLACE}. The user asked a question but Versa doesn't have direct poll data on this exact topic.
 
 CRITICAL: Be honest. Do NOT pretend you have data when you don't. Versa's value is REAL poll results from REAL people — never fake it.
 
@@ -1148,7 +1148,7 @@ Your job:
 3. Keep it to 2-3 sentences max. No generic AI advice or opinions.
 
 Tone: Honest, direct, helpful — never preachy or generic.
-${isArabic ? "\nReply in Egyptian Arabic (عامية مصرية). Keep brand/place names in their original form." : ""}
+${isArabic ? `\n${countryCtx.arabic} Keep brand/place names in their original form.` : ""}
 Do NOT give your own opinion or advice. Only point users toward real vote data.`,
             },
             ...historyMessages,
@@ -1166,7 +1166,7 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
       if (!smartAnswer) {
         smartAnswer = isArabic
           ? "ڤيرسا معندهاش بول مباشر على الموضوع ده بالظبط. جرب سؤال مقارنة زي \"طلبات ولا المنيوز؟\" أو \"مكدونالدز ولا هارديز؟\" — هقولك الناس بتختار إيه."
-          : "Versa doesn't have a direct poll on this exact topic yet. Try a comparison question like \"Talabat or Elmenus?\" or \"McDonald's or Hardees?\" — I'll tell you what Egypt picks.";
+          : `Versa doesn't have a direct poll on this exact topic yet. Try a comparison question like "Coke or Pepsi?" or "Nike or Adidas?" — I'll tell you what ${PLACE} picks.`;
       }
 
       // Suggest related polls the user can vote on
@@ -1354,7 +1354,7 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
       const winnerLabel = pctA >= pctB ? top.option_a : top.option_b;
       const winnerPct = Math.max(pctA, pctB);
       const teaser = mode === "decide"
-        ? `${winnerPct}% of Egyptians lean toward ${winnerLabel}…`
+        ? `${winnerPct}% of ${PEOPLE} lean toward ${winnerLabel}…`
         : `Across ${matchedPolls.length} related polls and ${totalVotes} votes, here's what the data says…`;
 
       return new Response(
@@ -1471,15 +1471,15 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
 
     // Build level-appropriate prompt instructions
     const levelInstructions = askLevel <= 1
-      ? `Reply with ONLY a JSON object: {"verdict": "Max 25 words. Lead with the % + winner, then one short reason. Example: '68% of Egyptians pick Coke — the nostalgia factor still wins, even with Gen Z.'"}
+      ? `Reply with ONLY a JSON object: {"verdict": "Max 25 words. Lead with the % + winner, then one short reason. Example: '68% pick Coke — the nostalgia factor still wins, even with Gen Z.'"}
 Rules: 1-2 sentences. Real numbers only. No fluff.`
       : `Reply ONLY with valid JSON, no markdown, no backticks.
 {
   "verdict": "Max 25 words. The headline number + one sharp reason. Example: '72% picked Nike — Adidas only wins with men over 35 who care about heritage.'",
   ${highlightCount >= 1 ? `"highlight_1": "Max 20 words. One 'wait, really?' demographic contrast with real numbers. Example: 'But Cairo women flipped — 58% chose Adidas, the only group that did.'",` : ""}
-  ${highlightCount >= 2 ? `"highlight_2": "Max 20 words. A second contrast from a DIFFERENT angle (age, city, gender). Example: 'Under-25s split 50/50 — older Egyptians decided this poll.'",` : ""}
-  "cultural_context": "Max 20 words. One emotional connection to Egyptian identity. Concrete, not academic.",
-  "action_line": "Max 12 words. Direct pick. Example: 'Go with Nike — Egypt agrees, especially Cairo Gen Z.'"
+  ${highlightCount >= 2 ? `"highlight_2": "Max 20 words. A second contrast from a DIFFERENT angle (age, city, gender). Example: 'Under-25s split 50/50 — older voters decided this poll.'",` : ""}
+  "cultural_context": "Max 20 words. One emotional connection to local identity in ${PLACE}. Concrete, not academic.",
+  "action_line": "Max 12 words. Direct pick. Example: 'Go with Nike — ${PLACE} agrees, especially Gen Z.'"
 }
 
 CRITICAL RULES:
@@ -1516,7 +1516,7 @@ CRITICAL RULES:
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: `You are Versa's public sentiment engine. Your answers are driven by REAL VOTE DATA from real Egyptians — never AI opinions. Produce a structured JSON response.\n${levelInstructions}` + arabicInstruction },
+          { role: "system", content: `You are Versa's public sentiment engine. Your answers are driven by REAL VOTE DATA from real people in ${PLACE} — never AI opinions. Produce a structured JSON response.\n${levelInstructions}` + arabicInstruction },
           { role: "user", content: `User asked: "${question}"\n\nPoll data:\n${pollDataText}\n\nTop result: ${winnerLabel} wins with ${winnerPct}% (n=${s.total})` },
         ],
         response_format: { type: "json_object" },
@@ -1548,7 +1548,7 @@ CRITICAL RULES:
       const confidenceLine = `📊 ${totalRealVotes > 0 ? totalRealVotes.toLocaleString() : totalVotes.toLocaleString()} real votes from ${matchedPolls.length} poll${matchedPolls.length > 1 ? 's' : ''}`;
 
       // Build summary with people-like-me and confidence
-      let fullSummary = parts.verdict || `${winnerPct}% of Egyptians pick ${winnerLabel}.`;
+      let fullSummary = parts.verdict || `${winnerPct}% of ${PEOPLE} pick ${winnerLabel}.`;
       if (peopleLikeMeLine) fullSummary += ` ${peopleLikeMeLine}`;
 
       verdict = {
@@ -1563,7 +1563,7 @@ CRITICAL RULES:
         total_votes: s.total,
         real_votes: s.realTotal,
         baseline_active: !!s.baselineActive,
-        reason: parts.verdict || `${winnerPct}% of Egyptians pick ${winnerLabel}.`,
+        reason: parts.verdict || `${winnerPct}% of ${PEOPLE} pick ${winnerLabel}.`,
         viewer_line: viewerLine,
       };
       summary = fullSummary;
@@ -1585,7 +1585,7 @@ Rules: Real numbers only. No fluff.`
   "verdict": "2-3 punchy sentences. Lead with strongest number, then sharpest pattern. Max 40 words.",
   ${highlightCount >= 1 ? `"highlight_1": "Max 20 words. The most unexpected demographic split with real numbers. 'Wait, really?' energy.",` : ""}
   ${highlightCount >= 2 ? `"highlight_2": "Max 20 words. Second contrast from a DIFFERENT angle (age vs gender vs city).",` : ""}
-  "cultural_context": "Max 20 words. One emotional link to Egyptian social reality. Concrete.",
+  "cultural_context": "Max 20 words. One emotional link to social reality in ${PLACE}. Concrete.",
   "action_line": "Max 15 words. The strategic takeaway with a hint of why."
 }
 
@@ -1597,7 +1597,7 @@ CRITICAL RULES:
 
       const insightResp = await callAI(LOVABLE_API_KEY, model, {
         messages: [
-          { role: "system", content: `You are Versa's public sentiment engine. Your insights are backed by REAL VOTE DATA from real Egyptians — never AI opinions.\n${researchLevelInstructions}` + arabicInstruction },
+          { role: "system", content: `You are Versa's public sentiment engine. Your insights are backed by REAL VOTE DATA from real people in ${PLACE} — never AI opinions.\n${researchLevelInstructions}` + arabicInstruction },
           { role: "user", content: `User's research question: "${question}"\n\nMatched polls with results:\n${sampleText}` },
         ],
         response_format: { type: "json_object" },
