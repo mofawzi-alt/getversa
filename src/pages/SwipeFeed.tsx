@@ -887,7 +887,7 @@ export default function SwipeFeed() {
         }
       }
 
-      if (profile) {
+      if (profile && !isAdmin) {
         allPolls = allPolls.filter(p => {
           if (p.target_gender && p.target_gender !== 'All' && profile.gender) {
             const genders = p.target_gender.split(',').map((g: string) => g.trim());
