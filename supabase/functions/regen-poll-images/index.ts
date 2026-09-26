@@ -240,7 +240,18 @@ serve(async (req) => {
   try {
     const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const apiKey = Deno.env.get('LOVABLE_API_KEY')!;
-    const { polls } = await req.json(); // [{id, option_a, option_b}]
+    const body = await req.json(); // { polls: [{id, option_a, option_b, question, category}] } or { tag, limit }
+    let polls = body?.polls;
+    // Optional mode: resolve polls server-side by tag when they are missing images.
+    if ((!Array.isArray(polls) || polls.length === 0) && body?.tag) {
+      const { data } = await supabase
+        .from('polls')
+        .select('id, question, option_a, option_b, category')
+        .contains('tags', [body.tag])
+        .is('image_a_url', null)
+        .limit(Number(body.limit) || 6);
+      polls = data || [];
+    }
     if (!Array.isArray(polls) || polls.length === 0) {
       return new Response(JSON.stringify({ error: 'no polls' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
