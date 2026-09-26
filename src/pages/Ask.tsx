@@ -14,40 +14,11 @@ import AskThread, { type AskTurn, type Mode } from '@/components/ask/AskThread';
 import CreditBalance from '@/components/ask/CreditBalance';
 import UnlockModal from '@/components/ask/UnlockModal';
 import { useT } from '@/hooks/useT';
+import { resolveAskCountry, type AskSuggestion } from '@/lib/askCountry';
 
-const DECIDE_SUGGESTIONS_RAW = [
-  { text: 'Costa or Cilantro for studying?', tag: 'Trending', icon: 'flame' as const },
-  { text: 'iPhone or Samsung — which lasts longer?', tag: '2.4K voted', icon: 'users' as const },
-  { text: 'Should I order Talabat or Elmenus tonight?', tag: 'Hot', icon: 'zap' as const },
-  { text: 'Nike or Adidas for everyday wear?', tag: '50/50 split', icon: 'trending' as const },
-];
-
-const RESEARCH_SUGGESTIONS_RAW = [
-  { text: 'How do students feel about online learning?', tag: 'Popular', icon: 'flame' as const },
-  { text: 'What do people think about marriage age in Egypt?', tag: 'Divisive', icon: 'trending' as const },
-  { text: 'Cairo vs Alexandria lifestyle differences', tag: '1.8K votes', icon: 'users' as const },
-  { text: 'Which fast food brand wins with 18–24?', tag: 'Hot', icon: 'zap' as const },
-  { text: 'How divided are Egyptians on Ahly vs Zamalek?', tag: '50/50', icon: 'flame' as const },
-];
-
-/* Rotating placeholder phrases */
-const DECIDE_PLACEHOLDERS = [
-  'Ask what Egypt thinks…',
-  'What are people choosing?',
-  'Ask the pulse of Egypt…',
-  'What would Egypt pick?',
-  'Help me decide…',
-];
-
-const RESEARCH_PLACEHOLDERS = [
-  'Explore public sentiment…',
-  'What does Egypt really think?',
-  'Discover opinion patterns…',
-  'Analyze the public mood…',
-];
-
-function translateSuggestions(list: typeof DECIDE_SUGGESTIONS_RAW, t: (k: string, vars?: Record<string, string | number>) => string) {
+function translateSuggestions(list: AskSuggestion[], t: (k: string, vars?: Record<string, string | number>) => string) {
   return list.map((s) => ({ ...s, text: t(s.text), tag: s.tag ? t(s.tag) : s.tag }));
+
 }
 
 function buildHistoryFromTurns(turns: AskTurn[]) {
@@ -95,8 +66,10 @@ export default function Ask() {
   const { data: askCredits = 0 } = useAskCredits();
   const { totalVotes, askLevel, levelLabel } = useUserVoteCount();
   const { t } = useT();
-  const DECIDE_SUGGESTIONS = translateSuggestions(DECIDE_SUGGESTIONS_RAW, t);
-  const RESEARCH_SUGGESTIONS = translateSuggestions(RESEARCH_SUGGESTIONS_RAW, t);
+  const askCountry = resolveAskCountry(profile?.country);
+  const DECIDE_SUGGESTIONS = translateSuggestions(askCountry.decideSuggestions, t);
+  const RESEARCH_SUGGESTIONS = translateSuggestions(askCountry.researchSuggestions, t);
+
   const [mode, setMode] = useState<Mode>('decide');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -116,7 +89,7 @@ export default function Ask() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeholders = mode === 'decide' ? DECIDE_PLACEHOLDERS : RESEARCH_PLACEHOLDERS;
+  const placeholders = mode === 'decide' ? askCountry.decidePlaceholders : askCountry.researchPlaceholders;
   const currentPlaceholder = turns.length > 0
     ? t('Ask a follow-up…')
     : t(placeholders[placeholderIdx % placeholders.length]);
@@ -201,8 +174,10 @@ export default function Ask() {
     age_range: profile.age_range || undefined,
     city: profile.city || undefined,
     gender: profile.gender || undefined,
+    country: profile.country || undefined,
     ask_level: askLevel,
   } : undefined;
+
 
   const autoConfirm = async (previewData: PreviewState) => {
     setConfirming(true);
@@ -434,7 +409,7 @@ export default function Ask() {
                   transition={{ delay: 0.15 }}
                   className="text-lg font-black text-foreground break-words"
                 >
-                  {t("Can't decide? Egypt already did.")}
+                  {t(askCountry.decideTitle)}
                 </motion.p>
                 <motion.p
                   initial={{ opacity: 0 }}
@@ -474,7 +449,7 @@ export default function Ask() {
                   transition={{ delay: 0.2, duration: 0.4 }}
                   className="text-base font-semibold text-foreground break-words"
                 >
-                  {t('Understand what Egypt really thinks')}
+                  {t(askCountry.researchTitle)}
                 </motion.p>
                 <motion.p
                   initial={{ opacity: 0 }}
