@@ -226,6 +226,8 @@ serve(async (req) => {
           people: "people in the UAE",
           demonym: "UAE residents",
           cities: "Dubai/Abu Dhabi/Sharjah",
+          nameAr: "الإمارات",
+          peopleAr: "الناس في الإمارات",
           arabic: "Reply in clear Gulf-flavoured Arabic (خليجي مبسط) — natural and conversational, NOT Egyptian slang and NOT heavy Modern Standard Arabic.",
         }
       : isEgyptViewer || !rawCountry
@@ -236,6 +238,8 @@ serve(async (req) => {
           people: "Egyptians",
           demonym: "Egyptians",
           cities: "Cairo/Alexandria",
+          nameAr: "مصر",
+          peopleAr: "المصريين",
           arabic: "Reply in Egyptian Arabic (عامية مصرية) — conversational, natural Cairo street tone. NOT Modern Standard Arabic.",
         }
       : {
@@ -245,10 +249,14 @@ serve(async (req) => {
           people: `people in ${rawCountry}`,
           demonym: `people in ${rawCountry}`,
           cities: "major cities",
+          nameAr: rawCountry,
+          peopleAr: `الناس في ${rawCountry}`,
           arabic: "Reply in simple, modern conversational Arabic understood across the Arab world — avoid heavy local slang.",
         };
     const PLACE = countryCtx.place;
     const PEOPLE = countryCtx.people;
+    const PLACE_AR = countryCtx.nameAr;
+    const PEOPLE_AR = countryCtx.peopleAr;
 
     // ---- Auto-route mode from question shape ----
     // "X or Y?", "vs", explicit comparison, 2+ entities → decide (pick a side).
@@ -639,7 +647,7 @@ Rules:
         || /^(ڤيرسا|فيرسا|ڤرسا)\??$/.test(question.trim());
       if (bareSelf || (mentionsVersa && aboutShape)) {
         const summary = isArabic
-          ? "ڤيرسا هي محرك آراء مصر.\n\nكل يوم، المصريين بيختاروا بين حاجتين — براندات، أكل، لايف ستايل، فلوس، ثقافة. كل اختيار ده داتا سلوكية حقيقية متسجلة بالسن والجنس والمدينة.\n\nكل ما تصوّت أكتر، ڤيرسا بتعرف أكتر إيه اللي مصر بتفضّله فعلاً — مش اللي الناس بتقول إنها بتفضّله، لأ، اللي بيختاروه بجد.\n\nاسألني أي حاجة عن رأي مصر. هقولك الداتا بتقول إيه."
+          ? `ڤيرسا هي محرك آراء ${PLACE_AR}.\n\nكل يوم، ${PEOPLE_AR} بيختاروا بين حاجتين — براندات، أكل، لايف ستايل، فلوس، ثقافة. كل اختيار ده داتا سلوكية حقيقية متسجلة بالسن والجنس والمدينة.\n\nكل ما تصوّت أكتر، ڤيرسا بتعرف أكتر إيه اللي ${PLACE_AR} بتفضّله فعلاً — مش اللي الناس بتقول إنها بتفضّله، لأ، اللي بيختاروه بجد.\n\nاسألني أي حاجة عن رأي ${PLACE_AR}. هقولك الداتا بتقول إيه.`
           : `Versa is the opinion engine for ${PLACE}.\n\nEvery day, ${PEOPLE} swipe to choose between two things — brands, food, lifestyle, money, culture. Every choice is real behavioral data tagged by age, gender, and city.\n\nThe more you vote, the more Versa learns what ${PLACE} actually prefers — not what people say they prefer, but what they actually choose.\n\nAsk me anything about what ${PLACE} thinks. I'll tell you what the data says.`;
         let queryId: string | null = null;
         if (userId) {
@@ -678,7 +686,7 @@ Rules:
       return new Response(JSON.stringify({
         stage: "offscope",
         summary: isArabic
-          ? "ڤيرسا متخصصة في أسئلة تفضيلات المستهلك — حاجات المصريين بيصوّتوا عليها زي البراندات، الأكل، اللايف ستايل، أو العلاقات. جرّب سؤال زي \"كوكا ولا بيبسي؟\" أو \"الطلبة رأيهم إيه في التعليم أونلاين؟\"."
+          ? `ڤيرسا متخصصة في أسئلة تفضيلات المستهلك — حاجات ${PEOPLE_AR} بيصوّتوا عليها زي البراندات، الأكل، اللايف ستايل، أو العلاقات. جرّب سؤال زي "كوكا ولا بيبسي؟" أو "الطلبة رأيهم إيه في التعليم أونلاين؟".`
           : `Versa is built for consumer preference questions — things ${PEOPLE} vote on, like brands, food, lifestyle, or relationships. Try a question like "Coke or Pepsi?" or "What do students think about online learning?".`,
         credits_balance: userBalance,
         route: safeRoute,
@@ -1165,7 +1173,7 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
 
       if (!smartAnswer) {
         smartAnswer = isArabic
-          ? "ڤيرسا معندهاش بول مباشر على الموضوع ده بالظبط. جرب سؤال مقارنة زي \"طلبات ولا المنيوز؟\" أو \"مكدونالدز ولا هارديز؟\" — هقولك الناس بتختار إيه."
+          ? `ڤيرسا معندهاش بول مباشر على الموضوع ده بالظبط. جرب سؤال مقارنة زي "كوكا ولا بيبسي؟" أو "نايكي ولا أديداس؟" — هقولك ${PEOPLE_AR} بيختاروا إيه.`
           : `Versa doesn't have a direct poll on this exact topic yet. Try a comparison question like "Coke or Pepsi?" or "Nike or Adidas?" — I'll tell you what ${PLACE} picks.`;
       }
 
