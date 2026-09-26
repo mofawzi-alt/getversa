@@ -736,11 +736,35 @@ Rules:
     }
 
 
+    // ---- Country relevance: never answer a UAE user with polls targeted at Egypt only ----
+    const pollCountryTargets = (p: any): string[] => {
+      const out: string[] = [];
+      if (p?.target_country) out.push(String(p.target_country));
+      if (Array.isArray(p?.target_countries)) out.push(...p.target_countries.map((c: any) => String(c)));
+      return out.filter(Boolean);
+    };
+    const pollMatchesViewerCountry = (p: any): boolean => {
+      const targets = pollCountryTargets(p);
+      if (targets.length === 0) return true; // untargeted poll = everyone
+      if (!rawCountry) return true;          // unknown viewer country = don't filter
+      const hay = targets.join(" ").toLowerCase();
+      if (countryCtx.key === "AE") return /emirat|uae/.test(hay);
+      if (countryCtx.key === "EG") return /egypt|مصر/.test(hay);
+      return hay.includes(rawCountry.toLowerCase());
+    };
+    // Keep only polls the viewer's country can see, and put country-specific polls first.
+    const prioritizeByCountry = (rows: any[]): any[] => {
+      const kept = (rows || []).filter(pollMatchesViewerCountry);
+      const targeted = kept.filter((r) => pollCountryTargets(r).length > 0);
+      const untargeted = kept.filter((r) => pollCountryTargets(r).length === 0);
+      return [...targeted, ...untargeted];
+    };
+
     // ---- 2. Query polls ----
     const buildQuery = (useCategory: boolean, useKeywords: boolean) => {
       let q = supabase
         .from("polls")
-        .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, baseline_votes_a, baseline_votes_b")
+        .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, baseline_votes_a, baseline_votes_b, target_country, target_countries")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(80);
@@ -776,13 +800,14 @@ Rules:
     if (queryEntityKeys.length > 0) {
       const { data: entityPolls, error: entityErr } = await supabase
         .from("polls")
-        .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, baseline_votes_a, baseline_votes_b")
+        .select("id, question, subtitle, option_a, option_b, image_a_url, image_b_url, category, created_at, baseline_votes_a, baseline_votes_b, target_country, target_countries")
         .eq("is_active", true)
         .overlaps("entities", queryEntityKeys)
         .order("created_at", { ascending: false })
         .limit(80);
-      if (!entityErr && entityPolls && entityPolls.length > 0) {
-        polls = entityPolls;
+      const entityFiltered = prioritizeByCountry(entityPolls || []);
+      if (!entityErr && entityFiltered.length > 0) {
+        polls = entityFiltered;
         console.log(`Entity match: ${queryEntityKeys.join(",")} → ${entityPolls.length} polls`);
       }
     }
@@ -797,7 +822,8 @@ Rules:
         if (!queryBuilder) continue;
         const { data, error } = await queryBuilder;
         if (error) throw error;
-        if (data && data.length > 0) { polls = data; break; }
+        const filtered = prioritizeByCountry(data || []);
+        if (filtered.length > 0) { polls = filtered; break; }
       }
     }
 
@@ -1267,13 +1293,13 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
       if (suggestedPolls.length < 3 && categoryBuckets.length > 0) {
         const { data: catPolls } = await supabase
           .from("polls")
-          .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
+          .select("id, question, option_a, option_b, image_a_url, image_b_url, category, target_country, target_countries")
           .eq("is_active", true)
           .in("category", categoryBuckets)
           .order("created_at", { ascending: false })
           .limit(20);
         const seen = new Set(suggestedPolls.map((p) => p.id));
-        for (const p of catPolls || []) {
+        for (const p of prioritizeByCountry(catPolls || [])) {
           if (suggestedPolls.length >= 3) break;
           if (seen.has(p.id) || votedIds.has(p.id)) continue;
           // In decide mode require a topical hit so suggestions stay on-topic
@@ -1297,13 +1323,13 @@ Do NOT give your own opinion or advice. Only point users toward real vote data.`
         if (orFilters.length > 0) {
           const { data: kwPolls } = await supabase
             .from("polls")
-            .select("id, question, option_a, option_b, image_a_url, image_b_url, category")
+            .select("id, question, option_a, option_b, image_a_url, image_b_url, category, target_country, target_countries")
             .eq("is_active", true)
             .or(orFilters.join(","))
             .order("created_at", { ascending: false })
             .limit(10);
           const seen = new Set(suggestedPolls.map((p) => p.id));
-          for (const p of kwPolls || []) {
+          for (const p of prioritizeByCountry(kwPolls || [])) {
             if (suggestedPolls.length >= 3) break;
             if (seen.has(p.id) || votedIds.has(p.id)) continue;
             suggestedPolls.push(mapPoll(p));
