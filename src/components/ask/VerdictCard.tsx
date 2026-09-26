@@ -44,6 +44,9 @@ function AnimatedPct({ value, delay = 0 }: { value: number; delay?: number }) {
 /* ═══════════════════════════════════════════ */
 function DecideVerdictCard({ verdict }: { verdict: Verdict }) {
   const { t } = useT();
+  const { profile } = useAuth();
+  const askCountry = resolveAskCountry(profile?.country);
+
   const navigate = useNavigate();
   const winSideA = verdict.winner_side === 'A';
   const landslide = verdict.winner_pct >= 70;
