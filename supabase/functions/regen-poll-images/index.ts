@@ -214,10 +214,25 @@ async function genImage(apiKey: string, prompt: string): Promise<Uint8Array | nu
   return bytes;
 }
 
+const UAE_BLOCK = `
+
+🇦🇪 UAE OVERRIDE (THIS POLL IS FOR THE UAE — THESE RULES REPLACE ALL EGYPT / CAIRO RULES ABOVE):
+- SETTING: unmistakably the UAE at its best — Dubai & Abu Dhabi skylines, Dubai Marina, Downtown Dubai, Louvre Abu Dhabi, Saadiyat & Jumeirah beaches, premium malls, upscale villas and apartments, manicured parks, spotless modern streets, smart-city services, luxury cafes and restaurants. Never show Egypt, Cairo, run-down streets, clutter or poverty.
+- LOOK: premium, polished, aspirational luxury lifestyle; bright clean golden-hour or crisp daylight; high-end editorial feel.
+- CONSERVATIVE: all people modestly dressed (shoulders and knees covered); abayas / shaylas and kanduras where natural, alongside modest modern clothing; family-friendly, respectful, no revealing clothing, no romantic intimacy, no alcohol, nothing political or religious.
+- PEOPLE (only if people appear): the UAE is very multicultural — show a natural MIX of Emirati, Arab, South Asian, East Asian, European, and African expats; vary across images; never stereotype.`;
+
+function isUAEPoll(poll: any) {
+  const tags = (poll.tags || []).map((t: string) => String(t).toLowerCase());
+  const tc = [poll.target_country, ...(poll.target_countries || [])].filter(Boolean).map((c: string) => c.toLowerCase());
+  return tags.includes('uae') || tc.some((c: string) => c === 'uae' || c.includes('emirates'));
+}
+
 async function processOne(supabase: any, apiKey: string, poll: any) {
+  const extra = isUAEPoll(poll) ? UAE_BLOCK : '';
   const [a, b] = await Promise.all([
-    genImage(apiKey, PROMPT_TPL(poll.option_a, poll.question, poll.option_b, poll.category || 'Lifestyle')),
-    genImage(apiKey, PROMPT_TPL(poll.option_b, poll.question, poll.option_a, poll.category || 'Lifestyle')),
+    genImage(apiKey, PROMPT_TPL(poll.option_a, poll.question, poll.option_b, poll.category || 'Lifestyle') + extra),
+    genImage(apiKey, PROMPT_TPL(poll.option_b, poll.question, poll.option_a, poll.category || 'Lifestyle') + extra),
   ]);
   if (!a || !b) return { id: poll.id, status: 'gen_failed' };
   const short = poll.id.slice(0, 8);
@@ -244,12 +259,13 @@ serve(async (req) => {
     let polls = body?.polls;
     // Optional mode: resolve polls server-side by tag when they are missing images.
     if ((!Array.isArray(polls) || polls.length === 0) && body?.tag) {
-      const { data } = await supabase
+      let q = supabase
         .from('polls')
-        .select('id, question, option_a, option_b, category')
-        .contains('tags', [body.tag])
-        .is('image_a_url', null)
-        .limit(Number(body.limit) || 6);
+        .select('id, question, option_a, option_b, category, tags, target_country, target_countries')
+        .contains('tags', [body.tag]);
+      if (Array.isArray(body.ids) && body.ids.length) q = q.in('id', body.ids);
+      else q = q.is('image_a_url', null);
+      const { data } = await q.limit(Number(body.limit) || 6);
       polls = data || [];
     }
     if (!Array.isArray(polls) || polls.length === 0) {
