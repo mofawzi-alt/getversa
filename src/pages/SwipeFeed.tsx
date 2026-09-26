@@ -722,7 +722,7 @@ const VALUE_MSG_VOTE_THRESHOLD = 3;
 
 // ── Main Feed ──
 export default function SwipeFeed() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [votedResults, setVotedResults] = useState<Map<string, VoteResult>>(new Map());
