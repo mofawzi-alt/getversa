@@ -174,8 +174,10 @@ export default function Ask() {
     age_range: profile.age_range || undefined,
     city: profile.city || undefined,
     gender: profile.gender || undefined,
+    country: profile.country || undefined,
     ask_level: askLevel,
   } : undefined;
+
 
   const autoConfirm = async (previewData: PreviewState) => {
     setConfirming(true);
