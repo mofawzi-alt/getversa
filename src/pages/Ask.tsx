@@ -449,7 +449,7 @@ export default function Ask() {
                   transition={{ delay: 0.2, duration: 0.4 }}
                   className="text-base font-semibold text-foreground break-words"
                 >
-                  {t('Understand what Egypt really thinks')}
+                  {t(askCountry.researchTitle)}
                 </motion.p>
                 <motion.p
                   initial={{ opacity: 0 }}
