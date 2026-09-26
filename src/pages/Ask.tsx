@@ -89,7 +89,7 @@ export default function Ask() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeholders = mode === 'decide' ? DECIDE_PLACEHOLDERS : RESEARCH_PLACEHOLDERS;
+  const placeholders = mode === 'decide' ? askCountry.decidePlaceholders : askCountry.researchPlaceholders;
   const currentPlaceholder = turns.length > 0
     ? t('Ask a follow-up…')
     : t(placeholders[placeholderIdx % placeholders.length]);
