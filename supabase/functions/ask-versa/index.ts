@@ -208,11 +208,47 @@ serve(async (req) => {
     } = body as {
       question?: string;
       mode?: "decide" | "research" | "auto";
-      viewer?: { age_range?: string; city?: string; gender?: string; ask_level?: number };
+      viewer?: { age_range?: string; city?: string; gender?: string; country?: string; ask_level?: number };
       history?: Array<{ role: "user" | "assistant"; content: string }>;
       stage?: "preview" | "confirm";
     };
     const askLevel = viewer?.ask_level ?? 4; // default to full access if not provided
+
+    // ---- Country context: Ask Versa adapts to the viewer's country ----
+    const rawCountry = (viewer?.country || "").trim();
+    const isUAEViewer = /emirat|\buae\b|الإمارات|الامارات/i.test(rawCountry);
+    const isEgyptViewer = !isUAEViewer && (/egypt|مصر/i.test(rawCountry) || rawCountry.toLowerCase() === "eg");
+    const countryCtx = isUAEViewer
+      ? {
+          key: "AE",
+          name: "United Arab Emirates",
+          place: "the UAE",
+          people: "people in the UAE",
+          demonym: "UAE residents",
+          cities: "Dubai/Abu Dhabi/Sharjah",
+          arabic: "Reply in clear Gulf-flavoured Arabic (خليجي مبسط) — natural and conversational, NOT Egyptian slang and NOT heavy Modern Standard Arabic.",
+        }
+      : isEgyptViewer || !rawCountry
+      ? {
+          key: "EG",
+          name: "Egypt",
+          place: "Egypt",
+          people: "Egyptians",
+          demonym: "Egyptians",
+          cities: "Cairo/Alexandria",
+          arabic: "Reply in Egyptian Arabic (عامية مصرية) — conversational, natural Cairo street tone. NOT Modern Standard Arabic.",
+        }
+      : {
+          key: "GLOBAL",
+          name: rawCountry,
+          place: rawCountry,
+          people: `people in ${rawCountry}`,
+          demonym: `people in ${rawCountry}`,
+          cities: "major cities",
+          arabic: "Reply in simple, modern conversational Arabic understood across the Arab world — avoid heavy local slang.",
+        };
+    const PLACE = countryCtx.place;
+    const PEOPLE = countryCtx.people;
 
     // ---- Auto-route mode from question shape ----
     // "X or Y?", "vs", explicit comparison, 2+ entities → decide (pick a side).
@@ -241,7 +277,7 @@ serve(async (req) => {
     // Any Arabic Unicode char in the question → respond in Egyptian Arabic (عامية).
     const isArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(question);
     const arabicInstruction = isArabic
-      ? "\n\nIMPORTANT: The user wrote in Arabic. Reply in Egyptian Arabic (عامية مصرية) — conversational, natural Cairo street tone. NOT Modern Standard Arabic. Keep brand names in their original form (iPhone, Talabat, Vodafone, etc.). Numbers and percentages in Arabic numerals are fine."
+      ? `\n\nIMPORTANT: The user wrote in Arabic. ${countryCtx.arabic} Keep brand names in their original form (iPhone, Talabat, Vodafone, etc.). Numbers and percentages in Arabic numerals are fine.`
       : "";
 
     // Identify caller
