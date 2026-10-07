@@ -842,6 +842,7 @@ Rules:
       }
     }
 
+    console.log(`DBG fetched=${polls.length} entities=${JSON.stringify(filters?.entities)} kw=${JSON.stringify(topicalTerms)} cats=${JSON.stringify(categoryBuckets)} yas=${polls.some((p:any)=>/yas island/i.test(p.question))}`);
     // ---- Fetch sunset threshold (default 50) ----
     let sunsetThreshold = 50;
     {
