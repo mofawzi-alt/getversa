@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 import { extractEntities } from "../_shared/entity-extractor.ts";
+import { compressToJpeg } from "../_shared/compressImage.ts";
 
 /* ── Auto-hook subtitle generator ── */
 const HOOK_POOLS: Record<string, string[]> = {
@@ -167,10 +168,12 @@ async function generateAndUploadImage(apiKey: string, prompt: string, supabase: 
       bytes[i] = binaryString.charCodeAt(i);
     }
 
-    const fileName = `ai-generated/${crypto.randomUUID()}.${base64Match[1]}`;
+    const jpg = await compressToJpeg(bytes);
+    const ext = jpg ? 'jpeg' : base64Match[1];
+    const fileName = `ai-generated/${crypto.randomUUID()}.${jpg ? 'jpg' : base64Match[1]}`;
     const { error: uploadError } = await supabase.storage
       .from('poll-images')
-      .upload(fileName, bytes, { contentType: `image/${base64Match[1]}`, upsert: false });
+      .upload(fileName, jpg || bytes, { contentType: `image/${ext}`, upsert: false });
 
     if (uploadError) return null;
 
