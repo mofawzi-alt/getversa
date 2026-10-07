@@ -836,13 +836,14 @@ Rules:
         if (error) throw error;
         const filtered = prioritizeByCountry(data || []);
         if (filtered.length > 0) {
-          if (polls.length === 0) polls = filtered;
-          if (filtered.some(hasNamed)) { polls = filtered; break; }
+          // Merge results from narrower and wider searches (no duplicates).
+          const seen = new Set(polls.map((p: any) => p.id));
+          polls = [...polls, ...filtered.filter((p: any) => !seen.has(p.id))];
+          if (namedTerms.length === 0) break;
         }
       }
     }
 
-    console.log(`DBG fetched=${polls.length} entities=${JSON.stringify(filters?.entities)} kw=${JSON.stringify(topicalTerms)} cats=${JSON.stringify(categoryBuckets)} yas=${polls.some((p:any)=>/yas island/i.test(p.question))}`);
     // ---- Fetch sunset threshold (default 50) ----
     let sunsetThreshold = 50;
     {
