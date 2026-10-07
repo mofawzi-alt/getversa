@@ -1148,9 +1148,18 @@ export function handlePollImageError(
 ) {
   const target = e.currentTarget;
   if (isNativeWebView()) {
+    // First retry the poll's real (full-size) picture instead of jumping to an
+    // unrelated placeholder. Only if that also fails, hide the broken image so
+    // the plain card background shows — never an off-topic photo.
+    const originalSrc = target.dataset.originalSrc;
+    if (originalSrc && !target.dataset.originalApplied && target.src !== originalSrc) {
+      target.dataset.originalApplied = 'true';
+      target.src = originalSrc;
+      return;
+    }
     if (target.dataset.fallbackApplied) return;
     target.dataset.fallbackApplied = 'true';
-    target.src = NATIVE_SAFE_FALLBACK_IMAGE;
+    target.style.visibility = 'hidden';
     return;
   }
 
