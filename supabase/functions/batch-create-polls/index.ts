@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
+import { compressToJpeg } from "../_shared/compressImage.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -112,8 +113,10 @@ Never default to Western, American, or European settings. No alcohol imagery.`;
     const binaryString = atob(base64Match[2]);
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-    const fileName = `ai-generated/${crypto.randomUUID()}.${base64Match[1]}`;
-    const { error } = await supabase.storage.from('poll-images').upload(fileName, bytes, { contentType: `image/${base64Match[1]}` });
+    const jpg = await compressToJpeg(bytes);
+    const ext = jpg ? 'jpeg' : base64Match[1];
+    const fileName = `ai-generated/${crypto.randomUUID()}.${jpg ? 'jpg' : base64Match[1]}`;
+    const { error } = await supabase.storage.from('poll-images').upload(fileName, jpg || bytes, { contentType: `image/${ext}` });
     if (error) return null;
     return supabase.storage.from('poll-images').getPublicUrl(fileName).data.publicUrl;
   } catch { return null; }

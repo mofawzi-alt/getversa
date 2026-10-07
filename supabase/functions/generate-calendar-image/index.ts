@@ -2,6 +2,7 @@
 // Returns a public URL stored in the poll-calendar-images bucket.
 // Admin must approve the preview by copying it into image_a_url / image_b_url.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { compressToJpeg } from "../_shared/compressImage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -219,10 +220,11 @@ FINAL CHECK: Does this image SCREAM "${optionText}"? If someone saw only the ima
       // data:image/png;base64,xxx -> Uint8Array
       const base64 = dataUrl.split(",")[1];
       const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-      const path = `${calendar_id}/${opt}-${Date.now()}.png`;
+      const jpg = await compressToJpeg(bytes);
+      const path = `${calendar_id}/${opt}-${Date.now()}.${jpg ? "jpg" : "png"}`;
       const { error: upErr } = await supabase.storage
         .from("poll-calendar-images")
-        .upload(path, bytes, { contentType: "image/png", upsert: true });
+        .upload(path, jpg || bytes, { contentType: jpg ? "image/jpeg" : "image/png", upsert: true });
       if (upErr) throw upErr;
 
       const { data: pub } = supabase.storage.from("poll-calendar-images").getPublicUrl(path);
