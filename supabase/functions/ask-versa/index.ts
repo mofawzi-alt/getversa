@@ -743,11 +743,18 @@ Rules:
       if (Array.isArray(p?.target_countries)) out.push(...p.target_countries.map((c: any) => String(c)));
       return out.filter(Boolean);
     };
+    // If the question itself names a country/city (e.g. "theme park in Dubai?"),
+    // that country's polls are allowed even when the viewer lives elsewhere.
+    const qAsk = String(question || "").toLowerCase();
+    const askedAboutUAE = /\b(uae|emirates|dubai|abu dhabi|sharjah|ajman|ras al khaimah|fujairah|yas)\b|دبي|ابوظبي|أبوظبي|الإمارات|الامارات/.test(qAsk);
+    const askedAboutEgypt = /\b(egypt|cairo|alexandria|giza|sahel|gouna|hurghada|sharm)\b|مصر|القاهرة|اسكندرية|الساحل/.test(qAsk);
     const pollMatchesViewerCountry = (p: any): boolean => {
       const targets = pollCountryTargets(p);
       if (targets.length === 0) return true; // untargeted poll = everyone
-      if (!rawCountry) return true;          // unknown viewer country = don't filter
       const hay = targets.join(" ").toLowerCase();
+      if (askedAboutUAE && /emirat|uae/.test(hay)) return true;
+      if (askedAboutEgypt && /egypt|مصر/.test(hay)) return true;
+      if (!rawCountry) return true;          // unknown viewer country = don't filter
       if (countryCtx.key === "AE") return /emirat|uae/.test(hay);
       if (countryCtx.key === "EG") return /egypt|مصر/.test(hay);
       return hay.includes(rawCountry.toLowerCase());
@@ -817,13 +824,23 @@ Rules:
       const attempts: Array<[boolean, boolean]> = mode === "decide"
         ? [[true, true], [false, true]]
         : [[true, true], [false, true], [true, false]];
+      // Names/places in the question (e.g. "Dubai") must appear in the poll; if the
+      // category-limited search finds none containing them, keep searching wider.
+      const namedTerms = normalizeList(filters?.entities, 3).map((e: string) => e.toLowerCase());
+      const hasNamed = (p: any) => namedTerms.length === 0 || namedTerms.some((e: string) =>
+        [p.question, p.option_a, p.option_b, p.subtitle].filter(Boolean).join(" ").toLowerCase().includes(e));
       for (const [useCat, useKw] of attempts) {
         const queryBuilder = buildQuery(useCat, useKw);
         if (!queryBuilder) continue;
         const { data, error } = await queryBuilder;
         if (error) throw error;
         const filtered = prioritizeByCountry(data || []);
-        if (filtered.length > 0) { polls = filtered; break; }
+        if (filtered.length > 0) {
+          // Merge results from narrower and wider searches (no duplicates).
+          const seen = new Set(polls.map((p: any) => p.id));
+          polls = [...polls, ...filtered.filter((p: any) => !seen.has(p.id))];
+          if (namedTerms.length === 0) break;
+        }
       }
     }
 
