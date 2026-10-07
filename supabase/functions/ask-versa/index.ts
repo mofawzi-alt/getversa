@@ -1,6 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { extractEntities } from "../_shared/entity-extractor.ts";
+const wordStartIn = (hay: string, v: string): boolean => {
+  if (!v) return false;
+  let i = hay.indexOf(v);
+  while (i !== -1) {
+    const prev = i === 0 ? "" : hay[i - 1];
+    if (!prev || !/[a-z0-9]/i.test(prev)) return true;
+    i = hay.indexOf(v, i + 1);
+  }
+  return false;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -748,15 +758,26 @@ Rules:
     const qAsk = String(question || "").toLowerCase();
     const askedAboutUAE = /\b(uae|emirates|dubai|abu dhabi|sharjah|ajman|ras al khaimah|fujairah|yas)\b|دبي|ابوظبي|أبوظبي|الإمارات|الامارات/.test(qAsk);
     const askedAboutEgypt = /\b(egypt|cairo|alexandria|giza|sahel|gouna|hurghada|sharm)\b|مصر|القاهرة|اسكندرية|الساحل/.test(qAsk);
+    const isUAETarget = (hay: string) => /emirat|uae|\bae\b/.test(hay);
+    const isEGTarget = (hay: string) => /egypt|مصر|\beg\b/.test(hay);
+    const onlyUAE = askedAboutUAE && !askedAboutEgypt;
+    const onlyEG = askedAboutEgypt && !askedAboutUAE;
+    // Well-known places that tie an untargeted poll to one country.
+    const EG_PLACE_RE = /\b(egypt|egyptian|cairo|alexandria|alex|giza|sahel|gouna|hurghada|sharm|zamalek|maadi|heliopolis|tagamoa|city stars|mall of arabia|mall of egypt|cairo festival|ahly|talabat egypt|elmenus|cilantro)\b|مصر|القاهرة|اسكندرية|الساحل/;
+    const UAE_PLACE_RE = /\b(uae|emirates|emirati|dubai|abu dhabi|sharjah|ajman|yas|mall of the emirates|dubai mall|deliveroo)\b|دبي|ابوظبي|أبوظبي|الإمارات|الامارات/;
+    const pollText = (p: any) => `${p?.question || ""} ${p?.option_a || ""} ${p?.option_b || ""} ${p?.subtitle || ""}`.toLowerCase();
     const pollMatchesViewerCountry = (p: any): boolean => {
       const targets = pollCountryTargets(p);
-      if (targets.length === 0) return true; // untargeted poll = everyone
       const hay = targets.join(" ").toLowerCase();
-      if (askedAboutUAE && /emirat|uae/.test(hay)) return true;
-      if (askedAboutEgypt && /egypt|مصر/.test(hay)) return true;
+      // Question names exactly one country → never show the other country's polls.
+      if (onlyUAE && (isEGTarget(hay) || (targets.length === 0 && EG_PLACE_RE.test(pollText(p))))) return false;
+      if (onlyEG && (isUAETarget(hay) || (targets.length === 0 && UAE_PLACE_RE.test(pollText(p))))) return false;
+      if (targets.length === 0) return true; // untargeted poll = everyone
+      if (askedAboutUAE && isUAETarget(hay)) return true;
+      if (askedAboutEgypt && isEGTarget(hay)) return true;
       if (!rawCountry) return true;          // unknown viewer country = don't filter
-      if (countryCtx.key === "AE") return /emirat|uae/.test(hay);
-      if (countryCtx.key === "EG") return /egypt|مصر/.test(hay);
+      if (countryCtx.key === "AE") return isUAETarget(hay);
+      if (countryCtx.key === "EG") return isEGTarget(hay);
       return hay.includes(rawCountry.toLowerCase());
     };
     // Keep only polls the viewer's country can see, and put country-specific polls first.
@@ -946,7 +967,7 @@ Rules:
     const getPollTopicalHitCount = (poll: any) => {
       if (topicalTermVariants.length === 0) return 0;
       const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
-      return topicalTermVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+      return topicalTermVariants.reduce((count, variants) => count + (variants.some((v) => wordStartIn(haystack, v)) ? 1 : 0), 0);
     };
 
     // Count only non-weak topical hits — used to filter out false positives
@@ -955,7 +976,7 @@ Rules:
       const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
       return topicalTermVariants.reduce((count, variants, idx) => {
         if (topicalTermIsWeak[idx]) return count;
-        return count + (variants.some((v) => haystack.includes(v)) ? 1 : 0);
+        return count + (variants.some((v) => wordStartIn(haystack, v)) ? 1 : 0);
       }, 0);
     };
 
@@ -988,7 +1009,7 @@ Rules:
     const getPollSubjectHitCount = (poll: any) => {
       if (subjectTermVariants.length === 0) return 0;
       const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
-      return subjectTermVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+      return subjectTermVariants.reduce((count, variants) => count + (variants.some((v) => wordStartIn(haystack, v)) ? 1 : 0), 0);
     };
 
     const enrichedPollList = polls.map((p) => {
