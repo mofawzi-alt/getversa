@@ -824,13 +824,21 @@ Rules:
       const attempts: Array<[boolean, boolean]> = mode === "decide"
         ? [[true, true], [false, true]]
         : [[true, true], [false, true], [true, false]];
+      // Names/places in the question (e.g. "Dubai") must appear in the poll; if the
+      // category-limited search finds none containing them, keep searching wider.
+      const namedTerms = normalizeList(filters?.entities, 3).map((e: string) => e.toLowerCase());
+      const hasNamed = (p: any) => namedTerms.length === 0 || namedTerms.some((e: string) =>
+        [p.question, p.option_a, p.option_b, p.subtitle].filter(Boolean).join(" ").toLowerCase().includes(e));
       for (const [useCat, useKw] of attempts) {
         const queryBuilder = buildQuery(useCat, useKw);
         if (!queryBuilder) continue;
         const { data, error } = await queryBuilder;
         if (error) throw error;
         const filtered = prioritizeByCountry(data || []);
-        if (filtered.length > 0) { polls = filtered; break; }
+        if (filtered.length > 0) {
+          if (polls.length === 0) polls = filtered;
+          if (filtered.some(hasNamed)) { polls = filtered; break; }
+        }
       }
     }
 
