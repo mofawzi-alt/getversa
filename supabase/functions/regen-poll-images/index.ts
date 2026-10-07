@@ -230,17 +230,19 @@ function isUAEPoll(poll: any) {
 
 async function processOne(supabase: any, apiKey: string, poll: any) {
   const extra = isUAEPoll(poll) ? UAE_BLOCK : '';
-  const [a, b] = await Promise.all([
+  const [rawA, rawB] = await Promise.all([
     genImage(apiKey, PROMPT_TPL(poll.option_a, poll.question, poll.option_b, poll.category || 'Lifestyle') + extra),
     genImage(apiKey, PROMPT_TPL(poll.option_b, poll.question, poll.option_a, poll.category || 'Lifestyle') + extra),
   ]);
-  if (!a || !b) return { id: poll.id, status: 'gen_failed' };
+  if (!rawA || !rawB) return { id: poll.id, status: 'gen_failed' };
+  const [ja, jb] = await Promise.all([compressToJpeg(rawA as Uint8Array), compressToJpeg(rawB as Uint8Array)]);
+  const a = ja || rawA, b = jb || rawB;
   const short = poll.id.slice(0, 8);
-  const pa = `regen/${short}_a_${slugify(poll.option_a)}.png`;
-  const pb = `regen/${short}_b_${slugify(poll.option_b)}.png`;
+  const pa = `regen/${short}_a_${slugify(poll.option_a)}.${ja ? 'jpg' : 'png'}`;
+  const pb = `regen/${short}_b_${slugify(poll.option_b)}.${jb ? 'jpg' : 'png'}`;
   const [ua, ub] = await Promise.all([
-    supabase.storage.from('poll-images').upload(pa, a, { contentType: 'image/png', upsert: true }),
-    supabase.storage.from('poll-images').upload(pb, b, { contentType: 'image/png', upsert: true }),
+    supabase.storage.from('poll-images').upload(pa, a, { contentType: ja ? 'image/jpeg' : 'image/png', upsert: true }),
+    supabase.storage.from('poll-images').upload(pb, b, { contentType: jb ? 'image/jpeg' : 'image/png', upsert: true }),
   ]);
   if (ua.error || ub.error) return { id: poll.id, status: 'upload_failed', err: ua.error?.message || ub.error?.message };
   const urlA = supabase.storage.from('poll-images').getPublicUrl(pa).data.publicUrl;
