@@ -745,9 +745,9 @@ Rules:
     };
     // If the question itself names a country/city (e.g. "theme park in Dubai?"),
     // that country's polls are allowed even when the viewer lives elsewhere.
-    const qLower = String(question || "").toLowerCase();
-    const askedAboutUAE = /\b(uae|emirates|dubai|abu dhabi|sharjah|ajman|ras al khaimah|fujairah|yas)\b|دبي|ابوظبي|أبوظبي|الإمارات|الامارات/.test(qLower);
-    const askedAboutEgypt = /\b(egypt|cairo|alexandria|giza|sahel|gouna|hurghada|sharm)\b|مصر|القاهرة|اسكندرية|الساحل/.test(qLower);
+    const qAsk = String(question || "").toLowerCase();
+    const askedAboutUAE = /\b(uae|emirates|dubai|abu dhabi|sharjah|ajman|ras al khaimah|fujairah|yas)\b|دبي|ابوظبي|أبوظبي|الإمارات|الامارات/.test(qAsk);
+    const askedAboutEgypt = /\b(egypt|cairo|alexandria|giza|sahel|gouna|hurghada|sharm)\b|مصر|القاهرة|اسكندرية|الساحل/.test(qAsk);
     const pollMatchesViewerCountry = (p: any): boolean => {
       const targets = pollCountryTargets(p);
       if (targets.length === 0) return true; // untargeted poll = everyone
