@@ -1,6 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { extractEntities } from "../_shared/entity-extractor.ts";
+const wordStartIn = (hay: string, v: string): boolean => {
+  if (!v) return false;
+  let i = hay.indexOf(v);
+  while (i !== -1) {
+    const prev = i === 0 ? "" : hay[i - 1];
+    if (!prev || !/[a-z0-9]/i.test(prev)) return true;
+    i = hay.indexOf(v, i + 1);
+  }
+  return false;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -957,7 +967,7 @@ Rules:
     const getPollTopicalHitCount = (poll: any) => {
       if (topicalTermVariants.length === 0) return 0;
       const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
-      return topicalTermVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+      return topicalTermVariants.reduce((count, variants) => count + (variants.some((v) => wordStartIn(haystack, v)) ? 1 : 0), 0);
     };
 
     // Count only non-weak topical hits — used to filter out false positives
@@ -966,7 +976,7 @@ Rules:
       const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
       return topicalTermVariants.reduce((count, variants, idx) => {
         if (topicalTermIsWeak[idx]) return count;
-        return count + (variants.some((v) => haystack.includes(v)) ? 1 : 0);
+        return count + (variants.some((v) => wordStartIn(haystack, v)) ? 1 : 0);
       }, 0);
     };
 
@@ -999,7 +1009,7 @@ Rules:
     const getPollSubjectHitCount = (poll: any) => {
       if (subjectTermVariants.length === 0) return 0;
       const haystack = normalizeTerm([poll.question, poll.subtitle, poll.option_a, poll.option_b, poll.category].filter(Boolean).join(" "));
-      return subjectTermVariants.reduce((count, variants) => count + (variants.some((v) => haystack.includes(v)) ? 1 : 0), 0);
+      return subjectTermVariants.reduce((count, variants) => count + (variants.some((v) => wordStartIn(haystack, v)) ? 1 : 0), 0);
     };
 
     const enrichedPollList = polls.map((p) => {
