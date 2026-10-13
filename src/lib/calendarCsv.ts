@@ -45,6 +45,12 @@ export const CSV_TEMPLATE = [
 ].join('\n');
 
 export function downloadCsvTemplate() {
+  // Inside the Lovable preview window, downloads are blocked — open the
+  // template file in a new tab instead, where Safari downloads it normally.
+  if (window.self !== window.top) {
+    const w = window.open('/poll-calendar-template.csv', '_blank');
+    if (w) return;
+  }
   const blob = new Blob(['\uFEFF' + CSV_TEMPLATE], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
