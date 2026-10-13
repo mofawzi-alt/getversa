@@ -44,41 +44,16 @@ export const CSV_TEMPLATE = [
 
 ].join('\n');
 
-export async function downloadCsvTemplate() {
-  const filename = 'poll-calendar-template.csv';
-  // BOM so Excel opens Arabic columns correctly
-  const content = '\uFEFF' + CSV_TEMPLATE;
-  const isNative = !!(window as any).Capacitor?.isNativePlatform?.();
-  const inIframe = window.self !== window.top;
-
-  // iPhone app / phones: use the share sheet ("Save to Files")
-  if (isNative || /iPhone|iPad|Android/i.test(navigator.userAgent)) {
-    try {
-      const file = new File([content], filename, { type: 'text/csv' });
-      if ((navigator as any).canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: filename });
-        return;
-      }
-    } catch (e: any) {
-      if (e?.name === 'AbortError') return;
-    }
-  }
-
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+export function downloadCsvTemplate() {
+  const blob = new Blob(['\uFEFF' + CSV_TEMPLATE], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
-  if (inIframe || isNative) {
-    // Previews and app views often block downloads — open the file directly instead
-    const dataUrl = 'data:text/csv;charset=utf-8,' + encodeURIComponent(content);
-    const w = window.open(dataUrl, '_blank');
-    if (w) return;
-  }
   const a = document.createElement('a');
   a.href = url;
-  a.download = filename;
+  a.download = 'poll-calendar-template.csv';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  // Revoking immediately cancels the download in Safari
+  // Revoking immediately can cancel the download in Safari
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
